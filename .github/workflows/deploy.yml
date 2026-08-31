@@ -25,44 +25,6 @@ jobs:
       - name: Baixar arquivos do repositório
         uses: actions/checkout@v6
 
-      - name: Aplicar versão v1.10.0 e botão Atualizar
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-          if "let trail=[];" not in s:
-              s = s.replace("let count=2,types=['human','human','cpu'],", "let trail=[];let count=2,types=['human','human','cpu'],", 1)
-
-          # Atualiza a versão exibida no título.
-          s = re.sub(r'<h1>🐍 Snake Arena(?:\s*<span[^>]*>v[0-9.]+</span>)?</h1>', '<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.10.0</span></h1>', s, count=1)
-          s = re.sub(r'<h1>🐍 Snake Arena</h1>', '<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.10.0</span></h1>', s, count=1)
-
-          # Botão pequeno para recarregar a versão mais recente do jogo.
-          if 'id="updateBtn"' not in s:
-              s = s.replace('</h1>', '<button id="updateBtn" type="button" title="Atualizar jogo" style="margin-left:8px;padding:5px 9px;border:1px solid #405575;border-radius:9px;background:#17243a;color:#fff;font:700 12px system-ui;cursor:pointer;vertical-align:middle">↻ Atualizar</button></h1>', 1)
-              s = s.replace("document.querySelectorAll('[data-dir]').forEach", "$('updateBtn').addEventListener('click',()=>{const u=new URL(location.href);u.searchParams.set('v',Date.now().toString());location.replace(u.toString())});document.querySelectorAll('[data-dir]').forEach", 1)
-
-          # Mantém as cores fixas por jogador.
-          s = s.replace('let pal=SKINS[skin];', 'let pal=PLAYER_PALETTES[i];', 1)
-
-          # Cada comida coletada conta como uma unidade para o drop da morte.
-          s = s.replace('scores[i]+=f.value;eaten[i]+=f.value;', 'scores[i]+=f.value;eaten[i]+=1;', 1)
-
-          # Na morte, deixar somente as comidas coletadas; remover os antigos blocos/tijolos.
-          s = s.replace('function kill(i){deadBodies.push(snakes[i].map(p=>({...p})));dropFood(i);alive[i]=false;', 'function kill(i){dropFood(i);snakes[i]=[];alive[i]=false;', 1)
-          s = s.replace("if(deadBodies.some(b=>b.some(p=>p.x===h.x&&p.y===h.y)))die[i]=true;", '', 1)
-          s = s.replace("f.value===5?'⭐':(f.kind==='drop'?'●':'🍎')", "f.value===5?'⭐':'🍎'", 1)
-
-          # Mantém a versão sem corpos sólidos desenhados após a morte.
-          old = "for(const b of deadBodies)for(const p of b){ctx.fillStyle='#b9c0cc';ctx.globalAlpha=.35;ctx.fillRect(p.x*CELL"
-          if old in s:
-              s = s.replace(old, "for(const b of [])for(const p of b){ctx.fillStyle='#b9c0cc';ctx.globalAlpha=.35;ctx.fillRect(p.x*CELL", 1)
-
-          p.write_text(s, encoding='utf-8')
-          PY
-
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
