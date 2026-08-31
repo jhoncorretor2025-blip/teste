@@ -25,7 +25,7 @@ jobs:
       - name: Baixar arquivos do repositório
         uses: actions/checkout@v6
 
-      - name: Corrigir controles e aplicar versão v1.9.2
+      - name: Corrigir jogo e aplicar versão v1.9.3
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -34,36 +34,19 @@ jobs:
           s = p.read_text(encoding='utf-8')
           if "let trail=[];" not in s:
               s = s.replace("let count=2,types=['human','human','cpu'],", "let trail=[];let count=2,types=['human','human','cpu'],", 1)
-          s = re.sub(r'<h1>🐍 Snake Arena(?:\s*<span[^>]*>v[0-9.]+</span>)?</h1>', '<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.9.2</span></h1>', s, count=1)
-          patch = r'''
-          <script>
-          (()=>{
-            const keyDirs={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],KeyW:[0,-1],KeyS:[0,1],KeyA:[-1,0],KeyD:[1,0],KeyI:[0,-1],KeyK:[0,1],KeyJ:[-1,0],KeyL:[1,0]};
-            document.addEventListener('keydown',e=>{
-              if(!running||paused) return;
-              let i=-1;
-              if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) i=0;
-              else if(['KeyW','KeyA','KeyS','KeyD'].includes(e.code)) i=1;
-              else if(['KeyI','KeyJ','KeyK','KeyL'].includes(e.code)) i=2;
-              if(i>=0 && i<count && types[i]==='human' && alive[i]){
-                e.preventDefault();
-                const d=keyDirs[e.code];
-                nextDirs[i]={x:d[0],y:d[1]};
-              }
-              if(e.code==='Space' && mode==='turbo' && alive[0]){e.preventDefault();boost[0]=true;}
-              if((e.code==='ShiftLeft'||e.code==='ShiftRight') && mode==='turbo' && alive[1]){e.preventDefault();boost[1]=true;}
-              if(e.code==='Enter' && mode==='turbo' && alive[2]){e.preventDefault();boost[2]=true;}
-            },{passive:false});
-            document.addEventListener('keyup',e=>{
-              if(e.code==='Space')boost[0]=false;
-              if(e.code==='ShiftLeft'||e.code==='ShiftRight')boost[1]=false;
-              if(e.code==='Enter')boost[2]=false;
-            });
-          })();
-          </script>
-          '''
-          s=s.replace('</body></html>',patch+'</body></html>',1)
-          p.write_text(s,encoding='utf-8')
+          s = re.sub(r'<h1>🐍 Snake Arena(?:\s*<span[^>]*>v[0-9.]+</span>)?</h1>', '<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.9.3</span></h1>', s, count=1)
+          # Cada comida coletada conta como uma unidade para o drop da morte.
+          s = s.replace('scores[i]+=f.value;eaten[i]+=f.value;', 'scores[i]+=f.value;eaten[i]+=1;', 1)
+          # Na morte, deixar somente as comidas coletadas; não deixar tijolos/corpo sólido.
+          s = s.replace('function kill(i){deadBodies.push(snakes[i].map(p=>({...p})));dropFood(i);alive[i]=false;', 'function kill(i){dropFood(i);snakes[i]=[];alive[i]=false;', 1)
+          s = s.replace("if(deadBodies.some(b=>b.some(p=>p.x===h.x&&p.y===h.y)))die[i]=true;", '', 1)
+          # Toda comida dropada é uma maçã visual.
+          s = s.replace("f.value===5?'⭐':(f.kind==='drop'?'●':'🍎')", "f.value===5?'⭐':'🍎'", 1)
+          # Desativar desenho dos antigos corpos mortos.
+          old = "for(const b of deadBodies)for(const p of b){ctx.fillStyle='#b9c0cc';ctx.globalAlpha=.35;ctx.fillRect(p.x*CELL"
+          if old in s:
+              s = s.replace(old, "for(const b of [])for(const p of b){ctx.fillStyle='#b9c0cc';ctx.globalAlpha=.35;ctx.fillRect(p.x*CELL", 1)
+          p.write_text(s, encoding='utf-8')
           PY
 
       - name: Configurar GitHub Pages
