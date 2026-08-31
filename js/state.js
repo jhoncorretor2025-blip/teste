@@ -29,6 +29,7 @@ export const state = {
   respawnAt: [],
   particles: [],
   shake: 0,
+  flash: 0, // clarão vermelho ao morrer — melhoria visual #4
 
   joyId: null,
 
