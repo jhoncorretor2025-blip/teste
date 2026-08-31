@@ -8,8 +8,8 @@ import { makePlayers } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState } from './loop.js';
 import { render } from './render.js';
 import { setupInput } from './input.js';
-import { unlockAudio, setMuted } from './sound.js';
-import { loadBest, loadMuted, saveMuted } from './storage.js';
+import { unlockAudio, setMuted, toggleMusic } from './sound.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import * as net from './net.js';
 
@@ -133,7 +133,8 @@ $('players').addEventListener('change', e => {
   const i = +e.target.dataset.i;
   if (e.target.classList.contains('ptype')) state.types[i] = e.target.value;
   if (e.target.classList.contains('pcontrol')) state.controls[i] = e.target.value;
-  if (e.target.classList.contains('pcolor')) state.colors[i] = e.target.value;
+  if (e.target.classList.contains('pcolor')) { state.colors[i] = e.target.value; if (i === 0) persistProfile(); }
+  if (e.target.classList.contains('phead')) { state.heads[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('pshow')) state.show[i] = e.target.checked;
 });
 
@@ -144,7 +145,18 @@ $('players').addEventListener('input', e => {
   }
 });
 
-$('myName').addEventListener('input', e => state.names[0] = safe(e.target.value, 'Jhon'));
+$('myName').addEventListener('input', e => { state.names[0] = safe(e.target.value, 'Jhon'); persistProfile(); });
+
+function persistProfile() {
+  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0] });
+}
+
+// Botão de música ambiente (melhoria #13)
+$('musicBtn').addEventListener('click', () => {
+  unlockAudio();
+  const on = toggleMusic();
+  $('musicBtn').style.opacity = on ? '1' : '.5';
+});
 
 // Botão de mudo — a preferência fica salva no navegador
 $('mute').addEventListener('click', () => {
@@ -159,8 +171,19 @@ state.muted = loadMuted();
 setMuted(state.muted);
 $('mute').textContent = state.muted ? '🔇' : '🔊';
 
+// Nome/cor/cabeça que a pessoa escolheu da última vez (melhoria #18)
+const profile = loadProfile();
+if (profile.name) { state.names[0] = profile.name; $('myName').value = profile.name; }
+if (profile.color) state.colors[0] = profile.color;
+if (profile.head) state.heads[0] = profile.head;
+
 setupInput();
 setupTutorial();
 makePlayers();
 render();
 maybeShowTutorial();
+
+// Deixa o jogo instalável como app e funcionando offline (melhoria #19)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
