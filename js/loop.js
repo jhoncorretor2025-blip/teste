@@ -11,7 +11,7 @@ import { startMission, trackFoodForMission, renderMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate } from './utils.js';
 import { saveBest } from './storage.js';
-import { isHost, isOnline, broadcastState, connectedCount } from './net.js';
+import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount } from './net.js';
 
 let currentInterval = TICK; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 
@@ -55,12 +55,28 @@ export function startGame() {
   $('game').classList.remove('hidden');
   $('overlay').classList.add('hidden');
   $('badge').textContent = state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO';
-  state.running = true;
+  state.running = false;
   state.paused = false;
   render();
-  // Modo Turbo Worms roda com um tick menor = o jogo inteiro fica mais rápido
   currentInterval = state.mode === 'turbo' ? TURBO_TICK : TICK;
-  state.timer = setInterval(tick, currentInterval);
+
+  // Contagem regressiva "3, 2, 1, VAI!" antes de começar de verdade — melhoria visual #8
+  runCountdown(3, () => {
+    state.running = true;
+    state.timer = setInterval(tick, currentInterval);
+  });
+}
+
+function runCountdown(n, done) {
+  $('countdownOverlay').classList.remove('hidden');
+  $('countdownText').textContent = n > 0 ? String(n) : 'VAI! 🚀';
+  if (isHost()) broadcastRaw({ type: 'countdown', n });
+
+  if (n <= 0) {
+    setTimeout(() => { $('countdownOverlay').classList.add('hidden'); done(); }, 500);
+    return;
+  }
+  setTimeout(() => runCountdown(n - 1, done), 700);
 }
 
 // Ativa o turbo de uma minhoca. Agora custa 1 "comidinha" (melhoria #2) — sem comida no bucho, sem turbo.
@@ -90,6 +106,7 @@ export function kill(i) {
   const h = state.snakes[i]?.[0];
   if (h) burst(h.x, h.y, state.colors[i], 24);
   state.shake = 7;
+  state.flash = 6; // clarão vermelho — melhoria visual #4
   state.snakes[i] = [];
   state.alive[i] = false;
   state.scores[i] = 0;
@@ -176,9 +193,16 @@ function tick() {
   const boostedIdx = aliveIdx.filter(i => state.alive[i] && state.boosting[i]);
   if (boostedIdx.length) stepMovement(boostedIdx);
 
+  // Rastro de partículas atrás de quem tá turbinando — melhoria visual #3
+  boostedIdx.forEach(i => {
+    const tail = state.snakes[i]?.[state.snakes[i].length - 1];
+    if (tail) burst(tail.x, tail.y, state.colors[i], 2);
+  });
+
   ensureFoods();
   updateParticles();
   if (state.shake > 0) state.shake = Math.max(0, state.shake - 1);
+  if (state.flash > 0) state.flash = Math.max(0, state.flash - 1);
   render();
 
   // Anfitrião: manda o estado do jogo pra todo mundo conectado, várias vezes por segundo
@@ -189,6 +213,7 @@ function tick() {
       alive: state.alive, boosting: state.boosting, colors: state.colors,
       names: state.names, show: state.show, showOthers: state.showOthers,
       count: state.count, mission: state.mission, best: state.best,
+      dirs: state.dirs, shake: state.shake, flash: state.flash,
     });
   }
 }
@@ -215,20 +240,23 @@ export function startClientGame() {
 
 // Aplica um pacote de estado recebido do anfitrião (chamado pelo net.js) e redesenha a tela.
 export function applyRemoteState(msg) {
-  state.snakes = msg.snakes;
-  state.foods = msg.foods;
-  state.scores = msg.scores;
-  state.foodsEaten = msg.foodsEaten;
-  state.eliminations = msg.eliminations;
-  state.alive = msg.alive;
-  state.boosting = msg.boosting;
-  state.colors = msg.colors;
-  state.names = msg.names;
-  state.show = msg.show;
+  state.snakes = msg.snakes || [];
+  state.dirs = msg.dirs || [];
+  state.foods = msg.foods || [];
+  state.scores = msg.scores || [];
+  state.foodsEaten = msg.foodsEaten || [];
+  state.eliminations = msg.eliminations || [];
+  state.alive = msg.alive || [];
+  state.boosting = msg.boosting || [];
+  state.colors = msg.colors || state.colors;
+  state.names = msg.names || state.names;
+  state.show = msg.show || state.show;
   state.showOthers = msg.showOthers;
-  state.count = msg.count;
+  state.count = msg.count || state.count;
   state.mission = msg.mission;
-  state.best = msg.best;
+  state.best = msg.best || 0;
+  state.shake = msg.shake || 0;
+  state.flash = msg.flash || 0;
   renderMission();
   $('badge').textContent = '🌐 ONLINE';
   render();
