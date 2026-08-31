@@ -18,7 +18,7 @@ export function startMission() {
   renderMission();
 }
 
-function renderMission() {
+export function renderMission() {
   const box = $('mission');
   if (!box || !state.mission) return;
   const m = state.mission;
