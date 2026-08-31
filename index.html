@@ -69,4 +69,4 @@ const dirMap={up:DIRS.up,down:DIRS.down,left:DIRS.left,right:DIRS.right};documen
 const bt=$('boostTouch');const boostOn=e=>{e.preventDefault();if(running&&mode==='turbo'){boost[0]=true;bt.classList.add('on')}};const boostOff=e=>{e.preventDefault();boost[0]=false;bt.classList.remove('on')};bt.addEventListener('pointerdown',boostOn,{passive:false});bt.addEventListener('touchstart',boostOn,{passive:false});['pointerup','pointercancel','pointerleave','touchend','touchcancel'].forEach(ev=>bt.addEventListener(ev,boostOff,{passive:false}));
 $('refresh').addEventListener('click',()=>location.href=location.pathname+'?v=1.11.0&ts='+Date.now());$('start').addEventListener('click',startGame);$('pause').addEventListener('click',()=>{if(running){paused=!paused;$('pause').textContent=paused?'▶️':'⏸️'}});$('restart').addEventListener('click',startGame);$('back').addEventListener('click',()=>{running=false;clearInterval(timer);$('game').classList.add('hidden');$('menu').classList.remove('hidden');draw()});$('continueBtn').addEventListener('click',startGame);renderMission();draw();
 </script>
-</body></html>
+<!-- FIXED_PLAYER_COLORS --></body></html>
