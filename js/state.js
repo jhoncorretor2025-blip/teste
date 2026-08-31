@@ -9,11 +9,13 @@ export const state = {
   names: ['Jhon', 'Jogador 2', 'Jogador 3'],
   controls: ['arrows', 'wasd', 'ijkl'],
   colors: [...COLORS], // cor escolhida por cada jogador
-  heads: ['round', 'round', 'round'], // formato de cabeça escolhido — melhoria visual #12
+  heads: ['round', 'round', 'round'], // formato de cabeça
+  patterns: ['solid', 'solid', 'solid'], // padrão de pele do corpo
   show: [true, true, true],
   showOthers: true,
   mode: 'classic',
-  noWalls: false, // modo "sem paredes" (atravessa pro outro lado) — melhoria #15
+  speed: 'normal', // velocidade escolhida no menu
+  noWalls: false,
   difficulty: 'normal',
   running: false,
   paused: false,
