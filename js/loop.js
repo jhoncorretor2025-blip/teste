@@ -7,10 +7,11 @@ import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall } from 
 import { aiDir } from './ai.js';
 import { render } from './render.js';
 import { syncSettings } from './players.js';
-import { startMission, trackFoodForMission } from './mission.js';
+import { startMission, trackFoodForMission, renderMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate } from './utils.js';
 import { saveBest } from './storage.js';
+import { isHost, isOnline, broadcastState, connectedCount } from './net.js';
 
 let currentInterval = TICK; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 
@@ -178,5 +179,57 @@ function tick() {
   ensureFoods();
   updateParticles();
   if (state.shake > 0) state.shake = Math.max(0, state.shake - 1);
+  render();
+
+  // Anfitrião: manda o estado do jogo pra todo mundo conectado, várias vezes por segundo
+  if (isHost()) {
+    broadcastState({
+      snakes: state.snakes, foods: state.foods, scores: state.scores,
+      foodsEaten: state.foodsEaten, eliminations: state.eliminations,
+      alive: state.alive, boosting: state.boosting, colors: state.colors,
+      names: state.names, show: state.show, showOthers: state.showOthers,
+      count: state.count, mission: state.mission, best: state.best,
+    });
+  }
+}
+
+// Prepara e inicia uma partida ONLINE como anfitrião — o total de jogadores vira
+// "você + quantos amigos estão conectados agora", todos humanos (sem CPU no online).
+export function startOnlineHostGame() {
+  state.count = Math.min(3, 1 + connectedCount());
+  state.types = Array(state.count).fill('human');
+  startGame();
+}
+
+// Mostra a tela de jogo pro CLIENTE (quem entrou numa sala). Ele não roda a simulação —
+// só fica esperando os pacotes de estado do anfitrião pra desenhar na tela.
+export function startClientGame() {
+  $('menu').classList.add('hidden');
+  $('game').classList.remove('hidden');
+  $('overlay').classList.add('hidden');
+  $('badge').textContent = '🌐 Aguardando o anfitrião iniciar...';
+  state.running = true;
+  state.paused = false;
+  render();
+}
+
+// Aplica um pacote de estado recebido do anfitrião (chamado pelo net.js) e redesenha a tela.
+export function applyRemoteState(msg) {
+  state.snakes = msg.snakes;
+  state.foods = msg.foods;
+  state.scores = msg.scores;
+  state.foodsEaten = msg.foodsEaten;
+  state.eliminations = msg.eliminations;
+  state.alive = msg.alive;
+  state.boosting = msg.boosting;
+  state.colors = msg.colors;
+  state.names = msg.names;
+  state.show = msg.show;
+  state.showOthers = msg.showOthers;
+  state.count = msg.count;
+  state.mission = msg.mission;
+  state.best = msg.best;
+  renderMission();
+  $('badge').textContent = '🌐 ONLINE';
   render();
 }
