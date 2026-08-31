@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.4.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.4.0">
+<title>🐍 Snake Arena v2.5.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.5.0">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -18,7 +19,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.4.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.5.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
   </header>
   <main>
@@ -66,6 +67,23 @@
           <div class="muted" style="margin-top:8px">🟢 P1 • 🩷 P2 • 🔵 P3</div>
         </section>
       </div>
+      <section class="card" style="margin-top:14px">
+        <h2>🌐 Jogar Online</h2>
+        <p class="cardDesc">Jogue com amigos em aparelhos diferentes, cada um no seu.</p>
+        <div class="row">
+          <button id="hostBtn" class="btn alt" type="button">🏠 Criar sala</button>
+        </div>
+        <div id="hostPanel" class="hidden tip" style="margin-top:9px">
+          <div>Código da sala: <b id="roomCode">...</b></div>
+          <button id="copyRoom" class="refresh" type="button" style="margin-top:6px">Copiar link</button>
+          <div id="roomStatus" class="muted" style="margin-top:6px"></div>
+        </div>
+        <div class="row" style="margin-top:9px">
+          <input id="joinCode" class="input" placeholder="Cole aqui o código da sala de um amigo">
+          <button id="joinBtn" class="btn alt" type="button">🔗 Entrar em sala</button>
+        </div>
+        <div id="joinStatus" class="muted" style="margin-top:6px"></div>
+      </section>
       <div class="quickRules">
         <span>🍎 Normal = 1</span>
         <span>⭐ Estrela = 5</span>
@@ -105,6 +123,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.4.0"></script>
+<script type="module" src="js/main.js?v=2.5.0"></script>
 </body>
 </html>
