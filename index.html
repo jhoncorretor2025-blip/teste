@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.7.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.7.0">
+<title>🐍 Snake Arena v2.8.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.8.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -23,7 +23,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.7.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.8.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
   </header>
   <main>
@@ -46,6 +46,12 @@
           <select id="mode" class="select" aria-label="Modo de jogo">
             <option value="classic">🏆 Clássico</option>
             <option value="turbo">⚡ Turbo Worms</option>
+          </select>
+          <select id="speedSelect" class="select" aria-label="Velocidade da minhoca" style="margin-top:8px">
+            <option value="slow">🐢 Lenta</option>
+            <option value="normal" selected>🚶 Normal</option>
+            <option value="fast">🏃 Rápida</option>
+            <option value="veryfast">⚡ Muito rápida</option>
           </select>
           <select id="difficulty" class="select" aria-label="Dificuldade da CPU" style="margin-top:8px">
             <option value="easy">🙂 CPU Fácil</option>
@@ -134,6 +140,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.7.0"></script>
+<script type="module" src="js/main.js?v=2.8.0"></script>
 </body>
 </html>
