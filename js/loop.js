@@ -1,7 +1,7 @@
 // O "coração" do jogo: nascer, resetar, iniciar partida e o tick (cada passo do jogo).
 
 import { $ } from './utils.js';
-import { TICK, TURBO_TICK, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, W, H, MILESTONE_STEP } from './config.js';
+import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, W, H, MILESTONE_STEP } from './config.js';
 import { state } from './state.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall } from './food.js';
 import { aiDir } from './ai.js';
@@ -13,7 +13,7 @@ import { vibrate, announce } from './utils.js';
 import { saveBest } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount } from './net.js';
 
-let currentInterval = TICK; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
+let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 
 // Coloca (ou recoloca) uma minhoca no tabuleiro em sua posição inicial
 export function spawn(i) {
@@ -59,7 +59,9 @@ export function startGame() {
   state.running = false;
   state.paused = false;
   render();
-  currentInterval = state.mode === 'turbo' ? TURBO_TICK : TICK;
+  // A velocidade escolhida no menu define o ritmo base; o Turbo Worms roda mais rápido ainda
+  const spd = SPEEDS.find(s => s.value === state.speed) || SPEEDS[1];
+  currentInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
 
   // Contagem regressiva "3, 2, 1, VAI!" antes de começar de verdade — melhoria visual #8
   runCountdown(3, () => {
@@ -229,7 +231,7 @@ function tick() {
       names: state.names, show: state.show, showOthers: state.showOthers,
       count: state.count, mission: state.mission, best: state.best,
       dirs: state.dirs, shake: state.shake, flash: state.flash,
-      heads: state.heads, toast: state.toast,
+      heads: state.heads, toast: state.toast, patterns: state.patterns,
     });
   }
 }
@@ -274,6 +276,7 @@ export function applyRemoteState(msg) {
   state.shake = msg.shake || 0;
   state.flash = msg.flash || 0;
   state.heads = msg.heads || state.heads;
+  state.patterns = msg.patterns || state.patterns;
   state.toast = msg.toast || null;
   renderMission();
   $('badge').textContent = '🌐 ONLINE';
