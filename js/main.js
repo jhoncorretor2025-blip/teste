@@ -8,8 +8,9 @@ import { makePlayers } from './players.js';
 import { startGame } from './loop.js';
 import { render } from './render.js';
 import { setupInput } from './input.js';
-import { unlockAudio } from './sound.js';
-import { loadBest } from './storage.js';
+import { unlockAudio, setMuted } from './sound.js';
+import { loadBest, loadMuted, saveMuted } from './storage.js';
+import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 
 $('start').addEventListener('click', () => {
   unlockAudio(); // libera o som — precisa de um clique do jogador antes (regra do navegador)
@@ -39,6 +40,7 @@ $('refresh').addEventListener('click', () => {
 });
 
 $('mode').addEventListener('change', e => state.mode = e.target.value);
+$('difficulty').addEventListener('change', e => state.difficulty = e.target.value);
 
 $('count').addEventListener('change', e => {
   state.count = +e.target.value;
@@ -50,6 +52,7 @@ $('players').addEventListener('change', e => {
   const i = +e.target.dataset.i;
   if (e.target.classList.contains('ptype')) state.types[i] = e.target.value;
   if (e.target.classList.contains('pcontrol')) state.controls[i] = e.target.value;
+  if (e.target.classList.contains('pcolor')) state.colors[i] = e.target.value;
   if (e.target.classList.contains('pshow')) state.show[i] = e.target.checked;
 });
 
@@ -62,8 +65,21 @@ $('players').addEventListener('input', e => {
 
 $('myName').addEventListener('input', e => state.names[0] = safe(e.target.value, 'Jhon'));
 
-state.best = loadBest(); // carrega o recorde salvo no navegador (melhoria #7)
+// Botão de mudo (melhoria #8) — a preferência fica salva no navegador
+$('mute').addEventListener('click', () => {
+  state.muted = !state.muted;
+  setMuted(state.muted);
+  saveMuted(state.muted);
+  $('mute').textContent = state.muted ? '🔇' : '🔊';
+});
+
+state.best = loadBest();
+state.muted = loadMuted();
+setMuted(state.muted);
+$('mute').textContent = state.muted ? '🔇' : '🔊';
 
 setupInput();
+setupTutorial();
 makePlayers();
 render();
+maybeShowTutorial(); // melhoria #9 — só aparece na primeira visita
