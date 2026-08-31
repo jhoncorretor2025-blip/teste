@@ -44,6 +44,12 @@ export function dropFood(i) {
   }
 }
 
+// Derrama exatamente 1 comida numa posição específica — usado como custo do turbo (melhoria #2)
+export function dropOne(x, y, owner) {
+  const p = occupied(x, y) ? freeCell() : { x, y };
+  state.foods.push({ x: p.x, y: p.y, kind: 'drop', value: 1, owner });
+}
+
 // Cria partículas de explosão (usado ao nascer, comer e morrer)
 export function burst(x, y, color, n = 10) {
   for (let i = 0; i < n; i++) {
