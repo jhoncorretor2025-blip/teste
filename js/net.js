@@ -75,6 +75,8 @@ export function joinRoom(hostId, onJoined, onFail) {
         onJoined && onJoined(msg.slot);
       } else if (msg.type === 'state') {
         handlers.onStateUpdate && handlers.onStateUpdate(msg);
+      } else if (msg.type === 'countdown') {
+        handlers.onCountdown && handlers.onCountdown(msg.n);
       } else if (msg.type === 'full') {
         // sala já tava cheia (3 jogadores) — não dá pra entrar
         onFail && onFail(new Error('full'));
@@ -86,7 +88,12 @@ export function joinRoom(hostId, onJoined, onFail) {
 
 // Host: manda o estado atual do jogo pra todo mundo conectado
 export function broadcastState(payload) {
-  conns.forEach(c => { try { c.send({ type: 'state', ...payload }); } catch {} });
+  broadcastRaw({ type: 'state', ...payload });
+}
+
+// Host: manda qualquer mensagem crua pra todo mundo conectado (usado também pela contagem regressiva)
+export function broadcastRaw(msg) {
+  conns.forEach(c => { try { c.send(msg); } catch {} });
 }
 
 // Cliente: manda direção/turbo pro host
