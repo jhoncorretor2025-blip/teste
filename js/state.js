@@ -1,16 +1,21 @@
 // Estado do jogo — tudo que muda durante uma partida vive aqui dentro.
 // Todos os outros arquivos importam esse mesmo objeto "state" e leem/alteram ele.
 
+import { COLORS } from './config.js';
+
 export const state = {
   count: 1,
   types: ['human', 'cpu', 'cpu'],
   names: ['Jhon', 'Jogador 2', 'Jogador 3'],
   controls: ['arrows', 'wasd', 'ijkl'],
+  colors: [...COLORS], // cor escolhida por cada jogador — melhoria #7
   show: [true, true, true],
   showOthers: true,
   mode: 'classic',
+  difficulty: 'normal', // melhoria #3
   running: false,
   paused: false,
+  muted: false, // melhoria #8
   timer: null,
 
   snakes: [],
