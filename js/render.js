@@ -31,6 +31,36 @@ function drawStars() {
   ctx.restore();
 }
 
+// Desenha a cabeça da minhoca no formato escolhido pelo jogador (melhoria visual #12)
+function drawHead(x, y, shape, color) {
+  const cx = x * CELL + 2, cy = y * CELL + 2;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  if (shape === 'square') {
+    ctx.rect(cx, cy, 16, 16);
+  } else if (shape === 'diamond') {
+    ctx.moveTo(cx + 8, cy);
+    ctx.lineTo(cx + 16, cy + 8);
+    ctx.lineTo(cx + 8, cy + 16);
+    ctx.lineTo(cx, cy + 8);
+    ctx.closePath();
+  } else if (shape === 'owl') {
+    ctx.roundRect(cx, cy, 16, 16, 6);
+  } else {
+    ctx.roundRect(cx, cy, 16, 16, 5); // 'round' (padrão)
+  }
+  ctx.fill();
+  if (shape === 'owl') {
+    // orelhinhas triangulares
+    ctx.beginPath();
+    ctx.moveTo(cx + 2, cy + 3); ctx.lineTo(cx - 2, cy - 4); ctx.lineTo(cx + 6, cy + 1);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + 14, cy + 3); ctx.lineTo(cx + 18, cy - 4); ctx.lineTo(cx + 10, cy + 1);
+    ctx.closePath(); ctx.fill();
+  }
+}
+
 export function renderScores() {
   let h = '';
   for (let i = 0; i < state.count; i++) {
@@ -87,11 +117,15 @@ export function draw() {
     }
     for (let k = s.length - 1; k >= 0; k--) {
       const p = s[k];
-      ctx.fillStyle = state.colors[i];
       ctx.globalAlpha = k === 0 ? 1 : (boosting ? 0.92 : 0.82);
-      ctx.beginPath();
-      ctx.roundRect(p.x * CELL + 2, p.y * CELL + 2, 16, 16, 5);
-      ctx.fill();
+      if (k === 0) {
+        drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
+      } else {
+        ctx.fillStyle = state.colors[i];
+        ctx.beginPath();
+        ctx.roundRect(p.x * CELL + 2, p.y * CELL + 2, 16, 16, 5);
+        ctx.fill();
+      }
     }
     ctx.restore();
 
@@ -122,6 +156,21 @@ export function draw() {
     ctx.beginPath();
     ctx.arc(p.x * CELL + 10, p.y * CELL + 10, Math.max(1, p.life / 12), 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // Texto flutuante de comemoração (marco de crescimento) — melhoria visual #3
+  if (state.toast && Date.now() < state.toast.until) {
+    const left = state.toast.until - Date.now();
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, left / 300);
+    ctx.fillStyle = state.toast.color || '#ffd24d';
+    ctx.font = 'bold 16px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#000';
+    ctx.fillText(state.toast.text, state.toast.x * CELL + 10, state.toast.y * CELL - 14);
+    ctx.restore();
   }
 
   // Clarão vermelho rápido quando alguém morre — melhoria visual #4
