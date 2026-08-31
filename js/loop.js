@@ -1,7 +1,7 @@
 // O "coração" do jogo: nascer, resetar, iniciar partida e o tick (cada passo do jogo).
 
 import { $ } from './utils.js';
-import { TICK, TURBO_TICK, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY } from './config.js';
+import { TICK, TURBO_TICK, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, W, H, MILESTONE_STEP } from './config.js';
 import { state } from './state.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall } from './food.js';
 import { aiDir } from './ai.js';
@@ -9,7 +9,7 @@ import { render } from './render.js';
 import { syncSettings } from './players.js';
 import { startMission, trackFoodForMission, renderMission } from './mission.js';
 import { sfx } from './sound.js';
-import { vibrate } from './utils.js';
+import { vibrate, announce } from './utils.js';
 import { saveBest } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount } from './net.js';
 
@@ -27,6 +27,7 @@ export function spawn(i) {
   state.grow[i] = 0;
   state.respawnAt[i] = 0;
   state.boosting[i] = false;
+  state.milestones[i] = 3; // já nasce com 3 partes, não conta como marco de crescimento
   burst(p.x, p.y, state.colors[i], 14);
 }
 
@@ -54,7 +55,7 @@ export function startGame() {
   $('menu').classList.add('hidden');
   $('game').classList.remove('hidden');
   $('overlay').classList.add('hidden');
-  $('badge').textContent = state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO';
+  $('badge').textContent = (state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO') + (state.noWalls ? ' 🌀' : '');
   state.running = false;
   state.paused = false;
   render();
@@ -73,6 +74,7 @@ function runCountdown(n, done) {
   if (isHost()) broadcastRaw({ type: 'countdown', n });
 
   if (n <= 0) {
+    announce('Partida começou!');
     setTimeout(() => { $('countdownOverlay').classList.add('hidden'); done(); }, 500);
     return;
   }
@@ -128,7 +130,10 @@ function updateParticles() {
 function stepMovement(indices) {
   const heads = {};
   indices.forEach(i => {
-    heads[i] = { x: state.snakes[i][0].x + state.dirs[i].x, y: state.snakes[i][0].y + state.dirs[i].y };
+    let nx = state.snakes[i][0].x + state.dirs[i].x;
+    let ny = state.snakes[i][0].y + state.dirs[i].y;
+    if (state.noWalls) { nx = (nx + W) % W; ny = (ny + H) % H; } // teleporta pro outro lado — melhoria #15
+    heads[i] = { x: nx, y: ny };
   });
 
   const die = {};
@@ -161,6 +166,16 @@ function stepMovement(indices) {
     }
     if (state.grow[i] > 0) state.grow[i]--;
     else state.snakes[i].pop();
+
+    // Marco de crescimento (10, 20, 30...) — melhoria visual #3
+    const len = state.snakes[i].length;
+    if (len >= state.milestones[i] + MILESTONE_STEP) {
+      state.milestones[i] = Math.floor(len / MILESTONE_STEP) * MILESTONE_STEP;
+      burst(h.x, h.y, '#ffd24d', 26);
+      sfx.mission();
+      vibrate(25);
+      state.toast = { x: h.x, y: h.y, text: `✨ ${state.milestones[i]}!`, color: state.colors[i], until: Date.now() + 1200 };
+    }
   });
 }
 
@@ -214,6 +229,7 @@ function tick() {
       names: state.names, show: state.show, showOthers: state.showOthers,
       count: state.count, mission: state.mission, best: state.best,
       dirs: state.dirs, shake: state.shake, flash: state.flash,
+      heads: state.heads, toast: state.toast,
     });
   }
 }
@@ -257,6 +273,8 @@ export function applyRemoteState(msg) {
   state.best = msg.best || 0;
   state.shake = msg.shake || 0;
   state.flash = msg.flash || 0;
+  state.heads = msg.heads || state.heads;
+  state.toast = msg.toast || null;
   renderMission();
   $('badge').textContent = '🌐 ONLINE';
   render();
