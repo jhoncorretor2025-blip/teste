@@ -71,4 +71,4 @@ const bt=$('boostTouch');const boostOn=e=>{e.preventDefault();if(running&&mode==
 $('refresh').addEventListener('click',()=>location.href=location.pathname+'?v=1.12.0&ts='+Date.now());$('start').addEventListener('click',startGame);$('pause').addEventListener('click',()=>{if(running){paused=!paused;$('pause').textContent=paused?'▶️':'⏸️'}});$('restart').addEventListener('click',startGame);$('back').addEventListener('click',()=>{running=false;clearInterval(timer);$('game').classList.add('hidden');$('menu').classList.remove('hidden');draw()});$('continueBtn').addEventListener('click',startGame);renderMission();draw();
 </script>
 <!-- FOOD_COUNT_AND_DEATH_DROP -->
-</body></html>
+<!-- FIXED_PLAYER_COLORS --></body></html>
