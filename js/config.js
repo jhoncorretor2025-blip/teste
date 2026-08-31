@@ -1,0 +1,41 @@
+// Configurações fixas do jogo — tamanho do tabuleiro, velocidade, cores etc.
+// Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
+
+export const W = 50, H = 31, CELL = 20, TICK = 105, NORMAL_FOODS = 3;
+export const VERSION = '2.3.0';
+
+export const COLORS = ['#67ef8a', '#ff72bd', '#63b3ff'];
+export const ICONS = ['🟢', '🩷', '🔵'];
+
+export const D = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
+
+export const CK = {
+  arrows: ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'],
+  wasd: ['KeyW', 'KeyS', 'KeyA', 'KeyD'],
+  ijkl: ['KeyI', 'KeyK', 'KeyJ', 'KeyL'],
+};
+
+export const KD = {
+  ArrowUp: D.up, ArrowDown: D.down, ArrowLeft: D.left, ArrowRight: D.right,
+  KeyW: D.up, KeyS: D.down, KeyA: D.left, KeyD: D.right,
+  KeyI: D.up, KeyK: D.down, KeyJ: D.left, KeyL: D.right,
+};
+
+// --- Modo Turbo Worms (melhoria #2) ---
+// No modo turbo, o jogo inteiro roda mais rápido (tick menor = mais rápido).
+export const TURBO_TICK = 70;
+
+// --- Botão/tecla de turbo (melhoria #1) ---
+// Cada esquema de controle ganha sua própria tecla de turbo.
+export const BOOST_KEYS = { arrows: 'Space', wasd: 'ShiftLeft', ijkl: 'Enter' };
+export const BOOST_DURATION = 1800; // quanto tempo o turbo dura (ms)
+export const BOOST_COOLDOWN = 6000; // quanto tempo até poder usar de novo (ms)
+
+// --- Missões (melhoria #3) ---
+// Uma dessas é sorteada por vez. Quem completa ganha pontos bônus e sorteia a próxima.
+export const MISSIONS = [
+  { type: 'eat', target: 5, label: '🍎 Coma 5 alimentos', reward: 5 },
+  { type: 'eat', target: 10, label: '🍎 Coma 10 alimentos', reward: 8 },
+  { type: 'star', target: 1, label: '⭐ Pegue 1 estrela', reward: 5 },
+  { type: 'star', target: 2, label: '⭐ Pegue 2 estrelas', reward: 10 },
+];
