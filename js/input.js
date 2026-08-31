@@ -1,24 +1,50 @@
-// Controles: teclado (setas / WASD / IJKL), turbo (tecla ou botão de toque) e joystick do celular.
+// Controles: teclado (setas / WASD / IJKL), turbo (tecla ou botão de toque) e joystick.
+// No modo online, o CLIENTE não controla o jogo direto — ele manda a direção pro anfitrião,
+// que é quem realmente decide o que acontece (evita trapaça e mantém todo mundo sincronizado).
 
 import { $ } from './utils.js';
 import { CK, KD, D, BOOST_KEYS, BOOST_COOLDOWN } from './config.js';
 import { state } from './state.js';
 import { tryBoost } from './loop.js';
+import { isOnline, isHost, mySlot, sendInput } from './net.js';
 
 function reverse(a, b) {
   return a && b && a.x === -b.x && a.y === -b.y;
 }
 
-// Muda a direção de uma minhoca (não deixa dar meia-volta em cima do próprio corpo)
+// Muda a direção de uma minhoca LOCAL (não deixa dar meia-volta em cima do próprio corpo)
 export function setDir(i, d) {
   if (state.alive[i] && !reverse(state.dirs[i], d)) state.nextDirs[i] = { x: d.x, y: d.y };
 }
 
+// Move a "minha" minhoca — local (host/offline) manda direto, cliente online manda pro anfitrião
+function moveMine(d) {
+  if (isOnline() && !isHost()) sendInput({ type: 'dir', dir: d });
+  else setDir(mySlot, d);
+}
+
+function boostMine() {
+  if (isOnline() && !isHost()) sendInput({ type: 'boost' });
+  else tryBoost(mySlot);
+}
+
 function handleKey(e) {
   if (!state.running) return;
-  if (e.code === 'KeyP') { state.paused = !state.paused; return; }
+  if (e.code === 'KeyP' && !(isOnline() && !isHost())) { state.paused = !state.paused; return; }
   if (state.paused) return;
-  for (let i = 0; i < state.count; i++) if (state.types[i] === 'human') {
+
+  if (isOnline() && !isHost()) {
+    // Cliente: sempre usa Setas pra mover e Espaço pro turbo, não importa o que escolheu no menu
+    if (CK.arrows.includes(e.code)) { e.preventDefault(); moveMine(KD[e.code]); }
+    if (e.code === 'Space') { e.preventDefault(); boostMine(); }
+    return;
+  }
+
+  // Local ou anfitrião: cada jogador HUMANO LOCAL usa o esquema de controle escolhido pra ele.
+  // No online, o anfitrião só controla a própria minhoca (as outras são de amigos remotos).
+  for (let i = 0; i < state.count; i++) {
+    if (state.types[i] !== 'human') continue;
+    if (isOnline() && i !== mySlot) continue;
     const keys = CK[state.controls[i]] || CK.arrows;
     if (keys.includes(e.code)) { e.preventDefault(); setDir(i, KD[e.code]); }
     if (BOOST_KEYS[state.controls[i]] === e.code) { e.preventDefault(); tryBoost(i); }
@@ -39,7 +65,8 @@ export function setupInput() {
   document.addEventListener('keydown', handleKey, { passive: false });
 
   $('boostTouch').addEventListener('click', () => {
-    if (tryBoost(0)) flashBoostButton();
+    boostMine();
+    flashBoostButton();
   });
 
   function joystickMove(e) {
@@ -48,7 +75,7 @@ export function setupInput() {
     const x = e.clientX - cx, y = e.clientY - cy;
     const ax = Math.abs(x), ay = Math.abs(y);
     if (Math.max(ax, ay) < 12) return;
-    setDir(0, ax > ay ? (x > 0 ? D.right : D.left) : (y > 0 ? D.down : D.up));
+    moveMine(ax > ay ? (x > 0 ? D.right : D.left) : (y > 0 ? D.down : D.up));
     const max = r.width * 0.33, m = Math.min(max, Math.hypot(x, y)), a = Math.atan2(y, x);
     $('stick').style.transform = `translate(${Math.cos(a) * m}px,${Math.sin(a) * m}px)`;
   }
