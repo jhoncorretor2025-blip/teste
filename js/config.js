@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 50, H = 31, CELL = 20, TICK = 105, NORMAL_FOODS = 3;
-export const VERSION = '2.5.0';
+export const VERSION = '2.4.1';
 
 export const COLORS = ['#67ef8a', '#ff72bd', '#63b3ff'];
 export const ICONS = ['🟢', '🩷', '🔵'];
