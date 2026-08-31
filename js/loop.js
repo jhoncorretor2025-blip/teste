@@ -1,9 +1,9 @@
 // O "coração" do jogo: nascer, resetar, iniciar partida e o tick (cada passo do jogo).
 
 import { $ } from './utils.js';
-import { COLORS, TICK, TURBO_TICK, BOOST_DURATION, BOOST_COOLDOWN } from './config.js';
+import { TICK, TURBO_TICK, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY } from './config.js';
 import { state } from './state.js';
-import { occupied, freeCell, ensureFoods, dropFood, burst, wall } from './food.js';
+import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall } from './food.js';
 import { aiDir } from './ai.js';
 import { render } from './render.js';
 import { syncSettings } from './players.js';
@@ -11,6 +11,8 @@ import { startMission, trackFoodForMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate } from './utils.js';
 import { saveBest } from './storage.js';
+
+let currentInterval = TICK; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 
 // Coloca (ou recoloca) uma minhoca no tabuleiro em sua posição inicial
 export function spawn(i) {
@@ -24,11 +26,11 @@ export function spawn(i) {
   state.grow[i] = 0;
   state.respawnAt[i] = 0;
   state.boosting[i] = false;
-  burst(p.x, p.y, COLORS[i], 14);
+  burst(p.x, p.y, state.colors[i], 14);
 }
 
 // Zera tudo e coloca todas as minhocas de volta no tabuleiro
-// (repare que "eliminations" e "best" NÃO são zerados aqui — eles são o histórico da sessão)
+// ("eliminations" e "best" NÃO são zerados aqui — eles são o histórico da sessão)
 export function reset() {
   clearInterval(state.timer);
   state.snakes = []; state.alive = []; state.dirs = []; state.nextDirs = [];
@@ -55,15 +57,22 @@ export function startGame() {
   state.running = true;
   state.paused = false;
   render();
-  // Modo Turbo Worms roda com um tick menor = o jogo inteiro fica mais rápido (melhoria #2)
-  const interval = state.mode === 'turbo' ? TURBO_TICK : TICK;
-  state.timer = setInterval(tick, interval);
+  // Modo Turbo Worms roda com um tick menor = o jogo inteiro fica mais rápido
+  currentInterval = state.mode === 'turbo' ? TURBO_TICK : TICK;
+  state.timer = setInterval(tick, currentInterval);
 }
 
-// Ativa o turbo de uma minhoca, se ela puder (viva, não turbinando já, sem cooldown) — melhoria #1
+// Ativa o turbo de uma minhoca. Agora custa 1 "comidinha" (melhoria #2) — sem comida no bucho, sem turbo.
 export function tryBoost(i) {
   const now = Date.now();
   if (!state.alive[i] || state.boosting[i] || now < state.boostReadyAt[i]) return false;
+  if (state.foodsEaten[i] < 1) return false; // precisa de "combustível"
+
+  state.foodsEaten[i]--;
+  state.scores[i] = Math.max(0, state.scores[i] - 1);
+  const h = state.snakes[i][0];
+  dropOne(h.x, h.y, i);
+
   state.boosting[i] = true;
   state.boostUntil[i] = now + BOOST_DURATION;
   state.boostReadyAt[i] = now + BOOST_COOLDOWN;
@@ -78,7 +87,7 @@ export function kill(i) {
   state.best = Math.max(state.best, state.scores[i]);
   dropFood(i);
   const h = state.snakes[i]?.[0];
-  if (h) burst(h.x, h.y, COLORS[i], 24);
+  if (h) burst(h.x, h.y, state.colors[i], 24);
   state.shake = 7;
   state.snakes[i] = [];
   state.alive[i] = false;
@@ -104,7 +113,6 @@ function stepMovement(indices) {
     heads[i] = { x: state.snakes[i][0].x + state.dirs[i].x, y: state.snakes[i][0].y + state.dirs[i].y };
   });
 
-  // die[i] = -1 quando bate na parede, ou o índice de quem eliminou (melhoria #10)
   const die = {};
   indices.forEach(i => {
     const h = heads[i];
@@ -128,7 +136,7 @@ function stepMovement(indices) {
       state.foodsEaten[i] += f.value;
       state.grow[i] += f.value;
       state.foods.splice(state.foods.indexOf(f), 1);
-      burst(h.x, h.y, f.kind === 'bonus' ? '#ffd24d' : COLORS[i], f.kind === 'bonus' ? 24 : 12);
+      burst(h.x, h.y, f.kind === 'bonus' ? '#ffd24d' : state.colors[i], f.kind === 'bonus' ? 24 : 12);
       sfx[f.kind === 'bonus' ? 'star' : 'eat']();
       if (f.kind === 'bonus') vibrate(20);
       trackFoodForMission(i, f);
@@ -142,6 +150,10 @@ function stepMovement(indices) {
 function tick() {
   if (!state.running || state.paused) return;
   const now = Date.now();
+  const diff = DIFFICULTY[state.difficulty] || DIFFICULTY.normal;
+  // Chance de a CPU turbinar sozinha, calculada por SEGUNDO (não por tick) — assim ela não
+  // fica turbinando toda hora só porque o Turbo Worms roda com tick menor (melhoria #1).
+  const cpuBoostChance = diff.boostPerSecond * (currentInterval / 1000);
 
   for (let i = 0; i < state.count; i++) {
     if (!state.alive[i]) {
@@ -150,8 +162,7 @@ function tick() {
     }
     if (state.types[i] === 'cpu') {
       state.nextDirs[i] = aiDir(i);
-      // De vez em quando a CPU também usa o turbo, pra ficar mais divertido de jogar contra ela
-      if (!state.boosting[i] && now >= state.boostReadyAt[i] && Math.random() < 0.01) tryBoost(i);
+      if (!state.boosting[i] && now >= state.boostReadyAt[i] && Math.random() < cpuBoostChance) tryBoost(i);
     }
     state.dirs[i] = state.nextDirs[i];
     if (state.boosting[i] && now >= state.boostUntil[i]) state.boosting[i] = false;
