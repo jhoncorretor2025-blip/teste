@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v1.14.0</title>
+<title>🐍 Snake Arena v2.1.1</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app">
-  <h1>🐍 Snake Arena <span class="version">v1.14.0</span> <button id="refresh" class="refresh" type="button">↻</button></h1>
-  <p class="sub">Até 3 jogadores • CPU inteligente • ranking • missões • mini mapa • PC + celular</p>
+  <h1>🐍 Snake Arena <span class="version">v2.1.1</span> <button id="refresh" class="refresh" type="button">↻</button></h1>
+  <p class="sub">Até 3 jogadores • controles configuráveis • CPU inteligente • ranking • missões • mini mapa • PC + celular</p>
   <section id="menu" class="panel">
     <div class="grid">
       <div class="card"><h2>👥 Jogadores</h2><select id="count" class="select"><option value="1">1 jogador</option><option value="2" selected>2 jogadores</option><option value="3">3 jogadores</option></select><div id="players"></div><div class="tip">Escolha Humano/CPU e o controle de cada jogador.</div></div>
-      <div class="card"><h2>🎮 Jogo</h2><select id="mode" class="select"><option value="classic">🏆 Clássico</option><option value="turbo">⚡ Turbo Worms</option></select><div class="row" style="margin-top:8px"><button id="start" class="btn" type="button">🚀 Jogar</button><button id="share" class="btn alt" type="button">📤 Compartilhar</button></div><div class="foodPreview"><span>🍎 <b>1 ponto / +1 parte</b></span><span>⭐ <b>5 pontos / +5 partes</b></span></div><div class="tip">☠️ Parede/adversário matam. O próprio corpo não mata.</div></div>
+      <div class="card"><h2>🎮 Jogo</h2><select id="mode" class="select"><option value="classic">🏆 Clássico</option><option value="turbo">⚡ Turbo Worms</option></select><div class="row" style="margin-top:8px"><button id="start" class="btn" type="button">🚀 Jogar</button><button id="share" class="btn alt" type="button">📤 Compartilhar</button></div><div class="foodPreview"><span>🍎 <b>1 ponto / +1 parte</b></span><span>⭐ <b>5 pontos / +5 partes</b></span></div><div class="tip">☠️ Parede/adversário matam. O próprio corpo não mata. Missões e ranking aparecem durante a partida.</div></div>
       <div class="card"><h2>🏷️ Personalização</h2><input id="myName" class="input" value="Jhon" maxlength="14" placeholder="Seu nome"><label class="check"><input id="showMe" type="checkbox" checked> Mostrar meu nome</label><label class="check"><input id="showOthers" type="checkbox" checked> Mostrar nomes dos outros</label><div class="muted" style="margin-top:8px">🟢 P1 • 🩷 P2 • 🔵 P3</div></div>
     </div>
   </section>
