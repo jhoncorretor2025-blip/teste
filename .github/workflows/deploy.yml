@@ -25,7 +25,7 @@ jobs:
       - name: Baixar arquivos do repositório
         uses: actions/checkout@v6
 
-      - name: Corrigir controles e aplicar versão v1.9.1
+      - name: Corrigir controles e aplicar versão v1.9.2
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -34,32 +34,30 @@ jobs:
           s = p.read_text(encoding='utf-8')
           if "let trail=[];" not in s:
               s = s.replace("let count=2,types=['human','human','cpu'],", "let trail=[];let count=2,types=['human','human','cpu'],", 1)
-          s = re.sub(r'<h1>🐍 Snake Arena(?:\s*<span[^>]*>v[0-9.]+</span>)?</h1>', '<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.9.1</span></h1>', s, count=1)
+          s = re.sub(r'<h1>🐍 Snake Arena(?:\s*<span[^>]*>v[0-9.]+</span>)?</h1>', '<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.9.2</span></h1>', s, count=1)
           patch = r'''
           <script>
           (()=>{
             const keyDirs={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],KeyW:[0,-1],KeyS:[0,1],KeyA:[-1,0],KeyD:[1,0],KeyI:[0,-1],KeyK:[0,1],KeyJ:[-1,0],KeyL:[1,0]};
-            window.addEventListener('keydown',e=>{
-              if(!window.running||window.paused) return;
-              if(keyDirs[e.code]){
+            document.addEventListener('keydown',e=>{
+              if(!running||paused) return;
+              let i=-1;
+              if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) i=0;
+              else if(['KeyW','KeyA','KeyS','KeyD'].includes(e.code)) i=1;
+              else if(['KeyI','KeyJ','KeyK','KeyL'].includes(e.code)) i=2;
+              if(i>=0 && i<count && types[i]==='human' && alive[i]){
                 e.preventDefault();
-                let i=0;
-                if(['KeyW','KeyA','KeyS','KeyD'].includes(e.code)) i=1;
-                else if(['KeyI','KeyJ','KeyK','KeyL'].includes(e.code)) i=2;
-                if(i<window.count && window.types[i]==='human' && window.alive[i]){
-                  const d=keyDirs[e.code];
-                  window.nextDirs[i]={x:d[0],y:d[1]};
-                  window.dirs[i]={x:d[0],y:d[1]};
-                }
+                const d=keyDirs[e.code];
+                nextDirs[i]={x:d[0],y:d[1]};
               }
-              if(e.code==='Space'&&window.mode==='turbo'&&window.alive[0]){e.preventDefault();window.boost[0]=true}
-              if((e.code==='ShiftLeft'||e.code==='ShiftRight')&&window.mode==='turbo'&&window.alive[1]){e.preventDefault();window.boost[1]=true}
-              if(e.code==='Enter'&&window.mode==='turbo'&&window.alive[2]){e.preventDefault();window.boost[2]=true}
+              if(e.code==='Space' && mode==='turbo' && alive[0]){e.preventDefault();boost[0]=true;}
+              if((e.code==='ShiftLeft'||e.code==='ShiftRight') && mode==='turbo' && alive[1]){e.preventDefault();boost[1]=true;}
+              if(e.code==='Enter' && mode==='turbo' && alive[2]){e.preventDefault();boost[2]=true;}
             },{passive:false});
-            window.addEventListener('keyup',e=>{
-              if(e.code==='Space') window.boost[0]=false;
-              if(e.code==='ShiftLeft'||e.code==='ShiftRight') window.boost[1]=false;
-              if(e.code==='Enter') window.boost[2]=false;
+            document.addEventListener('keyup',e=>{
+              if(e.code==='Space')boost[0]=false;
+              if(e.code==='ShiftLeft'||e.code==='ShiftRight')boost[1]=false;
+              if(e.code==='Enter')boost[2]=false;
             });
           })();
           </script>
