@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v1.14.0</title>
+<title>🐍 Snake Arena v2.2.0</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app">
-  <h1>🐍 Snake Arena <span class="version">v1.14.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo">↻</button></h1>
-  <p class="sub">Até 3 jogadores • controles configuráveis • CPU inteligente • ranking • missões • mini mapa • PC + celular</p>
+  <h1>🐍 Snake Arena <span class="version">v2.2.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo">↻</button></h1>
+  <p class="sub">Até 3 jogadores • controles configuráveis • CPU • 3 🍎 + ⭐ 5 pontos • PC + celular</p>
   <section id="menu" class="panel">
     <div class="grid">
       <div class="card"><h2>👥 Jogadores</h2><select id="count" class="select"><option value="1">1 jogador</option><option value="2" selected>2 jogadores</option><option value="3">3 jogadores</option></select><div id="players"></div><div class="tip">Escolha <b>Humano</b> ou <b>CPU</b> e depois escolha o controle de cada jogador.</div></div>
@@ -19,6 +19,6 @@
   </section>
   <section id="game" class="gameBox hidden"><div class="top"><div id="scores" class="scores"></div><div class="row"><button id="pause" class="btn alt" type="button">⏸️</button><button id="restart" class="btn" type="button">🔄</button><button id="back" class="btn alt" type="button">🏠</button></div></div><div class="status"><b id="badge">🏆 CLÁSSICO</b> <span>☠️ <b id="alive">0</b> vivos</span></div><div id="mission" class="mission"></div><div class="arena"><canvas id="arenaCanvas" width="1000" height="620"></canvas><div id="overlay" class="overlay hidden"><div class="overlayCard"><h2 id="endTitle">Fim</h2><p id="endText"></p><button id="continueBtn" class="btn" type="button">Continuar</button></div></div><div id="touch" class="touch"><div id="joystick" class="joystick"><div id="stick" class="stick"></div></div><div class="stickText">Arraste para virar</div><button id="boostTouch" class="boostTouch" type="button">⚡<br>TURBO</button></div></div><p class="sub">P = pausa • teclado pelos controles escolhidos • celular: joystick</p></section>
 </div>
-<script src="game.js"></script>
+<script src="game-stable.js?v=2.2.0"></script>
 </body>
 </html>
