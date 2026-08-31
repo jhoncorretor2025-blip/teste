@@ -1,8 +1,18 @@
 // Configurações fixas do jogo — tamanho do tabuleiro, velocidade, cores etc.
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
-export const W = 50, H = 31, CELL = 20, TICK = 160, NORMAL_FOODS = 3;
-export const VERSION = '2.7.0';
+export const W = 50, H = 31, CELL = 20, NORMAL_FOODS = 3;
+export const VERSION = '2.8.0';
+
+// --- Velocidade escolhível no menu (melhoria: campo de configuração de velocidade) ---
+// "tick" é quanto tempo (em ms) cada passo do jogo demora — quanto menor, mais rápido.
+export const SPEEDS = [
+  { value: 'slow', label: '🐢 Lenta', tick: 220 },
+  { value: 'normal', label: '🚶 Normal', tick: 160 },
+  { value: 'fast', label: '🏃 Rápida', tick: 115 },
+  { value: 'veryfast', label: '⚡ Muito rápida', tick: 80 },
+];
+export const TURBO_FACTOR = 0.65; // o modo Turbo Worms roda 35% mais rápido que a velocidade escolhida
 
 export const COLORS = ['#67ef8a', '#ff72bd', '#63b3ff'];
 export const ICONS = ['🟢', '🩷', '🔵'];
@@ -20,9 +30,6 @@ export const KD = {
   KeyW: D.up, KeyS: D.down, KeyA: D.left, KeyD: D.right,
   KeyI: D.up, KeyK: D.down, KeyJ: D.left, KeyL: D.right,
 };
-
-// --- Modo Turbo Worms ---
-export const TURBO_TICK = 105;
 
 // --- Turbo (botão/tecla) ---
 export const BOOST_KEYS = { arrows: 'Space', wasd: 'ShiftLeft', ijkl: 'Enter' };
@@ -58,12 +65,19 @@ export const SNAKE_COLORS = [
   { name: '🟠 Laranja', hex: '#ff9f4d' },
 ];
 
-// --- Formatos de cabeça escolhíveis (melhoria visual #12) ---
+// --- Formatos de cabeça escolhíveis ---
 export const HEAD_SHAPES = [
   { name: '⚪ Arredondada', value: 'round' },
   { name: '⬛ Quadrada', value: 'square' },
   { name: '🔷 Diamante', value: 'diamond' },
   { name: '🦉 Coruja', value: 'owl' },
+];
+
+// --- Padrão de pele do corpo (parte da personalização/"skin") ---
+export const SKIN_PATTERNS = [
+  { name: '◼️ Lisa', value: 'solid' },
+  { name: '🟰 Listrada', value: 'stripes' },
+  { name: '⚬ Pontilhada', value: 'dots' },
 ];
 
 // --- Marco de crescimento (melhoria #3) ---
