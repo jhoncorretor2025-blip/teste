@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v1.14.0</title>
-<link rel="stylesheet" href="style.css">
+<title>🐍 Snake Arena v2.2.3</title>
+<link rel="stylesheet" href="style.css?v=2.2.3">
 </head>
 <body>
 <div class="app">
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v1.14.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.2.3</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
   </header>
   <main>
@@ -19,8 +19,8 @@
           <h2>👥 Jogadores</h2>
           <p class="cardDesc">Escolha quantos vão jogar e configure cada minhoca.</p>
           <select id="count" class="select" aria-label="Quantidade de jogadores">
-            <option value="1">1 jogador</option>
-            <option value="2" selected>2 jogadores</option>
+            <option value="1" selected>1 jogador</option>
+            <option value="2">2 jogadores</option>
             <option value="3">3 jogadores</option>
           </select>
           <div id="players"></div>
@@ -90,6 +90,6 @@
     </section>
   </main>
 </div>
-<script src="game-stable.js?v=2.2.2"></script>
+<script src="game-stable.js?v=2.2.3"></script>
 </body>
 </html>
