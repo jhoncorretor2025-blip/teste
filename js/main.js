@@ -26,6 +26,11 @@ net.setHandlers({
     makePlayers();
   },
   onStateUpdate: (msg) => applyRemoteState(msg),
+  onCountdown: (n) => {
+    $('countdownOverlay').classList.remove('hidden');
+    $('countdownText').textContent = n > 0 ? String(n) : 'VAI! 🚀';
+    if (n <= 0) setTimeout(() => $('countdownOverlay').classList.add('hidden'), 500);
+  },
 });
 
 $('hostBtn').addEventListener('click', () => {
