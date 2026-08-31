@@ -71,5 +71,5 @@ const joy=$('joystick'),stick=$('stick');let joyActive=false;function joyMove(e)
 const bt=$('boostTouch');const boostOn=e=>{e.preventDefault();if(running&&mode==='turbo'){boost[0]=true;bt.classList.add('on')}};const boostOff=e=>{e.preventDefault();boost[0]=false;bt.classList.remove('on')};bt.addEventListener('pointerdown',boostOn,{passive:false});bt.addEventListener('pointerup',boostOff,{passive:false});bt.addEventListener('pointercancel',boostOff,{passive:false});
 renderMission();renderScores();updateEnergy();draw();
 </script>
-</body>
+<!-- FIXED_PLAYER_COLORS --></body>
 </html>
