@@ -135,6 +135,7 @@ $('players').addEventListener('change', e => {
   if (e.target.classList.contains('pcontrol')) state.controls[i] = e.target.value;
   if (e.target.classList.contains('pcolor')) { state.colors[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('phead')) { state.heads[i] = e.target.value; if (i === 0) persistProfile(); }
+  if (e.target.classList.contains('ppattern')) { state.patterns[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('pshow')) state.show[i] = e.target.checked;
 });
 
@@ -148,7 +149,7 @@ $('players').addEventListener('input', e => {
 $('myName').addEventListener('input', e => { state.names[0] = safe(e.target.value, 'Jhon'); persistProfile(); });
 
 function persistProfile() {
-  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0] });
+  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0] });
 }
 
 // Botão de música ambiente (melhoria #13)
@@ -176,6 +177,7 @@ const profile = loadProfile();
 if (profile.name) { state.names[0] = profile.name; $('myName').value = profile.name; }
 if (profile.color) state.colors[0] = profile.color;
 if (profile.head) state.heads[0] = profile.head;
+if (profile.pattern) state.patterns[0] = profile.pattern;
 
 setupInput();
 setupTutorial();
