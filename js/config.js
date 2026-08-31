@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 50, H = 31, CELL = 20, TICK = 105, NORMAL_FOODS = 3;
-export const VERSION = '2.3.0';
+export const VERSION = '2.4.0';
 
 export const COLORS = ['#67ef8a', '#ff72bd', '#63b3ff'];
 export const ICONS = ['🟢', '🩷', '🔵'];
@@ -21,21 +21,39 @@ export const KD = {
   KeyI: D.up, KeyK: D.down, KeyJ: D.left, KeyL: D.right,
 };
 
-// --- Modo Turbo Worms (melhoria #2) ---
-// No modo turbo, o jogo inteiro roda mais rápido (tick menor = mais rápido).
+// --- Modo Turbo Worms ---
 export const TURBO_TICK = 70;
 
-// --- Botão/tecla de turbo (melhoria #1) ---
-// Cada esquema de controle ganha sua própria tecla de turbo.
+// --- Turbo (botão/tecla) ---
 export const BOOST_KEYS = { arrows: 'Space', wasd: 'ShiftLeft', ijkl: 'Enter' };
-export const BOOST_DURATION = 1800; // quanto tempo o turbo dura (ms)
-export const BOOST_COOLDOWN = 6000; // quanto tempo até poder usar de novo (ms)
+export const BOOST_DURATION = 1800;
+export const BOOST_COOLDOWN = 6000;
 
-// --- Missões (melhoria #3) ---
-// Uma dessas é sorteada por vez. Quem completa ganha pontos bônus e sorteia a próxima.
+// --- Missões ---
 export const MISSIONS = [
   { type: 'eat', target: 5, label: '🍎 Coma 5 alimentos', reward: 5 },
   { type: 'eat', target: 10, label: '🍎 Coma 10 alimentos', reward: 8 },
   { type: 'star', target: 1, label: '⭐ Pegue 1 estrela', reward: 5 },
   { type: 'star', target: 2, label: '⭐ Pegue 2 estrelas', reward: 10 },
+];
+
+// --- Dificuldade da CPU (melhoria #3) ---
+// boostPerSecond é a chance dela usar turbo sozinha A CADA SEGUNDO (não por tick!),
+// assim ela não fica turbinando toda hora só porque o modo Turbo Worms roda mais rápido (melhoria #1).
+// mistake = chance dela "errar" de propósito e tomar uma direção boba (deixa o Fácil mais fácil de verdade).
+// lookahead = no Difícil, ela evita se encurralar em becos sem saída.
+export const DIFFICULTY = {
+  easy: { label: '🙂 Fácil', mistake: 0.35, boostPerSecond: 0.01, lookahead: false },
+  normal: { label: '😐 Médio', mistake: 0.08, boostPerSecond: 0.02, lookahead: false },
+  hard: { label: '😈 Difícil', mistake: 0, boostPerSecond: 0.035, lookahead: true },
+};
+
+// --- Cores escolhíveis pelos jogadores (melhoria #7) ---
+export const SNAKE_COLORS = [
+  { name: '🟢 Verde', hex: '#67ef8a' },
+  { name: '🩷 Rosa', hex: '#ff72bd' },
+  { name: '🔵 Azul', hex: '#63b3ff' },
+  { name: '🟡 Amarelo', hex: '#ffd24d' },
+  { name: '🟣 Roxo', hex: '#b57bff' },
+  { name: '🟠 Laranja', hex: '#ff9f4d' },
 ];
