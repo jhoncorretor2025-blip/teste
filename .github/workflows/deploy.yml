@@ -25,13 +25,15 @@ jobs:
       - name: Baixar arquivos do repositório
         uses: actions/checkout@v6
 
-      - name: Aplicar versão e identidade visual
+      - name: Corrigir e aplicar versão v1.9.0
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          s = s.replace('<h1>🐍 Snake Arena</h1>', '<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.8.0</span></h1>', 1)
+          s = s.replace("let count=2,types=['human','human','cpu'],", "let trail=[];let count=2,types=['human','human','cpu'],", 1)
+          s = s.replace('<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.8.0</span></h1>', '<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.9.0</span></h1>', 1)
+          s = s.replace('<h1>🐍 Snake Arena</h1>', '<h1>🐍 Snake Arena <span style="font-size:.28em;color:#9eabc3;vertical-align:middle">v1.9.0</span></h1>', 1)
           s = s.replace('let pal=SKINS[skin];', 'let pal=PLAYER_PALETTES[i];', 1)
           p.write_text(s, encoding='utf-8')
           PY
