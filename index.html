@@ -3,12 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.6.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.6.0">
+<title>🐍 Snake Arena v2.7.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.7.0">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#07101d">
+<link rel="apple-touch-icon" href="icon.svg">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
 <div class="app">
+  <div id="srAnnounce" class="sr-only" aria-live="polite" role="status"></div>
   <div id="tutorial" class="overlay hidden">
     <div class="overlayCard">
       <h2>🐍 Bem-vindo ao Snake Arena!</h2>
@@ -19,7 +23,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.6.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.7.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
   </header>
   <main>
@@ -48,6 +52,7 @@
             <option value="normal" selected>😐 CPU Médio</option>
             <option value="hard">😈 CPU Difícil</option>
           </select>
+          <label class="check" style="margin-top:8px"><input type="checkbox" id="noWalls"> 🌀 Sem paredes (atravessa pro outro lado)</label>
           <div class="row" style="margin-top:8px">
             <button id="start" class="btn" type="button">🚀 Jogar</button>
             <button id="share" class="btn alt" type="button">📤 Compartilhar</button>
@@ -97,6 +102,7 @@
         <div id="scores" class="scores"></div>
         <div class="row">
           <button id="mute" class="btn alt" type="button" aria-label="Ligar/desligar som">🔊</button>
+          <button id="musicBtn" class="btn alt" type="button" aria-label="Ligar/desligar música ambiente" style="opacity:.5">🎵</button>
           <button id="pause" class="btn alt" type="button">⏸️ Pausar</button>
           <button id="restart" class="btn" type="button">🔄 Reiniciar</button>
           <button id="back" class="btn alt" type="button">🏠 Menu</button>
@@ -105,7 +111,7 @@
       <div class="status"><b id="badge">🏆 CLÁSSICO</b> <span>☠️ <b id="alive">0</b> vivos</span></div>
       <div id="mission" class="mission"></div>
       <div class="arena">
-        <canvas id="arenaCanvas" width="1000" height="620"></canvas>
+        <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Snake Arena"></canvas>
         <div id="countdownOverlay" class="overlay hidden">
           <div class="overlayCard">
             <h2 id="countdownText" style="font-size:3.2rem;margin:0">3</h2>
@@ -128,6 +134,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.6.0"></script>
+<script type="module" src="js/main.js?v=2.7.0"></script>
 </body>
 </html>
