@@ -5,7 +5,11 @@
 let ctx = null;
 let muted = false; // melhoria #8
 
-export function setMuted(v) { muted = v; }
+export function setMuted(v) {
+  muted = v;
+  if (v) stopMusic();
+  else if (musicOn) startMusic();
+}
 export function isMuted() { return muted; }
 
 function getCtx() {
@@ -44,4 +48,49 @@ export const sfx = {
 // Chamamos isso no clique do botão "🚀 Jogar".
 export function unlockAudio() {
   try { getCtx().resume(); } catch {}
+}
+
+// --- Trilha sonora ambiente opcional (melhoria #13) ---
+// Não usa nenhum arquivo de música: é um "pad" bem suave gerado na hora, tocando baixinho.
+let musicNodes = null;
+let musicOn = false;
+
+export function isMusicOn() { return musicOn; }
+
+export function toggleMusic(force) {
+  const target = typeof force === 'boolean' ? force : !musicOn;
+  musicOn = target;
+  if (target) startMusic(); else stopMusic();
+  return musicOn;
+}
+
+function startMusic() {
+  if (musicNodes || muted) return;
+  try {
+    const c = getCtx();
+    const master = c.createGain();
+    master.gain.value = 0.045;
+    master.connect(c.destination);
+
+    const osc1 = c.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = 110;
+    const osc2 = c.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = 164.81;
+    const filter = c.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 800;
+    osc1.connect(filter); osc2.connect(filter); filter.connect(master);
+
+    const lfo = c.createOscillator(); lfo.frequency.value = 0.05;
+    const lfoGain = c.createGain(); lfoGain.gain.value = 260;
+    lfo.connect(lfoGain); lfoGain.connect(filter.frequency);
+
+    osc1.start(); osc2.start(); lfo.start();
+    musicNodes = { master, osc1, osc2, filter, lfo, lfoGain };
+  } catch {}
+}
+
+function stopMusic() {
+  if (!musicNodes) return;
+  try {
+    musicNodes.osc1.stop(); musicNodes.osc2.stop(); musicNodes.lfo.stop();
+    musicNodes.master.disconnect();
+  } catch {}
+  musicNodes = null;
 }
