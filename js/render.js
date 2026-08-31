@@ -61,6 +61,25 @@ function drawHead(x, y, shape, color) {
   }
 }
 
+// Desenha um segmento do corpo com o padrão de pele escolhido (liso, listrado ou pontilhado)
+function drawBodySegment(x, y, color, pattern, k) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(x * CELL + 2, y * CELL + 2, 16, 16, 5);
+  ctx.fill();
+  if (pattern === 'stripes' && k % 2 === 1) {
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.roundRect(x * CELL + 2, y * CELL + 2, 16, 16, 5);
+    ctx.fill();
+  } else if (pattern === 'dots') {
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath();
+    ctx.arc(x * CELL + 10, y * CELL + 10, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
 export function renderScores() {
   let h = '';
   for (let i = 0; i < state.count; i++) {
@@ -121,10 +140,7 @@ export function draw() {
       if (k === 0) {
         drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
       } else {
-        ctx.fillStyle = state.colors[i];
-        ctx.beginPath();
-        ctx.roundRect(p.x * CELL + 2, p.y * CELL + 2, 16, 16, 5);
-        ctx.fill();
+        drawBodySegment(p.x, p.y, state.colors[i], state.patterns[i] || 'solid', k);
       }
     }
     ctx.restore();
