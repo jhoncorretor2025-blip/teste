@@ -1,8 +1,8 @@
 // Configurações fixas do jogo — tamanho do tabuleiro, velocidade, cores etc.
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
-export const W = 50, H = 31, CELL = 20, TICK = 105, NORMAL_FOODS = 3;
-export const VERSION = '2.6.0';
+export const W = 50, H = 31, CELL = 20, TICK = 160, NORMAL_FOODS = 3;
+export const VERSION = '2.7.0';
 
 export const COLORS = ['#67ef8a', '#ff72bd', '#63b3ff'];
 export const ICONS = ['🟢', '🩷', '🔵'];
@@ -22,7 +22,7 @@ export const KD = {
 };
 
 // --- Modo Turbo Worms ---
-export const TURBO_TICK = 70;
+export const TURBO_TICK = 105;
 
 // --- Turbo (botão/tecla) ---
 export const BOOST_KEYS = { arrows: 'Space', wasd: 'ShiftLeft', ijkl: 'Enter' };
@@ -48,7 +48,7 @@ export const DIFFICULTY = {
   hard: { label: '😈 Difícil', mistake: 0, boostPerSecond: 0.035, lookahead: true },
 };
 
-// --- Cores escolhíveis pelos jogadores (melhoria #7) ---
+// --- Cores escolhíveis pelos jogadores ---
 export const SNAKE_COLORS = [
   { name: '🟢 Verde', hex: '#67ef8a' },
   { name: '🩷 Rosa', hex: '#ff72bd' },
@@ -57,3 +57,14 @@ export const SNAKE_COLORS = [
   { name: '🟣 Roxo', hex: '#b57bff' },
   { name: '🟠 Laranja', hex: '#ff9f4d' },
 ];
+
+// --- Formatos de cabeça escolhíveis (melhoria visual #12) ---
+export const HEAD_SHAPES = [
+  { name: '⚪ Arredondada', value: 'round' },
+  { name: '⬛ Quadrada', value: 'square' },
+  { name: '🔷 Diamante', value: 'diamond' },
+  { name: '🦉 Coruja', value: 'owl' },
+];
+
+// --- Marco de crescimento (melhoria #3) ---
+export const MILESTONE_STEP = 10;
