@@ -8,14 +8,16 @@ export const state = {
   types: ['human', 'cpu', 'cpu'],
   names: ['Jhon', 'Jogador 2', 'Jogador 3'],
   controls: ['arrows', 'wasd', 'ijkl'],
-  colors: [...COLORS], // cor escolhida por cada jogador — melhoria #7
+  colors: [...COLORS], // cor escolhida por cada jogador
+  heads: ['round', 'round', 'round'], // formato de cabeça escolhido — melhoria visual #12
   show: [true, true, true],
   showOthers: true,
   mode: 'classic',
-  difficulty: 'normal', // melhoria #3
+  noWalls: false, // modo "sem paredes" (atravessa pro outro lado) — melhoria #15
+  difficulty: 'normal',
   running: false,
   paused: false,
-  muted: false, // melhoria #8
+  muted: false,
   timer: null,
 
   snakes: [],
@@ -29,7 +31,9 @@ export const state = {
   respawnAt: [],
   particles: [],
   shake: 0,
-  flash: 0, // clarão vermelho ao morrer — melhoria visual #4
+  flash: 0, // clarão vermelho ao morrer
+  milestones: [0, 0, 0], // maior marco de tamanho já comemorado — melhoria visual #3
+  toast: null, // {x, y, text, color, until} — texto flutuante de comemoração
 
   joyId: null,
 
