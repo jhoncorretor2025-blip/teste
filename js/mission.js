@@ -4,7 +4,7 @@
 
 import { MISSIONS } from './config.js';
 import { state } from './state.js';
-import { $ } from './utils.js';
+import { $, announce } from './utils.js';
 import { sfx } from './sound.js';
 import { burst } from './food.js';
 
@@ -39,6 +39,7 @@ export function trackFoodForMission(i, food) {
     const h = state.snakes[i]?.[0];
     if (h) burst(h.x, h.y, '#ffd24d', 30);
     sfx.mission();
+    announce(`Missão completa: ${m.label}!`);
     setTimeout(startMission, 900);
   }
   renderMission();
