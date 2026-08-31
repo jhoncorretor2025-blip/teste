@@ -3,6 +3,7 @@
 import { $, safe } from './utils.js';
 import { ICONS, SNAKE_COLORS } from './config.js';
 import { state } from './state.js';
+import { isOnline, isHost } from './net.js';
 
 export function label(i) {
   return safe(state.names[i], `Jogador ${i + 1}`);
@@ -13,9 +14,19 @@ export function makePlayers() {
   const box = $('players');
   box.innerHTML = '';
   const colorOptions = SNAKE_COLORS.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
+  const onlineHost = isOnline() && isHost();
+
   for (let i = 0; i < state.count; i++) {
     const d = document.createElement('div');
     d.className = 'player';
+
+    // No online, os jogadores 2 e 3 são amigos remotos — cada um controla pelo próprio aparelho
+    if (onlineHost && i > 0) {
+      d.innerHTML = `<b style="color:${state.colors[i]}">${ICONS[i]} Jogador ${i + 1}</b><div class="muted">🌐 Conectado — controla pelo próprio aparelho</div>`;
+      box.appendChild(d);
+      continue;
+    }
+
     d.innerHTML = `
       <b style="color:${state.colors[i]}">${ICONS[i]} Jogador ${i + 1}</b>
       <select class="select ptype" data-i="${i}">
