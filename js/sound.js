@@ -3,6 +3,10 @@
 // (Web Audio API), então não precisa baixar nem hospedar nada extra.
 
 let ctx = null;
+let muted = false; // melhoria #8
+
+export function setMuted(v) { muted = v; }
+export function isMuted() { return muted; }
 
 function getCtx() {
   if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -10,6 +14,7 @@ function getCtx() {
 }
 
 function beep({ freq = 440, duration = 0.08, type = 'sine', volume = 0.2, slideTo = null }) {
+  if (muted) return;
   try {
     const c = getCtx();
     const osc = c.createOscillator();
