@@ -1,7 +1,7 @@
 // Tudo que é desenhado na tela (canvas): placar, tabuleiro, comidas, minhocas e partículas.
 
 import { $ } from './utils.js';
-import { W, H, CELL, COLORS, ICONS } from './config.js';
+import { W, H, CELL, ICONS } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
 
@@ -12,7 +12,7 @@ export function renderScores() {
   let h = '';
   for (let i = 0; i < state.count; i++) {
     const boost = state.boosting[i] ? ' • ⚡' : '';
-    h += `<div class="score" style="border-color:${COLORS[i]}">${ICONS[i]} <b>${label(i)}</b> • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${boost}${state.alive[i] ? '' : ' • ☠️'}</div>`;
+    h += `<div class="score" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b> • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${boost}${state.alive[i] ? '' : ' • ☠️'}</div>`;
   }
   // Recorde salvo neste navegador (melhoria #7)
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
@@ -45,7 +45,7 @@ export function draw() {
     } else {
       ctx.font = '20px sans-serif';
       ctx.shadowBlur = 8;
-      ctx.shadowColor = f.kind === 'drop' ? (COLORS[f.owner] || '#fff') : '#ff4f7a';
+      ctx.shadowColor = f.kind === 'drop' ? (state.colors[f.owner] || '#fff') : '#ff4f7a';
       ctx.fillText('🍎', x, y);
     }
     ctx.restore();
@@ -55,7 +55,7 @@ export function draw() {
     const s = state.snakes[i];
     for (let k = s.length - 1; k >= 0; k--) {
       const p = s[k];
-      ctx.fillStyle = COLORS[i];
+      ctx.fillStyle = state.colors[i];
       ctx.globalAlpha = k === 0 ? 1 : 0.82;
       ctx.beginPath();
       ctx.roundRect(p.x * CELL + 2, p.y * CELL + 2, 16, 16, 5);
