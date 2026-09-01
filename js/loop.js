@@ -1,7 +1,7 @@
 // O "coração" do jogo: nascer, resetar, iniciar partida e o tick (cada passo do jogo).
 
 import { $ } from './utils.js';
-import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, W, H, MILESTONE_STEP } from './config.js';
+import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP } from './config.js';
 import { state } from './state.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall } from './food.js';
 import { aiDir } from './ai.js';
@@ -17,7 +17,12 @@ let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular cha
 
 // Coloca (ou recoloca) uma minhoca no tabuleiro em sua posição inicial
 export function spawn(i) {
-  const starts = [{ x: 5, y: 7, dx: 1, dy: 0 }, { x: 34, y: 23, dx: -1, dy: 0 }, { x: 20, y: 26, dx: 0, dy: -1 }];
+  const w = state.mapW, h = state.mapH;
+  const starts = [
+    { x: Math.round(w * 0.12), y: Math.round(h * 0.22), dx: 1, dy: 0 },
+    { x: Math.round(w * 0.85), y: Math.round(h * 0.74), dx: -1, dy: 0 },
+    { x: Math.round(w * 0.5), y: Math.round(h * 0.84), dx: 0, dy: -1 },
+  ];
   const s = starts[i];
   const p = occupied(s.x, s.y) ? freeCell() : s;
   state.snakes[i] = [{ x: p.x, y: p.y }, { x: p.x - s.dx, y: p.y - s.dy }, { x: p.x - 2 * s.dx, y: p.y - 2 * s.dy }];
@@ -135,7 +140,7 @@ function stepMovement(indices) {
   indices.forEach(i => {
     let nx = state.snakes[i][0].x + state.dirs[i].x;
     let ny = state.snakes[i][0].y + state.dirs[i].y;
-    if (state.noWalls) { nx = (nx + W) % W; ny = (ny + H) % H; } // teleporta pro outro lado — melhoria #15
+    if (state.noWalls) { nx = (nx + state.mapW) % state.mapW; ny = (ny + state.mapH) % state.mapH; } // teleporta pro outro lado
     heads[i] = { x: nx, y: ny };
   });
 
@@ -239,6 +244,7 @@ function tick() {
       count: state.count, mission: state.mission, best: state.best,
       dirs: state.dirs, shake: state.shake, flash: state.flash,
       heads: state.heads, toast: state.toast, patterns: state.patterns,
+      mapW: state.mapW, mapH: state.mapH,
     });
   }
 }
@@ -284,6 +290,8 @@ export function applyRemoteState(msg) {
   state.flash = msg.flash || 0;
   state.heads = msg.heads || state.heads;
   state.patterns = msg.patterns || state.patterns;
+  state.mapW = msg.mapW || state.mapW;
+  state.mapH = msg.mapH || state.mapH;
   state.toast = msg.toast || null;
   renderMission();
   $('badge').textContent = '🌐 ONLINE';
