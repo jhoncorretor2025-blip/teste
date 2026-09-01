@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.8.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.8.0">
+<title>🐍 Snake Arena v2.8.1</title>
+<link rel="stylesheet" href="css/style.css?v=2.8.1">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -23,7 +23,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.8.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.8.1</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
   </header>
   <main>
@@ -106,9 +106,11 @@
     <section id="game" class="gameBox hidden" aria-label="Arena do jogo">
       <div class="top">
         <div id="scores" class="scores"></div>
+        <div class="iconRow">
+          <button id="mute" class="iconBtn" type="button" aria-label="Ligar/desligar som">🔊</button>
+          <button id="musicBtn" class="iconBtn" type="button" aria-label="Ligar/desligar música ambiente" style="opacity:.5">🎵</button>
+        </div>
         <div class="row">
-          <button id="mute" class="btn alt" type="button" aria-label="Ligar/desligar som">🔊</button>
-          <button id="musicBtn" class="btn alt" type="button" aria-label="Ligar/desligar música ambiente" style="opacity:.5">🎵</button>
           <button id="pause" class="btn alt" type="button">⏸️ Pausar</button>
           <button id="restart" class="btn" type="button">🔄 Reiniciar</button>
           <button id="back" class="btn alt" type="button">🏠 Menu</button>
@@ -140,6 +142,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.8.0"></script>
+<script type="module" src="js/main.js?v=2.8.1"></script>
 </body>
 </html>
