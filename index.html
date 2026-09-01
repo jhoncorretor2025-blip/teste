@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.9.1</title>
-<link rel="stylesheet" href="css/style.css?v=2.9.1">
+<title>🐍 Snake Arena v2.10.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.10.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -23,7 +23,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.9.1</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.10.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
   </header>
   <main>
@@ -77,8 +77,14 @@
           <label class="check"><input id="showMe" type="checkbox" checked> Mostrar meu nome</label>
           <label class="check"><input id="showOthers" type="checkbox" checked> Mostrar nomes dos outros</label>
           <div class="muted" style="margin-top:8px">🟢 P1 • 🩷 P2 • 🔵 P3</div>
+          <button id="resetSettings" class="btn alt" type="button" style="margin-top:10px;width:100%">♻️ Resetar configurações</button>
         </section>
       </div>
+      <section class="card" style="margin-top:14px">
+        <h2>🏆 Ranking neste aparelho</h2>
+        <p class="cardDesc">Comparação de recordes de quem já jogou aqui — passa o celular e compara!</p>
+        <div id="leaderboardList" class="muted"></div>
+      </section>
       <section class="card" style="margin-top:14px">
         <h2>🌐 Jogar Online</h2>
         <p class="cardDesc">Jogue com amigos em aparelhos diferentes, cada um no seu.</p>
@@ -110,6 +116,7 @@
         <div class="iconRow">
           <button id="mute" class="iconBtn" type="button" aria-label="Ligar/desligar som">🔊</button>
           <button id="musicBtn" class="iconBtn" type="button" aria-label="Ligar/desligar música ambiente" style="opacity:.5">🎵</button>
+          <button id="shareScore" class="iconBtn" type="button" aria-label="Compartilhar pontuação como imagem">📸</button>
         </div>
         <div class="row">
           <button id="pause" class="btn alt" type="button">⏸️ Pausar</button>
@@ -143,6 +150,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.9.1"></script>
+<script type="module" src="js/main.js?v=2.10.0"></script>
 </body>
 </html>
