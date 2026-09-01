@@ -17,7 +17,7 @@ let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular cha
 
 // Coloca (ou recoloca) uma minhoca no tabuleiro em sua posição inicial
 export function spawn(i) {
-  const starts = [{ x: 6, y: 7, dx: 1, dy: 0 }, { x: 43, y: 23, dx: -1, dy: 0 }, { x: 25, y: 26, dx: 0, dy: -1 }];
+  const starts = [{ x: 5, y: 7, dx: 1, dy: 0 }, { x: 34, y: 23, dx: -1, dy: 0 }, { x: 20, y: 26, dx: 0, dy: -1 }];
   const s = starts[i];
   const p = occupied(s.x, s.y) ? freeCell() : s;
   state.snakes[i] = [{ x: p.x, y: p.y }, { x: p.x - s.dx, y: p.y - s.dy }, { x: p.x - 2 * s.dx, y: p.y - 2 * s.dy }];
@@ -207,8 +207,14 @@ function tick() {
   for (let i = 0; i < state.count; i++) if (state.alive[i]) aliveIdx.push(i);
   stepMovement(aliveIdx);
 
-  const boostedIdx = aliveIdx.filter(i => state.alive[i] && state.boosting[i]);
-  if (boostedIdx.length) stepMovement(boostedIdx);
+  // Quem tá com turbo ativo anda MAIS DUAS vezes nesse mesmo tick (total 3x mais rápido
+  // que o normal, em vez de só 2x) — pedido pra deixar o turbo mais impactante de verdade.
+  let boostedIdx = aliveIdx.filter(i => state.alive[i] && state.boosting[i]);
+  if (boostedIdx.length) {
+    stepMovement(boostedIdx);
+    boostedIdx = boostedIdx.filter(i => state.alive[i]);
+    if (boostedIdx.length) stepMovement(boostedIdx);
+  }
 
   // Rastro de partículas atrás de quem tá turbinando — melhoria visual #3
   boostedIdx.forEach(i => {
