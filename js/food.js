@@ -1,10 +1,9 @@
 // Tudo sobre comida no tabuleiro: onde nasce, quando cai ao morrer, e as "partículas" de efeito visual.
 
-import { W, H, NORMAL_FOODS } from './config.js';
 import { state } from './state.js';
 
 export function wall(x, y) {
-  return x < 0 || x >= W || y < 0 || y >= H;
+  return x < 0 || x >= state.mapW || y < 0 || y >= state.mapH;
 }
 
 // Verifica se uma célula está ocupada por alguma minhoca viva ou por comida
@@ -18,7 +17,7 @@ export function occupied(x, y, ignore = -1) {
 // Sorteia uma célula livre no tabuleiro (tenta até 4000 vezes antes de desistir)
 export function freeCell() {
   for (let n = 0; n < 4000; n++) {
-    const p = { x: Math.floor(Math.random() * W), y: Math.floor(Math.random() * H) };
+    const p = { x: Math.floor(Math.random() * state.mapW), y: Math.floor(Math.random() * state.mapH) };
     if (!occupied(p.x, p.y)) return p;
   }
   return { x: 2, y: 2 };
@@ -26,7 +25,7 @@ export function freeCell() {
 
 // Garante que sempre existam N maçãs normais e 1 estrela bônus no tabuleiro
 export function ensureFoods() {
-  while (state.foods.filter(f => f.kind === 'normal').length < NORMAL_FOODS) {
+  while (state.foods.filter(f => f.kind === 'normal').length < state.foodCount) {
     const p = freeCell();
     state.foods.push({ x: p.x, y: p.y, kind: 'normal', value: 1 });
   }
