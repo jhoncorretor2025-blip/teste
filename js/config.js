@@ -2,7 +2,16 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.11.0';
+export const VERSION = '2.12.0';
+
+// --- Tamanho do mapa escolhível no menu ---
+// "foods" é quantas maçãs normais ficam no tabuleiro ao mesmo tempo — mapas maiores
+// pedem mais comida espalhada, senão fica tudo muito vazio.
+export const MAP_SIZES = [
+  { value: 'small', label: '🔹 Pequeno', w: 28, h: 22, foods: 2 },
+  { value: 'medium', label: '🔸 Médio', w: 40, h: 31, foods: 3 },
+  { value: 'large', label: '🔷 Grande', w: 56, h: 44, foods: 5 },
+];
 
 // --- Velocidade escolhível no menu (melhoria: campo de configuração de velocidade) ---
 // "tick" é quanto tempo (em ms) cada passo do jogo demora — quanto menor, mais rápido.
