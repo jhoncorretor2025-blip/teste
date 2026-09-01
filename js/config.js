@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.9.0';
+export const VERSION = '2.9.1';
 
 // --- Velocidade escolhível no menu (melhoria: campo de configuração de velocidade) ---
 // "tick" é quanto tempo (em ms) cada passo do jogo demora — quanto menor, mais rápido.
