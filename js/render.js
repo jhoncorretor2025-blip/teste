@@ -5,7 +5,7 @@
 // branco, e deixa o jogo sempre do maior tamanho possível dentro do espaço disponível.
 
 import { $ } from './utils.js';
-import { W, H, ICONS } from './config.js';
+import { ICONS } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
 
@@ -25,9 +25,9 @@ function resizeCanvas() {
   canvas.style.width = cw + 'px';
   canvas.style.height = ch + 'px';
 
-  cell = Math.min(canvas.width / W, canvas.height / H);
-  offX = (canvas.width - cell * W) / 2;
-  offY = (canvas.height - cell * H) / 2;
+  cell = Math.min(canvas.width / state.mapW, canvas.height / state.mapH);
+  offX = (canvas.width - cell * state.mapW) / 2;
+  offY = (canvas.height - cell * state.mapH) / 2;
 }
 
 window.addEventListener('resize', resizeCanvas);
@@ -46,8 +46,8 @@ function drawStars() {
   const t = Date.now() / 40;
   ctx.save();
   for (const s of STARS) {
-    const x = (s.rx * W * cell + t * s.speed) % (W * cell) + offX;
-    const y = s.ry * H * cell + offY;
+    const x = (s.rx * state.mapW * cell + t * s.speed) % (state.mapW * cell) + offX;
+    const y = s.ry * state.mapH * cell + offY;
     ctx.globalAlpha = s.o;
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
@@ -136,8 +136,8 @@ export function draw() {
   drawStars();
 
   ctx.strokeStyle = '#0d2038';
-  for (let x = 0; x <= W; x++) { ctx.beginPath(); ctx.moveTo(offX + x * cell, offY); ctx.lineTo(offX + x * cell, offY + H * cell); ctx.stroke(); }
-  for (let y = 0; y <= H; y++) { ctx.beginPath(); ctx.moveTo(offX, offY + y * cell); ctx.lineTo(offX + W * cell, offY + y * cell); ctx.stroke(); }
+  for (let x = 0; x <= state.mapW; x++) { ctx.beginPath(); ctx.moveTo(offX + x * cell, offY); ctx.lineTo(offX + x * cell, offY + state.mapH * cell); ctx.stroke(); }
+  for (let y = 0; y <= state.mapH; y++) { ctx.beginPath(); ctx.moveTo(offX, offY + y * cell); ctx.lineTo(offX + state.mapW * cell, offY + y * cell); ctx.stroke(); }
 
   const t = Date.now() / 180;
   for (const f of state.foods) {
