@@ -2,15 +2,17 @@
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
 import { $, safe } from './utils.js';
-import { VERSION } from './config.js';
+import { VERSION, COLORS } from './config.js';
 import { state } from './state.js';
 import { makePlayers } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState } from './loop.js';
 import { render } from './render.js';
 import { setupInput } from './input.js';
 import { unlockAudio, setMuted, toggleMusic } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
+import { shareScoreCard } from './share.js';
+import { renderLeaderboard } from './leaderboard.js';
 import * as net from './net.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
@@ -105,6 +107,7 @@ $('back').addEventListener('click', () => {
   $('joinBtn').disabled = false;
   $('game').classList.add('hidden');
   $('menu').classList.remove('hidden');
+  renderLeaderboard();
   render();
 });
 
@@ -167,6 +170,26 @@ $('mute').addEventListener('click', () => {
   $('mute').textContent = state.muted ? '🔇' : '🔊';
 });
 
+// Compartilhar pontuação como imagem (melhoria #11)
+$('shareScore').addEventListener('click', () => {
+  shareScoreCard();
+});
+
+// Resetar configurações (nome, cor, cabeça, padrão, som) pro padrão de fábrica (melhoria #13)
+$('resetSettings').addEventListener('click', () => {
+  if (!confirm('Isso vai apagar seu nome, cor, formato de cabeça e preferência de som salvos, voltando tudo ao padrão. O recorde e o ranking NÃO são apagados. Continuar?')) return;
+  resetSettings();
+  state.names[0] = 'Jhon';
+  state.colors[0] = COLORS[0];
+  state.heads[0] = 'round';
+  state.patterns[0] = 'solid';
+  state.muted = false;
+  setMuted(false);
+  $('mute').textContent = '🔊';
+  $('myName').value = 'Jhon';
+  makePlayers();
+});
+
 state.best = loadBest();
 state.muted = loadMuted();
 setMuted(state.muted);
@@ -183,6 +206,7 @@ setupInput();
 setupTutorial();
 makePlayers();
 render();
+renderLeaderboard();
 maybeShowTutorial();
 
 // Deixa o jogo instalável como app e funcionando offline (melhoria #19)
