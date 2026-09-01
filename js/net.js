@@ -37,9 +37,20 @@ export function hostRoom(onReady, onFail) {
   mySlot = 0;
   const Peer = getPeerCtor();
   peer = new Peer();
+  let firstOpen = true;
 
-  peer.on('open', id => onReady(id));
+  peer.on('open', id => {
+    if (firstOpen) { firstOpen = false; onReady(id); }
+    else { handlers.onConnectionStatus && handlers.onConnectionStatus('connected'); }
+  });
   peer.on('error', err => onFail && onFail(err));
+
+  // Quando o celular deixa a aba em segundo plano (ex: foi mandar o link no WhatsApp),
+  // a conexão com o servidor de sinalização pode cair sozinha — reconecta automaticamente.
+  peer.on('disconnected', () => {
+    handlers.onConnectionStatus && handlers.onConnectionStatus('disconnected');
+    if (peer && !peer.destroyed) { try { peer.reconnect(); } catch {} }
+  });
 
   peer.on('connection', conn => {
     const slot = conns.length + 1; // slot 0 é o anfitrião; próximos são 1, 2
@@ -68,10 +79,18 @@ export function joinRoom(hostId, onJoined, onFail) {
   role = 'client';
   const Peer = getPeerCtor();
   peer = new Peer();
+  let firstOpen = true;
 
   peer.on('error', err => onFail && onFail(err));
 
+  peer.on('disconnected', () => {
+    handlers.onConnectionStatus && handlers.onConnectionStatus('disconnected');
+    if (peer && !peer.destroyed) { try { peer.reconnect(); } catch {} }
+  });
+
   peer.on('open', () => {
+    if (!firstOpen) { handlers.onConnectionStatus && handlers.onConnectionStatus('connected'); return; }
+    firstOpen = false;
     hostConn = peer.connect(hostId, { reliable: true });
     hostConn.on('data', msg => {
       if (msg.type === 'welcome') {
@@ -115,4 +134,15 @@ export function disconnect() {
   peer = null;
   role = 'local';
   mySlot = 0;
+}
+
+// Reforço extra: quando a aba volta a ficar visível (ex: voltou do WhatsApp depois de
+// mandar o link), confere se a conexão caiu e reconecta na hora — mesmo que o evento
+// "disconnected" do PeerJS não tenha disparado a tempo nesse navegador.
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && peer && !peer.destroyed && peer.disconnected) {
+      try { peer.reconnect(); } catch {}
+    }
+  });
 }
