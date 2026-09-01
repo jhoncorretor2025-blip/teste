@@ -1,7 +1,7 @@
 // Tudo relacionado à tela de configuração dos jogadores (menu inicial).
 
 import { $, safe } from './utils.js';
-import { ICONS, SNAKE_COLORS, HEAD_SHAPES, SKIN_PATTERNS } from './config.js';
+import { ICONS, SNAKE_COLORS, HEAD_SHAPES, SKIN_PATTERNS, MAP_SIZES } from './config.js';
 import { state } from './state.js';
 import { isOnline, isHost } from './net.js';
 
@@ -64,4 +64,10 @@ export function syncSettings() {
   state.speed = $('speedSelect').value;
   state.difficulty = $('difficulty').value;
   state.noWalls = $('noWalls').checked;
+
+  const map = MAP_SIZES.find(m => m.value === $('mapSize').value) || MAP_SIZES[1];
+  state.mapSize = map.value;
+  state.mapW = map.w;
+  state.mapH = map.h;
+  state.foodCount = map.foods;
 }
