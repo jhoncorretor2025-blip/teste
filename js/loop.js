@@ -10,7 +10,7 @@ import { syncSettings } from './players.js';
 import { startMission, trackFoodForMission, renderMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce } from './utils.js';
-import { saveBest } from './storage.js';
+import { saveBest, addToLeaderboard } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount } from './net.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
@@ -106,6 +106,7 @@ export function tryBoost(i) {
 export function kill(i) {
   saveBest(state.scores[i]);
   state.best = Math.max(state.best, state.scores[i]);
+  if (state.types[i] === 'human') addToLeaderboard(state.names[i], state.scores[i]);
   dropFood(i);
   const h = state.snakes[i]?.[0];
   if (h) burst(h.x, h.y, state.colors[i], 24);
