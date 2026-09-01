@@ -38,3 +38,28 @@ export function loadProfile() {
 export function saveProfile(p) {
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
 }
+
+// Ranking local — comparação de recordes entre quem já jogou nesse aparelho — melhoria #12
+const LEADERBOARD_KEY = 'snakeArenaLeaderboard';
+
+export function loadLeaderboard() {
+  try { return JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || []; }
+  catch { return []; }
+}
+
+export function addToLeaderboard(name, score) {
+  if (!score || score <= 0) return loadLeaderboard();
+  const board = loadLeaderboard();
+  board.push({ name, score, date: Date.now() });
+  board.sort((a, b) => b.score - a.score);
+  const trimmed = board.slice(0, 20);
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(trimmed));
+  return trimmed;
+}
+
+// Reseta nome, cor, formato de cabeça, padrão de pele e som mudo pro padrão de fábrica — melhoria #13.
+// (Não mexe no recorde nem no ranking — isso é histórico, não configuração.)
+export function resetSettings() {
+  localStorage.removeItem(PROFILE_KEY);
+  localStorage.removeItem(MUTE_KEY);
+}
