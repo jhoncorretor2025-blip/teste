@@ -170,6 +170,33 @@ $('mute').addEventListener('click', () => {
   $('mute').textContent = state.muted ? '🔇' : '🔊';
 });
 
+// Modo compacto: esconde placar/missão/menus e deixa só a arena e os controles,
+// pra jogar com a tela bem maior. Também tenta pedir tela cheia de verdade no navegador.
+$('compactBtn').addEventListener('click', async () => {
+  const on = $('game').classList.toggle('compact');
+  $('compactBtn').classList.toggle('active', on);
+  try {
+    if (on && document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+    } else if (!on && document.fullscreenElement) {
+      await document.exitFullscreen();
+    }
+  } catch {
+    // Se o navegador bloquear a tela cheia de verdade, sem problema — o modo compacto
+    // (esconder placar/menus) já funciona sozinho.
+  }
+  render();
+  setTimeout(render, 250); // garante que o canvas recalcule o tamanho depois do layout assentar
+});
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && $('game').classList.contains('compact')) {
+    $('game').classList.remove('compact');
+    $('compactBtn').classList.remove('active');
+    render();
+  }
+});
+
 // Compartilhar pontuação como imagem (melhoria #11)
 $('shareScore').addEventListener('click', () => {
   shareScoreCard();
