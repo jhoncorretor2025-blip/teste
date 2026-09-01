@@ -14,6 +14,9 @@ export const state = {
   show: [true, true, true],
   showOthers: true,
   mode: 'classic',
+  mapSize: 'medium', // tamanho do mapa escolhido no menu
+  mapW: 40, mapH: 31, // dimensões reais do mapa atual (mudam junto com mapSize)
+  foodCount: 3,
   speed: 'normal', // velocidade escolhida no menu
   noWalls: false,
   difficulty: 'normal',
