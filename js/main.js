@@ -63,8 +63,22 @@ $('copyRoom').addEventListener('click', async () => {
   } catch { alert(link); }
 });
 
+// Aceita tanto o código puro quanto o link inteiro colado (com "?room=..."),
+// já que muita gente cola o link inteiro em vez de só o código — não devia dar erro por isso.
+function extractRoomCode(raw) {
+  const trimmed = raw.trim();
+  if (trimmed.includes('room=')) {
+    try {
+      const url = new URL(trimmed, location.origin);
+      const r = url.searchParams.get('room');
+      if (r) return r;
+    } catch {}
+  }
+  return trimmed;
+}
+
 $('joinBtn').addEventListener('click', () => {
-  const code = $('joinCode').value.trim();
+  const code = extractRoomCode($('joinCode').value);
   if (!code) return;
   unlockAudio();
   $('joinBtn').disabled = true;
@@ -76,7 +90,12 @@ $('joinBtn').addEventListener('click', () => {
     },
     (err) => {
       $('joinBtn').disabled = false;
-      $('joinStatus').textContent = '❌ Não consegui entrar (confere o código ou pede pro seu amigo criar a sala de novo).';
+      let msg = '❌ Não consegui entrar. ';
+      if (err?.type === 'peer-unavailable') msg += 'Essa sala não existe (ou já fechou) — confere o código com quem criou, ou pede pra criar de novo.';
+      else if (err?.type === 'network' || err?.type === 'server-error' || err?.type === 'disconnected' || err?.type === 'socket-error' || err?.type === 'socket-closed') msg += 'Parece que a internet caiu no meio do caminho — confere sua conexão e tenta de novo.';
+      else if (err?.message === 'full') msg += 'Essa sala já está cheia (máximo de 3 jogadores).';
+      else msg += 'Confere o código ou pede pro seu amigo criar a sala de novo.';
+      $('joinStatus').textContent = msg;
     }
   );
 });
