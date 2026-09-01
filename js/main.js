@@ -33,6 +33,20 @@ net.setHandlers({
     $('countdownText').textContent = n > 0 ? String(n) : 'VAI! 🚀';
     if (n <= 0) setTimeout(() => $('countdownOverlay').classList.add('hidden'), 500);
   },
+  onConnectionStatus: (status) => {
+    // Mostra no card certo (anfitrião ou quem entrou) dependendo de qual tá visível
+    const box = net.isHost() ? $('roomStatus') : $('joinStatus');
+    if (!box) return;
+    if (status === 'disconnected') {
+      box.dataset.prevText = box.textContent;
+      box.textContent = '🔄 Conexão caiu, reconectando sozinho...';
+    } else if (status === 'connected' && box.dataset.prevText) {
+      box.textContent = net.isHost()
+        ? `✅ Reconectado! 👥 ${net.connectedCount()} amigo(s) conectado(s).`
+        : '✅ Reconectado!';
+      delete box.dataset.prevText;
+    }
+  },
 });
 
 $('hostBtn').addEventListener('click', () => {
