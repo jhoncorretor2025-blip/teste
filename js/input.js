@@ -69,6 +69,14 @@ export function setupInput() {
     flashBoostButton();
   });
 
+  // Controle alternativo em forma de setas (D-pad), pra quem prefere botão a arrastar o dedo
+  const dpadDirs = { dpadUp: D.up, dpadDown: D.down, dpadLeft: D.left, dpadRight: D.right };
+  Object.keys(dpadDirs).forEach(id => {
+    const btn = $(id);
+    if (!btn) return;
+    btn.addEventListener('pointerdown', (e) => { e.preventDefault(); moveMine(dpadDirs[id]); });
+  });
+
   function joystickMove(e) {
     const r = $('joystick').getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
