@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.13.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.13.0">
+<title>🐍 Snake Arena v2.14.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.14.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -23,7 +23,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.13.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.14.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
   </header>
   <main>
@@ -81,6 +81,10 @@
           <input id="myName" class="input" value="Jhon" maxlength="14" placeholder="Nome do jogador" aria-label="Nome do jogador">
           <label class="check"><input id="showMe" type="checkbox" checked> Mostrar meu nome</label>
           <label class="check"><input id="showOthers" type="checkbox" checked> Mostrar nomes dos outros</label>
+          <select id="touchControl" class="select" aria-label="Tipo de controle no celular" style="margin-top:8px">
+            <option value="joystick">🕹️ Controle: Joystick (bolinha)</option>
+            <option value="dpad">⬆️ Controle: Setas (botões)</option>
+          </select>
           <div class="muted" style="margin-top:8px">🟢 P1 • 🩷 P2 • 🔵 P3</div>
           <button id="resetSettings" class="btn alt" type="button" style="margin-top:10px;width:100%">♻️ Resetar configurações</button>
         </section>
@@ -148,6 +152,12 @@
         </div>
         <div id="touch" class="touch">
           <div id="joystick" class="joystick"><div id="stick" class="stick"></div></div>
+          <div id="dpad" class="dpad hidden">
+            <button id="dpadUp" class="dpadBtn dpadUp" type="button" aria-label="Cima">▲</button>
+            <button id="dpadLeft" class="dpadBtn dpadLeft" type="button" aria-label="Esquerda">◀</button>
+            <button id="dpadRight" class="dpadBtn dpadRight" type="button" aria-label="Direita">▶</button>
+            <button id="dpadDown" class="dpadBtn dpadDown" type="button" aria-label="Baixo">▼</button>
+          </div>
           <div class="stickText">Arraste para virar</div>
           <button id="boostTouch" class="boostTouch" type="button">⚡<br>TURBO</button>
         </div>
@@ -156,6 +166,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.13.0"></script>
+<script type="module" src="js/main.js?v=2.14.0"></script>
 </body>
 </html>
