@@ -11,6 +11,7 @@ export const state = {
   colors: [...COLORS], // cor escolhida por cada jogador
   heads: ['round', 'round', 'round'], // formato de cabeça
   patterns: ['solid', 'solid', 'solid'], // padrão de pele do corpo
+  touchControl: 'joystick', // tipo de controle de toque no celular: 'joystick' ou 'dpad'
   show: [true, true, true],
   showOthers: true,
   mode: 'classic',
