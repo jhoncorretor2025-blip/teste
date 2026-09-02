@@ -184,8 +184,21 @@ $('players').addEventListener('input', e => {
 
 $('myName').addEventListener('input', e => { state.names[0] = safe(e.target.value, 'Jhon'); persistProfile(); });
 
+// Alterna entre joystick (bolinha) e D-pad (setas) no controle de toque do celular
+function applyTouchControl() {
+  const isDpad = state.touchControl === 'dpad';
+  $('joystick').classList.toggle('hidden', isDpad);
+  $('dpad').classList.toggle('hidden', !isDpad);
+}
+
+$('touchControl').addEventListener('change', (e) => {
+  state.touchControl = e.target.value;
+  applyTouchControl();
+  persistProfile();
+});
+
 function persistProfile() {
-  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0] });
+  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], touchControl: state.touchControl });
 }
 
 // Botão de música ambiente (melhoria #13)
@@ -243,6 +256,9 @@ $('resetSettings').addEventListener('click', () => {
   state.colors[0] = COLORS[0];
   state.heads[0] = 'round';
   state.patterns[0] = 'solid';
+  state.touchControl = 'joystick';
+  $('touchControl').value = 'joystick';
+  applyTouchControl();
   state.muted = false;
   setMuted(false);
   $('mute').textContent = '🔊';
@@ -261,6 +277,8 @@ if (profile.name) { state.names[0] = profile.name; $('myName').value = profile.n
 if (profile.color) state.colors[0] = profile.color;
 if (profile.head) state.heads[0] = profile.head;
 if (profile.pattern) state.patterns[0] = profile.pattern;
+if (profile.touchControl) { state.touchControl = profile.touchControl; $('touchControl').value = profile.touchControl; }
+applyTouchControl();
 
 setupInput();
 setupTutorial();
