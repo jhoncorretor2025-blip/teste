@@ -287,7 +287,29 @@ render();
 renderLeaderboard();
 maybeShowTutorial();
 
-// Deixa o jogo instalável como app e funcionando offline (melhoria #19)
+// Deixa o jogo instalável como app e funcionando offline
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').then((reg) => {
+    // Confere se já tem uma versão nova esperando (ex: a pessoa abriu o jogo de novo
+    // depois de eu ter publicado uma atualização)
+    if (reg.waiting) showUpdateBanner(reg);
+
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner(reg);
+        }
+      });
+    });
+  }).catch(() => {});
+}
+
+function showUpdateBanner(reg) {
+  $('updateBanner').classList.remove('hidden');
+  $('updateBannerBtn').onclick = () => {
+    if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    location.reload();
+  };
 }
