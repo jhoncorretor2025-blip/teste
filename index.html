@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.14.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.14.0">
+<title>🐍 Snake Arena v2.15.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.15.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -12,6 +12,9 @@
 </head>
 <body>
 <div class="app">
+  <div id="updateBanner" class="updateBanner hidden">
+    🔄 Tem uma versão nova do jogo! <button id="updateBannerBtn" type="button">Atualizar agora</button>
+  </div>
   <div id="srAnnounce" class="sr-only" aria-live="polite" role="status"></div>
   <div id="tutorial" class="overlay hidden">
     <div class="overlayCard">
@@ -23,8 +26,9 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.14.0</span> <button id="refresh" class="refresh" type="button" aria-label="Atualizar jogo" title="Atualizar jogo">↻</button></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.15.0</span></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
+    <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
   <main>
     <section id="menu" class="panel">
@@ -166,6 +170,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.14.0"></script>
+<script type="module" src="js/main.js?v=2.15.0"></script>
 </body>
 </html>
