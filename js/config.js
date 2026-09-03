@@ -2,7 +2,16 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.25.0';
+export const VERSION = '2.26.0';
+
+// --- Cor de fundo do tabuleiro (melhoria #2) ---
+export const BG_COLORS = [
+  { name: '🌌 Espacial (padrão)', value: '#050911' },
+  { name: '🌊 Azul profundo', value: '#031b2e' },
+  { name: '🌲 Verde escuro', value: '#04150d' },
+  { name: '🟣 Roxo noite', value: '#150a26' },
+  { name: '⚫ Preto puro', value: '#000000' },
+];
 
 // --- Tamanho do mapa escolhível no menu ---
 // "foods" é quantas maçãs normais ficam no tabuleiro ao mesmo tempo — mapas maiores
