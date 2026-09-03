@@ -139,9 +139,11 @@ function drawBodySegment(x, y, color, pattern, k) {
 
 export function renderScores() {
   let h = '';
+  const teamBadge = ['🔵', '🔴'];
   for (let i = 0; i < state.count; i++) {
     const boost = state.boosting[i] ? ' • ⚡' : '';
-    h += `<div class="score" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b> • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${boost}${state.alive[i] ? '' : ' • ☠️'}</div>`;
+    const team = state.teamMode ? ` ${teamBadge[state.teams[i]] || ''}` : '';
+    h += `<div class="score" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b>${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${boost}${state.alive[i] ? '' : ' • ☠️'}</div>`;
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
