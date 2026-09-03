@@ -8,7 +8,7 @@ import { makePlayers } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge } from './loop.js';
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
-import { unlockAudio, setMuted, toggleMusic } from './sound.js';
+import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
 import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
@@ -18,12 +18,12 @@ import * as net from './net.js';
 // --- Multiplayer online (criar/entrar em sala) ---
 net.setHandlers({
   onPeerJoined: () => {
-    state.count = Math.min(3, 1 + net.connectedCount());
+    state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s). Pode clicar em "Jogar" quando quiser!`;
     makePlayers();
   },
   onPeerLeft: () => {
-    state.count = Math.min(3, 1 + net.connectedCount());
+    state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s).`;
     makePlayers();
   },
@@ -199,14 +199,14 @@ function updateRoomSettingsPreview() {
 
 $('count').addEventListener('change', e => {
   state.count = +e.target.value;
-  state.types = state.count === 3 ? ['human', 'human', 'human'] : ['human', 'cpu', 'cpu'];
+  if (!state.types[0]) state.types[0] = 'human'; // sempre garante que você seja humano
   makePlayers();
 });
 
 $('players').addEventListener('change', e => {
   const i = +e.target.dataset.i;
   if (e.target.classList.contains('ptype')) state.types[i] = e.target.value;
-  if (e.target.classList.contains('pcontrol')) state.controls[i] = e.target.value;
+  if (e.target.classList.contains('pcontrol')) { state.controls[i] = e.target.value; makePlayers(); }
   if (e.target.classList.contains('pcolor')) { state.colors[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('phead')) { state.heads[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ppattern')) { state.patterns[i] = e.target.value; if (i === 0) persistProfile(); }
@@ -218,6 +218,46 @@ $('players').addEventListener('change', e => {
 // Ligar/desligar o modo Times reconstrói os cards de jogador (mostra/esconde o seletor de time)
 $('teamMode').addEventListener('change', () => { makePlayers(); updateRoomSettingsPreview(); });
 
+// Botões de gravar tecla personalizada: clica, aperta a tecla que quiser, pronto
+$('players').addEventListener('click', (e) => {
+  const btn = e.target.closest('.bindKey');
+  if (!btn) return;
+  const i = +btn.dataset.i, dir = btn.dataset.dir;
+  document.querySelectorAll('.bindKey.listening').forEach(b => b.classList.remove('listening'));
+  btn.classList.add('listening');
+  const original = btn.textContent;
+  btn.textContent = '⌨️ ...';
+
+  function captureKey(ev) {
+    ev.preventDefault();
+    if (!state.customKeys[i]) state.customKeys[i] = {};
+    state.customKeys[i][dir] = ev.code;
+    document.removeEventListener('keydown', captureKey, true);
+    btn.classList.remove('listening');
+    if (i === 0) persistProfile();
+    makePlayers();
+  }
+  document.addEventListener('keydown', captureKey, true);
+});
+
+// Volume dos efeitos sonoros e da música, cada um com seu próprio controle
+$('sfxVolume').addEventListener('input', (e) => {
+  const v = +e.target.value / 100;
+  setSfxVolume(v);
+  saveVolumes(v, +$('musicVolume').value / 100);
+});
+$('musicVolume').addEventListener('input', (e) => {
+  const v = +e.target.value / 100;
+  setMusicVolume(v);
+  saveVolumes(+$('sfxVolume').value / 100, v);
+});
+function saveVolumes(sfx, music) {
+  try { localStorage.setItem('snakeArenaVolumes', JSON.stringify({ sfx, music })); } catch {}
+}
+function loadVolumes() {
+  try { return JSON.parse(localStorage.getItem('snakeArenaVolumes')) || {}; } catch { return {}; }
+}
+
 $('players').addEventListener('input', e => {
   if (e.target.classList.contains('pname')) {
     const i = +e.target.dataset.i;
@@ -227,14 +267,20 @@ $('players').addEventListener('input', e => {
 
 $('myName').addEventListener('input', e => { state.names[0] = safe(e.target.value, 'Jhon'); persistProfile(); });
 
-// Alterna entre joystick (bolinha) e D-pad (setas) no controle de toque do celular
+// Alterna entre joystick (bolinha), D-pad (setas) e arrastar o dedo (swipe) no celular
+const TOUCH_MODES = ['joystick', 'dpad', 'swipe'];
+const TOUCH_ICONS = { joystick: '🕹️', dpad: '⬆️', swipe: '👆' };
+const TOUCH_LABELS = { joystick: 'joystick', dpad: 'setas', swipe: 'arrastar o dedo' };
+
 function applyTouchControl() {
-  const isDpad = state.touchControl === 'dpad';
-  $('joystick').classList.toggle('hidden', isDpad);
-  $('dpad').classList.toggle('hidden', !isDpad);
-  $('touchControl').value = state.touchControl;
-  $('touchControlToggle').textContent = isDpad ? '⬆️' : '🕹️';
-  $('touchControlToggle').setAttribute('aria-label', isDpad ? 'Usando setas — toque pra trocar pro joystick' : 'Usando joystick — toque pra trocar pra setas');
+  const mode = state.touchControl;
+  $('joystick').classList.toggle('hidden', mode !== 'joystick');
+  $('dpad').classList.toggle('hidden', mode !== 'dpad');
+  $('stickText').classList.toggle('hidden', mode === 'dpad');
+  $('stickText').textContent = mode === 'swipe' ? 'Arraste na tela pra virar' : 'Arraste para virar';
+  $('touchControl').value = mode;
+  $('touchControlToggle').textContent = TOUCH_ICONS[mode] || '🕹️';
+  $('touchControlToggle').setAttribute('aria-label', `Usando ${TOUCH_LABELS[mode]} — toque pra trocar`);
 }
 
 $('touchControl').addEventListener('change', (e) => {
@@ -246,7 +292,8 @@ $('touchControl').addEventListener('change', (e) => {
 // Mesmo botão de trocar controle, mas direto na tela do jogo — importante porque quem
 // entra numa sala pelo link nunca vê o menu principal, então precisa poder trocar aqui
 $('touchControlToggle').addEventListener('click', () => {
-  state.touchControl = state.touchControl === 'dpad' ? 'joystick' : 'dpad';
+  const idx = TOUCH_MODES.indexOf(state.touchControl);
+  state.touchControl = TOUCH_MODES[(idx + 1) % TOUCH_MODES.length];
   applyTouchControl();
   persistProfile();
 });
@@ -311,6 +358,10 @@ $('resetSettings').addEventListener('click', () => {
   state.heads[0] = 'round';
   state.patterns[0] = 'solid';
   state.palettes[0] = 'auto';
+  state.customKeys[0] = {};
+  setSfxVolume(1); setMusicVolume(0.6);
+  $('sfxVolume').value = 100; $('musicVolume').value = 60;
+  localStorage.removeItem('snakeArenaVolumes');
   state.touchControl = 'joystick';
   $('touchControl').value = 'joystick';
   applyTouchControl();
@@ -335,6 +386,10 @@ setVibrationEnabled(state.vibrationOn);
 $('vibrationOn').checked = state.vibrationOn;
 
 updateGamesPlayedBadge(loadGamesPlayed());
+
+const savedVolumes = loadVolumes();
+if (typeof savedVolumes.sfx === 'number') { $('sfxVolume').value = Math.round(savedVolumes.sfx * 100); setSfxVolume(savedVolumes.sfx); }
+if (typeof savedVolumes.music === 'number') { $('musicVolume').value = Math.round(savedVolumes.music * 100); setMusicVolume(savedVolumes.music); }
 
 // Nome/cor/cabeça que a pessoa escolheu da última vez (melhoria #18)
 const profile = loadProfile();
