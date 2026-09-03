@@ -38,6 +38,9 @@ export function makePlayers() {
       continue;
     }
 
+    const customKeys = state.customKeys[i] || {};
+    const keyLabel = (k) => k ? k.replace('Key', '').replace('Arrow', '').replace('Digit', '') : '?';
+
     d.innerHTML = `
       <b style="color:${state.colors[i]}">${ICONS[i]} Jogador ${i + 1}</b>
       <select class="select ptype" data-i="${i}">
@@ -48,7 +51,15 @@ export function makePlayers() {
         <option value="arrows">⬆️ Setas</option>
         <option value="wasd">⌨️ W A S D</option>
         <option value="ijkl">🎮 I J K L</option>
+        <option value="custom">🎹 Personalizado</option>
       </select>
+      <div class="customKeys ${state.controls[i] === 'custom' ? '' : 'hidden'}" data-i="${i}">
+        <button type="button" class="bindKey" data-i="${i}" data-dir="up">⬆️ ${keyLabel(customKeys.up)}</button>
+        <button type="button" class="bindKey" data-i="${i}" data-dir="down">⬇️ ${keyLabel(customKeys.down)}</button>
+        <button type="button" class="bindKey" data-i="${i}" data-dir="left">⬅️ ${keyLabel(customKeys.left)}</button>
+        <button type="button" class="bindKey" data-i="${i}" data-dir="right">➡️ ${keyLabel(customKeys.right)}</button>
+        <button type="button" class="bindKey" data-i="${i}" data-dir="boost">⚡ ${keyLabel(customKeys.boost)}</button>
+      </div>
       <select class="select pcolor" data-i="${i}" aria-label="Cor da minhoca">${colorOptions}</select>
       <select class="select phead" data-i="${i}" aria-label="Formato da cabeça">${headOptions}</select>
       <select class="select ppattern" data-i="${i}" aria-label="Padrão da pele">${patternOptions}</select>
@@ -59,7 +70,7 @@ export function makePlayers() {
     `;
     box.appendChild(d);
     d.querySelector('.ptype').value = state.types[i] || 'cpu';
-    d.querySelector('.pcontrol').value = state.controls[i] || ['arrows', 'wasd', 'ijkl'][i];
+    d.querySelector('.pcontrol').value = state.controls[i] || 'arrows';
     d.querySelector('.pcolor').value = state.colors[i];
     d.querySelector('.phead').value = state.heads[i] || 'round';
     d.querySelector('.ppattern').value = state.patterns[i] || 'solid';
