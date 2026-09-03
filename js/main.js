@@ -12,7 +12,7 @@ import { unlockAudio, setMuted, toggleMusic } from './sound.js';
 import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
-import { renderLeaderboard } from './leaderboard.js';
+import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
@@ -323,6 +323,7 @@ applyTouchControl();
 setupInput();
 setupTutorial();
 makePlayers();
+$('leaderboardToggle').addEventListener('click', toggleLeaderboard);
 render();
 renderLeaderboard();
 updateRoomSettingsPreview();
