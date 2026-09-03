@@ -5,9 +5,9 @@ import { $, safe } from './utils.js';
 import { VERSION, COLORS } from './config.js';
 import { state } from './state.js';
 import { makePlayers } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState } from './loop.js';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost } from './loop.js';
 import { render } from './render.js';
-import { setupInput } from './input.js';
+import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic } from './sound.js';
 import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
@@ -28,6 +28,12 @@ net.setHandlers({
     makePlayers();
   },
   onStateUpdate: (msg) => applyRemoteState(msg),
+  // Aplica de verdade a direção/turbo que o amigo manda — sem isso a minhoca dele
+  // nunca virava, só seguia reto na direção que nasceu (bug relatado)
+  onInput: (slot, msg) => {
+    if (msg.type === 'dir') setDir(slot, msg.dir);
+    else if (msg.type === 'boost') tryBoost(slot);
+  },
   onCountdown: (n) => {
     $('countdownOverlay').classList.remove('hidden');
     $('countdownText').textContent = n > 0 ? String(n) : 'VAI! 🚀';
@@ -119,11 +125,14 @@ const roomFromUrl = new URLSearchParams(location.search).get('room');
 if (roomFromUrl) $('joinCode').value = roomFromUrl;
 
 // --- Botões principais ---
-$('start').addEventListener('click', () => {
+function doStart() {
   unlockAudio();
   if (net.isOnline() && net.isHost()) startOnlineHostGame();
   else startGame();
-});
+}
+
+$('start').addEventListener('click', doStart);
+$('startFromHostPanel').addEventListener('click', doStart);
 $('restart').addEventListener('click', () => {
   if (net.isOnline() && net.isHost()) startOnlineHostGame();
   else startGame();
