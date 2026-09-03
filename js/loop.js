@@ -1,7 +1,7 @@
 // O "coração" do jogo: nascer, resetar, iniciar partida e o tick (cada passo do jogo).
 
 import { $ } from './utils.js';
-import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP } from './config.js';
+import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP, SPECIAL_MILESTONES } from './config.js';
 import { state } from './state.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall } from './food.js';
 import { aiDir } from './ai.js';
@@ -207,14 +207,22 @@ function stepMovement(indices) {
     if (state.grow[i] > 0) state.grow[i]--;
     else state.snakes[i].pop();
 
-    // Marco de crescimento (10, 20, 30...) — melhoria visual #3
+    // Marco de crescimento (10, 20, 30...) — os marcos especiais (20/50/100) ganham uma festa maior
     const len = state.snakes[i].length;
     if (len >= state.milestones[i] + MILESTONE_STEP) {
       state.milestones[i] = Math.floor(len / MILESTONE_STEP) * MILESTONE_STEP;
-      burst(h.x, h.y, '#ffd24d', 26);
-      sfx.mission();
-      vibrate(25);
-      state.toast = { x: h.x, y: h.y, text: `✨ ${state.milestones[i]}!`, color: state.colors[i], until: Date.now() + 1200 };
+      const special = SPECIAL_MILESTONES.find(m => m.at === state.milestones[i]);
+      if (special) {
+        burst(h.x, h.y, special.color, 46);
+        sfx.mission(); sfx.mission(); // dobro de som pra dar mais destaque
+        vibrate([30, 60, 30, 60, 40]);
+        state.toast = { x: h.x, y: h.y, text: special.text, color: special.color, until: Date.now() + 2000 };
+      } else {
+        burst(h.x, h.y, '#ffd24d', 26);
+        sfx.mission();
+        vibrate(25);
+        state.toast = { x: h.x, y: h.y, text: `✨ ${state.milestones[i]}!`, color: state.colors[i], until: Date.now() + 1200 };
+      }
     }
   });
 }
@@ -275,7 +283,7 @@ function tick() {
       names: state.names, show: state.show, showOthers: state.showOthers,
       count: state.count, mission: state.mission, best: state.best,
       dirs: state.dirs, shake: state.shake, flash: state.flash,
-      heads: state.heads, toast: state.toast, patterns: state.patterns,
+      heads: state.heads, toast: state.toast, patterns: state.patterns, palettes: state.palettes,
       mapW: state.mapW, mapH: state.mapH,
       teamMode: state.teamMode, teams: state.teams,
     });
@@ -323,6 +331,7 @@ export function applyRemoteState(msg) {
   state.flash = msg.flash || 0;
   state.heads = msg.heads || state.heads;
   state.patterns = msg.patterns || state.patterns;
+  state.palettes = msg.palettes || state.palettes;
   state.mapW = msg.mapW || state.mapW;
   state.mapH = msg.mapH || state.mapH;
   state.teamMode = !!msg.teamMode;
