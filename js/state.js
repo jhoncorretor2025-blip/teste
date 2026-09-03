@@ -11,6 +11,7 @@ export const state = {
   colors: [...COLORS], // cor escolhida por cada jogador
   heads: ['round', 'round', 'round'], // formato de cabeça
   patterns: ['solid', 'solid', 'solid'], // padrão de pele do corpo
+  palettes: ['auto', 'auto', 'auto'], // conjunto de cores usado quando o padrão é Tricolor
   teamMode: false, // modo times: aliados não se eliminam entre si
   teams: [0, 1, 0], // qual time (0 ou 1) cada jogador está
   touchControl: 'joystick', // tipo de controle de toque no celular: 'joystick' ou 'dpad'
