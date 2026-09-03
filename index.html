@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.28.1</title>
-<link rel="stylesheet" href="css/style.css?v=2.28.1">
+<title>🐍 Snake Arena v2.29.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.29.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -26,14 +26,28 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.28.1</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.29.0</span></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
   <main>
     <section id="menu" class="panel">
-      <div class="grid">
-        <section class="card">
+      <div class="menuHero">
+        <div id="topRecordDisplay" class="topRecord"></div>
+        <div class="row" style="margin-top:8px">
+          <button id="startHero" class="btn heroPlay" type="button">🚀 Jogar</button>
+          <button id="shareHero" class="btn alt" type="button">📤 Compartilhar</button>
+        </div>
+      </div>
+      <div class="tabBar" role="tablist">
+        <button class="tabBtn active" data-tab="jogar" type="button" role="tab" aria-selected="true">🎮 Jogar</button>
+        <button class="tabBtn" data-tab="personalizar" type="button" role="tab" aria-selected="false">🏷️ Personalizar</button>
+        <button class="tabBtn" data-tab="online" type="button" role="tab" aria-selected="false">🌐 Online</button>
+        <button class="tabBtn" data-tab="ranking" type="button" role="tab" aria-selected="false">🏆 Ranking</button>
+      </div>
+      <div class="tabPanel" data-panel="jogar">
+        <div class="grid">
+          <section class="card">
           <h2>👥 Jogadores</h2>
           <p class="cardDesc">Escolha quantos vão jogar e configure cada minhoca.</p>
           <select id="count" class="select" aria-label="Quantidade de jogadores">
@@ -47,7 +61,7 @@
           <div id="players"></div>
           <div class="tip">👤 Humano: você controla a minhoca. 🤖 CPU: ela joga sozinha.</div>
         </section>
-        <section class="card">
+          <section class="card">
           <h2>🎮 Jogo</h2>
           <p class="cardDesc">Escolha o modo e comece a partida.</p>
           <select id="mode" class="select" aria-label="Modo de jogo">
@@ -95,6 +109,16 @@
           <div class="tip">☠️ Você morre ao bater na parede ou em um adversário. O próprio corpo não elimina.</div>
           <div class="tip">⚡ Dica: guarde o turbo pra pegar a ⭐ estrela antes de alguém, ou pra cortar na frente de um adversário — ele custa 1 comidinha, então use com estratégia!</div>
         </section>
+        </div>
+        <div class="quickRules">
+        <span>🍎 Normal = 1</span>
+        <span>⭐ Estrela = 5</span>
+        <span>📏 Cada ponto faz crescer</span>
+        <span>☠️ Parede/adversário eliminam</span>
+        <span>🐍 Próprio corpo não elimina</span>
+      </div>
+      </div>
+      <div class="tabPanel hidden" data-panel="personalizar">
         <section class="card">
           <h2>🏷️ Personalização</h2>
           <p class="cardDesc">Escolha o nome e o que será mostrado na arena.</p>
@@ -113,14 +137,8 @@
           <button id="resetSettings" class="btn alt" type="button" style="margin-top:10px;width:100%">♻️ Resetar configurações</button>
         </section>
       </div>
-      <section class="card" style="margin-top:14px">
-        <h2>🏆 Ranking neste aparelho</h2>
-        <p class="cardDesc">Comparação de recordes de quem já jogou aqui — passa o celular e compara!</p>
-        <div id="leaderboardList" class="muted"></div>
-        <button id="leaderboardToggle" class="refresh" type="button" style="margin-top:8px">Ver ranking completo</button>
-        <div id="gamesPlayedBadge" class="muted" style="margin-top:8px"></div>
-      </section>
-      <section class="card" style="margin-top:14px">
+      <div class="tabPanel hidden" data-panel="online">
+        <section class="card" style="margin-top:14px">
         <h2>🌐 Jogar Online</h2>
         <p class="cardDesc">Jogue com amigos em aparelhos diferentes, cada um no seu.</p>
         <div id="roomSettingsPreview" class="tip" style="margin-bottom:9px"></div>
@@ -140,12 +158,15 @@
         </div>
         <div id="joinStatus" class="muted" style="margin-top:6px"></div>
       </section>
-      <div class="quickRules">
-        <span>🍎 Normal = 1</span>
-        <span>⭐ Estrela = 5</span>
-        <span>📏 Cada ponto faz crescer</span>
-        <span>☠️ Parede/adversário eliminam</span>
-        <span>🐍 Próprio corpo não elimina</span>
+      </div>
+      <div class="tabPanel hidden" data-panel="ranking">
+        <section class="card" style="margin-top:14px">
+        <h2>🏆 Ranking neste aparelho</h2>
+        <p class="cardDesc">Comparação de recordes de quem já jogou aqui — passa o celular e compara!</p>
+        <div id="leaderboardList" class="muted"></div>
+        <button id="leaderboardToggle" class="refresh" type="button" style="margin-top:8px">Ver ranking completo</button>
+        <div id="gamesPlayedBadge" class="muted" style="margin-top:8px"></div>
+      </section>
       </div>
     </section>
     <section id="game" class="gameBox hidden" aria-label="Arena do jogo">
@@ -197,6 +218,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.28.1"></script>
+<script type="module" src="js/main.js?v=2.29.0"></script>
 </body>
 </html>
