@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.28.0';
+export const VERSION = '2.28.1';
 
 // --- Zoom da câmera (quanto do mapa aparece na tela de cada vez) ---
 export const ZOOM_LEVELS = [
