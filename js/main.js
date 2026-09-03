@@ -194,6 +194,7 @@ $('players').addEventListener('change', e => {
   if (e.target.classList.contains('pcolor')) { state.colors[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('phead')) { state.heads[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ppattern')) { state.patterns[i] = e.target.value; if (i === 0) persistProfile(); }
+  if (e.target.classList.contains('ppalette')) { state.palettes[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('pteam')) state.teams[i] = +e.target.value;
   if (e.target.classList.contains('pshow')) state.show[i] = e.target.checked;
 });
@@ -235,7 +236,7 @@ $('touchControlToggle').addEventListener('click', () => {
 });
 
 function persistProfile() {
-  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], touchControl: state.touchControl });
+  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], palette: state.palettes[0], touchControl: state.touchControl });
 }
 
 // Botão de música ambiente (melhoria #13)
@@ -293,6 +294,7 @@ $('resetSettings').addEventListener('click', () => {
   state.colors[0] = COLORS[0];
   state.heads[0] = 'round';
   state.patterns[0] = 'solid';
+  state.palettes[0] = 'auto';
   state.touchControl = 'joystick';
   $('touchControl').value = 'joystick';
   applyTouchControl();
@@ -314,6 +316,7 @@ if (profile.name) { state.names[0] = profile.name; $('myName').value = profile.n
 if (profile.color) state.colors[0] = profile.color;
 if (profile.head) state.heads[0] = profile.head;
 if (profile.pattern) state.patterns[0] = profile.pattern;
+if (profile.palette) state.palettes[0] = profile.palette;
 if (profile.touchControl) { state.touchControl = profile.touchControl; $('touchControl').value = profile.touchControl; }
 applyTouchControl();
 
