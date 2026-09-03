@@ -165,8 +165,21 @@ $('refresh').addEventListener('click', () => {
   location.href = location.pathname + '?v=' + VERSION + '&t=' + Date.now();
 });
 
-$('mode').addEventListener('change', e => state.mode = e.target.value);
-$('difficulty').addEventListener('change', e => state.difficulty = e.target.value);
+$('mode').addEventListener('change', e => { state.mode = e.target.value; updateRoomSettingsPreview(); });
+$('difficulty').addEventListener('change', e => { state.difficulty = e.target.value; updateRoomSettingsPreview(); });
+$('speedSelect').addEventListener('change', updateRoomSettingsPreview);
+$('mapSize').addEventListener('change', updateRoomSettingsPreview);
+$('noWalls').addEventListener('change', updateRoomSettingsPreview);
+
+// Mostra um resuminho das configurações escolhidas bem em cima do botão "Criar sala",
+// pra ficar claro o que vai valer na sala antes de criar
+function updateRoomSettingsPreview() {
+  const get = (id) => $(id).selectedOptions[0]?.text || '';
+  const parts = [get('mode'), get('speedSelect'), get('mapSize'), get('difficulty')];
+  if ($('noWalls').checked) parts.push('🌀 Sem paredes');
+  if ($('teamMode').checked) parts.push('🤝 Modo Times');
+  $('roomSettingsPreview').textContent = '⚙️ Vai criar a sala com: ' + parts.join(' • ');
+}
 
 $('count').addEventListener('change', e => {
   state.count = +e.target.value;
@@ -186,7 +199,7 @@ $('players').addEventListener('change', e => {
 });
 
 // Ligar/desligar o modo Times reconstrói os cards de jogador (mostra/esconde o seletor de time)
-$('teamMode').addEventListener('change', () => makePlayers());
+$('teamMode').addEventListener('change', () => { makePlayers(); updateRoomSettingsPreview(); });
 
 $('players').addEventListener('input', e => {
   if (e.target.classList.contains('pname')) {
@@ -298,6 +311,7 @@ setupTutorial();
 makePlayers();
 render();
 renderLeaderboard();
+updateRoomSettingsPreview();
 maybeShowTutorial();
 
 // Deixa o jogo instalável como app e funcionando offline
