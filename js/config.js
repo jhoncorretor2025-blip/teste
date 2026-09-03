@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.26.0';
+export const VERSION = '2.27.0';
 
 // --- Cor de fundo do tabuleiro (melhoria #2) ---
 export const BG_COLORS = [
@@ -32,8 +32,9 @@ export const SPEEDS = [
 ];
 export const TURBO_FACTOR = 0.65; // o modo Turbo Worms roda 35% mais rápido que a velocidade escolhida
 
-export const COLORS = ['#67ef8a', '#ff72bd', '#63b3ff'];
-export const ICONS = ['🟢', '🩷', '🔵'];
+export const COLORS = ['#67ef8a', '#ff72bd', '#63b3ff', '#ffd24d', '#b57bff', '#ff9f4d'];
+export const ICONS = ['🟢', '🩷', '🔵', '🟡', '🟣', '🟠'];
+export const MAX_PLAYERS = 6; // até 5 adversários + você
 
 export const D = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
 
