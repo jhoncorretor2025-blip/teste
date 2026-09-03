@@ -15,6 +15,36 @@ import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount } from '
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 
+// Acha uma célula livre e, de preferência, BEM longe de qualquer minhoca viva —
+// evita o problema de nascer de novo já grudado num adversário e morrer na hora
+// de novo (respawn injusto).
+const SAFE_SPAWN_DISTANCE = 8;
+
+function minDistanceToSnakes(x, y) {
+  let min = Infinity;
+  for (let j = 0; j < state.count; j++) {
+    if (!state.alive[j] || !state.snakes[j]) continue;
+    for (const seg of state.snakes[j]) {
+      const d = Math.abs(seg.x - x) + Math.abs(seg.y - y);
+      if (d < min) min = d;
+    }
+  }
+  return min;
+}
+
+function findSafeSpawn(prefX, prefY) {
+  let best = null, bestDist = -1;
+  for (let n = 0; n < 60; n++) {
+    const x = n === 0 ? prefX : Math.floor(Math.random() * state.mapW);
+    const y = n === 0 ? prefY : Math.floor(Math.random() * state.mapH);
+    if (occupied(x, y)) continue;
+    const d = minDistanceToSnakes(x, y);
+    if (d > bestDist) { bestDist = d; best = { x, y }; }
+    if (d >= SAFE_SPAWN_DISTANCE) return { x, y }; // já achou um cantinho tranquilo o bastante
+  }
+  return best || freeCell();
+}
+
 // Coloca (ou recoloca) uma minhoca no tabuleiro em sua posição inicial
 export function spawn(i) {
   const w = state.mapW, h = state.mapH;
@@ -24,7 +54,7 @@ export function spawn(i) {
     { x: Math.round(w * 0.5), y: Math.round(h * 0.84), dx: 0, dy: -1 },
   ];
   const s = starts[i];
-  const p = occupied(s.x, s.y) ? freeCell() : s;
+  const p = findSafeSpawn(s.x, s.y);
   state.snakes[i] = [{ x: p.x, y: p.y }, { x: p.x - s.dx, y: p.y - s.dy }, { x: p.x - 2 * s.dx, y: p.y - 2 * s.dy }];
   state.dirs[i] = { x: s.dx, y: s.dy };
   state.nextDirs[i] = { x: s.dx, y: s.dy };
