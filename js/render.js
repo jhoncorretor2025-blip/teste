@@ -102,6 +102,8 @@ function drawHead(x, y, shape, color) {
     ctx.closePath();
   } else if (shape === 'owl') {
     ctx.roundRect(cx, cy, size, size, r * 1.2);
+  } else if (shape === 'cat') {
+    ctx.roundRect(cx, cy, size, size, r * 1.3);
   } else {
     ctx.roundRect(cx, cy, size, size, r); // 'round' (padrão)
   }
@@ -113,6 +115,23 @@ function drawHead(x, y, shape, color) {
     ctx.beginPath();
     ctx.moveTo(cx + size * 0.88, cy + size * 0.2); ctx.lineTo(cx + size * 1.12, cy - size * 0.25); ctx.lineTo(cx + size * 0.65, cy + size * 0.05);
     ctx.closePath(); ctx.fill();
+  } else if (shape === 'cat') {
+    // orelhinhas triangulares e pontudas de gato
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.18, cy + size * 0.18); ctx.lineTo(cx - size * 0.06, cy - size * 0.38); ctx.lineTo(cx + size * 0.42, cy + size * 0.02);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.82, cy + size * 0.18); ctx.lineTo(cx + size * 1.06, cy - size * 0.38); ctx.lineTo(cx + size * 0.58, cy + size * 0.02);
+    ctx.closePath(); ctx.fill();
+    // bigodinhos
+    ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+    ctx.lineWidth = Math.max(1, cell * 0.035);
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.08, cy + size * 0.62); ctx.lineTo(cx - size * 0.22, cy + size * 0.56);
+    ctx.moveTo(cx + size * 0.08, cy + size * 0.74); ctx.lineTo(cx - size * 0.22, cy + size * 0.78);
+    ctx.moveTo(cx + size * 0.92, cy + size * 0.62); ctx.lineTo(cx + size * 1.22, cy + size * 0.56);
+    ctx.moveTo(cx + size * 0.92, cy + size * 0.74); ctx.lineTo(cx + size * 1.22, cy + size * 0.78);
+    ctx.stroke();
   }
 }
 
@@ -135,6 +154,41 @@ function drawBodySegment(x, y, color, pattern, k) {
     ctx.arc(sx(x) + cell / 2, sy(y) + cell / 2, cell * 0.13, 0, Math.PI * 2);
     ctx.fill();
   }
+}
+
+// Minimapa no canto — só aparece quando o mapa é maior que a janela de visão (Mapa Grande),
+// que é justamente quando a câmera segue a minhoca e fica mais fácil se perder.
+function drawMinimap() {
+  if (viewW >= state.mapW && viewH >= state.mapH) return; // mapa já cabe inteiro, não precisa
+  const mmW = Math.min(120, canvas.width * 0.28);
+  const mmH = mmW * (state.mapH / state.mapW);
+  const mx = canvas.width - mmW - 14, my = 14;
+  const scale = mmW / state.mapW;
+
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.fillStyle = 'rgba(5,9,17,0.78)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(mx, my, mmW, mmH, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  for (let i = 0; i < state.count; i++) {
+    if (!state.alive[i] || !state.snakes[i]?.[0]) continue;
+    const h = state.snakes[i][0];
+    ctx.fillStyle = state.colors[i];
+    ctx.beginPath();
+    ctx.arc(mx + h.x * scale, my + h.y * scale, i === mySlot ? 3 : 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // retângulo mostrando a área que a câmera tá vendo agora
+  ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+  ctx.lineWidth = 1.3;
+  ctx.strokeRect(mx + camX * scale, my + camY * scale, viewW * scale, viewH * scale);
+  ctx.restore();
 }
 
 export function renderScores() {
@@ -258,6 +312,8 @@ export function draw() {
     ctx.fillText(state.toast.text, sx(state.toast.x) + cell / 2, sy(state.toast.y) - 14);
     ctx.restore();
   }
+
+  drawMinimap();
 
   // Clarão vermelho rápido quando alguém morre
   if (state.flash > 0) {
