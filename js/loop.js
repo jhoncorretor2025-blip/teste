@@ -179,7 +179,9 @@ function stepMovement(indices) {
     const h = heads[i];
     if (wall(h.x, h.y)) { die[i] = -1; return; }
     for (let j = 0; j < state.count; j++) {
-      if (j !== i && state.alive[j] && state.snakes[j].some(p => p.x === h.x && p.y === h.y)) { die[i] = j; return; }
+      if (j === i || !state.alive[j]) continue;
+      if (state.teamMode && state.teams[i] === state.teams[j]) continue; // aliados não se eliminam
+      if (state.snakes[j].some(p => p.x === h.x && p.y === h.y)) { die[i] = j; return; }
     }
   });
 
@@ -275,6 +277,7 @@ function tick() {
       dirs: state.dirs, shake: state.shake, flash: state.flash,
       heads: state.heads, toast: state.toast, patterns: state.patterns,
       mapW: state.mapW, mapH: state.mapH,
+      teamMode: state.teamMode, teams: state.teams,
     });
   }
 }
@@ -322,6 +325,8 @@ export function applyRemoteState(msg) {
   state.patterns = msg.patterns || state.patterns;
   state.mapW = msg.mapW || state.mapW;
   state.mapH = msg.mapH || state.mapH;
+  state.teamMode = !!msg.teamMode;
+  state.teams = msg.teams || state.teams;
   state.toast = msg.toast || null;
   renderMission();
   $('badge').textContent = '🌐 ONLINE';
