@@ -1,4 +1,5 @@
-// Controles: teclado (setas / WASD / IJKL), turbo (tecla ou botão de toque) e joystick.
+// Controles: teclado (setas / WASD / IJKL / personalizado), turbo (tecla ou botão de
+// toque), joystick, D-pad de setas e arrastar o dedo (swipe) na tela.
 // No modo online, o CLIENTE não controla o jogo direto — ele manda a direção pro anfitrião,
 // que é quem realmente decide o que acontece (evita trapaça e mantém todo mundo sincronizado).
 
@@ -28,6 +29,26 @@ function boostMine() {
   else tryBoost(mySlot);
 }
 
+// Verifica se uma tecla bate com o esquema de controle de um jogador — inclui o
+// esquema "personalizado" (custom), onde cada tecla foi escolhida pela própria pessoa.
+function matchesDirKey(i, code) {
+  if (state.controls[i] === 'custom') {
+    const ck = state.customKeys[i] || {};
+    if (code === ck.up) return D.up;
+    if (code === ck.down) return D.down;
+    if (code === ck.left) return D.left;
+    if (code === ck.right) return D.right;
+    return null;
+  }
+  const keys = CK[state.controls[i]] || CK.arrows;
+  return keys.includes(code) ? KD[code] : null;
+}
+
+function matchesBoostKey(i, code) {
+  if (state.controls[i] === 'custom') return (state.customKeys[i] || {}).boost === code;
+  return BOOST_KEYS[state.controls[i]] === code;
+}
+
 function handleKey(e) {
   if (!state.running) return;
   if (e.code === 'KeyP' && !(isOnline() && !isHost())) { state.paused = !state.paused; return; }
@@ -45,9 +66,9 @@ function handleKey(e) {
   for (let i = 0; i < state.count; i++) {
     if (state.types[i] !== 'human') continue;
     if (isOnline() && i !== mySlot) continue;
-    const keys = CK[state.controls[i]] || CK.arrows;
-    if (keys.includes(e.code)) { e.preventDefault(); setDir(i, KD[e.code]); }
-    if (BOOST_KEYS[state.controls[i]] === e.code) { e.preventDefault(); tryBoost(i); }
+    const dir = matchesDirKey(i, e.code);
+    if (dir) { e.preventDefault(); setDir(i, dir); }
+    if (matchesBoostKey(i, e.code)) { e.preventDefault(); tryBoost(i); }
   }
 }
 
@@ -60,7 +81,7 @@ function flashBoostButton() {
   setTimeout(() => { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; }, BOOST_COOLDOWN);
 }
 
-// Liga os listeners de teclado, botão de turbo e do joystick (chamar uma vez, no início)
+// Liga os listeners de teclado, botão de turbo, joystick, D-pad e arrastar o dedo
 export function setupInput() {
   document.addEventListener('keydown', handleKey, { passive: false });
 
@@ -103,4 +124,21 @@ export function setupInput() {
       $('stick').style.transform = 'translate(0,0)';
     })
   );
+
+  // Arrastar o dedo direto na arena (swipe) — outro jeito de controlar, sem bolinha nem botão
+  let swipeStart = null;
+  const arenaEl = $('arenaCanvas');
+  if (arenaEl) {
+    arenaEl.addEventListener('pointerdown', (e) => {
+      if (state.touchControl !== 'swipe') return;
+      swipeStart = { x: e.clientX, y: e.clientY };
+    });
+    arenaEl.addEventListener('pointerup', (e) => {
+      if (state.touchControl !== 'swipe' || !swipeStart) return;
+      const dx = e.clientX - swipeStart.x, dy = e.clientY - swipeStart.y;
+      swipeStart = null;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return; // arrasto curto demais, ignora
+      moveMine(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? D.right : D.left) : (dy > 0 ? D.down : D.up));
+    });
+  }
 }
