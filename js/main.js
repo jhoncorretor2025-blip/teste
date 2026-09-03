@@ -142,6 +142,7 @@ function doStart() {
 }
 
 $('start').addEventListener('click', doStart);
+$('startHero').addEventListener('click', doStart);
 $('startFromHostPanel').addEventListener('click', doStart);
 $('restart').addEventListener('click', () => {
   if (net.isOnline() && net.isHost()) startOnlineHostGame();
@@ -160,15 +161,33 @@ $('back').addEventListener('click', () => {
   $('game').classList.add('hidden');
   $('menu').classList.remove('hidden');
   renderLeaderboard();
+  updateTopRecordDisplay();
   render();
 });
 
-$('share').addEventListener('click', async () => {
+function shareLink() {
   const url = location.href.split('?')[0];
-  try {
-    if (navigator.share) await navigator.share({ title: 'Snake Arena', text: 'Vem jogar Snake Arena comigo!', url });
-    else { await navigator.clipboard.writeText(url); alert('Link copiado!'); }
-  } catch {}
+  navigator.share
+    ? navigator.share({ title: 'Snake Arena', text: 'Vem jogar Snake Arena comigo!', url }).catch(() => {})
+    : navigator.clipboard.writeText(url).then(() => alert('Link copiado!')).catch(() => {});
+}
+$('share').addEventListener('click', shareLink);
+$('shareHero').addEventListener('click', shareLink);
+
+// Mostra o recorde pessoal em destaque logo no topo do menu (fácil de ver sem rolar a tela)
+function updateTopRecordDisplay() {
+  $('topRecordDisplay').innerHTML = `🏅 Seu recorde: <b>${state.best || 0}</b> pontos`;
+}
+
+// Abas do menu (Jogar / Personalizar / Online / Ranking) — deixa a tela inicial mais limpa
+document.querySelector('.tabBar')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tabBtn');
+  if (!btn) return;
+  document.querySelectorAll('.tabBtn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+  const tab = btn.dataset.tab;
+  document.querySelectorAll('.tabPanel').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== tab));
 });
 
 $('refresh').addEventListener('click', () => {
@@ -439,6 +458,7 @@ makePlayers();
 $('leaderboardToggle').addEventListener('click', toggleLeaderboard);
 render();
 renderLeaderboard();
+updateTopRecordDisplay();
 updateRoomSettingsPreview();
 maybeShowTutorial();
 
