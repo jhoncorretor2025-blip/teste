@@ -3,6 +3,7 @@
 
 const KEY = 'snakeArenaBest';
 const MUTE_KEY = 'snakeArenaMuted';
+const VIBE_KEY = 'snakeArenaVibration';
 
 export function loadBest() {
   return Number(localStorage.getItem(KEY)) || 0;
@@ -25,6 +26,16 @@ export function loadMuted() {
 
 export function saveMuted(v) {
   localStorage.setItem(MUTE_KEY, v ? '1' : '0');
+}
+
+// Preferência de vibração (separada do som mudo)
+export function loadVibration() {
+  const raw = localStorage.getItem(VIBE_KEY);
+  return raw === null ? true : raw === '1'; // liga por padrão se nunca escolheu
+}
+
+export function saveVibration(v) {
+  localStorage.setItem(VIBE_KEY, v ? '1' : '0');
 }
 
 // Lembra o nome, a cor e o formato de cabeça que a pessoa escolheu — melhoria #18
@@ -62,4 +73,18 @@ export function addToLeaderboard(name, score) {
 export function resetSettings() {
   localStorage.removeItem(PROFILE_KEY);
   localStorage.removeItem(MUTE_KEY);
+}
+
+// Contador de partidas jogadas neste aparelho — conquistas simples
+const GAMES_KEY = 'snakeArenaGamesPlayed';
+export const GAME_MILESTONES = [10, 25, 50, 100, 200];
+
+export function loadGamesPlayed() {
+  return Number(localStorage.getItem(GAMES_KEY)) || 0;
+}
+
+export function incrementGamesPlayed() {
+  const n = loadGamesPlayed() + 1;
+  localStorage.setItem(GAMES_KEY, String(n));
+  return n;
 }
