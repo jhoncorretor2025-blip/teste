@@ -102,8 +102,10 @@ function drawHead(x, y, shape, color) {
     ctx.closePath();
   } else if (shape === 'owl') {
     ctx.roundRect(cx, cy, size, size, r * 1.2);
-  } else if (shape === 'cat') {
+  } else if (shape === 'cat' || shape === 'bear') {
     ctx.roundRect(cx, cy, size, size, r * 1.3);
+  } else if (shape === 'bunny' || shape === 'dragon') {
+    ctx.roundRect(cx, cy, size, size, r);
   } else {
     ctx.roundRect(cx, cy, size, size, r); // 'round' (padrão)
   }
@@ -132,17 +134,63 @@ function drawHead(x, y, shape, color) {
     ctx.moveTo(cx + size * 0.92, cy + size * 0.62); ctx.lineTo(cx + size * 1.22, cy + size * 0.56);
     ctx.moveTo(cx + size * 0.92, cy + size * 0.74); ctx.lineTo(cx + size * 1.22, cy + size * 0.78);
     ctx.stroke();
+  } else if (shape === 'bunny') {
+    // orelhas compridas de coelho
+    ctx.beginPath();
+    ctx.ellipse(cx + size * 0.28, cy - size * 0.12, size * 0.11, size * 0.4, -0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + size * 0.72, cy - size * 0.12, size * 0.11, size * 0.4, 0.12, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (shape === 'dragon') {
+    // trinca de espinhos/chifrinhos no topo
+    for (let s = 0; s < 3; s++) {
+      const bx = cx + size * (0.22 + s * 0.28);
+      ctx.beginPath();
+      ctx.moveTo(bx, cy);
+      ctx.lineTo(bx - size * 0.07, cy - size * 0.3);
+      ctx.lineTo(bx + size * 0.07, cy);
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else if (shape === 'bear') {
+    // orelhinhas redondas de ursinho
+    ctx.beginPath();
+    ctx.arc(cx + size * 0.14, cy + size * 0.06, size * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + size * 0.86, cy + size * 0.06, size * 0.16, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
-// Desenha um segmento do corpo com o padrão de pele escolhido (liso, listrado ou pontilhado)
+// Clareia (percent > 0) ou escurece (percent < 0) uma cor hex — usado no padrão Tricolor
+function shadeColor(hex, percent) {
+  const num = parseInt(hex.replace('#', ''), 16);
+  let r = (num >> 16) + percent;
+  let g = ((num >> 8) & 0x00ff) + percent;
+  let b = (num & 0x0000ff) + percent;
+  r = Math.max(0, Math.min(255, r));
+  g = Math.max(0, Math.min(255, g));
+  b = Math.max(0, Math.min(255, b));
+  return '#' + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
+}
+
+// Desenha um segmento do corpo com o padrão de pele escolhido (liso, listrado, pontilhado ou tricolor)
 function drawBodySegment(x, y, color, pattern, k) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.22;
   const cx = sx(x) + pad, cy = sy(y) + pad;
-  ctx.fillStyle = color;
+
+  let fillColor = color;
+  if (pattern === 'tricolor') {
+    const variant = k % 3;
+    fillColor = variant === 1 ? shadeColor(color, 55) : variant === 2 ? shadeColor(color, -55) : color;
+  }
+  ctx.fillStyle = fillColor;
   ctx.beginPath();
   ctx.roundRect(cx, cy, size, size, r);
   ctx.fill();
+
   if (pattern === 'stripes' && k % 2 === 1) {
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
     ctx.beginPath();
