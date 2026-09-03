@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.23.0';
+export const VERSION = '2.24.0';
 
 // --- Tamanho do mapa escolhível no menu ---
 // "foods" é quantas maçãs normais ficam no tabuleiro ao mesmo tempo — mapas maiores
@@ -102,3 +102,18 @@ export const SKIN_PATTERNS = [
 
 // --- Marco de crescimento (melhoria #3) ---
 export const MILESTONE_STEP = 10;
+
+// Marcos especiais, com festa maior que o marco normal de 10 em 10
+export const SPECIAL_MILESTONES = [
+  { at: 20, text: '🔥 20! Mandou bem!', color: '#ff9f4d' },
+  { at: 50, text: '🌟 50! Sensacional!', color: '#ffd24d' },
+  { at: 100, text: '👑 100! LENDÁRIO!', color: '#ff72bd' },
+];
+
+// --- Conjuntos de cores prontos pro padrão Tricolor (além dos tons automáticos) ---
+export const TRICOLOR_PALETTES = [
+  { name: '🎨 Tons da cor principal', value: 'auto' },
+  { name: '⚫⚪🔵 Preto, Branco e Azul', value: 'blackwhiteblue', colors: ['#0a0a0a', '#f2f2f2', '#1e5fd6'] },
+  { name: '🔴⚪ Vermelho e Branco', value: 'redwhite', colors: ['#d61e2e', '#f2f2f2', '#a3121c'] },
+  { name: '🟢🟡🔵 Verde, Amarelo e Azul', value: 'greenyellowblue', colors: ['#159242', '#ffd400', '#1e5fd6'] },
+];
