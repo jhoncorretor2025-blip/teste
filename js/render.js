@@ -11,7 +11,7 @@
 // Pequeno), então a câmera segue de perto o tempo todo, em qualquer tamanho de mapa.
 
 import { $ } from './utils.js';
-import { ICONS } from './config.js';
+import { ICONS, TRICOLOR_PALETTES } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
 import { mySlot } from './net.js';
@@ -177,14 +177,19 @@ function shadeColor(hex, percent) {
 }
 
 // Desenha um segmento do corpo com o padrão de pele escolhido (liso, listrado, pontilhado ou tricolor)
-function drawBodySegment(x, y, color, pattern, k) {
+function drawBodySegment(x, y, color, pattern, k, palette) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.22;
   const cx = sx(x) + pad, cy = sy(y) + pad;
 
   let fillColor = color;
   if (pattern === 'tricolor') {
-    const variant = k % 3;
-    fillColor = variant === 1 ? shadeColor(color, 55) : variant === 2 ? shadeColor(color, -55) : color;
+    const preset = TRICOLOR_PALETTES.find(p => p.value === palette);
+    if (preset && preset.colors) {
+      fillColor = preset.colors[k % 3];
+    } else {
+      const variant = k % 3;
+      fillColor = variant === 1 ? shadeColor(color, 55) : variant === 2 ? shadeColor(color, -55) : color;
+    }
   }
   ctx.fillStyle = fillColor;
   ctx.beginPath();
@@ -310,7 +315,7 @@ export function draw() {
       if (k === 0) {
         drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
       } else {
-        drawBodySegment(p.x, p.y, state.colors[i], state.patterns[i] || 'solid', k);
+        drawBodySegment(p.x, p.y, state.colors[i], state.patterns[i] || 'solid', k, state.palettes[i]);
       }
     }
     ctx.restore();
