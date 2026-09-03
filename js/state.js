@@ -23,6 +23,8 @@ export const state = {
   foodCount: 3,
   speed: 'normal', // velocidade escolhida no menu
   noWalls: false,
+  bgColor: '#050911', // cor de fundo do tabuleiro
+  vibrationOn: true, // vibração pode ser desligada separado do som
   difficulty: 'normal',
   running: false,
   paused: false,
