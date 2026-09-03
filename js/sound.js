@@ -1,9 +1,10 @@
-// Efeitos sonoros do jogo — melhoria #6.
-// Não usa nenhum arquivo de áudio: os sons são gerados na hora pelo navegador
-// (Web Audio API), então não precisa baixar nem hospedar nada extra.
+// Efeitos sonoros do jogo — não usa nenhum arquivo de áudio: os sons são gerados na
+// hora pelo navegador (Web Audio API), então não precisa baixar nem hospedar nada extra.
 
 let ctx = null;
-let muted = false; // melhoria #8
+let muted = false;
+let sfxVolume = 1; // 0 a 1 — volume dos efeitos sonoros (separado da música)
+let musicVolume = 0.6; // 0 a 1 — volume da música ambiente
 
 export function setMuted(v) {
   muted = v;
@@ -12,13 +13,19 @@ export function setMuted(v) {
 }
 export function isMuted() { return muted; }
 
+export function setSfxVolume(v) { sfxVolume = Math.max(0, Math.min(1, v)); }
+export function setMusicVolume(v) {
+  musicVolume = Math.max(0, Math.min(1, v));
+  if (musicNodes) musicNodes.master.gain.value = 0.075 * musicVolume;
+}
+
 function getCtx() {
   if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
   return ctx;
 }
 
 function beep({ freq = 440, duration = 0.08, type = 'sine', volume = 0.2, slideTo = null }) {
-  if (muted) return;
+  if (muted || sfxVolume <= 0) return;
   try {
     const c = getCtx();
     const osc = c.createOscillator();
@@ -26,7 +33,7 @@ function beep({ freq = 440, duration = 0.08, type = 'sine', volume = 0.2, slideT
     osc.type = type;
     osc.frequency.setValueAtTime(freq, c.currentTime);
     if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime + duration);
-    gain.gain.setValueAtTime(volume, c.currentTime);
+    gain.gain.setValueAtTime(volume * sfxVolume, c.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration);
     osc.connect(gain).connect(c.destination);
     osc.start();
@@ -51,7 +58,7 @@ export function unlockAudio() {
   try { getCtx().resume(); } catch {}
 }
 
-// --- Trilha sonora ambiente opcional (melhoria #13) ---
+// --- Trilha sonora ambiente opcional ---
 // Não usa nenhum arquivo de música: é um "pad" bem suave gerado na hora, tocando baixinho.
 let musicNodes = null;
 let musicOn = false;
@@ -70,7 +77,7 @@ function startMusic() {
   try {
     const c = getCtx();
     const master = c.createGain();
-    master.gain.value = 0.045;
+    master.gain.value = 0.075 * musicVolume;
     master.connect(c.destination);
 
     const osc1 = c.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = 110;
