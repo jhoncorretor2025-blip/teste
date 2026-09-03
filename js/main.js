@@ -181,8 +181,12 @@ $('players').addEventListener('change', e => {
   if (e.target.classList.contains('pcolor')) { state.colors[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('phead')) { state.heads[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ppattern')) { state.patterns[i] = e.target.value; if (i === 0) persistProfile(); }
+  if (e.target.classList.contains('pteam')) state.teams[i] = +e.target.value;
   if (e.target.classList.contains('pshow')) state.show[i] = e.target.checked;
 });
+
+// Ligar/desligar o modo Times reconstrói os cards de jogador (mostra/esconde o seletor de time)
+$('teamMode').addEventListener('change', () => makePlayers());
 
 $('players').addEventListener('input', e => {
   if (e.target.classList.contains('pname')) {
