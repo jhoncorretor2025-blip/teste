@@ -2,7 +2,7 @@
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
 import { $, safe, setVibrationEnabled } from './utils.js';
-import { VERSION, COLORS } from './config.js';
+import { VERSION, COLORS, ZOOM_LEVELS } from './config.js';
 import { state } from './state.js';
 import { makePlayers } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge } from './loop.js';
@@ -179,6 +179,10 @@ $('mode').addEventListener('change', e => { state.mode = e.target.value; updateR
 $('difficulty').addEventListener('change', e => { state.difficulty = e.target.value; updateRoomSettingsPreview(); });
 $('speedSelect').addEventListener('change', updateRoomSettingsPreview);
 $('mapSize').addEventListener('change', updateRoomSettingsPreview);
+$('zoomLevel').addEventListener('change', (e) => {
+  state.zoom = e.target.value;
+  persistZoom();
+});
 $('noWalls').addEventListener('change', updateRoomSettingsPreview);
 $('bgColor').addEventListener('change', e => state.bgColor = e.target.value);
 $('vibrationOn').addEventListener('change', e => {
@@ -298,6 +302,25 @@ $('touchControlToggle').addEventListener('click', () => {
   persistProfile();
 });
 
+// Botão de trocar o zoom da câmera direto na tela do jogo — cada jogador ajusta o seu
+// (não depende do anfitrião, funciona igual pra quem entrou numa sala pelo link também)
+const ZOOM_VALUES = ZOOM_LEVELS.map(z => z.value);
+function applyZoomButton() {
+  const z = ZOOM_LEVELS.find(z => z.value === state.zoom) || ZOOM_LEVELS[1];
+  $('zoomToggle').textContent = z.value === 'close' ? '🔍' : z.value === 'far' ? '🌍' : '🔎';
+  $('zoomToggle').setAttribute('aria-label', `Câmera: ${z.label.replace('🔍 ', '').replace('🔎 ', '').replace('🌍 ', '')} — toque pra trocar`);
+  $('zoomLevel').value = state.zoom;
+}
+function persistZoom() {
+  try { localStorage.setItem('snakeArenaZoom', state.zoom); } catch {}
+  applyZoomButton();
+}
+$('zoomToggle').addEventListener('click', () => {
+  const idx = ZOOM_VALUES.indexOf(state.zoom);
+  state.zoom = ZOOM_VALUES[(idx + 1) % ZOOM_VALUES.length];
+  persistZoom();
+});
+
 function persistProfile() {
   saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], palette: state.palettes[0], touchControl: state.touchControl });
 }
@@ -359,6 +382,9 @@ $('resetSettings').addEventListener('click', () => {
   state.patterns[0] = 'solid';
   state.palettes[0] = 'auto';
   state.customKeys[0] = {};
+  state.zoom = 'normal';
+  localStorage.removeItem('snakeArenaZoom');
+  applyZoomButton();
   setSfxVolume(1); setMusicVolume(0.6);
   $('sfxVolume').value = 100; $('musicVolume').value = 60;
   localStorage.removeItem('snakeArenaVolumes');
@@ -386,6 +412,12 @@ setVibrationEnabled(state.vibrationOn);
 $('vibrationOn').checked = state.vibrationOn;
 
 updateGamesPlayedBadge(loadGamesPlayed());
+
+try {
+  const savedZoom = localStorage.getItem('snakeArenaZoom');
+  if (savedZoom) state.zoom = savedZoom;
+} catch {}
+applyZoomButton();
 
 const savedVolumes = loadVolumes();
 if (typeof savedVolumes.sfx === 'number') { $('sfxVolume').value = Math.round(savedVolumes.sfx * 100); setSfxVolume(savedVolumes.sfx); }
