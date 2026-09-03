@@ -1,18 +1,31 @@
 // Tudo que é desenhado na tela (canvas): placar, tabuleiro, comidas, minhocas e partículas.
 //
-// O canvas se redimensiona sozinho pro tamanho real da caixa da arena (em vez de usar um
-// tamanho fixo esticado por CSS) — isso evita tanto distorção quanto sobra de espaço em
-// branco, e deixa o jogo sempre do maior tamanho possível dentro do espaço disponível.
+// O canvas se redimensiona sozinho pro tamanho real da caixa da arena — isso evita tanto
+// distorção quanto sobra de espaço em branco, e deixa o jogo sempre do maior tamanho
+// possível dentro do espaço disponível.
+//
+// CÂMERA: em mapas grandes, mostrar o tabuleiro inteiro deixaria tudo minúsculo. Por isso,
+// se o mapa for maior que uma "janela de visão" fixa, a câmera passa a seguir a MINHOCA DO
+// PRÓPRIO JOGADOR (cada pessoa vê sua própria câmera, inclusive no online), centralizando
+// nela e mostrando só a área ao redor. Em mapas pequenos/médios isso não muda nada — a janela
+// de visão já é grande o bastante pra mostrar o mapa inteiro, então a câmera fica parada.
 
 import { $ } from './utils.js';
 import { ICONS } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
+import { mySlot } from './net.js';
 
 const canvas = $('arenaCanvas');
 const ctx = canvas.getContext('2d');
 
-let cell = 20, offX = 0, offY = 0; // tamanho de cada célula e deslocamento pra centralizar o tabuleiro
+// Tamanho fixo da janela de visão da câmera (em células) — mapas menores que isso
+// aparecem inteiros; mapas maiores fazem a câmera seguir a minhoca.
+const VIEW_W = 40, VIEW_H = 31;
+
+let cell = 20, offX = 0, offY = 0; // tamanho de cada célula e deslocamento pra centralizar
+let viewW = VIEW_W, viewH = VIEW_H; // tamanho real da janela mostrada (nunca maior que o mapa)
+let camX = 0, camY = 0; // canto superior-esquerdo da câmera, em células do mundo
 
 function resizeCanvas() {
   const box = canvas.parentElement; // .arena
@@ -25,17 +38,32 @@ function resizeCanvas() {
   canvas.style.width = cw + 'px';
   canvas.style.height = ch + 'px';
 
-  cell = Math.min(canvas.width / state.mapW, canvas.height / state.mapH);
-  offX = (canvas.width - cell * state.mapW) / 2;
-  offY = (canvas.height - cell * state.mapH) / 2;
+  viewW = Math.min(state.mapW, VIEW_W);
+  viewH = Math.min(state.mapH, VIEW_H);
+  cell = Math.min(canvas.width / viewW, canvas.height / viewH);
+  offX = (canvas.width - cell * viewW) / 2;
+  offY = (canvas.height - cell * viewH) / 2;
 }
 
 window.addEventListener('resize', resizeCanvas);
 window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 60));
 resizeCanvas();
 
-// Campinho de estrelinhas do fundo, geradas uma vez só (posições relativas 0..1)
-const STARS = Array.from({ length: 55 }, () => ({
+// Recalcula onde a câmera deve estar, seguindo a minhoca do jogador local (cada pessoa
+// segue a própria, inclusive no online) — sem deixar a janela sair dos limites do mapa.
+function updateCamera() {
+  const mySnake = state.snakes[mySlot];
+  const target = mySnake && mySnake[0] ? mySnake[0] : { x: state.mapW / 2, y: state.mapH / 2 };
+  camX = Math.max(0, Math.min(state.mapW - viewW, target.x - viewW / 2));
+  camY = Math.max(0, Math.min(state.mapH - viewH, target.y - viewH / 2));
+}
+
+// Converte uma coordenada do MUNDO (célula do tabuleiro) pra coordenada da TELA (pixel)
+function sx(gx) { return offX + (gx - camX) * cell; }
+function sy(gy) { return offY + (gy - camY) * cell; }
+
+// Campinho de estrelinhas do fundo, geradas uma vez só (posições relativas 0..1 do mapa inteiro)
+const STARS = Array.from({ length: 90 }, () => ({
   rx: Math.random(), ry: Math.random(),
   r: Math.random() * 1.4 + 0.3,
   speed: 0.1 + Math.random() * 0.22,
@@ -43,11 +71,12 @@ const STARS = Array.from({ length: 55 }, () => ({
 }));
 
 function drawStars() {
-  const t = Date.now() / 40;
+  const t = Date.now() / 4000;
   ctx.save();
   for (const s of STARS) {
-    const x = (s.rx * state.mapW * cell + t * s.speed) % (state.mapW * cell) + offX;
-    const y = s.ry * state.mapH * cell + offY;
+    const wx = (s.rx * state.mapW + t * s.speed) % state.mapW;
+    const x = sx(wx), y = sy(s.ry * state.mapH);
+    if (x < -10 || x > canvas.width + 10 || y < -10 || y > canvas.height + 10) continue;
     ctx.globalAlpha = s.o;
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
@@ -60,7 +89,7 @@ function drawStars() {
 // Desenha a cabeça da minhoca no formato escolhido pelo jogador
 function drawHead(x, y, shape, color) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.25;
-  const cx = offX + x * cell + pad, cy = offY + y * cell + pad;
+  const cx = sx(x) + pad, cy = sy(y) + pad;
   ctx.fillStyle = color;
   ctx.beginPath();
   if (shape === 'square') {
@@ -90,7 +119,7 @@ function drawHead(x, y, shape, color) {
 // Desenha um segmento do corpo com o padrão de pele escolhido (liso, listrado ou pontilhado)
 function drawBodySegment(x, y, color, pattern, k) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.22;
-  const cx = offX + x * cell + pad, cy = offY + y * cell + pad;
+  const cx = sx(x) + pad, cy = sy(y) + pad;
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.roundRect(cx, cy, size, size, r);
@@ -103,7 +132,7 @@ function drawBodySegment(x, y, color, pattern, k) {
   } else if (pattern === 'dots') {
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.beginPath();
-    ctx.arc(offX + x * cell + cell / 2, offY + y * cell + cell / 2, cell * 0.13, 0, Math.PI * 2);
+    ctx.arc(sx(x) + cell / 2, sy(y) + cell / 2, cell * 0.13, 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -120,12 +149,12 @@ export function renderScores() {
 }
 
 export function draw() {
-  // Se o tamanho da caixa mudou desde o último frame (ex: girou o celular), recalcula
   if (canvas.parentElement.clientWidth !== canvas._lastW || canvas.parentElement.clientHeight !== canvas._lastH) {
     resizeCanvas();
     canvas._lastW = canvas.parentElement.clientWidth;
     canvas._lastH = canvas.parentElement.clientHeight;
   }
+  updateCamera();
 
   ctx.save();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -136,12 +165,15 @@ export function draw() {
   drawStars();
 
   ctx.strokeStyle = '#0d2038';
-  for (let x = 0; x <= state.mapW; x++) { ctx.beginPath(); ctx.moveTo(offX + x * cell, offY); ctx.lineTo(offX + x * cell, offY + state.mapH * cell); ctx.stroke(); }
-  for (let y = 0; y <= state.mapH; y++) { ctx.beginPath(); ctx.moveTo(offX, offY + y * cell); ctx.lineTo(offX + state.mapW * cell, offY + y * cell); ctx.stroke(); }
+  const gxStart = Math.floor(camX), gxEnd = Math.ceil(camX + viewW);
+  const gyStart = Math.floor(camY), gyEnd = Math.ceil(camY + viewH);
+  for (let x = gxStart; x <= gxEnd; x++) { ctx.beginPath(); ctx.moveTo(sx(x), sy(gyStart)); ctx.lineTo(sx(x), sy(gyEnd)); ctx.stroke(); }
+  for (let y = gyStart; y <= gyEnd; y++) { ctx.beginPath(); ctx.moveTo(sx(gxStart), sy(y)); ctx.lineTo(sx(gxEnd), sy(y)); ctx.stroke(); }
 
   const t = Date.now() / 180;
   for (const f of state.foods) {
-    const x = offX + f.x * cell + cell / 2, y = offY + f.y * cell + cell / 2;
+    const x = sx(f.x) + cell / 2, y = sy(f.y) + cell / 2;
+    if (x < -cell || x > canvas.width + cell || y < -cell || y > canvas.height + cell) continue;
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -182,7 +214,7 @@ export function draw() {
     // Olhos apontando pra direção que a minhoca tá indo
     const h = s[0];
     const dir = state.dirs[i] || { x: 1, y: 0 };
-    const cx = offX + h.x * cell + cell / 2, cy = offY + h.y * cell + cell / 2;
+    const cx = sx(h.x) + cell / 2, cy = sy(h.y) + cell / 2;
     const eo = cell * 0.2;
     const fx = dir.x * eo, fy = dir.y * eo;
     const px = -dir.y * eo, py = dir.x * eo;
@@ -197,15 +229,16 @@ export function draw() {
       ctx.font = `bold ${cell * 0.6}px system-ui`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
-      ctx.fillText(`${label(i)} • 🍎 ${state.foodsEaten[i] || 0}`, offX + h.x * cell + cell / 2, offY + h.y * cell - 4);
+      ctx.fillText(`${label(i)} • 🍎 ${state.foodsEaten[i] || 0}`, sx(h.x) + cell / 2, sy(h.y) - 4);
     }
   }
 
   for (const p of state.particles) {
+    const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
     ctx.globalAlpha = Math.max(0, p.life / 40);
     ctx.fillStyle = p.color;
     ctx.beginPath();
-    ctx.arc(offX + p.x * cell + cell / 2, offY + p.y * cell + cell / 2, Math.max(1, (p.life / 12) * (cell / 20)), 0, Math.PI * 2);
+    ctx.arc(x, y, Math.max(1, (p.life / 12) * (cell / 20)), 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -220,7 +253,7 @@ export function draw() {
     ctx.textBaseline = 'bottom';
     ctx.shadowBlur = 8;
     ctx.shadowColor = '#000';
-    ctx.fillText(state.toast.text, offX + state.toast.x * cell + cell / 2, offY + state.toast.y * cell - 14);
+    ctx.fillText(state.toast.text, sx(state.toast.x) + cell / 2, sy(state.toast.y) - 14);
     ctx.restore();
   }
 
@@ -237,4 +270,9 @@ export function draw() {
 export function render() {
   renderScores();
   draw();
+}
+
+// Exposto só pra fins de teste/depuração — mostra onde a câmera está agora
+export function getCameraDebug() {
+  return { cell, offX, offY, viewW, viewH, camX, camY };
 }
