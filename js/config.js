@@ -2,7 +2,14 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.27.0';
+export const VERSION = '2.28.0';
+
+// --- Zoom da câmera (quanto do mapa aparece na tela de cada vez) ---
+export const ZOOM_LEVELS = [
+  { value: 'close', label: '🔍 Câmera Perto', w: 22, h: 17 },
+  { value: 'normal', label: '🔎 Câmera Normal', w: 32, h: 25 },
+  { value: 'far', label: '🌍 Câmera Longe', w: 44, h: 34 },
+];
 
 // --- Cor de fundo do tabuleiro (melhoria #2) ---
 export const BG_COLORS = [
