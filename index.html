@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.25.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.25.0">
+<title>🐍 Snake Arena v2.26.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.26.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -26,7 +26,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.25.0</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.26.0</span></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
@@ -62,6 +62,13 @@
             <option value="medium" selected>🔸 Mapa Médio</option>
             <option value="large">🔷 Mapa Grande</option>
           </select>
+          <select id="bgColor" class="select" aria-label="Cor de fundo do tabuleiro" style="margin-top:8px">
+            <option value="#050911">🌌 Fundo Espacial</option>
+            <option value="#031b2e">🌊 Fundo Azul profundo</option>
+            <option value="#04150d">🌲 Fundo Verde escuro</option>
+            <option value="#150a26">🟣 Fundo Roxo noite</option>
+            <option value="#000000">⚫ Fundo Preto puro</option>
+          </select>
           <select id="difficulty" class="select" aria-label="Dificuldade da CPU" style="margin-top:8px">
             <option value="easy">🙂 CPU Fácil</option>
             <option value="normal" selected>😐 CPU Médio</option>
@@ -86,6 +93,7 @@
           <input id="myName" class="input" value="Jhon" maxlength="14" placeholder="Nome do jogador" aria-label="Nome do jogador">
           <label class="check"><input id="showMe" type="checkbox" checked> Mostrar meu nome</label>
           <label class="check"><input id="showOthers" type="checkbox" checked> Mostrar nomes dos outros</label>
+          <label class="check"><input id="vibrationOn" type="checkbox" checked> 📳 Vibração</label>
           <select id="touchControl" class="select" aria-label="Tipo de controle no celular" style="margin-top:8px">
             <option value="joystick">🕹️ Controle: Joystick (bolinha)</option>
             <option value="dpad">⬆️ Controle: Setas (botões)</option>
@@ -99,6 +107,7 @@
         <p class="cardDesc">Comparação de recordes de quem já jogou aqui — passa o celular e compara!</p>
         <div id="leaderboardList" class="muted"></div>
         <button id="leaderboardToggle" class="refresh" type="button" style="margin-top:8px">Ver ranking completo</button>
+        <div id="gamesPlayedBadge" class="muted" style="margin-top:8px"></div>
       </section>
       <section class="card" style="margin-top:14px">
         <h2>🌐 Jogar Online</h2>
@@ -110,6 +119,7 @@
         <div id="hostPanel" class="hidden tip" style="margin-top:9px">
           <div>Código da sala: <b id="roomCode">...</b></div>
           <button id="copyRoom" class="refresh" type="button" style="margin-top:6px">Copiar link</button>
+          <button id="copyRoomCode" class="refresh" type="button" style="margin-top:6px;margin-left:6px">Copiar só o código</button>
           <div id="roomStatus" class="muted" style="margin-top:6px"></div>
           <button id="startFromHostPanel" class="btn" type="button" style="margin-top:10px;width:100%">🚀 Jogar</button>
         </div>
@@ -143,7 +153,7 @@
           <button id="back" class="btn alt" type="button">🏠 Menu</button>
         </div>
       </div>
-      <div class="status"><b id="badge">🏆 CLÁSSICO</b> <span>☠️ <b id="alive">0</b> vivos</span></div>
+      <div class="status"><b id="badge">🏆 CLÁSSICO</b> <span>☠️ <b id="alive">0</b> vivos</span> <span id="onlineCount" class="hidden">🌐 <b id="onlineCountNum">0</b> online</span></div>
       <div id="mission" class="mission"></div>
       <div class="arena">
         <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Snake Arena"></canvas>
@@ -175,6 +185,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.25.0"></script>
+<script type="module" src="js/main.js?v=2.26.0"></script>
 </body>
 </html>
