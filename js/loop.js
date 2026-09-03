@@ -46,14 +46,25 @@ function findSafeSpawn(prefX, prefY) {
 }
 
 // Coloca (ou recoloca) uma minhoca no tabuleiro em sua posição inicial
+// Calcula pontos de nascimento espalhados pelo mapa, funciona pra qualquer quantidade
+// de jogadores (1 a 6) — cada um nasce numa posição diferente ao redor de uma "elipse"
+// dentro do tabuleiro, virado pro centro (assim ninguém já nasce indo direto pra parede).
+function computeStartPoint(i, total, w, h) {
+  const cx = w / 2, cy = h / 2;
+  const rx = w * 0.36, ry = h * 0.36;
+  const angle = (Math.PI * 2 * i) / total - Math.PI / 2;
+  const x = Math.round(cx + Math.cos(angle) * rx);
+  const y = Math.round(cy + Math.sin(angle) * ry);
+  const toCenterX = cx - x, toCenterY = cy - y;
+  const dir = Math.abs(toCenterX) > Math.abs(toCenterY)
+    ? { dx: Math.sign(toCenterX) || 1, dy: 0 }
+    : { dx: 0, dy: Math.sign(toCenterY) || 1 };
+  return { x, y, dx: dir.dx, dy: dir.dy };
+}
+
 export function spawn(i) {
   const w = state.mapW, h = state.mapH;
-  const starts = [
-    { x: Math.round(w * 0.12), y: Math.round(h * 0.22), dx: 1, dy: 0 },
-    { x: Math.round(w * 0.85), y: Math.round(h * 0.74), dx: -1, dy: 0 },
-    { x: Math.round(w * 0.5), y: Math.round(h * 0.84), dx: 0, dy: -1 },
-  ];
-  const s = starts[i];
+  const s = computeStartPoint(i, Math.max(state.count, i + 1), w, h);
   const p = findSafeSpawn(s.x, s.y);
   state.snakes[i] = [{ x: p.x, y: p.y }, { x: p.x - s.dx, y: p.y - s.dy }, { x: p.x - 2 * s.dx, y: p.y - 2 * s.dy }];
   state.dirs[i] = { x: s.dx, y: s.dy };
@@ -72,10 +83,10 @@ export function reset() {
   clearInterval(state.timer);
   state.snakes = []; state.alive = []; state.dirs = []; state.nextDirs = [];
   state.foods = [];
-  state.scores = Array(3).fill(0);
-  state.foodsEaten = Array(3).fill(0);
-  state.grow = Array(3).fill(0);
-  state.respawnAt = Array(3).fill(0);
+  state.scores = Array(6).fill(0);
+  state.foodsEaten = Array(6).fill(0);
+  state.grow = Array(6).fill(0);
+  state.respawnAt = Array(6).fill(0);
   state.particles = [];
   state.shake = 0;
   for (let i = 0; i < state.count; i++) spawn(i);
@@ -303,7 +314,7 @@ function tick() {
 // Prepara e inicia uma partida ONLINE como anfitrião — o total de jogadores vira
 // "você + quantos amigos estão conectados agora", todos humanos (sem CPU no online).
 export function startOnlineHostGame() {
-  state.count = Math.min(3, 1 + connectedCount());
+  state.count = Math.min(6, 1 + connectedCount());
   state.types = Array(state.count).fill('human');
   startGame();
 }
