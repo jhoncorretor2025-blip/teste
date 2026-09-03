@@ -11,7 +11,7 @@
 // Pequeno), então a câmera segue de perto o tempo todo, em qualquer tamanho de mapa.
 
 import { $ } from './utils.js';
-import { ICONS, TRICOLOR_PALETTES } from './config.js';
+import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
 import { mySlot, isOnline } from './net.js';
@@ -19,13 +19,15 @@ import { mySlot, isOnline } from './net.js';
 const canvas = $('arenaCanvas');
 const ctx = canvas.getContext('2d');
 
-// Tamanho fixo da janela de visão da câmera (em células) — sempre menor que qualquer mapa,
-// pra dar uma visão "de perto" da minhoca em qualquer tamanho de mapa escolhido.
-const VIEW_W = 24, VIEW_H = 19;
-
 let cell = 20, offX = 0, offY = 0; // tamanho de cada célula e deslocamento pra centralizar
-let viewW = VIEW_W, viewH = VIEW_H; // tamanho real da janela mostrada (nunca maior que o mapa)
+let viewW = 32, viewH = 25; // tamanho real da janela mostrada (nunca maior que o mapa)
 let camX = 0, camY = 0; // canto superior-esquerdo da câmera, em células do mundo
+
+// Pega a janela de visão (largura/altura em células) do nível de zoom escolhido
+function getZoomWindow() {
+  const z = ZOOM_LEVELS.find((z) => z.value === state.zoom) || ZOOM_LEVELS[1];
+  return { w: z.w, h: z.h };
+}
 
 function resizeCanvas() {
   const box = canvas.parentElement; // .arena
@@ -38,8 +40,9 @@ function resizeCanvas() {
   canvas.style.width = cw + 'px';
   canvas.style.height = ch + 'px';
 
-  viewW = Math.min(state.mapW, VIEW_W);
-  viewH = Math.min(state.mapH, VIEW_H);
+  const zoom = getZoomWindow();
+  viewW = Math.min(state.mapW, zoom.w);
+  viewH = Math.min(state.mapH, zoom.h);
   cell = Math.min(canvas.width / viewW, canvas.height / viewH);
   offX = (canvas.width - cell * viewW) / 2;
   offY = (canvas.height - cell * viewH) / 2;
@@ -318,10 +321,19 @@ export function renderScores() {
 }
 
 export function draw() {
-  if (canvas.parentElement.clientWidth !== canvas._lastW || canvas.parentElement.clientHeight !== canvas._lastH) {
+  if (
+    canvas.parentElement.clientWidth !== canvas._lastW ||
+    canvas.parentElement.clientHeight !== canvas._lastH ||
+    state.zoom !== canvas._lastZoom ||
+    state.mapW !== canvas._lastMapW ||
+    state.mapH !== canvas._lastMapH
+  ) {
     resizeCanvas();
     canvas._lastW = canvas.parentElement.clientWidth;
     canvas._lastH = canvas.parentElement.clientHeight;
+    canvas._lastZoom = state.zoom;
+    canvas._lastMapW = state.mapW;
+    canvas._lastMapH = state.mapH;
   }
   updateCamera();
 
