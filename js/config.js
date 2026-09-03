@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.17.0';
+export const VERSION = '2.18.0';
 
 // --- Tamanho do mapa escolhível no menu ---
 // "foods" é quantas maçãs normais ficam no tabuleiro ao mesmo tempo — mapas maiores
@@ -51,6 +51,12 @@ export const MISSIONS = [
   { type: 'eat', target: 10, label: '🍎 Coma 10 alimentos', reward: 8 },
   { type: 'star', target: 1, label: '⭐ Pegue 1 estrela', reward: 5 },
   { type: 'star', target: 2, label: '⭐ Pegue 2 estrelas', reward: 10 },
+];
+
+// --- Modo Times: jogadores do mesmo time não se eliminam entre si ---
+export const TEAMS = [
+  { value: 0, label: '🔵 Time Azul' },
+  { value: 1, label: '🔴 Time Vermelho' },
 ];
 
 // --- Dificuldade da CPU (melhoria #3) ---
