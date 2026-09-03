@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.26.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.26.0">
+<title>🐍 Snake Arena v2.27.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.27.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -26,7 +26,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.26.0</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.27.0</span></h1>
     <p class="sub">Até 3 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
@@ -40,6 +40,9 @@
             <option value="1" selected>1 jogador</option>
             <option value="2">2 jogadores</option>
             <option value="3">3 jogadores</option>
+            <option value="4">4 jogadores</option>
+            <option value="5">5 jogadores</option>
+            <option value="6">6 jogadores</option>
           </select>
           <div id="players"></div>
           <div class="tip">👤 Humano: você controla a minhoca. 🤖 CPU: ela joga sozinha.</div>
@@ -52,10 +55,10 @@
             <option value="turbo">⚡ Turbo Worms</option>
           </select>
           <select id="speedSelect" class="select" aria-label="Velocidade da minhoca" style="margin-top:8px">
-            <option value="slow">🐢 Lenta</option>
-            <option value="normal" selected>🚶 Normal</option>
-            <option value="fast">🏃 Rápida</option>
-            <option value="veryfast">⚡ Muito rápida</option>
+            <option value="slow">🐢 Velocidade Lenta</option>
+            <option value="normal" selected>🚶 Velocidade Normal</option>
+            <option value="fast">🏃 Velocidade Rápida</option>
+            <option value="veryfast">⚡ Velocidade Muito Rápida</option>
           </select>
           <select id="mapSize" class="select" aria-label="Tamanho do mapa" style="margin-top:8px">
             <option value="small">🔹 Mapa Pequeno</option>
@@ -97,8 +100,11 @@
           <select id="touchControl" class="select" aria-label="Tipo de controle no celular" style="margin-top:8px">
             <option value="joystick">🕹️ Controle: Joystick (bolinha)</option>
             <option value="dpad">⬆️ Controle: Setas (botões)</option>
+            <option value="swipe">👆 Controle: Arrastar o dedo na tela</option>
           </select>
-          <div class="muted" style="margin-top:8px">🟢 P1 • 🩷 P2 • 🔵 P3</div>
+          <label class="check" style="margin-top:8px;display:block">🔊 Volume dos efeitos: <input id="sfxVolume" type="range" min="0" max="100" value="100" style="width:100%;margin-top:4px"></label>
+          <label class="check" style="margin-top:4px;display:block">🎵 Volume da música: <input id="musicVolume" type="range" min="0" max="100" value="60" style="width:100%;margin-top:4px"></label>
+          <div class="muted" style="margin-top:8px">🟢 P1 • 🩷 P2 • 🔵 P3 • 🟡 P4 • 🟣 P5 • 🟠 P6</div>
           <button id="resetSettings" class="btn alt" type="button" style="margin-top:10px;width:100%">♻️ Resetar configurações</button>
         </section>
       </div>
@@ -177,7 +183,7 @@
             <button id="dpadRight" class="dpadBtn dpadRight" type="button" aria-label="Direita">▶</button>
             <button id="dpadDown" class="dpadBtn dpadDown" type="button" aria-label="Baixo">▼</button>
           </div>
-          <div class="stickText">Arraste para virar</div>
+          <div id="stickText" class="stickText">Arraste para virar</div>
           <button id="boostTouch" class="boostTouch" type="button">⚡<br>TURBO</button>
         </div>
       </div>
@@ -185,6 +191,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.26.0"></script>
+<script type="module" src="js/main.js?v=2.27.0"></script>
 </body>
 </html>
