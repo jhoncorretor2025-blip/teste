@@ -14,7 +14,7 @@ import { $ } from './utils.js';
 import { ICONS, TRICOLOR_PALETTES } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
-import { mySlot } from './net.js';
+import { mySlot, isOnline } from './net.js';
 
 const canvas = $('arenaCanvas');
 const ctx = canvas.getContext('2d');
@@ -211,6 +211,55 @@ function drawBodySegment(x, y, color, pattern, k, palette) {
 
 // Minimapa no canto — só aparece quando o mapa é maior que a janela de visão (Mapa Grande),
 // que é justamente quando a câmera segue a minhoca e fica mais fácil se perder.
+// Confete de verdade caindo quando completa a missão — detecta a troca de "não completa"
+// pra "completa" olhando pro estado, então funciona tanto pra quem hospeda quanto pra
+// quem entrou na sala (ambos recebem essa informação, um direto e outro pela rede).
+let lastMissionDone = false;
+let confetti = [];
+const CONFETTI_COLORS = ['#ff6b6b', '#ffd24d', '#4dd9ff', '#67ef8a', '#ff72bd', '#b57bff'];
+
+function checkMissionConfetti() {
+  const done = !!state.mission?.done;
+  if (done && !lastMissionDone) spawnConfetti();
+  lastMissionDone = done;
+}
+
+function spawnConfetti() {
+  for (let i = 0; i < 44; i++) {
+    confetti.push({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * 120,
+      vx: (Math.random() - 0.5) * 2.4,
+      vy: 2 + Math.random() * 2.6,
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.3,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      w: 5 + Math.random() * 5,
+      h: 3 + Math.random() * 4,
+      life: 100 + Math.random() * 40,
+    });
+  }
+}
+
+function updateAndDrawConfetti() {
+  confetti.forEach((c) => {
+    c.x += c.vx; c.y += c.vy; c.vy += 0.035; c.rot += c.rotSpeed; c.life--;
+  });
+  confetti = confetti.filter((c) => c.life > 0 && c.y < canvas.height + 30);
+
+  ctx.save();
+  for (const c of confetti) {
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rot);
+    ctx.globalAlpha = Math.min(1, c.life / 30);
+    ctx.fillStyle = c.color;
+    ctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
 function drawMinimap() {
   if (viewW >= state.mapW && viewH >= state.mapH) return; // mapa já cabe inteiro, não precisa
   const mmW = Math.min(120, canvas.width * 0.28);
@@ -255,6 +304,17 @@ export function renderScores() {
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
   $('alive').textContent = state.alive.filter(Boolean).length;
+
+  // Contador de jogadores online (melhoria #13) — só aparece durante partidas online
+  const onlineBox = $('onlineCount');
+  if (onlineBox) {
+    if (isOnline()) {
+      onlineBox.classList.remove('hidden');
+      $('onlineCountNum').textContent = state.count;
+    } else {
+      onlineBox.classList.add('hidden');
+    }
+  }
 }
 
 export function draw() {
@@ -269,7 +329,7 @@ export function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (state.shake) ctx.translate((Math.random() - 0.5) * state.shake, (Math.random() - 0.5) * state.shake);
 
-  ctx.fillStyle = '#050911';
+  ctx.fillStyle = state.bgColor || '#050911';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawStars();
 
@@ -367,6 +427,8 @@ export function draw() {
   }
 
   drawMinimap();
+  checkMissionConfetti();
+  updateAndDrawConfetti();
 
   // Clarão vermelho rápido quando alguém morre
   if (state.flash > 0) {
