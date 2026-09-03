@@ -215,10 +215,21 @@ function applyTouchControl() {
   const isDpad = state.touchControl === 'dpad';
   $('joystick').classList.toggle('hidden', isDpad);
   $('dpad').classList.toggle('hidden', !isDpad);
+  $('touchControl').value = state.touchControl;
+  $('touchControlToggle').textContent = isDpad ? '⬆️' : '🕹️';
+  $('touchControlToggle').setAttribute('aria-label', isDpad ? 'Usando setas — toque pra trocar pro joystick' : 'Usando joystick — toque pra trocar pra setas');
 }
 
 $('touchControl').addEventListener('change', (e) => {
   state.touchControl = e.target.value;
+  applyTouchControl();
+  persistProfile();
+});
+
+// Mesmo botão de trocar controle, mas direto na tela do jogo — importante porque quem
+// entra numa sala pelo link nunca vê o menu principal, então precisa poder trocar aqui
+$('touchControlToggle').addEventListener('click', () => {
+  state.touchControl = state.touchControl === 'dpad' ? 'joystick' : 'dpad';
   applyTouchControl();
   persistProfile();
 });
