@@ -78,6 +78,8 @@ export function syncSettings() {
   state.difficulty = $('difficulty').value;
   state.noWalls = $('noWalls').checked;
   state.teamMode = $('teamMode').checked;
+  state.bgColor = $('bgColor').value;
+  state.vibrationOn = $('vibrationOn').checked;
 
   const map = MAP_SIZES.find(m => m.value === $('mapSize').value) || MAP_SIZES[1];
   state.mapSize = map.value;
