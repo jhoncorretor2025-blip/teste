@@ -90,6 +90,7 @@ export function syncSettings() {
   state.noWalls = $('noWalls').checked;
   state.teamMode = $('teamMode').checked;
   state.bgColor = $('bgColor').value;
+  state.zoom = $('zoomLevel').value;
   state.vibrationOn = $('vibrationOn').checked;
 
   const map = MAP_SIZES.find(m => m.value === $('mapSize').value) || MAP_SIZES[1];
