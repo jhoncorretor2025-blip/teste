@@ -1,15 +1,15 @@
 // Ponto de entrada do jogo: liga os botões da tela e dá o "start" inicial.
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
-import { $, safe } from './utils.js';
+import { $, safe, setVibrationEnabled } from './utils.js';
 import { VERSION, COLORS } from './config.js';
 import { state } from './state.js';
 import { makePlayers } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost } from './loop.js';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge } from './loop.js';
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -81,6 +81,16 @@ $('copyRoom').addEventListener('click', async () => {
     $('copyRoom').textContent = 'Copiado! ✅';
     setTimeout(() => $('copyRoom').textContent = 'Copiar link', 1500);
   } catch { alert(link); }
+});
+
+// Copia só o código da sala (sem o link inteiro), pra quem prefere mandar assim
+$('copyRoomCode').addEventListener('click', async () => {
+  const code = $('roomCode').textContent;
+  try {
+    await navigator.clipboard.writeText(code);
+    $('copyRoomCode').textContent = 'Copiado! ✅';
+    setTimeout(() => $('copyRoomCode').textContent = 'Copiar só o código', 1500);
+  } catch { alert(code); }
 });
 
 // Aceita tanto o código puro quanto o link inteiro colado (com "?room=..."),
@@ -170,6 +180,12 @@ $('difficulty').addEventListener('change', e => { state.difficulty = e.target.va
 $('speedSelect').addEventListener('change', updateRoomSettingsPreview);
 $('mapSize').addEventListener('change', updateRoomSettingsPreview);
 $('noWalls').addEventListener('change', updateRoomSettingsPreview);
+$('bgColor').addEventListener('change', e => state.bgColor = e.target.value);
+$('vibrationOn').addEventListener('change', e => {
+  state.vibrationOn = e.target.checked;
+  setVibrationEnabled(state.vibrationOn);
+  saveVibration(state.vibrationOn);
+});
 
 // Mostra um resuminho das configurações escolhidas bem em cima do botão "Criar sala",
 // pra ficar claro o que vai valer na sala antes de criar
@@ -288,7 +304,7 @@ $('shareScore').addEventListener('click', () => {
 
 // Resetar configurações (nome, cor, cabeça, padrão, som) pro padrão de fábrica (melhoria #13)
 $('resetSettings').addEventListener('click', () => {
-  if (!confirm('Isso vai apagar seu nome, cor, formato de cabeça e preferência de som salvos, voltando tudo ao padrão. O recorde e o ranking NÃO são apagados. Continuar?')) return;
+  if (!confirm('Isso vai apagar seu nome, cor, formato de cabeça, controle de toque, vibração e preferência de som salvos, voltando tudo ao padrão. O recorde e o ranking NÃO são apagados. Continuar?')) return;
   resetSettings();
   state.names[0] = 'Jhon';
   state.colors[0] = COLORS[0];
@@ -301,6 +317,10 @@ $('resetSettings').addEventListener('click', () => {
   state.muted = false;
   setMuted(false);
   $('mute').textContent = '🔊';
+  state.vibrationOn = true;
+  setVibrationEnabled(true);
+  saveVibration(true);
+  $('vibrationOn').checked = true;
   $('myName').value = 'Jhon';
   makePlayers();
 });
@@ -309,6 +329,12 @@ state.best = loadBest();
 state.muted = loadMuted();
 setMuted(state.muted);
 $('mute').textContent = state.muted ? '🔇' : '🔊';
+
+state.vibrationOn = loadVibration();
+setVibrationEnabled(state.vibrationOn);
+$('vibrationOn').checked = state.vibrationOn;
+
+updateGamesPlayedBadge(loadGamesPlayed());
 
 // Nome/cor/cabeça que a pessoa escolheu da última vez (melhoria #18)
 const profile = loadProfile();
