@@ -54,7 +54,7 @@ export function hostRoom(onReady, onFail) {
 
   peer.on('connection', conn => {
     const slot = conns.length + 1; // slot 0 é o anfitrião; próximos são 1, 2
-    if (slot > 2) {
+    if (slot > 5) {
       // Sala já tem 3 jogadores — avisa quem tentou entrar antes de fechar a conexão
       conn.on('open', () => { conn.send({ type: 'full' }); conn.close(); });
       return;
