@@ -9,8 +9,8 @@ import { render } from './render.js';
 import { syncSettings } from './players.js';
 import { startMission, trackFoodForMission, renderMission } from './mission.js';
 import { sfx } from './sound.js';
-import { vibrate, announce } from './utils.js';
-import { saveBest, addToLeaderboard } from './storage.js';
+import { vibrate, announce, setVibrationEnabled } from './utils.js';
+import { saveBest, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount } from './net.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
@@ -84,8 +84,18 @@ export function reset() {
 }
 
 // Chamado pelos botões "Jogar" e "Reiniciar"
+// Atualiza o texto de "X partidas jogadas", com uma menção especial nos marcos (10, 25, 50...)
+export function updateGamesPlayedBadge(n) {
+  const box = $('gamesPlayedBadge');
+  if (!box) return;
+  const hit = GAME_MILESTONES.includes(n);
+  box.textContent = `🎮 ${n} partida${n === 1 ? '' : 's'} jogada${n === 1 ? '' : 's'} neste aparelho` + (hit ? ' 🎉 Conquista desbloqueada!' : '');
+}
+
 export function startGame() {
   syncSettings();
+  setVibrationEnabled(state.vibrationOn);
+  updateGamesPlayedBadge(incrementGamesPlayed());
   reset();
   $('menu').classList.add('hidden');
   $('game').classList.remove('hidden');
@@ -200,7 +210,7 @@ function stepMovement(indices) {
       state.grow[i] += f.value;
       state.foods.splice(state.foods.indexOf(f), 1);
       burst(h.x, h.y, f.kind === 'bonus' ? '#ffd24d' : state.colors[i], f.kind === 'bonus' ? 24 : 12);
-      sfx[f.kind === 'bonus' ? 'star' : 'eat']();
+      sfx[f.kind === 'bonus' ? 'star' : f.kind === 'drop' ? 'drop' : 'eat']();
       if (f.kind === 'bonus') vibrate(20);
       trackFoodForMission(i, f);
     }
@@ -284,7 +294,7 @@ function tick() {
       count: state.count, mission: state.mission, best: state.best,
       dirs: state.dirs, shake: state.shake, flash: state.flash,
       heads: state.heads, toast: state.toast, patterns: state.patterns, palettes: state.palettes,
-      mapW: state.mapW, mapH: state.mapH,
+      mapW: state.mapW, mapH: state.mapH, bgColor: state.bgColor,
       teamMode: state.teamMode, teams: state.teams,
     });
   }
@@ -333,6 +343,7 @@ export function applyRemoteState(msg) {
   state.patterns = msg.patterns || state.patterns;
   state.palettes = msg.palettes || state.palettes;
   state.mapW = msg.mapW || state.mapW;
+  state.bgColor = msg.bgColor || state.bgColor;
   state.mapH = msg.mapH || state.mapH;
   state.teamMode = !!msg.teamMode;
   state.teams = msg.teams || state.teams;
