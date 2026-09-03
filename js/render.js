@@ -7,8 +7,8 @@
 // CÂMERA: em mapas grandes, mostrar o tabuleiro inteiro deixaria tudo minúsculo. Por isso,
 // se o mapa for maior que uma "janela de visão" fixa, a câmera passa a seguir a MINHOCA DO
 // PRÓPRIO JOGADOR (cada pessoa vê sua própria câmera, inclusive no online), centralizando
-// nela e mostrando só a área ao redor. Em mapas pequenos/médios isso não muda nada — a janela
-// de visão já é grande o bastante pra mostrar o mapa inteiro, então a câmera fica parada.
+// nela e mostrando só a área ao redor. A janela é sempre menor que qualquer mapa (mesmo o
+// Pequeno), então a câmera segue de perto o tempo todo, em qualquer tamanho de mapa.
 
 import { $ } from './utils.js';
 import { ICONS } from './config.js';
@@ -19,9 +19,9 @@ import { mySlot } from './net.js';
 const canvas = $('arenaCanvas');
 const ctx = canvas.getContext('2d');
 
-// Tamanho fixo da janela de visão da câmera (em células) — mapas menores que isso
-// aparecem inteiros; mapas maiores fazem a câmera seguir a minhoca.
-const VIEW_W = 40, VIEW_H = 31;
+// Tamanho fixo da janela de visão da câmera (em células) — sempre menor que qualquer mapa,
+// pra dar uma visão "de perto" da minhoca em qualquer tamanho de mapa escolhido.
+const VIEW_W = 24, VIEW_H = 19;
 
 let cell = 20, offX = 0, offY = 0; // tamanho de cada célula e deslocamento pra centralizar
 let viewW = VIEW_W, viewH = VIEW_H; // tamanho real da janela mostrada (nunca maior que o mapa)
