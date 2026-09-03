@@ -16,6 +16,7 @@ export const state = {
   teamMode: false, // modo times: aliados não se eliminam entre si
   teams: [0, 1, 0, 1, 0, 1], // qual time (0 ou 1) cada jogador está
   touchControl: 'joystick', // controle de toque: 'joystick', 'dpad' ou 'swipe'
+  zoom: 'normal', // zoom da câmera — preferência pessoal, cada jogador ajusta o seu
   customKeys: [{}, {}, {}, {}, {}, {}], // teclas personalizadas por jogador (melhoria de mapeamento)
   show: [true, true, true, true, true, true],
   showOthers: true,
