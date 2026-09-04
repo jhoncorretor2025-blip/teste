@@ -36,6 +36,14 @@ export function vibrate(pattern) {
   if (vibrationEnabled && navigator.vibrate) navigator.vibrate(pattern);
 }
 
+// Vibração curtinha ao tocar num botão de controle (joystick/seta/turbo), separada da
+// vibração de eventos do jogo — dá aquele "cliquinho" de confirmação que o toque funcionou
+let tapVibrationEnabled = true;
+export function setTapVibrationEnabled(v) { tapVibrationEnabled = v; }
+export function tapVibrate() {
+  if (tapVibrationEnabled) vibrate(8);
+}
+
 // Anuncia um texto pra quem usa leitor de tela, sem precisar narrar o jogo inteiro em tempo real
 // (só eventos importantes: início da partida, missão completa etc.) — melhoria de acessibilidade #20
 export function announce(text) {
