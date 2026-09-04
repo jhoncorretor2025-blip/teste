@@ -17,6 +17,10 @@ export const state = {
   teams: [0, 1, 0, 1, 0, 1], // qual time (0 ou 1) cada jogador está
   touchControl: 'joystick', // controle de toque: 'joystick', 'dpad' ou 'swipe'
   zoom: 'normal', // zoom da câmera — preferência pessoal, cada jogador ajusta o seu
+  controlSize: 100, // tamanho dos controles de toque (%), ajustável
+  controlsSwapped: false, // inverter lado dos controles (bom pra canhotos)
+  bigTextMode: false, // modo texto grande, interface mais simples
+  tapVibration: true, // vibração ao tocar nos botões (feedback tátil)
   customKeys: [{}, {}, {}, {}, {}, {}], // teclas personalizadas por jogador (melhoria de mapeamento)
   show: [true, true, true, true, true, true],
   showOthers: true,
@@ -48,6 +52,7 @@ export const state = {
   flash: 0, // clarão vermelho ao morrer
   milestones: [0, 0, 0, 0, 0, 0], // maior marco de tamanho já comemorado
   toast: null, // {x, y, text, color, until} — texto flutuante de comemoração
+  reactionToast: null, // {emoji, text, until} — reação rápida recebida de outro jogador
 
   joyId: null,
 
