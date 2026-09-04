@@ -205,6 +205,7 @@ $('back').addEventListener('click', () => {
   renderLeaderboard();
   updateTopRecordDisplay();
   applyQuickRepeat();
+  if (pendingUpdateReg) { showUpdateBanner(pendingUpdateReg); pendingUpdateReg = null; }
   render();
 });
 
@@ -616,7 +617,14 @@ if ('serviceWorker' in navigator) {
   }).catch(() => {});
 }
 
+let pendingUpdateReg = null;
 function showUpdateBanner(reg) {
+  // Se tiver uma partida rolando, não interrompe na hora — espera a pessoa voltar pro
+  // menu (isso evita aquela tela aparecendo do nada no meio do jogo, atrapalhando)
+  if (state.running) {
+    pendingUpdateReg = reg;
+    return;
+  }
   $('updateBanner').classList.remove('hidden');
   $('updateBannerBtn').onclick = () => {
     if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
