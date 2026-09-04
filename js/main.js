@@ -419,6 +419,23 @@ $('whatsappInvite').addEventListener('click', () => {
   window.open(`https://wa.me/?text=${texto}`, '_blank');
 });
 
+// Compartilhamento nativo da sala — abre o menu de compartilhar do próprio celular
+// (Telegram, SMS, e-mail, Instagram, o que a pessoa tiver instalado), não só WhatsApp
+$('nativeShareRoom').addEventListener('click', async () => {
+  const link = location.origin + location.pathname + '?room=' + $('roomCode').textContent;
+  const texto = 'Vem jogar Snake Arena comigo! 🐍';
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Snake Arena', text: texto, url: link }); }
+    catch {} // pessoa cancelou o compartilhamento — sem problema
+  } else {
+    try {
+      await navigator.clipboard.writeText(`${texto} ${link}`);
+      $('nativeShareRoom').textContent = 'Copiado! ✅';
+      setTimeout(() => $('nativeShareRoom').textContent = '📤 Outras formas de compartilhar', 1500);
+    } catch { alert(link); }
+  }
+});
+
 // Mesmo botão de trocar controle, mas direto na tela do jogo — importante porque quem
 // entra numa sala pelo link nunca vê o menu principal, então precisa poder trocar aqui
 $('touchControlToggle').addEventListener('click', () => {
@@ -468,22 +485,32 @@ $('mute').addEventListener('click', () => {
 
 // Modo compacto: esconde placar/missão/menus e deixa só a arena e os controles,
 // pra jogar com a tela bem maior. Também tenta pedir tela cheia de verdade no navegador.
-$('compactBtn').addEventListener('click', async () => {
+// Modo compacto (esconde placar/menus) é separado de pedir tela cheia de verdade —
+// a tela cheia de verdade faz o navegador mostrar um aviso ("toque ESC pra sair" ou
+// parecido) bem em cima dos controles em alguns celulares, atrapalhando o toque.
+// Por isso só pedimos tela cheia quando a pessoa clica no botão de propósito — o modo
+// automático (primeira vez no celular) usa só o modo compacto, sem esse aviso.
+async function toggleCompactMode(requestFullscreenToo) {
   const on = $('game').classList.toggle('compact');
   $('compactBtn').classList.toggle('active', on);
-  try {
-    if (on && document.documentElement.requestFullscreen) {
-      await document.documentElement.requestFullscreen();
-    } else if (!on && document.fullscreenElement) {
-      await document.exitFullscreen();
+  if (requestFullscreenToo) {
+    try {
+      if (on && document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      } else if (!on && document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // Se o navegador bloquear a tela cheia de verdade, sem problema — o modo compacto
+      // (esconder placar/menus) já funciona sozinho.
     }
-  } catch {
-    // Se o navegador bloquear a tela cheia de verdade, sem problema — o modo compacto
-    // (esconder placar/menus) já funciona sozinho.
   }
   render();
   setTimeout(render, 250); // garante que o canvas recalcule o tamanho depois do layout assentar
-});
+  return on;
+}
+
+$('compactBtn').addEventListener('click', () => toggleCompactMode(true));
 
 document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement && $('game').classList.contains('compact')) {
@@ -601,12 +628,11 @@ function showUpdateBanner(reg) {
 // sabia que esse botão existia, então isso já entrega a melhor experiência de cara.
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 if (isTouchDevice && !localStorage.getItem('snakeArenaAutoCompactSeen')) {
-  const originalDoStart = doStart;
   const autoCompactOnce = () => {
     setTimeout(() => {
       if (!$('game').classList.contains('hidden') && !$('game').classList.contains('compact')) {
-        $('compactBtn').click();
-        announce('Modo tela cheia ativado automaticamente. Toque no botão de expandir pra desativar.');
+        toggleCompactMode(false); // sem tela cheia de verdade — só esconde placar/menus
+        announce('Modo compacto ativado automaticamente. Toque no botão de expandir pra desativar.');
       }
     }, 400);
     localStorage.setItem('snakeArenaAutoCompactSeen', '1');
