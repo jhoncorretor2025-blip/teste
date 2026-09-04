@@ -274,14 +274,12 @@ function tick() {
   for (let i = 0; i < state.count; i++) if (state.alive[i]) aliveIdx.push(i);
   stepMovement(aliveIdx);
 
-  // Quem tá com turbo ativo anda MAIS DUAS vezes nesse mesmo tick (total 3x mais rápido
-  // que o normal, em vez de só 2x) — pedido pra deixar o turbo mais impactante de verdade.
-  let boostedIdx = aliveIdx.filter(i => state.alive[i] && state.boosting[i]);
-  if (boostedIdx.length) {
-    stepMovement(boostedIdx);
-    boostedIdx = boostedIdx.filter(i => state.alive[i]);
-    if (boostedIdx.length) stepMovement(boostedIdx);
-  }
+  // Quem tá com turbo ativo anda MAIS UMA vez nesse mesmo tick (total 2x mais rápido que o
+  // normal). Chegamos a testar 3x, mas isso fazia a virada "atrasar" — a minhoca conseguia
+  // escapar várias casas na direção antiga antes de virar de vez. 2x fica rápido e continua
+  // respondendo rápido quando você vira.
+  const boostedIdx = aliveIdx.filter(i => state.alive[i] && state.boosting[i]);
+  if (boostedIdx.length) stepMovement(boostedIdx);
 
   // Rastro de partículas atrás de quem tá turbinando — melhoria visual #3
   boostedIdx.forEach(i => {
