@@ -493,6 +493,7 @@ $('mute').addEventListener('click', () => {
 // automático (primeira vez no celular) usa só o modo compacto, sem esse aviso.
 async function toggleCompactMode(requestFullscreenToo) {
   const on = $('game').classList.toggle('compact');
+  document.body.classList.toggle('game-compact-mode', on);
   $('compactBtn').classList.toggle('active', on);
   if (requestFullscreenToo) {
     try {
@@ -516,6 +517,7 @@ $('compactBtn').addEventListener('click', () => toggleCompactMode(true));
 document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement && $('game').classList.contains('compact')) {
     $('game').classList.remove('compact');
+    document.body.classList.remove('game-compact-mode');
     $('compactBtn').classList.remove('active');
     render();
   }
