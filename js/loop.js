@@ -12,6 +12,7 @@ import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
 import { saveBest, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount } from './net.js';
+import { checkHunterTrigger, updateHunter } from './hunter.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 
@@ -89,6 +90,8 @@ export function reset() {
   state.respawnAt = Array(6).fill(0);
   state.particles = [];
   state.shake = 0;
+  state.hunter = null;
+  state.hunterTriggered = Array(6).fill(null).map(() => []);
   for (let i = 0; i < state.count; i++) spawn(i);
   ensureFoods();
   startMission();
@@ -288,6 +291,10 @@ function tick() {
   });
 
   ensureFoods();
+  if (!isOnline() || isHost()) {
+    checkHunterTrigger();
+    updateHunter();
+  }
   updateParticles();
   if (state.shake > 0) state.shake = Math.max(0, state.shake - 1);
   if (state.flash > 0) state.flash = Math.max(0, state.flash - 1);
@@ -305,6 +312,7 @@ function tick() {
       heads: state.heads, toast: state.toast, patterns: state.patterns, palettes: state.palettes,
       mapW: state.mapW, mapH: state.mapH, bgColor: state.bgColor,
       teamMode: state.teamMode, teams: state.teams,
+      hunter: state.hunter,
     });
   }
 }
@@ -356,6 +364,7 @@ export function applyRemoteState(msg) {
   state.mapH = msg.mapH || state.mapH;
   state.teamMode = !!msg.teamMode;
   state.teams = msg.teams || state.teams;
+  state.hunter = msg.hunter || null;
   state.toast = msg.toast || null;
   renderMission();
   $('badge').textContent = '🌐 ONLINE';

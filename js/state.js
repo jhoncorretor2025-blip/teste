@@ -69,4 +69,8 @@ export const state = {
 
   // --- Eliminações desta sessão, sobrevive a "Reiniciar" ---
   eliminations: [0, 0, 0, 0, 0, 0],
+
+  // --- Minhoca Caçadora Invencível: aparece ao atingir marcos de comida (100, 150...) ---
+  hunter: null, // {phase:'warning'|'hunting', targetSlot, segments, dir, warningUntil, huntUntil, durationSec} ou null
+  hunterTriggered: [[], [], [], [], [], []], // por jogador: quais marcos (100, 150) já dispararam nessa partida
 };

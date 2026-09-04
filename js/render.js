@@ -263,6 +263,74 @@ function updateAndDrawConfetti() {
   ctx.restore();
 }
 
+// Desenha a Minhoca Caçadora Invencível: corpo sombrio pulsante, e um aviso na tela
+// enquanto ela ainda não começou a perseguir de verdade (fase de aviso).
+function drawHunter() {
+  const h = state.hunter;
+  if (!h) return;
+  const now = Date.now();
+  const t = now / 140;
+
+  ctx.save();
+  for (let k = h.segments.length - 1; k >= 0; k--) {
+    const p = h.segments[k];
+    const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
+    ctx.globalAlpha = k === 0 ? 1 : 0.75;
+    ctx.shadowBlur = cell * (0.6 + Math.sin(t) * 0.25);
+    ctx.shadowColor = '#ff3355';
+    ctx.fillStyle = k === 0 ? '#2a0810' : '#1a0509';
+    ctx.strokeStyle = '#ff3355';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(x - cell * 0.42, y - cell * 0.42, cell * 0.84, cell * 0.84, cell * 0.28);
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Nome + contador flutuando em cima da cabeça dela (posição limitada pra não cortar na borda)
+  const head = h.segments[0];
+  const nomeX = Math.min(canvas.width - cell * 2.2, Math.max(cell * 2.2, sx(head.x) + cell / 2));
+  ctx.save();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#ff3355';
+  ctx.font = `bold ${cell * 0.55}px system-ui`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.shadowBlur = 6;
+  ctx.shadowColor = '#000';
+  ctx.fillText('👻 Caçadora', nomeX, Math.max(cell, sy(head.y) - 4));
+  ctx.restore();
+
+  if (h.phase === 'warning') {
+    const restam = Math.max(0, Math.ceil((h.warningUntil - now) / 1000));
+    ctx.save();
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = '#ff3355';
+    ctx.font = `bold ${Math.round(cell * 2.4)}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = '#000';
+    ctx.fillText(String(restam > 0 ? restam : '!'), canvas.width / 2, canvas.height * 0.28);
+    ctx.font = `bold ${Math.round(cell * 0.65)}px system-ui`;
+    ctx.fillText('Você está sendo caçado!', canvas.width / 2, canvas.height * 0.28 + cell * 1.6);
+    ctx.restore();
+  } else {
+    const restamCacada = Math.max(0, Math.ceil((h.huntUntil - now) / 1000));
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${Math.round(cell * 0.6)}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = '#000';
+    ctx.fillText(`👻 Sendo caçado: ${restamCacada}s`, canvas.width / 2, 8);
+    ctx.restore();
+  }
+}
+
 function drawMinimap() {
   if (viewW >= state.mapW && viewH >= state.mapH) return; // mapa já cabe inteiro, não precisa
   const mmW = Math.min(120, canvas.width * 0.28);
@@ -448,6 +516,8 @@ export function draw() {
     ctx.fillText(state.toast.text, sx(state.toast.x) + cell / 2, sy(state.toast.y) - 14);
     ctx.restore();
   }
+
+  drawHunter();
 
   drawMinimap();
   checkMissionConfetti();
