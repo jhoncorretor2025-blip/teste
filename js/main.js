@@ -528,6 +528,30 @@ $('shareScore').addEventListener('click', () => {
   shareScoreCard();
 });
 
+// Copiar o link do jogo direto — alternativa simples ao compartilhamento por imagem,
+// funciona em qualquer navegador (não depende de app nenhum, cola em qualquer lugar).
+$('copyLink').addEventListener('click', async () => {
+  const link = location.origin + location.pathname;
+  const btn = $('copyLink');
+  try {
+    await navigator.clipboard.writeText(link);
+  } catch {
+    // Navegador sem suporte ao clipboard moderno — usa o jeito antigo como respaldo
+    const temp = document.createElement('textarea');
+    temp.value = link;
+    temp.style.position = 'fixed';
+    temp.style.opacity = '0';
+    document.body.appendChild(temp);
+    temp.select();
+    try { document.execCommand('copy'); } catch {}
+    temp.remove();
+  }
+  const original = btn.textContent;
+  btn.textContent = '✅';
+  announce('Link copiado!');
+  setTimeout(() => { btn.textContent = original; }, 1500);
+});
+
 // Resetar configurações (nome, cor, cabeça, padrão, som) pro padrão de fábrica (melhoria #13)
 $('resetSettings').addEventListener('click', () => {
   if (!confirm('Isso vai apagar seu nome, cor, formato de cabeça, controle de toque, vibração e preferência de som salvos, voltando tudo ao padrão. O recorde e o ranking NÃO são apagados. Continuar?')) return;
