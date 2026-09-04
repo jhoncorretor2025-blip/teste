@@ -100,6 +100,8 @@ export function joinRoom(hostId, onJoined, onFail) {
         handlers.onStateUpdate && handlers.onStateUpdate(msg);
       } else if (msg.type === 'countdown') {
         handlers.onCountdown && handlers.onCountdown(msg.n);
+      } else if (msg.type === 'reaction') {
+        handlers.onReaction && handlers.onReaction(msg.emoji, msg.from);
       } else if (msg.type === 'full') {
         // sala já tava cheia (3 jogadores) — não dá pra entrar
         onFail && onFail(new Error('full'));
