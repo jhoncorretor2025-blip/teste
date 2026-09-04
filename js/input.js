@@ -3,7 +3,7 @@
 // No modo online, o CLIENTE não controla o jogo direto — ele manda a direção pro anfitrião,
 // que é quem realmente decide o que acontece (evita trapaça e mantém todo mundo sincronizado).
 
-import { $ } from './utils.js';
+import { $, tapVibrate } from './utils.js';
 import { CK, KD, D, BOOST_KEYS, BOOST_COOLDOWN } from './config.js';
 import { state } from './state.js';
 import { tryBoost } from './loop.js';
@@ -86,6 +86,7 @@ export function setupInput() {
   document.addEventListener('keydown', handleKey, { passive: false });
 
   $('boostTouch').addEventListener('click', () => {
+    tapVibrate();
     boostMine();
     flashBoostButton();
   });
@@ -95,7 +96,7 @@ export function setupInput() {
   Object.keys(dpadDirs).forEach(id => {
     const btn = $(id);
     if (!btn) return;
-    btn.addEventListener('pointerdown', (e) => { e.preventDefault(); moveMine(dpadDirs[id]); });
+    btn.addEventListener('pointerdown', (e) => { e.preventDefault(); tapVibrate(); moveMine(dpadDirs[id]); });
   });
 
   function joystickMove(e) {
@@ -111,6 +112,7 @@ export function setupInput() {
 
   $('joystick').addEventListener('pointerdown', e => {
     e.preventDefault();
+    tapVibrate();
     state.joyId = e.pointerId;
     $('joystick').setPointerCapture(state.joyId);
     joystickMove(e);
