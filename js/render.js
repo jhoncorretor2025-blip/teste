@@ -318,6 +318,10 @@ export function renderScores() {
       onlineBox.classList.add('hidden');
     }
   }
+
+  // Fileira de reações rápidas (emojis) — só faz sentido jogando com outra pessoa online
+  const reactionBox = $('reactionRow');
+  if (reactionBox) reactionBox.classList.toggle('hidden', !isOnline());
 }
 
 export function draw() {
@@ -441,6 +445,20 @@ export function draw() {
   drawMinimap();
   checkMissionConfetti();
   updateAndDrawConfetti();
+
+  // Reação rápida (emoji) recebida de outro jogador — aparece grande no centro por um instante
+  if (state.reactionToast && Date.now() < state.reactionToast.until) {
+    const left = state.reactionToast.until - Date.now();
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, left / 250);
+    ctx.font = `${Math.round(cell * 3.2)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = '#000';
+    ctx.fillText(state.reactionToast.emoji, canvas.width / 2, canvas.height * 0.32);
+    ctx.restore();
+  }
 
   // Clarão vermelho rápido quando alguém morre
   if (state.flash > 0) {
