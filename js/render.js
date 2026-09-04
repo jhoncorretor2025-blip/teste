@@ -280,6 +280,13 @@ function drawMinimap() {
   ctx.fill();
   ctx.stroke();
 
+  for (const f of state.foods) {
+    ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : 'rgba(255,150,120,0.85)';
+    ctx.beginPath();
+    ctx.arc(mx + f.x * scale, my + f.y * scale, f.kind === 'bonus' ? 1.6 : 1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   for (let i = 0; i < state.count; i++) {
     if (!state.alive[i] || !state.snakes[i]?.[0]) continue;
     const h = state.snakes[i][0];

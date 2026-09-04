@@ -512,7 +512,7 @@ async function toggleCompactMode(requestFullscreenToo) {
   return on;
 }
 
-$('compactBtn').addEventListener('click', () => toggleCompactMode(true));
+$('compactBtn').addEventListener('click', () => toggleCompactMode(false));
 
 document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement && $('game').classList.contains('compact')) {

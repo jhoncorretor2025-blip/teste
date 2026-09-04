@@ -33,7 +33,7 @@ export const MAP_SIZES = [
 // "tick" é quanto tempo (em ms) cada passo do jogo demora — quanto menor, mais rápido.
 export const SPEEDS = [
   { value: 'slow', label: '🐢 Lenta', tick: 220 },
-  { value: 'normal', label: '🚶 Normal', tick: 160 },
+  { value: 'normal', label: '🚶 Normal', tick: 175 },
   { value: 'fast', label: '🏃 Rápida', tick: 115 },
   { value: 'veryfast', label: '⚡ Muito rápida', tick: 80 },
 ];
