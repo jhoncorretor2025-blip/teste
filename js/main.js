@@ -1,8 +1,8 @@
 // Ponto de entrada do jogo: liga os botões da tela e dá o "start" inicial.
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
-import { $, safe, setVibrationEnabled } from './utils.js';
-import { VERSION, COLORS, ZOOM_LEVELS } from './config.js';
+import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce } from './utils.js';
+import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS } from './config.js';
 import { state } from './state.js';
 import { makePlayers } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge } from './loop.js';
@@ -33,7 +33,12 @@ net.setHandlers({
   onInput: (slot, msg) => {
     if (msg.type === 'dir') setDir(slot, msg.dir);
     else if (msg.type === 'boost') tryBoost(slot);
+    else if (msg.type === 'reaction') {
+      showReaction(msg.emoji);
+      net.broadcastRaw({ type: 'reaction', emoji: msg.emoji, from: slot }); // repassa pra todo mundo
+    }
   },
+  onReaction: (emoji) => showReaction(emoji),
   onCountdown: (n) => {
     $('countdownOverlay').classList.remove('hidden');
     $('countdownText').textContent = n > 0 ? String(n) : 'VAI! 🚀';
@@ -137,14 +142,50 @@ if (roomFromUrl) $('joinCode').value = roomFromUrl;
 // --- Botões principais ---
 function doStart() {
   unlockAudio();
+  requestWakeLock();
+  saveQuickRepeat();
   if (net.isOnline() && net.isHost()) startOnlineHostGame();
   else startGame();
 }
+
+// Mostra uma reação rápida (emoji) na tela, e a fileira de reações só aparece no online
+function showReaction(emoji) {
+  state.reactionToast = { emoji, until: Date.now() + 1500 };
+}
+document.querySelector('.reactionRow')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.reactionBtn');
+  if (!btn) return;
+  const emoji = btn.dataset.emoji;
+  showReaction(emoji); // mostra pra mim mesmo na hora
+  if (net.isOnline()) {
+    if (net.isHost()) net.broadcastRaw({ type: 'reaction', emoji, from: net.mySlot });
+    else net.sendInput({ type: 'reaction', emoji });
+  }
+});
+
+// Não deixa a tela do celular apagar sozinha enquanto tá jogando
+let wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+  } catch {
+    // Alguns navegadores recusam (ex: aba em segundo plano) — sem problema, ignora
+  }
+}
+function releaseWakeLock() {
+  try { wakeLock?.release(); } catch {}
+  wakeLock = null;
+}
+// Se a tela travar sozinha e a pessoa voltar pro app, tenta pedir de novo
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state.running && !wakeLock) requestWakeLock();
+});
 
 $('start').addEventListener('click', doStart);
 $('startHero').addEventListener('click', doStart);
 $('startFromHostPanel').addEventListener('click', doStart);
 $('restart').addEventListener('click', () => {
+  requestWakeLock();
   if (net.isOnline() && net.isHost()) startOnlineHostGame();
   else startGame();
 });
@@ -154,6 +195,7 @@ $('back').addEventListener('click', () => {
   state.running = false;
   clearInterval(state.timer);
   net.disconnect();
+  releaseWakeLock();
   $('count').disabled = false;
   $('hostPanel').classList.add('hidden');
   $('hostBtn').disabled = false;
@@ -162,6 +204,7 @@ $('back').addEventListener('click', () => {
   $('menu').classList.remove('hidden');
   renderLeaderboard();
   updateTopRecordDisplay();
+  applyQuickRepeat();
   render();
 });
 
@@ -312,6 +355,70 @@ $('touchControl').addEventListener('change', (e) => {
   persistProfile();
 });
 
+// Tamanho dos controles de toque (ajustável) — salva a preferência
+$('controlSize').addEventListener('input', (e) => {
+  state.controlSize = +e.target.value;
+  document.documentElement.style.setProperty('--ctrl-scale', state.controlSize / 100);
+  persistComfortSettings();
+});
+
+// Inverter o lado dos controles (bom pra quem é canhoto)
+$('controlsSwapped').addEventListener('change', (e) => {
+  state.controlsSwapped = e.target.checked;
+  $('touch').classList.toggle('swapped', state.controlsSwapped);
+  persistComfortSettings();
+});
+
+// Vibração ao tocar nos botões (feedback tátil), separada da vibração de eventos do jogo
+$('tapVibration').addEventListener('change', (e) => {
+  state.tapVibration = e.target.checked;
+  setTapVibrationEnabled(state.tapVibration);
+  persistComfortSettings();
+});
+
+// Modo texto grande — interface mais simples, botões e letras maiores
+$('bigTextMode').addEventListener('change', (e) => {
+  state.bigTextMode = e.target.checked;
+  document.querySelector('.app').classList.toggle('bigText', state.bigTextMode);
+  persistComfortSettings();
+});
+
+function persistComfortSettings() {
+  try {
+    localStorage.setItem('snakeArenaComfort', JSON.stringify({
+      controlSize: state.controlSize,
+      controlsSwapped: state.controlsSwapped,
+      tapVibration: state.tapVibration,
+      bigTextMode: state.bigTextMode,
+    }));
+  } catch {}
+}
+
+function applyComfortSettings() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('snakeArenaComfort')) || {}; } catch {}
+  if (typeof saved.controlSize === 'number') state.controlSize = saved.controlSize;
+  if (typeof saved.controlsSwapped === 'boolean') state.controlsSwapped = saved.controlsSwapped;
+  if (typeof saved.tapVibration === 'boolean') state.tapVibration = saved.tapVibration;
+  if (typeof saved.bigTextMode === 'boolean') state.bigTextMode = saved.bigTextMode;
+
+  $('controlSize').value = state.controlSize;
+  document.documentElement.style.setProperty('--ctrl-scale', state.controlSize / 100);
+  $('controlsSwapped').checked = state.controlsSwapped;
+  $('touch').classList.toggle('swapped', state.controlsSwapped);
+  $('tapVibration').checked = state.tapVibration;
+  setTapVibrationEnabled(state.tapVibration);
+  $('bigTextMode').checked = state.bigTextMode;
+  document.querySelector('.app').classList.toggle('bigText', state.bigTextMode);
+}
+
+// Convidar pelo WhatsApp — já abre com o link da sala preenchido, sem precisar copiar/colar
+$('whatsappInvite').addEventListener('click', () => {
+  const link = location.origin + location.pathname + '?room=' + $('roomCode').textContent;
+  const texto = encodeURIComponent(`Vem jogar Snake Arena comigo! 🐍 ${link}`);
+  window.open(`https://wa.me/?text=${texto}`, '_blank');
+});
+
 // Mesmo botão de trocar controle, mas direto na tela do jogo — importante porque quem
 // entra numa sala pelo link nunca vê o menu principal, então precisa poder trocar aqui
 $('touchControlToggle').addEventListener('click', () => {
@@ -451,6 +558,7 @@ if (profile.pattern) state.patterns[0] = profile.pattern;
 if (profile.palette) state.palettes[0] = profile.palette;
 if (profile.touchControl) { state.touchControl = profile.touchControl; $('touchControl').value = profile.touchControl; }
 applyTouchControl();
+applyComfortSettings();
 
 setupInput();
 setupTutorial();
@@ -488,3 +596,65 @@ function showUpdateBanner(reg) {
     location.reload();
   };
 }
+
+// No celular, ativa o modo maximizado (⛶) sozinho na primeira partida — a maioria nem
+// sabia que esse botão existia, então isso já entrega a melhor experiência de cara.
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+if (isTouchDevice && !localStorage.getItem('snakeArenaAutoCompactSeen')) {
+  const originalDoStart = doStart;
+  const autoCompactOnce = () => {
+    setTimeout(() => {
+      if (!$('game').classList.contains('hidden') && !$('game').classList.contains('compact')) {
+        $('compactBtn').click();
+        announce('Modo tela cheia ativado automaticamente. Toque no botão de expandir pra desativar.');
+      }
+    }, 400);
+    localStorage.setItem('snakeArenaAutoCompactSeen', '1');
+    $('start').removeEventListener('click', autoCompactOnce);
+    $('startHero').removeEventListener('click', autoCompactOnce);
+  };
+  $('start').addEventListener('click', autoCompactOnce);
+  $('startHero').addEventListener('click', autoCompactOnce);
+}
+
+// "Jogar com [nome] de novo" — lembra a última configuração usada com 2+ jogadores no
+// mesmo aparelho, pra não precisar escolher tudo de novo toda vez
+function saveQuickRepeat() {
+  const count = +$('count').value;
+  if (count < 2 || net.isOnline()) return; // só faz sentido no local, com companhia
+  try {
+    localStorage.setItem('snakeArenaQuickRepeat', JSON.stringify({
+      count,
+      mateName: state.names[1] || 'Jogador 2',
+      mode: $('mode').value, speed: $('speedSelect').value, mapSize: $('mapSize').value,
+      difficulty: $('difficulty').value, noWalls: $('noWalls').checked, teamMode: $('teamMode').checked,
+    }));
+  } catch {}
+}
+
+function loadQuickRepeat() {
+  try { return JSON.parse(localStorage.getItem('snakeArenaQuickRepeat')); } catch { return null; }
+}
+
+function applyQuickRepeat() {
+  const qr = loadQuickRepeat();
+  const btn = $('quickRepeatBtn');
+  if (!qr) { btn.classList.add('hidden'); return; }
+  btn.textContent = `🔄 Jogar com ${qr.mateName} de novo`;
+  btn.classList.remove('hidden');
+  btn.onclick = () => {
+    $('count').value = String(qr.count);
+    $('count').dispatchEvent(new Event('change', { bubbles: true }));
+    state.names[1] = qr.mateName;
+    $('mode').value = qr.mode; state.mode = qr.mode;
+    $('speedSelect').value = qr.speed;
+    $('mapSize').value = qr.mapSize;
+    $('difficulty').value = qr.difficulty; state.difficulty = qr.difficulty;
+    $('noWalls').checked = qr.noWalls;
+    $('teamMode').checked = qr.teamMode;
+    makePlayers();
+    updateRoomSettingsPreview();
+    doStart();
+  };
+}
+applyQuickRepeat();
