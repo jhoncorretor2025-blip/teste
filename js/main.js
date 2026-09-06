@@ -1,7 +1,7 @@
 // Ponto de entrada do jogo: liga os botões da tela e dá o "start" inicial.
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
-import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce } from './utils.js';
+import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
 import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS } from './config.js';
 import { state } from './state.js';
 import { makePlayers } from './players.js';
@@ -152,6 +152,55 @@ function doStart() {
 function showReaction(emoji) {
   state.reactionToast = { emoji, until: Date.now() + 1500 };
 }
+
+// Ícone da aba mostrando a pontuação ao vivo — só redesenha quando o número muda
+let lastFaviconScore = null;
+const faviconCanvas = document.createElement('canvas');
+faviconCanvas.width = 64; faviconCanvas.height = 64;
+const faviconCtx = faviconCanvas.getContext('2d');
+function updateScoreFavicon(score) {
+  if (score === lastFaviconScore) return;
+  lastFaviconScore = score;
+  faviconCtx.clearRect(0, 0, 64, 64);
+  faviconCtx.fillStyle = '#0b1220';
+  faviconCtx.beginPath();
+  faviconCtx.roundRect(2, 2, 60, 60, 16);
+  faviconCtx.fill();
+  faviconCtx.strokeStyle = '#67ef8a';
+  faviconCtx.lineWidth = 4;
+  faviconCtx.stroke();
+  faviconCtx.fillStyle = '#67ef8a';
+  faviconCtx.font = 'bold 34px system-ui, sans-serif';
+  faviconCtx.textAlign = 'center';
+  faviconCtx.textBaseline = 'middle';
+  faviconCtx.fillText(String(score).slice(0, 4), 32, 34);
+  $('faviconLink').href = faviconCanvas.toDataURL('image/png');
+}
+function resetFavicon() {
+  lastFaviconScore = null;
+  $('faviconLink').href = 'icon.svg';
+}
+
+// Pop-up animado de conquista — aparece por 2.5s e some sozinho
+document.addEventListener('achievementUnlocked', (e) => {
+  $('achievementSub').textContent = `🎮 ${e.detail.n} partidas jogadas neste aparelho`;
+  $('achievementPopup').classList.remove('hidden');
+  requestAnimationFrame(() => $('achievementPopup').classList.add('show'));
+  vibrate([30, 60, 30, 60, 60]);
+  clearTimeout(achievementHideTimer);
+  achievementHideTimer = setTimeout(() => {
+    $('achievementPopup').classList.remove('show');
+    setTimeout(() => $('achievementPopup').classList.add('hidden'), 350);
+  }, 2500);
+});
+let achievementHideTimer = null;
+
+// Confere a pontuação a cada meio segundo e atualiza o ícone da aba — não precisa ser
+// em todo quadro, só rápido o bastante pra sentir que tá "ao vivo"
+setInterval(() => {
+  if (state.running) updateScoreFavicon(state.scores[net.mySlot] || 0);
+}, 500);
+
 document.querySelector('.reactionRow')?.addEventListener('click', (e) => {
   const btn = e.target.closest('.reactionBtn');
   if (!btn) return;
@@ -205,6 +254,7 @@ $('back').addEventListener('click', () => {
   renderLeaderboard();
   updateTopRecordDisplay();
   applyQuickRepeat();
+  resetFavicon();
   if (pendingUpdateReg) { showUpdateBanner(pendingUpdateReg); pendingUpdateReg = null; }
   render();
 });
@@ -247,7 +297,7 @@ $('zoomLevel').addEventListener('change', (e) => {
   persistZoom();
 });
 $('noWalls').addEventListener('change', updateRoomSettingsPreview);
-$('bgColor').addEventListener('change', e => state.bgColor = e.target.value);
+$('boardTheme').addEventListener('change', e => state.theme = e.target.value);
 $('vibrationOn').addEventListener('change', e => {
   state.vibrationOn = e.target.checked;
   setVibrationEnabled(state.vibrationOn);
@@ -384,6 +434,12 @@ $('bigTextMode').addEventListener('change', (e) => {
   persistComfortSettings();
 });
 
+$('lightMode').addEventListener('change', (e) => {
+  state.lightMode = e.target.checked;
+  document.querySelector('.app').classList.toggle('lightMode', state.lightMode);
+  persistComfortSettings();
+});
+
 function persistComfortSettings() {
   try {
     localStorage.setItem('snakeArenaComfort', JSON.stringify({
@@ -391,6 +447,7 @@ function persistComfortSettings() {
       controlsSwapped: state.controlsSwapped,
       tapVibration: state.tapVibration,
       bigTextMode: state.bigTextMode,
+      lightMode: state.lightMode,
     }));
   } catch {}
 }
@@ -402,6 +459,7 @@ function applyComfortSettings() {
   if (typeof saved.controlsSwapped === 'boolean') state.controlsSwapped = saved.controlsSwapped;
   if (typeof saved.tapVibration === 'boolean') state.tapVibration = saved.tapVibration;
   if (typeof saved.bigTextMode === 'boolean') state.bigTextMode = saved.bigTextMode;
+  if (typeof saved.lightMode === 'boolean') state.lightMode = saved.lightMode;
 
   $('controlSize').value = state.controlSize;
   document.documentElement.style.setProperty('--ctrl-scale', state.controlSize / 100);
@@ -411,6 +469,8 @@ function applyComfortSettings() {
   setTapVibrationEnabled(state.tapVibration);
   $('bigTextMode').checked = state.bigTextMode;
   document.querySelector('.app').classList.toggle('bigText', state.bigTextMode);
+  $('lightMode').checked = state.lightMode;
+  document.querySelector('.app').classList.toggle('lightMode', state.lightMode);
 }
 
 // Convidar pelo WhatsApp — já abre com o link da sala preenchido, sem precisar copiar/colar
@@ -493,7 +553,6 @@ $('mute').addEventListener('click', () => {
 // automático (primeira vez no celular) usa só o modo compacto, sem esse aviso.
 async function toggleCompactMode(requestFullscreenToo) {
   const on = $('game').classList.toggle('compact');
-  document.body.classList.toggle('game-compact-mode', on);
   $('compactBtn').classList.toggle('active', on);
   if (requestFullscreenToo) {
     try {
@@ -512,12 +571,11 @@ async function toggleCompactMode(requestFullscreenToo) {
   return on;
 }
 
-$('compactBtn').addEventListener('click', () => toggleCompactMode(false));
+$('compactBtn').addEventListener('click', () => toggleCompactMode(true));
 
 document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement && $('game').classList.contains('compact')) {
     $('game').classList.remove('compact');
-    document.body.classList.remove('game-compact-mode');
     $('compactBtn').classList.remove('active');
     render();
   }
@@ -526,30 +584,6 @@ document.addEventListener('fullscreenchange', () => {
 // Compartilhar pontuação como imagem (melhoria #11)
 $('shareScore').addEventListener('click', () => {
   shareScoreCard();
-});
-
-// Copiar o link do jogo direto — alternativa simples ao compartilhamento por imagem,
-// funciona em qualquer navegador (não depende de app nenhum, cola em qualquer lugar).
-$('copyLink').addEventListener('click', async () => {
-  const link = location.origin + location.pathname;
-  const btn = $('copyLink');
-  try {
-    await navigator.clipboard.writeText(link);
-  } catch {
-    // Navegador sem suporte ao clipboard moderno — usa o jeito antigo como respaldo
-    const temp = document.createElement('textarea');
-    temp.value = link;
-    temp.style.position = 'fixed';
-    temp.style.opacity = '0';
-    document.body.appendChild(temp);
-    temp.select();
-    try { document.execCommand('copy'); } catch {}
-    temp.remove();
-  }
-  const original = btn.textContent;
-  btn.textContent = '✅';
-  announce('Link copiado!');
-  setTimeout(() => { btn.textContent = original; }, 1500);
 });
 
 // Resetar configurações (nome, cor, cabeça, padrão, som) pro padrão de fábrica (melhoria #13)
@@ -615,6 +649,19 @@ applyTouchControl();
 applyComfortSettings();
 
 setupInput();
+
+// Atalhos de teclado extras pro PC — pausar (P) já existia; esses são novos.
+// Só funcionam durante o jogo, e nunca quando a pessoa tá digitando em algum campo
+// (nome, tecla personalizada etc), pra não atrapalhar quem tá escrevendo.
+document.addEventListener('keydown', (e) => {
+  const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+  if (typing || $('game').classList.contains('hidden')) return;
+  if (e.code === 'KeyR') { e.preventDefault(); $('restart').click(); }
+  else if (e.code === 'KeyM') { e.preventDefault(); $('mute').click(); }
+  else if (e.code === 'KeyZ') { e.preventDefault(); $('zoomToggle').click(); }
+  else if (e.code === 'KeyC') { e.preventDefault(); $('compactBtn').click(); }
+});
+
 setupTutorial();
 makePlayers();
 $('leaderboardToggle').addEventListener('click', toggleLeaderboard);
