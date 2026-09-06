@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.38.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.38.0">
+<title>🐍 Snake Arena v2.39.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.39.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -12,6 +12,10 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
+<div id="appSplash" class="appSplash">
+  <img src="icon.svg" alt="" width="88" height="88">
+  <div class="appSplashTitle">🐍 Snake Arena</div>
+</div>
 <div class="app">
   <div id="updateBanner" class="updateBanner hidden">
     🔄 Tem uma versão nova do jogo! <button id="updateBannerBtn" type="button">Atualizar agora</button>
@@ -40,7 +44,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.38.0</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.39.0</span></h1>
     <p class="sub">Até 6 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
@@ -269,6 +273,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.38.0"></script>
+<script type="module" src="js/main.js?v=2.39.0"></script>
 </body>
 </html>
