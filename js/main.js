@@ -996,3 +996,12 @@ if (navigator.getBattery) {
     battery.addEventListener('chargingchange', updateBatteryUI);
   }).catch(() => {});
 }
+
+// Esconde a tela de splash suavemente assim que o jogo terminou de montar a interface —
+// dá uma sensação de "app de verdade" abrindo, em vez de aparecer tudo de repente
+setTimeout(() => {
+  const splash = $('appSplash');
+  if (!splash) return;
+  splash.classList.add('fadeOut');
+  setTimeout(() => splash.remove(), 450);
+}, 350);
