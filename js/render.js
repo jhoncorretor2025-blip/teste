@@ -11,7 +11,7 @@
 // Pequeno), então a câmera segue de perto o tempo todo, em qualquer tamanho de mapa.
 
 import { $ } from './utils.js';
-import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS } from './config.js';
+import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS, BOARD_THEMES } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
 import { mySlot, isOnline } from './net.js';
@@ -263,74 +263,6 @@ function updateAndDrawConfetti() {
   ctx.restore();
 }
 
-// Desenha a Minhoca Caçadora Invencível: corpo sombrio pulsante, e um aviso na tela
-// enquanto ela ainda não começou a perseguir de verdade (fase de aviso).
-function drawHunter() {
-  const h = state.hunter;
-  if (!h) return;
-  const now = Date.now();
-  const t = now / 140;
-
-  ctx.save();
-  for (let k = h.segments.length - 1; k >= 0; k--) {
-    const p = h.segments[k];
-    const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
-    ctx.globalAlpha = k === 0 ? 1 : 0.75;
-    ctx.shadowBlur = cell * (0.6 + Math.sin(t) * 0.25);
-    ctx.shadowColor = '#ff3355';
-    ctx.fillStyle = k === 0 ? '#2a0810' : '#1a0509';
-    ctx.strokeStyle = '#ff3355';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.roundRect(x - cell * 0.42, y - cell * 0.42, cell * 0.84, cell * 0.84, cell * 0.28);
-    ctx.fill();
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  // Nome + contador flutuando em cima da cabeça dela (posição limitada pra não cortar na borda)
-  const head = h.segments[0];
-  const nomeX = Math.min(canvas.width - cell * 2.2, Math.max(cell * 2.2, sx(head.x) + cell / 2));
-  ctx.save();
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = '#ff3355';
-  ctx.font = `bold ${cell * 0.55}px system-ui`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.shadowBlur = 6;
-  ctx.shadowColor = '#000';
-  ctx.fillText('👻 Caçadora', nomeX, Math.max(cell, sy(head.y) - 4));
-  ctx.restore();
-
-  if (h.phase === 'warning') {
-    const restam = Math.max(0, Math.ceil((h.warningUntil - now) / 1000));
-    ctx.save();
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = '#ff3355';
-    ctx.font = `bold ${Math.round(cell * 2.4)}px system-ui`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowBlur = 14;
-    ctx.shadowColor = '#000';
-    ctx.fillText(String(restam > 0 ? restam : '!'), canvas.width / 2, canvas.height * 0.28);
-    ctx.font = `bold ${Math.round(cell * 0.65)}px system-ui`;
-    ctx.fillText('Você está sendo caçado!', canvas.width / 2, canvas.height * 0.28 + cell * 1.6);
-    ctx.restore();
-  } else {
-    const restamCacada = Math.max(0, Math.ceil((h.huntUntil - now) / 1000));
-    ctx.save();
-    ctx.globalAlpha = 0.9;
-    ctx.fillStyle = '#fff';
-    ctx.font = `bold ${Math.round(cell * 0.6)}px system-ui`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.shadowBlur = 6;
-    ctx.shadowColor = '#000';
-    ctx.fillText(`👻 Sendo caçado: ${restamCacada}s`, canvas.width / 2, 8);
-    ctx.restore();
-  }
-}
-
 function drawMinimap() {
   if (viewW >= state.mapW && viewH >= state.mapH) return; // mapa já cabe inteiro, não precisa
   const mmW = Math.min(120, canvas.width * 0.28);
@@ -347,13 +279,6 @@ function drawMinimap() {
   ctx.roundRect(mx, my, mmW, mmH, 6);
   ctx.fill();
   ctx.stroke();
-
-  for (const f of state.foods) {
-    ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : 'rgba(255,150,120,0.85)';
-    ctx.beginPath();
-    ctx.arc(mx + f.x * scale, my + f.y * scale, f.kind === 'bonus' ? 1.6 : 1, 0, Math.PI * 2);
-    ctx.fill();
-  }
 
   for (let i = 0; i < state.count; i++) {
     if (!state.alive[i] || !state.snakes[i]?.[0]) continue;
@@ -420,11 +345,12 @@ export function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (state.shake) ctx.translate((Math.random() - 0.5) * state.shake, (Math.random() - 0.5) * state.shake);
 
-  ctx.fillStyle = state.bgColor || '#050911';
+  const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
+  ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawStars();
 
-  ctx.strokeStyle = '#0d2038';
+  ctx.strokeStyle = theme.grid;
   const gxStart = Math.floor(camX), gxEnd = Math.ceil(camX + viewW);
   const gyStart = Math.floor(camY), gyEnd = Math.ceil(camY + viewH);
   for (let x = gxStart; x <= gxEnd; x++) { ctx.beginPath(); ctx.moveTo(sx(x), sy(gyStart)); ctx.lineTo(sx(x), sy(gyEnd)); ctx.stroke(); }
@@ -446,7 +372,7 @@ export function draw() {
       ctx.font = `${cell}px sans-serif`;
       ctx.shadowBlur = 8;
       ctx.shadowColor = f.kind === 'drop' ? (state.colors[f.owner] || '#fff') : '#ff4f7a';
-      ctx.fillText('🍎', x, y);
+      ctx.fillText(theme.food, x, y);
     }
     ctx.restore();
   }
@@ -456,12 +382,14 @@ export function draw() {
     const boosting = state.boosting[i];
 
     ctx.save();
-    if (boosting) {
-      ctx.shadowBlur = cell * 0.8;
-      ctx.shadowColor = state.colors[i];
-    }
+    // Rastro neon: um brilho na cor da minhoca, mais forte pertinho da cabeça e
+    // desaparecendo em direção à cauda — dá aquele efeito de "luz deixada no ar"
+    const trailReach = Math.min(s.length, 12);
     for (let k = s.length - 1; k >= 0; k--) {
       const p = s[k];
+      const fade = Math.max(0, 1 - k / trailReach);
+      ctx.shadowBlur = boosting ? cell * 0.8 : cell * (0.15 + 0.35 * fade);
+      ctx.shadowColor = state.colors[i];
       ctx.globalAlpha = k === 0 ? 1 : (boosting ? 0.92 : 0.82);
       if (k === 0) {
         drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
@@ -517,8 +445,6 @@ export function draw() {
     ctx.restore();
   }
 
-  drawHunter();
-
   drawMinimap();
   checkMissionConfetti();
   updateAndDrawConfetti();
@@ -534,6 +460,22 @@ export function draw() {
     ctx.shadowBlur = 16;
     ctx.shadowColor = '#000';
     ctx.fillText(state.reactionToast.emoji, canvas.width / 2, canvas.height * 0.32);
+    ctx.restore();
+  }
+
+  // Aviso grande e legível de "Você morreu" — bem no centro, letra grande, com contorno
+  if (state.deathMessage && Date.now() < state.deathMessage.until) {
+    const left = state.deathMessage.until - Date.now();
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, left / 300);
+    ctx.font = `900 ${Math.round(Math.min(canvas.width, canvas.height) * 0.09)}px system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.fillStyle = '#ff5577';
+    ctx.strokeText(state.deathMessage.text, canvas.width / 2, canvas.height * 0.42);
+    ctx.fillText(state.deathMessage.text, canvas.width / 2, canvas.height * 0.42);
     ctx.restore();
   }
 
