@@ -104,13 +104,25 @@ export function updateGamesPlayedBadge(n) {
   if (hit) document.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: { n } }));
 }
 
+// Troca de tela com uma leve transição suave, em vez de aparecer/sumir na hora
+export function switchScreen(hideId, showId) {
+  const hideEl = $(hideId), showEl = $(showId);
+  hideEl.classList.add('fading');
+  setTimeout(() => {
+    hideEl.classList.add('hidden');
+    hideEl.classList.remove('fading');
+    showEl.classList.remove('hidden');
+    showEl.classList.add('fading');
+    requestAnimationFrame(() => requestAnimationFrame(() => showEl.classList.remove('fading')));
+  }, 150);
+}
+
 export function startGame() {
   syncSettings();
   setVibrationEnabled(state.vibrationOn);
   updateGamesPlayedBadge(incrementGamesPlayed());
   reset();
-  $('menu').classList.add('hidden');
-  $('game').classList.remove('hidden');
+  switchScreen('menu', 'game');
   $('overlay').classList.add('hidden');
   $('badge').textContent = (state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO') + (state.noWalls ? ' 🌀' : '');
   state.running = false;
@@ -378,8 +390,7 @@ export function startOnlineHostGame() {
 // Mostra a tela de jogo pro CLIENTE (quem entrou numa sala). Ele não roda a simulação —
 // só fica esperando os pacotes de estado do anfitrião pra desenhar na tela.
 export function startClientGame() {
-  $('menu').classList.add('hidden');
-  $('game').classList.remove('hidden');
+  switchScreen('menu', 'game');
   $('overlay').classList.add('hidden');
   $('badge').textContent = '🌐 Aguardando o anfitrião iniciar...';
   state.running = true;
