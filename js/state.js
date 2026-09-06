@@ -20,6 +20,7 @@ export const state = {
   controlSize: 100, // tamanho dos controles de toque (%), ajustável
   controlsSwapped: false, // inverter lado dos controles (bom pra canhotos)
   bigTextMode: false, // modo texto grande, interface mais simples
+  lightMode: false, // modo claro da interface (menu), separado do tema do tabuleiro
   tapVibration: true, // vibração ao tocar nos botões (feedback tátil)
   customKeys: [{}, {}, {}, {}, {}, {}], // teclas personalizadas por jogador (melhoria de mapeamento)
   show: [true, true, true, true, true, true],
@@ -30,7 +31,7 @@ export const state = {
   foodCount: 3,
   speed: 'normal', // velocidade escolhida no menu
   noWalls: false,
-  bgColor: '#050911', // cor de fundo do tabuleiro
+  theme: 'space', // tema visual do tabuleiro (fundo, grade e comida) — antes era só cor de fundo
   vibrationOn: true, // vibração pode ser desligada separado do som
   difficulty: 'normal',
   running: false,
@@ -53,6 +54,12 @@ export const state = {
   milestones: [0, 0, 0, 0, 0, 0], // maior marco de tamanho já comemorado
   toast: null, // {x, y, text, color, until} — texto flutuante de comemoração
   reactionToast: null, // {emoji, text, until} — reação rápida recebida de outro jogador
+  deathMessage: null, // {text, until} — aviso grande de "Você morreu" pro jogador local
+  tournamentMode: false, // modo torneio: melhor de 3 rodadas
+  tournamentRound: 0, // rodada atual (1, 2 ou 3)
+  tournamentWins: [0, 0, 0, 0, 0, 0], // quantas rodadas cada jogador já venceu no torneio
+  tournamentRoundEndsAt: 0, // timestamp de quando a rodada atual termina
+  tournamentRoundScore: [0, 0, 0, 0, 0, 0], // pontos acumulados na rodada (não zera ao morrer, ao contrário do score normal)
 
   joyId: null,
 
@@ -69,8 +76,4 @@ export const state = {
 
   // --- Eliminações desta sessão, sobrevive a "Reiniciar" ---
   eliminations: [0, 0, 0, 0, 0, 0],
-
-  // --- Minhoca Caçadora Invencível: aparece ao atingir marcos de comida (100, 150...) ---
-  hunter: null, // {phase:'warning'|'hunting', targetSlot, segments, dir, warningUntil, huntUntil, durationSec} ou null
-  hunterTriggered: [[], [], [], [], [], []], // por jogador: quais marcos (100, 150) já dispararam nessa partida
 };
