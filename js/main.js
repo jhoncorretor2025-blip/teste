@@ -36,9 +36,13 @@ net.setHandlers({
     else if (msg.type === 'reaction') {
       showReaction(msg.emoji);
       net.broadcastRaw({ type: 'reaction', emoji: msg.emoji, from: slot }); // repassa pra todo mundo
+    } else if (msg.type === 'chat') {
+      appendChatMessage(slot, msg.text);
+      net.broadcastRaw({ type: 'chat', text: msg.text, from: slot }); // repassa pra todo mundo
     }
   },
   onReaction: (emoji) => showReaction(emoji),
+  onChat: (text, from) => appendChatMessage(from, text),
   onCountdown: (n) => {
     $('countdownOverlay').classList.remove('hidden');
     $('countdownText').textContent = n > 0 ? String(n) : 'VAI! 🚀';
@@ -224,6 +228,36 @@ document.querySelector('.reactionRow')?.addEventListener('click', (e) => {
     if (net.isHost()) net.broadcastRaw({ type: 'reaction', emoji, from: net.mySlot });
     else net.sendInput({ type: 'reaction', emoji });
   }
+});
+
+// Chat de texto simples — mostra as últimas mensagens numa caixinha, mantém só as 20 mais recentes
+function escapeChatText(s) {
+  return String(s || '').trim().replace(/[<>]/g, '').slice(0, 80);
+}
+function appendChatMessage(from, text) {
+  const log = $('chatLog');
+  const div = document.createElement('div');
+  div.className = 'chatMsg';
+  div.innerHTML = `<b>${label(from)}:</b> ${escapeChatText(text)}`;
+  log.appendChild(div);
+  while (log.children.length > 20) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+}
+
+function sendChatMessage() {
+  const input = $('chatInput');
+  const text = escapeChatText(input.value);
+  if (!text) return;
+  input.value = '';
+  appendChatMessage(net.mySlot, text); // mostra pra mim mesmo na hora
+  if (net.isOnline()) {
+    if (net.isHost()) net.broadcastRaw({ type: 'chat', text, from: net.mySlot });
+    else net.sendInput({ type: 'chat', text });
+  }
+}
+$('chatSendBtn').addEventListener('click', sendChatMessage);
+$('chatInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendChatMessage();
 });
 
 // Não deixa a tela do celular apagar sozinha enquanto tá jogando
