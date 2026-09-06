@@ -32,67 +32,46 @@ function getPeerCtor() {
 }
 
 // Cria uma sala nova. Chama onReady(codigoDaSala) quando o código já pode ser compartilhado.
-const SALA_KEY = 'snakeArena_salaCodigo';
-
 export function hostRoom(onReady, onFail) {
   role = 'host';
   mySlot = 0;
   const Peer = getPeerCtor();
-  let idSalvo = null;
-  try { idSalvo = sessionStorage.getItem(SALA_KEY); } catch {}
+  peer = new Peer();
+  let firstOpen = true;
 
-  function configurarPeer(usarIdSalvo) {
-    peer = usarIdSalvo && idSalvo ? new Peer(idSalvo) : new Peer();
-    let firstOpen = true;
-    let jaTentouFallback = false;
+  peer.on('open', id => {
+    if (firstOpen) { firstOpen = false; onReady(id); }
+    else { handlers.onConnectionStatus && handlers.onConnectionStatus('connected'); }
+  });
+  peer.on('error', err => onFail && onFail(err));
 
-    peer.on('open', id => {
-      try { sessionStorage.setItem(SALA_KEY, id); } catch {}
-      if (firstOpen) { firstOpen = false; onReady(id); }
-      else { handlers.onConnectionStatus && handlers.onConnectionStatus('connected'); }
+  // Quando o celular deixa a aba em segundo plano (ex: foi mandar o link no WhatsApp),
+  // a conexão com o servidor de sinalização pode cair sozinha — reconecta automaticamente.
+  peer.on('disconnected', () => {
+    handlers.onConnectionStatus && handlers.onConnectionStatus('disconnected');
+    if (peer && !peer.destroyed) { try { peer.reconnect(); } catch {} }
+  });
+
+  peer.on('connection', conn => {
+    const slot = conns.length + 1; // slot 0 é o anfitrião; próximos são 1, 2
+    if (slot > 5) {
+      // Sala já tem 3 jogadores — avisa quem tentou entrar antes de fechar a conexão
+      conn.on('open', () => { conn.send({ type: 'full' }); conn.close(); });
+      return;
+    }
+    conns.push(conn);
+
+    conn.on('open', () => {
+      conn.send({ type: 'welcome', slot });
+      handlers.onPeerJoined && handlers.onPeerJoined(slot);
     });
-    // Se o código salvo já não estiver mais disponível (expirou ou está em uso em outra aba),
-    // tenta de novo com um código novo — só uma vez, pra não ficar em loop.
-    peer.on('error', err => {
-      if (usarIdSalvo && !jaTentouFallback) {
-        jaTentouFallback = true;
-        try { sessionStorage.removeItem(SALA_KEY); } catch {}
-        configurarPeer(false);
-        return;
-      }
-      onFail && onFail(err);
+    conn.on('data', msg => handlers.onInput && handlers.onInput(slot, msg));
+    conn.on('close', () => {
+      const idx = conns.indexOf(conn);
+      if (idx >= 0) conns.splice(idx, 1);
+      handlers.onPeerLeft && handlers.onPeerLeft(slot);
     });
-
-    // Quando o celular deixa a aba em segundo plano (ex: foi mandar o link no WhatsApp),
-    // a conexão com o servidor de sinalização pode cair sozinha — reconecta automaticamente.
-    peer.on('disconnected', () => {
-      handlers.onConnectionStatus && handlers.onConnectionStatus('disconnected');
-      if (peer && !peer.destroyed) { try { peer.reconnect(); } catch {} }
-    });
-
-    peer.on('connection', conn => {
-      const slot = conns.length + 1; // slot 0 é o anfitrião; próximos são 1, 2
-      if (slot > 5) {
-        // Sala já tem 3 jogadores — avisa quem tentou entrar antes de fechar a conexão
-        conn.on('open', () => { conn.send({ type: 'full' }); conn.close(); });
-        return;
-      }
-      conns.push(conn);
-
-      conn.on('open', () => {
-        conn.send({ type: 'welcome', slot });
-        handlers.onPeerJoined && handlers.onPeerJoined(slot);
-      });
-      conn.on('data', msg => handlers.onInput && handlers.onInput(slot, msg));
-      conn.on('close', () => {
-        const idx = conns.indexOf(conn);
-        if (idx >= 0) conns.splice(idx, 1);
-        handlers.onPeerLeft && handlers.onPeerLeft(slot);
-      });
-    });
-  }
-
-  configurarPeer(!!idSalvo);
+  });
 }
 
 // Entra numa sala existente usando o código do anfitrião.
@@ -123,6 +102,8 @@ export function joinRoom(hostId, onJoined, onFail) {
         handlers.onCountdown && handlers.onCountdown(msg.n);
       } else if (msg.type === 'reaction') {
         handlers.onReaction && handlers.onReaction(msg.emoji, msg.from);
+      } else if (msg.type === 'chat') {
+        handlers.onChat && handlers.onChat(msg.text, msg.from);
       } else if (msg.type === 'full') {
         // sala já tava cheia (3 jogadores) — não dá pra entrar
         onFail && onFail(new Error('full'));
