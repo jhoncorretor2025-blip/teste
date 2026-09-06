@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.30.2';
+export const VERSION = '2.31.0';
 
 // --- Zoom da câmera (quanto do mapa aparece na tela de cada vez) ---
 export const ZOOM_LEVELS = [
@@ -12,12 +12,15 @@ export const ZOOM_LEVELS = [
 ];
 
 // --- Cor de fundo do tabuleiro (melhoria #2) ---
-export const BG_COLORS = [
-  { name: '🌌 Espacial (padrão)', value: '#050911' },
-  { name: '🌊 Azul profundo', value: '#031b2e' },
-  { name: '🌲 Verde escuro', value: '#04150d' },
-  { name: '🟣 Roxo noite', value: '#150a26' },
-  { name: '⚫ Preto puro', value: '#000000' },
+// --- Temas completos de tabuleiro (fundo + grade + comida) — melhoria de design ---
+export const BOARD_THEMES = [
+  { value: 'space', name: '🌌 Espacial', bg: '#050911', grid: '#16233d', food: '🍎' },
+  { value: 'deep', name: '🌊 Azul Profundo', bg: '#031b2e', grid: '#0f3350', food: '🍇' },
+  { value: 'desert', name: '🏜️ Deserto', bg: '#2e2410', grid: '#4a3a18', food: '🌵' },
+  { value: 'ice', name: '❄️ Gelo', bg: '#0a1f2e', grid: '#1e3a4d', food: '🐟' },
+  { value: 'forest', name: '🌲 Floresta', bg: '#04150d', grid: '#123322', food: '🍄' },
+  { value: 'night', name: '🟣 Roxo Noite', bg: '#150a26', grid: '#2a1a45', food: '🍒' },
+  { value: 'void', name: '⚫ Vazio', bg: '#000000', grid: '#1a1a1a', food: '🍎' },
 ];
 
 // --- Tamanho do mapa escolhível no menu ---
@@ -33,7 +36,7 @@ export const MAP_SIZES = [
 // "tick" é quanto tempo (em ms) cada passo do jogo demora — quanto menor, mais rápido.
 export const SPEEDS = [
   { value: 'slow', label: '🐢 Lenta', tick: 220 },
-  { value: 'normal', label: '🚶 Normal', tick: 175 },
+  { value: 'normal', label: '🚶 Normal', tick: 160 },
   { value: 'fast', label: '🏃 Rápida', tick: 115 },
   { value: 'veryfast', label: '⚡ Muito rápida', tick: 80 },
 ];
@@ -129,6 +132,10 @@ export const SPECIAL_MILESTONES = [
   { at: 50, text: '🌟 50! Sensacional!', color: '#ffd24d' },
   { at: 100, text: '👑 100! LENDÁRIO!', color: '#ff72bd' },
 ];
+
+// --- Modo Torneio: melhor de 3 rodadas cronometradas, ganha quem vencer mais rodadas ---
+export const TOURNAMENT_ROUNDS = 3;
+export const TOURNAMENT_ROUND_MS = 60000; // 60 segundos por rodada
 
 // --- Conjuntos de cores prontos pro padrão Tricolor (além dos tons automáticos) ---
 export const TRICOLOR_PALETTES = [
