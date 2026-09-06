@@ -89,7 +89,7 @@ export function syncSettings() {
   state.difficulty = $('difficulty').value;
   state.noWalls = $('noWalls').checked;
   state.teamMode = $('teamMode').checked;
-  state.bgColor = $('bgColor').value;
+  state.theme = $('boardTheme').value;
   state.zoom = $('zoomLevel').value;
   state.vibrationOn = $('vibrationOn').checked;
 
