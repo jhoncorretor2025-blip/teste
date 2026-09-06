@@ -974,3 +974,25 @@ function maybeSuggestLandscape() {
   $('landscapeHint').classList.add('show');
   setTimeout(() => $('landscapeHint').classList.remove('show'), 4000);
 }
+
+// Indicador de bateria e aviso quando tá acabando — usa a API de Bateria quando o
+// navegador suporta (nem todos suportam, então tudo aqui é opcional/silencioso se não der)
+let lowBatteryWarned = false;
+if (navigator.getBattery) {
+  navigator.getBattery().then((battery) => {
+    function updateBatteryUI() {
+      const pct = Math.round(battery.level * 100);
+      $('batteryStatus').classList.remove('hidden');
+      $('batteryPercent').textContent = pct;
+      $('batteryStatus').style.color = (pct <= 20 && !battery.charging) ? '#ff5577' : '';
+      if (pct <= 15 && !battery.charging && !lowBatteryWarned) {
+        lowBatteryWarned = true;
+        announce(`Bateria em ${pct}%. Considere ativar o economizador de energia ou ligar o carregador.`);
+      }
+      if (battery.charging || pct > 20) lowBatteryWarned = false;
+    }
+    updateBatteryUI();
+    battery.addEventListener('levelchange', updateBatteryUI);
+    battery.addEventListener('chargingchange', updateBatteryUI);
+  }).catch(() => {});
+}
