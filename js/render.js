@@ -372,6 +372,20 @@ export function draw() {
   for (let x = gxStart; x <= gxEnd; x++) { ctx.beginPath(); ctx.moveTo(sx(x), sy(gyStart)); ctx.lineTo(sx(x), sy(gyEnd)); ctx.stroke(); }
   for (let y = gyStart; y <= gyEnd; y++) { ctx.beginPath(); ctx.moveTo(sx(gxStart), sy(y)); ctx.lineTo(sx(gxEnd), sy(y)); ctx.stroke(); }
 
+  // Borda bem visível nos limites reais do mapa — ajuda a saber exatamente onde é a
+  // "parede" (ou o "teleporte", no modo sem paredes), mesmo quando a câmera só mostra
+  // um pedaço do mapa por vez. Vermelho brilhante = machuca; azul tracejado = teleporta.
+  ctx.save();
+  const borderColor = state.noWalls ? '#4dd9ff' : '#ff4d4d';
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = Math.max(2, cell * 0.12);
+  ctx.shadowBlur = cell * 0.6;
+  ctx.shadowColor = borderColor;
+  if (state.noWalls) ctx.setLineDash([cell * 0.4, cell * 0.25]);
+  ctx.strokeRect(sx(0), sy(0), state.mapW * cell, state.mapH * cell);
+  ctx.setLineDash([]);
+  ctx.restore();
+
   const t = Date.now() / 180;
   for (const f of state.foods) {
     const x = sx(f.x) + cell / 2, y = sy(f.y) + cell / 2;
