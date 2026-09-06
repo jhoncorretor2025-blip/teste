@@ -324,6 +324,10 @@ export function renderScores() {
   const reactionBox = $('reactionRow');
   if (reactionBox) reactionBox.classList.toggle('hidden', !isOnline());
 
+  // Caixa de chat de texto — mesma regra: só faz sentido jogando online com outra pessoa
+  const chatBox = $('chatBox');
+  if (chatBox) chatBox.classList.toggle('hidden', !isOnline());
+
   // Indicador de rodada e tempo restante do Modo Torneio
   const tBox = $('tournamentStatus');
   if (tBox) {
