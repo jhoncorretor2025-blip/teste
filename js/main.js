@@ -852,3 +852,83 @@ document.addEventListener('pointerdown', (e) => {
   btn.appendChild(ripple);
   setTimeout(() => ripple.remove(), 500);
 });
+
+// Copiar estatísticas (recorde + partidas jogadas) num texto simples
+$('copyStatsBtn').addEventListener('click', async () => {
+  const games = loadGamesPlayed();
+  const best = loadBest();
+  const text = `🐍 Snake Arena - Minhas estatísticas\n🏅 Recorde: ${best} pontos\n🎮 Partidas jogadas: ${games}`;
+  try {
+    await navigator.clipboard.writeText(text);
+    $('copyStatsBtn').textContent = 'Copiado! ✅';
+    setTimeout(() => $('copyStatsBtn').textContent = '📋 Copiar minhas estatísticas', 1500);
+  } catch { alert(text); }
+});
+
+// Código de configuração — junta as opções escolhidas num texto curto pra compartilhar,
+// pra outra pessoa já abrir com tudo igual sem precisar escolher de novo
+function buildConfigCode() {
+  const cfg = {
+    mode: $('mode').value, speed: $('speedSelect').value, mapSize: $('mapSize').value,
+    difficulty: $('difficulty').value, noWalls: $('noWalls').checked,
+    teamMode: $('teamMode').checked, tournamentMode: $('tournamentMode').checked,
+    zoom: $('zoomLevel').value, theme: $('boardTheme').value,
+  };
+  return btoa(encodeURIComponent(JSON.stringify(cfg)));
+}
+$('copyConfigCodeBtn').addEventListener('click', async () => {
+  const code = buildConfigCode();
+  try {
+    await navigator.clipboard.writeText(code);
+    $('copyConfigCodeBtn').textContent = 'Copiado! ✅';
+    setTimeout(() => $('copyConfigCodeBtn').textContent = '🔤 Copiar código de configuração', 1500);
+  } catch { alert(code); }
+});
+$('applyConfigCodeBtn').addEventListener('click', () => {
+  try {
+    const cfg = JSON.parse(decodeURIComponent(atob($('pasteConfigCode').value.trim())));
+    if (cfg.mode) { $('mode').value = cfg.mode; state.mode = cfg.mode; }
+    if (cfg.speed) $('speedSelect').value = cfg.speed;
+    if (cfg.mapSize) $('mapSize').value = cfg.mapSize;
+    if (cfg.difficulty) { $('difficulty').value = cfg.difficulty; state.difficulty = cfg.difficulty; }
+    if (typeof cfg.noWalls === 'boolean') $('noWalls').checked = cfg.noWalls;
+    if (typeof cfg.teamMode === 'boolean') { $('teamMode').checked = cfg.teamMode; makePlayers(); }
+    if (typeof cfg.tournamentMode === 'boolean') $('tournamentMode').checked = cfg.tournamentMode;
+    if (cfg.zoom) { $('zoomLevel').value = cfg.zoom; state.zoom = cfg.zoom; persistZoom(); }
+    if (cfg.theme) { $('boardTheme').value = cfg.theme; state.theme = cfg.theme; }
+    updateRoomSettingsPreview();
+    $('configCodeStatus').textContent = '✅ Configurações aplicadas!';
+    setTimeout(() => $('configCodeStatus').textContent = '', 2500);
+  } catch {
+    $('configCodeStatus').textContent = '❌ Código inválido — confere se copiou certinho.';
+  }
+});
+
+// Instruções de instalar como app — diferentes pra iPhone, Android e computador
+$('installHelpBtn').addEventListener('click', () => {
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /Android/.test(ua);
+  let html;
+  if (isIOS) {
+    html = `<p>No iPhone/iPad, pelo Safari:</p>
+      <p>1. Toque no ícone de <b>Compartilhar</b> (quadrado com seta pra cima), na barra de baixo.</p>
+      <p>2. Role a lista e toque em <b>"Adicionar à Tela de Início"</b>.</p>
+      <p>3. Toque em <b>"Adicionar"</b> no canto superior direito.</p>
+      <p>Pronto! O ícone do jogo aparece na tela inicial, como um app de verdade. 🐍</p>`;
+  } else if (isAndroid) {
+    html = `<p>No Android, pelo Chrome:</p>
+      <p>1. Toque nos <b>3 pontinhos</b> no canto superior direito.</p>
+      <p>2. Toque em <b>"Instalar app"</b> ou <b>"Adicionar à tela inicial"</b>.</p>
+      <p>3. Confirme tocando em <b>"Instalar"</b>.</p>
+      <p>Pronto! O jogo abre igual um app instalado, com ícone próprio. 🐍</p>`;
+  } else {
+    html = `<p>No computador, pelo Chrome/Edge:</p>
+      <p>1. Procure o ícone de <b>instalar</b> (uma tela com uma setinha) na barra de endereço.</p>
+      <p>2. Clique nele e depois em <b>"Instalar"</b>.</p>
+      <p>No celular, os passos são diferentes — abra essa página direto do seu celular pra ver as instruções certas pra ele.</p>`;
+  }
+  $('installHelpText').innerHTML = html;
+  $('installHelpOverlay').classList.remove('hidden');
+});
+$('installHelpCloseBtn').addEventListener('click', () => $('installHelpOverlay').classList.add('hidden'));
