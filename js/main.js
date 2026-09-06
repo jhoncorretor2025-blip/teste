@@ -4,7 +4,7 @@
 import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
 import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS } from './config.js';
 import { state } from './state.js';
-import { makePlayers } from './players.js';
+import { makePlayers, label } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge } from './loop.js';
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
@@ -195,6 +195,20 @@ document.addEventListener('achievementUnlocked', (e) => {
 });
 let achievementHideTimer = null;
 
+// Fim do Modo Torneio: mostra o campeão e o placar de cada rodada, reaproveitando o
+// overlay que já existia na tela (endTitle/endText/continueBtn) sem uso nenhum até agora
+document.addEventListener('tournamentOver', (e) => {
+  const { champion, wins } = e.detail;
+  $('endTitle').textContent = '🏆 Torneio Finalizado!';
+  const placar = wins.map((w, i) => `${i === champion ? '👑 ' : ''}${label(i)}: ${w} rodada${w === 1 ? '' : 's'}`).join(' • ');
+  $('endText').textContent = `${label(champion)} venceu o torneio! ${placar}`;
+  $('overlay').classList.remove('hidden');
+  $('continueBtn').onclick = () => {
+    $('overlay').classList.add('hidden');
+    $('back').click();
+  };
+});
+
 // Confere a pontuação a cada meio segundo e atualiza o ícone da aba — não precisa ser
 // em todo quadro, só rápido o bastante pra sentir que tá "ao vivo"
 setInterval(() => {
@@ -311,6 +325,7 @@ function updateRoomSettingsPreview() {
   const parts = [get('mode'), get('speedSelect'), get('mapSize'), get('difficulty')];
   if ($('noWalls').checked) parts.push('🌀 Sem paredes');
   if ($('teamMode').checked) parts.push('🤝 Modo Times');
+  if ($('tournamentMode').checked) parts.push('🏆 Modo Torneio');
   $('roomSettingsPreview').textContent = '⚙️ Vai criar a sala com: ' + parts.join(' • ');
 }
 
@@ -334,6 +349,7 @@ $('players').addEventListener('change', e => {
 
 // Ligar/desligar o modo Times reconstrói os cards de jogador (mostra/esconde o seletor de time)
 $('teamMode').addEventListener('change', () => { makePlayers(); updateRoomSettingsPreview(); });
+$('tournamentMode').addEventListener('change', updateRoomSettingsPreview);
 
 // Botões de gravar tecla personalizada: clica, aperta a tecla que quiser, pronto
 $('players').addEventListener('click', (e) => {
