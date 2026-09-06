@@ -60,6 +60,7 @@ export const state = {
   tournamentWins: [0, 0, 0, 0, 0, 0], // quantas rodadas cada jogador já venceu no torneio
   tournamentRoundEndsAt: 0, // timestamp de quando a rodada atual termina
   tournamentRoundScore: [0, 0, 0, 0, 0, 0], // pontos acumulados na rodada (não zera ao morrer, ao contrário do score normal)
+  tournamentChampion: null, // índice de quem venceu o torneio (definido só quando termina)
 
   joyId: null,
 
