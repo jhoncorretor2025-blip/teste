@@ -5,7 +5,7 @@ import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate
 import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS } from './config.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge } from './loop.js';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen } from './loop.js';
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
@@ -291,6 +291,9 @@ $('restart').addEventListener('click', () => {
 $('pause').addEventListener('click', () => state.paused = !state.paused);
 
 $('back').addEventListener('click', () => {
+  // Só pergunta se a partida ainda tá rolando de verdade — se já morreu ou o torneio
+  // acabou, sair direto é o esperado, sem precisar confirmar nada
+  if (state.running && !confirm('Tem certeza que quer sair da partida? O progresso dessa rodada não é salvo.')) return;
   state.running = false;
   clearInterval(state.timer);
   net.disconnect();
@@ -299,8 +302,7 @@ $('back').addEventListener('click', () => {
   $('hostPanel').classList.add('hidden');
   $('hostBtn').disabled = false;
   $('joinBtn').disabled = false;
-  $('game').classList.add('hidden');
-  $('menu').classList.remove('hidden');
+  switchScreen('game', 'menu');
   document.querySelector('.siteHeader').classList.remove('hidden');
   renderLeaderboard();
   updateTopRecordDisplay();
@@ -678,6 +680,23 @@ state.vibrationOn = loadVibration();
 setVibrationEnabled(state.vibrationOn);
 $('vibrationOn').checked = state.vibrationOn;
 
+// Safari no iPhone não suporta a API de vibração — em vez de deixar a pessoa achar que
+// tá ligado mas não sentir nada, avisamos e desativamos o controle
+if (!navigator.vibrate) {
+  $('vibrationOn').disabled = true;
+  $('vibrationOn').checked = false;
+  const vibeLabel = $('vibrationOn').closest('label');
+  if (vibeLabel) vibeLabel.title = 'Seu navegador (comum no iPhone/Safari) não suporta vibração — por isso essa opção está desativada.';
+  const note = document.createElement('div');
+  note.className = 'muted';
+  note.style.fontSize = '.72rem';
+  note.style.marginTop = '-4px';
+  note.textContent = '📳 Vibração não é suportada neste navegador (comum no iPhone).';
+  $('vibrationOn').closest('label')?.after(note);
+  $('tapVibration').disabled = true;
+  $('tapVibration').checked = false;
+}
+
 updateGamesPlayedBadge(loadGamesPlayed());
 
 try {
@@ -818,3 +837,18 @@ function applyQuickRepeat() {
   };
 }
 applyQuickRepeat();
+
+// Efeito de "ondinha" ao tocar nos botões — confirma visualmente que o toque registrou
+document.addEventListener('pointerdown', (e) => {
+  const btn = e.target.closest('.btn,.iconBtn,.refresh,.tabBtn,.reactionBtn,.bindKey');
+  if (!btn) return;
+  const rect = btn.getBoundingClientRect();
+  const ripple = document.createElement('span');
+  ripple.className = 'rippleEffect';
+  const size = Math.max(rect.width, rect.height);
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+  ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+  btn.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 500);
+});
