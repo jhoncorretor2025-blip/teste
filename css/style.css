@@ -43,3 +43,4 @@
 
 h1,.topRecord,.score b,#badge{font-family:"Courier New",ui-monospace,monospace;letter-spacing:.5px}
 h1{text-shadow:0 0 12px currentColor}
+.landscapeHint{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:200;background:#1f335a;border:1px solid #4a6ba8;color:#fff;padding:10px 16px;border-radius:12px;font-size:.85rem;box-shadow:0 8px 24px #0006;transition:opacity .3s,transform .3s}.landscapeHint{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(-10px)}.landscapeHint.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}.iconBtn.active{background:#3a2a55;border-color:#b57bff}
