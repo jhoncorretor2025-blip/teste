@@ -1,10 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
   <defs>
-    <radialGradient id="g" cx="50%" cy="35%" r="75%">
+    <radialGradient id="bg" cx="50%" cy="32%" r="80%">
       <stop offset="0%" stop-color="#1b2c4d"/>
-      <stop offset="100%" stop-color="#07101d"/>
+      <stop offset="100%" stop-color="#050911"/>
     </radialGradient>
+    <linearGradient id="body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8bffa9"/>
+      <stop offset="100%" stop-color="#3fcf68"/>
+    </linearGradient>
   </defs>
-  <rect width="192" height="192" rx="36" fill="url(#g)"/>
-  <text x="96" y="132" font-size="112" text-anchor="middle">🐍</text>
+
+  <rect width="192" height="192" rx="40" fill="url(#bg)"/>
+
+  <circle cx="30" cy="28" r="1.6" fill="#ffffff" opacity=".55"/>
+  <circle cx="160" cy="40" r="1.3" fill="#ffffff" opacity=".4"/>
+  <circle cx="150" cy="150" r="1.6" fill="#ffffff" opacity=".5"/>
+  <circle cx="24" cy="140" r="1.2" fill="#ffffff" opacity=".4"/>
+
+  <path d="M 96 150
+           C 60 150, 40 130, 40 104
+           C 40 80, 58 64, 82 64
+           C 102 64, 116 78, 116 96
+           C 116 111, 104 121, 90 121
+           C 78 121, 69 113, 69 101
+           C 69 91, 77 84, 87 84"
+        fill="none" stroke="url(#body)" stroke-width="22" stroke-linecap="round"/>
+
+  <circle cx="87" cy="84" r="16" fill="url(#body)"/>
+  <circle cx="82" cy="79" r="3.2" fill="#0b1220"/>
+  <circle cx="93" cy="79" r="3.2" fill="#0b1220"/>
+
+  <circle cx="134" cy="132" r="10" fill="#ff5577"/>
+  <path d="M 134 122 q 4 -6 9 -3" stroke="#3fcf68" stroke-width="3" fill="none" stroke-linecap="round"/>
 </svg>
