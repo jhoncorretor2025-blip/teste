@@ -125,6 +125,7 @@ $('joinBtn').addEventListener('click', () => {
   net.joinRoom(code,
     () => {
       $('joinStatus').textContent = '';
+      document.querySelector('.siteHeader').classList.add('hidden');
       startClientGame();
     },
     (err) => {
@@ -132,7 +133,7 @@ $('joinBtn').addEventListener('click', () => {
       let msg = '❌ Não consegui entrar. ';
       if (err?.type === 'peer-unavailable') msg += 'Essa sala não existe (ou já fechou) — confere o código com quem criou, ou pede pra criar de novo.';
       else if (err?.type === 'network' || err?.type === 'server-error' || err?.type === 'disconnected' || err?.type === 'socket-error' || err?.type === 'socket-closed') msg += 'Parece que a internet caiu no meio do caminho — confere sua conexão e tenta de novo.';
-      else if (err?.message === 'full') msg += 'Essa sala já está cheia (máximo de 3 jogadores).';
+      else if (err?.message === 'full') msg += 'Essa sala já está cheia (máximo de 6 jogadores).';
       else msg += 'Confere o código ou pede pro seu amigo criar a sala de novo.';
       $('joinStatus').textContent = msg;
     }
@@ -148,6 +149,7 @@ function doStart() {
   unlockAudio();
   requestWakeLock();
   saveQuickRepeat();
+  document.querySelector('.siteHeader').classList.add('hidden');
   if (net.isOnline() && net.isHost()) startOnlineHostGame();
   else startGame();
 }
@@ -299,6 +301,7 @@ $('back').addEventListener('click', () => {
   $('joinBtn').disabled = false;
   $('game').classList.add('hidden');
   $('menu').classList.remove('hidden');
+  document.querySelector('.siteHeader').classList.remove('hidden');
   renderLeaderboard();
   updateTopRecordDisplay();
   applyQuickRepeat();
