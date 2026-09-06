@@ -302,7 +302,8 @@ export function renderScores() {
   for (let i = 0; i < state.count; i++) {
     const boost = state.boosting[i] ? ' • ⚡' : '';
     const team = state.teamMode ? ` ${teamBadge[state.teams[i]] || ''}` : '';
-    h += `<div class="score" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b>${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${boost}${state.alive[i] ? '' : ' • ☠️'}</div>`;
+    const wins = state.tournamentMode ? ` • 🏆${state.tournamentWins[i] || 0}` : '';
+    h += `<div class="score" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b>${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}</div>`;
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
@@ -322,6 +323,17 @@ export function renderScores() {
   // Fileira de reações rápidas (emojis) — só faz sentido jogando com outra pessoa online
   const reactionBox = $('reactionRow');
   if (reactionBox) reactionBox.classList.toggle('hidden', !isOnline());
+
+  // Indicador de rodada e tempo restante do Modo Torneio
+  const tBox = $('tournamentStatus');
+  if (tBox) {
+    tBox.classList.toggle('hidden', !state.tournamentMode);
+    if (state.tournamentMode) {
+      $('tournamentRoundNum').textContent = state.tournamentRound || 1;
+      const secsLeft = Math.max(0, Math.ceil((state.tournamentRoundEndsAt - Date.now()) / 1000));
+      $('tournamentSecondsLeft').textContent = secsLeft;
+    }
+  }
 }
 
 export function draw() {
