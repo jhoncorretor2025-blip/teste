@@ -30,3 +30,4 @@
 .achievementText{font-weight:900;font-size:1.15rem;color:#ffd24d;margin-top:6px}
 .achievementSub{color:#dbe5f5;font-size:.9rem;margin-top:4px}
 @keyframes achievementBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.tournamentBox{display:flex;margin-top:10px;padding:10px 12px;background:linear-gradient(90deg,#4a3210,#5a2a10);border:2px solid #ffb84d;border-radius:12px;box-shadow:0 3px 12px #0004}
