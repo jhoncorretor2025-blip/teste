@@ -115,6 +115,16 @@ export function startGame() {
   $('badge').textContent = (state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO') + (state.noWalls ? ' 🌀' : '');
   state.running = false;
   state.paused = false;
+
+  // Modo Torneio: zera tudo e começa na rodada 1 — o cronômetro da rodada só liga
+  // depois da contagem regressiva, senão a primeira rodada perderia uns segundos à toa
+  if (state.tournamentMode) {
+    state.tournamentRound = 1;
+    state.tournamentWins = Array(6).fill(0);
+    state.tournamentRoundScore = Array(6).fill(0);
+    state.tournamentChampion = null;
+  }
+
   render();
   // A velocidade escolhida no menu define o ritmo base; o Turbo Worms roda mais rápido ainda
   const spd = SPEEDS.find(s => s.value === state.speed) || SPEEDS[1];
@@ -123,6 +133,7 @@ export function startGame() {
   // Contagem regressiva "3, 2, 1, VAI!" antes de começar de verdade — melhoria visual #8
   runCountdown(3, () => {
     state.running = true;
+    if (state.tournamentMode) state.tournamentRoundEndsAt = Date.now() + TOURNAMENT_ROUND_MS;
     state.timer = setInterval(tick, currentInterval);
   });
 }
@@ -272,6 +283,9 @@ function endTournamentRound() {
     state.tournamentChampion = champion;
     state.running = false;
     render();
+    document.dispatchEvent(new CustomEvent('tournamentOver', {
+      detail: { champion, wins: [...state.tournamentWins].slice(0, state.count) },
+    }));
     return;
   }
 
