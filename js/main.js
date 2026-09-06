@@ -150,6 +150,7 @@ function doStart() {
   requestWakeLock();
   saveQuickRepeat();
   document.querySelector('.siteHeader').classList.add('hidden');
+  maybeSuggestLandscape();
   if (net.isOnline() && net.isHost()) startOnlineHostGame();
   else startGame();
 }
@@ -932,3 +933,44 @@ $('installHelpBtn').addEventListener('click', () => {
   $('installHelpOverlay').classList.remove('hidden');
 });
 $('installHelpCloseBtn').addEventListener('click', () => $('installHelpOverlay').classList.add('hidden'));
+
+// Print de tela de verdade — baixa a imagem exata do que tá na arena agora, diferente
+// do cartão de pontuação estilizado (que já existe no botão 📸)
+$('screenshotBtn').addEventListener('click', () => {
+  try {
+    const url = $('arenaCanvas').toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `snake-arena-print-${Date.now()}.png`;
+    a.click();
+  } catch {
+    alert('Não consegui gerar o print — tenta de novo.');
+  }
+});
+
+// Modo sem distração — liga o modo compacto (sem forçar tela cheia de verdade) e mantém
+// a tela acordada, tudo num toque só
+let focusModeOn = false;
+$('focusModeBtn').addEventListener('click', () => {
+  focusModeOn = !focusModeOn;
+  $('focusModeBtn').classList.toggle('active', focusModeOn);
+  if (focusModeOn) {
+    if (!$('game').classList.contains('compact')) toggleCompactMode(false);
+    requestWakeLock();
+    announce('Modo sem distração ativado.');
+  } else {
+    announce('Modo sem distração desativado.');
+  }
+});
+
+// Sugestão de virar o celular — só aparece uma vez, quando faz sentido (mapa grande ou
+// câmera longe, e o celular tá na vertical), pra não incomodar sempre
+function maybeSuggestLandscape() {
+  const isPortrait = window.innerWidth < window.innerHeight;
+  const wouldBenefit = $('mapSize').value === 'large' || $('zoomLevel').value === 'far';
+  if (!isPortrait || !wouldBenefit) return;
+  if (localStorage.getItem('snakeArenaLandscapeHintSeen')) return;
+  localStorage.setItem('snakeArenaLandscapeHintSeen', '1');
+  $('landscapeHint').classList.add('show');
+  setTimeout(() => $('landscapeHint').classList.remove('show'), 4000);
+}
