@@ -68,6 +68,7 @@ export const state = {
   boosting: [false, false, false, false, false, false],
   boostUntil: [0, 0, 0, 0, 0, 0],
   boostReadyAt: [0, 0, 0, 0, 0, 0],
+  boostReadySoundPlayed: [false, false, false, false, false, false], // evita tocar o aviso mais de uma vez por espera
 
   // --- Missão ativa ---
   mission: null,
