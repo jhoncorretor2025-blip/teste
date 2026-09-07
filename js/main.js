@@ -625,7 +625,12 @@ async function toggleCompactMode(requestFullscreenToo) {
     try {
       if (on && document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen();
+        // Tenta travar a tela na paisagem automaticamente — funciona em vários navegadores
+        // Android assim que entra em tela cheia, sem precisar instalar nada. Se não der
+        // (bem comum no iPhone/Safari), sem problema, a pessoa só gira o aparelho na mão.
+        try { await screen.orientation?.lock?.('landscape'); } catch {}
       } else if (!on && document.fullscreenElement) {
+        try { screen.orientation?.unlock?.(); } catch {}
         await document.exitFullscreen();
       }
     } catch {
@@ -993,8 +998,15 @@ function maybeSuggestLandscape() {
   if (localStorage.getItem('snakeArenaLandscapeHintSeen')) return;
   localStorage.setItem('snakeArenaLandscapeHintSeen', '1');
   $('landscapeHint').classList.add('show');
-  setTimeout(() => $('landscapeHint').classList.remove('show'), 4000);
+  setTimeout(() => $('landscapeHint').classList.remove('show'), 6000);
 }
+
+// Botão de ação na dica de paisagem — tenta tela cheia + travar a orientação de uma vez,
+// funciona tanto no navegador quanto no app instalado (não precisa baixar nada)
+$('landscapeHintBtn').addEventListener('click', async () => {
+  if (!$('game').classList.contains('compact')) await toggleCompactMode(true);
+  $('landscapeHint').classList.remove('show');
+});
 
 // Indicador de bateria e aviso quando tá acabando — usa a API de Bateria quando o
 // navegador suporta (nem todos suportam, então tudo aqui é opcional/silencioso se não der)
