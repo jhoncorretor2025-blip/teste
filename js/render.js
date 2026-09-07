@@ -379,7 +379,11 @@ export function renderScores() {
     const progressBar = state.alive[i]
       ? `<div class="milestoneBar"><div class="milestoneBarFill" style="width:${Math.round(milestoneProgress * 100)}%;background:${state.colors[i]}"></div></div>`
       : '';
-    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b>${leader}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
+    // "Você" — só faz sentido mostrar com mais de 1 jogador na tela, senão é óbvio demais
+    const youBadge = (i === mySlot && state.count > 1) ? ' <span class="youBadge">🫵 Você</span>' : '';
+    // Ícone Humano/CPU — ajuda a saber de relance quem é controlado por gente de verdade
+    const typeIcon = state.types[i] === 'cpu' ? '🤖' : '🧑';
+    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} ${typeIcon} <b>${label(i)}</b>${youBadge}${leader}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
