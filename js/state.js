@@ -78,4 +78,6 @@ export const state = {
 
   // --- Eliminações desta sessão, sobrevive a "Reiniciar" ---
   eliminations: [0, 0, 0, 0, 0, 0],
+  comboCount: [0, 0, 0, 0, 0, 0], // quantas comidas seguidas rápidas — combo de velocidade
+  lastEatAt: [0, 0, 0, 0, 0, 0], // timestamp da última comida, pra calcular o combo
 };
