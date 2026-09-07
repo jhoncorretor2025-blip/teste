@@ -31,7 +31,20 @@ function spaceAround(p, ignoreIndex) {
   return free;
 }
 
-// Escolhe a melhor direção pra CPU, ajustada pela dificuldade escolhida (melhoria #3)
+// Direção da Minhoca Caçadora — sempre persegue quem estiver na liderança, sem se
+// importar com o corpo de ninguém (ela é invencível, atravessa por cima e mata quem
+// tocar) — só evita bater numa parede de verdade, já que isso a pararia de vez.
+export function hunterDir(head, dir, target) {
+  const validDirs = Object.values(D).filter(d => !reverse(dir, d) && !wall(head.x + d.x, head.y + d.y));
+  if (!validDirs.length) return { x: -dir.x, y: -dir.y }; // encurralada — dá meia-volta de emergência
+  let best = validDirs[0], bestScore = -1e9;
+  for (const d of validDirs) {
+    const p = { x: head.x + d.x, y: head.y + d.y };
+    const sc = target ? -dist(p, target) : 0;
+    if (sc > bestScore) { bestScore = sc; best = d; }
+  }
+  return best;
+}
 export function aiDir(i) {
   const h = state.snakes[i]?.[0];
   if (!h) return D.right;
