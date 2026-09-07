@@ -1,10 +1,10 @@
 // O "coração" do jogo: nascer, resetar, iniciar partida e o tick (cada passo do jogo).
 
 import { $ } from './utils.js';
-import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP, SPECIAL_MILESTONES, TOURNAMENT_ROUNDS, TOURNAMENT_ROUND_MS } from './config.js';
+import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP, SPECIAL_MILESTONES, TOURNAMENT_ROUNDS, TOURNAMENT_ROUND_MS, HUNTER_MILESTONES } from './config.js';
 import { state } from './state.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall } from './food.js';
-import { aiDir } from './ai.js';
+import { aiDir, hunterDir } from './ai.js';
 import { render } from './render.js';
 import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
@@ -89,6 +89,9 @@ export function reset() {
   state.respawnAt = Array(6).fill(0);
   state.particles = [];
   state.shake = 0;
+  state.hunterActive = false;
+  state.hunterSnake = [];
+  state.hunterMilestoneIndex = 0;
   for (let i = 0; i < state.count; i++) spawn(i);
   ensureFoods();
   startMission();
@@ -351,6 +354,67 @@ function endTournamentRound() {
 }
 
 // Um "passo" do jogo: decide direções, move todo mundo, checa colisões, come comida, redesenha
+// Acha quem tá comendo mais nessa partida agora (só entre quem tá vivo) — é quem a
+// Minhoca Caçadora persegue. Comida reseta quando morre, então precisa tá numa sequência
+// boa sem morrer pra "merecer" a visita dela.
+function findFoodLeader() {
+  let leaderFood = -1, leaderIdx = -1;
+  for (let i = 0; i < state.count; i++) {
+    if (state.alive[i] && state.foodsEaten[i] > leaderFood) { leaderFood = state.foodsEaten[i]; leaderIdx = i; }
+  }
+  return { leaderIdx, leaderFood };
+}
+
+// Confere se é hora de fazer a Minhoca Caçadora aparecer — só uma checagem simples de
+// "o líder já comeu o suficiente pro próximo marco?"
+function checkHunterSpawn() {
+  if (state.hunterActive) return;
+  if (state.hunterMilestoneIndex >= HUNTER_MILESTONES.length) return;
+  const milestone = HUNTER_MILESTONES[state.hunterMilestoneIndex];
+  const { leaderIdx, leaderFood } = findFoodLeader();
+  if (leaderIdx === -1 || leaderFood < milestone.foodThreshold) return;
+  spawnHunter(milestone.durationSec);
+  state.hunterMilestoneIndex++;
+}
+
+function spawnHunter(durationSec) {
+  const p = freeCell();
+  state.hunterSnake = [{ x: p.x, y: p.y }, { x: p.x - 1, y: p.y }, { x: p.x - 2, y: p.y }];
+  state.hunterDir = { x: 1, y: 0 };
+  state.hunterActive = true;
+  state.hunterEndsAt = Date.now() + durationSec * 1000;
+  state.toast = { x: p.x, y: p.y, text: '☠️ Minhoca Caçadora apareceu!', color: '#ff2222', until: Date.now() + 2800 };
+  sfx.mission();
+  vibrate([40, 60, 40, 60, 40]);
+}
+
+// Move a Minhoca Caçadora um passo em direção a quem tá liderando agora (o alvo pode
+// mudar no meio da perseguição, se outra pessoa assumir a liderança), e mata quem tocar
+function updateHunter() {
+  if (!state.hunterActive) return;
+  if (Date.now() >= state.hunterEndsAt) {
+    state.hunterActive = false;
+    state.hunterSnake = [];
+    return;
+  }
+
+  const { leaderIdx } = findFoodLeader();
+  const head = state.hunterSnake[0];
+  const target = leaderIdx !== -1 ? state.snakes[leaderIdx][0] : null;
+  state.hunterDir = hunterDir(head, state.hunterDir, target);
+
+  const newHead = { x: head.x + state.hunterDir.x, y: head.y + state.hunterDir.y };
+  state.hunterSnake.unshift(newHead);
+  state.hunterSnake.pop(); // tamanho fixo, ela não cresce
+
+  // É invencível — ninguém a machuca, mas ela mata (sem dó) quem ela tocar
+  for (let i = 0; i < state.count; i++) {
+    if (!state.alive[i]) continue;
+    const h = state.snakes[i][0];
+    if (state.hunterSnake.some((p) => p.x === h.x && p.y === h.y)) kill(i);
+  }
+}
+
 function tick() {
   if (!state.running || state.paused) return;
 
@@ -361,6 +425,9 @@ function tick() {
 
   checkSurvivalMission();
   if (state.mission?.type === 'survive') renderMission(); // atualiza a contagem regressiva na tela
+
+  checkHunterSpawn();
+  updateHunter();
 
   const now = Date.now();
   const diff = DIFFICULTY[state.difficulty] || DIFFICULTY.normal;
@@ -425,6 +492,7 @@ function tick() {
       count: state.count, mission: state.mission, best: state.best,
       dirs: state.dirs, shake: state.shake, flash: state.flash,
       heads: state.heads, toast: state.toast, patterns: state.patterns, palettes: state.palettes, trailColors: state.trailColors,
+      hunterActive: state.hunterActive, hunterSnake: state.hunterSnake,
       mapW: state.mapW, mapH: state.mapH, theme: state.theme,
       teamMode: state.teamMode, teams: state.teams,
     });
@@ -473,6 +541,8 @@ export function applyRemoteState(msg) {
   state.heads = msg.heads || state.heads;
   state.patterns = msg.patterns || state.patterns;
   state.trailColors = msg.trailColors || state.trailColors;
+  state.hunterActive = !!msg.hunterActive;
+  state.hunterSnake = msg.hunterSnake || [];
   state.palettes = msg.palettes || state.palettes;
   state.mapW = msg.mapW || state.mapW;
   state.theme = msg.theme || state.theme;
