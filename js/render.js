@@ -10,13 +10,14 @@
 // nela e mostrando só a área ao redor. A janela é sempre menor que qualquer mapa (mesmo o
 // Pequeno), então a câmera segue de perto o tempo todo, em qualquer tamanho de mapa.
 
-import { $ } from './utils.js';
+import { $, vibrate } from './utils.js';
 import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS, BOARD_THEMES, MILESTONE_STEP } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
 import { mySlot, isOnline } from './net.js';
 
 const canvas = $('arenaCanvas');
+let wasNearEdge = false; // controla a vibração de aviso de borda, só dispara uma vez
 const ctx = canvas.getContext('2d');
 
 let cell = 20, offX = 0, offY = 0; // tamanho de cada célula e deslocamento pra centralizar
@@ -389,6 +390,10 @@ export function renderScores() {
   $('scores').innerHTML = h;
   $('alive').textContent = state.alive.filter(Boolean).length;
 
+  // Indicador de quantos turbos ainda dá pra usar (baseado na comida acumulada)
+  const fuelBox = $('boostFuelCount');
+  if (fuelBox) fuelBox.textContent = state.foodsEaten[mySlot] || 0;
+
   // Contador de jogadores online (melhoria #13) — só aparece durante partidas online
   const onlineBox = $('onlineCount');
   if (onlineBox) {
@@ -461,13 +466,19 @@ export function draw() {
   ctx.shadowColor = borderColor;
 
   // Se a SUA minhoca estiver perto da borda (e ela machucar), a borda pulsa mais forte
-  // como um aviso de perigo — ajuda bastante quem tem dificuldade de perceber o limite
+  // como um aviso de perigo — ajuda bastante quem tem dificuldade de perceber o limite.
+  // Também vibra uma vez só ao ENTRAR na zona de perigo, não toda hora (senão enjoa).
   let dangerPulse = 0;
   if (!state.noWalls) {
     const myHead = state.snakes[mySlot]?.[0];
     if (myHead) {
       const distToEdge = Math.min(myHead.x, myHead.y, state.mapW - myHead.x, state.mapH - myHead.y);
-      if (distToEdge < 4) dangerPulse = (1 - distToEdge / 4) * (0.5 + Math.sin(Date.now() / 130) * 0.5);
+      if (distToEdge < 4) {
+        dangerPulse = (1 - distToEdge / 4) * (0.5 + Math.sin(Date.now() / 130) * 0.5);
+        if (!wasNearEdge) { vibrate(25); wasNearEdge = true; }
+      } else {
+        wasNearEdge = false;
+      }
     }
   }
   ctx.lineWidth = Math.max(2, cell * (0.12 + dangerPulse * 0.16));
