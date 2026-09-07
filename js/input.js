@@ -85,7 +85,10 @@ function flashBoostButton() {
 export function setupInput() {
   document.addEventListener('keydown', handleKey, { passive: false });
 
-  $('boostTouch').addEventListener('click', () => {
+  // pointerdown (não "click") pra responder na hora do toque, igual joystick e D-pad —
+  // "click" só dispara depois de soltar o dedo, dando uma sensação de atraso no turbo
+  $('boostTouch').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
     tapVibrate();
     boostMine();
     flashBoostButton();
@@ -143,10 +146,12 @@ export function setupInput() {
       moveMine(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? D.right : D.left) : (dy > 0 ? D.down : D.up));
     });
 
-    // Duplo toque na arena também ativa o turbo — alternativa ao botão dedicado,
-    // funciona em qualquer modo de controle (joystick, setas ou arrastar o dedo)
+    // Duplo toque na arena também ativa o turbo — alternativa ao botão dedicado.
+    // Só funciona no joystick e nas setas — no modo "arrastar o dedo" (swipe), jogar
+    // envolve tocar a tela várias vezes rápido pra virar, e isso ativaria o turbo sem querer.
     let lastTapTime = 0;
     arenaEl.addEventListener('pointerdown', () => {
+      if (state.touchControl === 'swipe') return;
       const now = Date.now();
       if (now - lastTapTime < 300) {
         tapVibrate();
