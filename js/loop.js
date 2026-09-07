@@ -180,7 +180,13 @@ function runCountdown(n, done) {
 export function tryBoost(i) {
   const now = Date.now();
   if (!state.alive[i] || state.boosting[i] || now < state.boostReadyAt[i]) return false;
-  if (state.foodsEaten[i] < 1) return false; // precisa de "combustível"
+  if (state.foodsEaten[i] < 1) {
+    // Sem "combustível" — dá um aviso claro, senão parece que apertar o botão não fez nada
+    const h = state.snakes[i]?.[0];
+    if (h) state.toast = { x: h.x, y: h.y, text: '🚫 Sem combustível! Coma mais.', color: '#ff5577', until: Date.now() + 1000 };
+    if (i === mySlot) vibrate([15, 40, 15]);
+    return false;
+  }
 
   state.foodsEaten[i]--;
   state.scores[i] = Math.max(0, state.scores[i] - 1);
