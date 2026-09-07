@@ -10,7 +10,7 @@ import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
-import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES } from './storage.js';
+import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
@@ -104,6 +104,14 @@ export function updateGamesPlayedBadge(n) {
   if (hit) document.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: { n } }));
 }
 
+// Mostra "você jogou X vezes hoje" (separado do total histórico) e o tempo total jogado
+export function updateSessionStatsDisplay(sessionCount) {
+  const box = $('sessionStatsDisplay');
+  if (!box) return;
+  const totalTime = formatPlaytime(loadTotalPlaytime());
+  box.textContent = `📅 ${sessionCount} partida${sessionCount === 1 ? '' : 's'} hoje • ⏱️ ${totalTime} jogados no total`;
+}
+
 // Troca de tela com uma leve transição suave, em vez de aparecer/sumir na hora
 export function switchScreen(hideId, showId) {
   const hideEl = $(hideId), showEl = $(showId);
@@ -117,10 +125,15 @@ export function switchScreen(hideId, showId) {
   }, 150);
 }
 
+// Soma tempo jogado a cada 3 segundos, só enquanto a partida está rodando de verdade —
+// funciona mesmo se o navegador fechar sem avisar, já que vai salvando aos poucos
+setInterval(() => { if (state.running) addPlaytime(3000); }, 3000);
+
 export function startGame() {
   syncSettings();
   setVibrationEnabled(state.vibrationOn);
   updateGamesPlayedBadge(incrementGamesPlayed());
+  updateSessionStatsDisplay(incrementSessionGames());
   reset();
   switchScreen('menu', 'game');
   $('overlay').classList.add('hidden');
@@ -405,7 +418,7 @@ function tick() {
       names: state.names, show: state.show, showOthers: state.showOthers,
       count: state.count, mission: state.mission, best: state.best,
       dirs: state.dirs, shake: state.shake, flash: state.flash,
-      heads: state.heads, toast: state.toast, patterns: state.patterns, palettes: state.palettes,
+      heads: state.heads, toast: state.toast, patterns: state.patterns, palettes: state.palettes, trailColors: state.trailColors,
       mapW: state.mapW, mapH: state.mapH, theme: state.theme,
       teamMode: state.teamMode, teams: state.teams,
     });
@@ -428,6 +441,7 @@ export function startClientGame() {
   $('badge').textContent = '🌐 Aguardando o anfitrião iniciar...';
   state.running = true;
   state.paused = false;
+  updateSessionStatsDisplay(incrementSessionGames());
   render();
 }
 
@@ -452,6 +466,7 @@ export function applyRemoteState(msg) {
   state.flash = msg.flash || 0;
   state.heads = msg.heads || state.heads;
   state.patterns = msg.patterns || state.patterns;
+  state.trailColors = msg.trailColors || state.trailColors;
   state.palettes = msg.palettes || state.palettes;
   state.mapW = msg.mapW || state.mapW;
   state.theme = msg.theme || state.theme;
