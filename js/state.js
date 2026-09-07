@@ -57,6 +57,13 @@ export const state = {
   floatingScores: [], // números "+1", "+5" etc. que sobem e desaparecem ao comer
   lastTurnAt: [0, 0, 0, 0, 0, 0], // quando cada minhoca virou por último — pro efeito "squash" na cabeça
   trailColors: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto'], // cor do rastro neon, separada da cor da minhoca
+
+  // --- Minhoca Caçadora (invencível, persegue o líder) ---
+  hunterActive: false,
+  hunterSnake: [], // segmentos dela, no mesmo formato de uma minhoca normal
+  hunterDir: { x: 1, y: 0 },
+  hunterEndsAt: 0,
+  hunterMilestoneIndex: 0, // quantos marcos (100, 150...) já foram usados nessa partida
   deathMessage: null, // {text, until} — aviso grande de "Você morreu" pro jogador local
   tournamentMode: false, // modo torneio: melhor de 3 rodadas
   tournamentRound: 0, // rodada atual (1, 2 ou 3)
