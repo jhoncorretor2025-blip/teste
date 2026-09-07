@@ -121,3 +121,47 @@ export function incrementGamesPlayed() {
   localStorage.setItem(GAMES_KEY, String(n));
   return n;
 }
+
+// Estatísticas da sessão de hoje — separado do total histórico, reseta sozinho todo dia
+const SESSION_KEY = 'snakeArenaSessionStats';
+
+export function incrementSessionGames() {
+  const today = new Date().toDateString();
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem(SESSION_KEY)) || {}; } catch {}
+  if (data.date !== today) data = { date: today, count: 0 };
+  data.count = (data.count || 0) + 1;
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(data)); } catch {}
+  return data.count;
+}
+
+export function loadSessionGamesToday() {
+  const today = new Date().toDateString();
+  try {
+    const data = JSON.parse(localStorage.getItem(SESSION_KEY));
+    if (data?.date === today) return data.count || 0;
+  } catch {}
+  return 0;
+}
+
+// Tempo total jogado (soma de todas as partidas) — melhoria #9
+const PLAYTIME_KEY = 'snakeArenaTotalPlaytimeMs';
+
+export function addPlaytime(ms) {
+  const total = (Number(localStorage.getItem(PLAYTIME_KEY)) || 0) + ms;
+  try { localStorage.setItem(PLAYTIME_KEY, String(total)); } catch {}
+  return total;
+}
+
+export function loadTotalPlaytime() {
+  return Number(localStorage.getItem(PLAYTIME_KEY)) || 0;
+}
+
+// Formata milissegundos num texto amigável tipo "2h 15min" ou "38min"
+export function formatPlaytime(ms) {
+  const totalMinutes = Math.floor(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) return `${hours}h ${minutes}min`;
+  return `${minutes}min`;
+}
