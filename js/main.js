@@ -5,11 +5,11 @@ import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate
 import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS } from './config.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen } from './loop.js';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay } from './loop.js';
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -316,6 +316,7 @@ $('back').addEventListener('click', () => {
   renderLeaderboard();
   updateTopRecordDisplay();
   updateBestByModeDisplay();
+  updateSessionStatsDisplay(loadSessionGamesToday());
   applyQuickRepeat();
   resetFavicon();
   if (pendingUpdateReg) { showUpdateBanner(pendingUpdateReg); pendingUpdateReg = null; }
@@ -389,6 +390,7 @@ $('players').addEventListener('change', e => {
   if (e.target.classList.contains('ptype')) state.types[i] = e.target.value;
   if (e.target.classList.contains('pcontrol')) { state.controls[i] = e.target.value; makePlayers(); }
   if (e.target.classList.contains('pcolor')) { state.colors[i] = e.target.value; if (i === 0) persistProfile(); }
+  if (e.target.classList.contains('ptrail')) { state.trailColors[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('phead')) { state.heads[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ppattern')) { state.patterns[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ppalette')) { state.palettes[i] = e.target.value; if (i === 0) persistProfile(); }
@@ -591,7 +593,7 @@ $('zoomToggle').addEventListener('click', () => {
 });
 
 function persistProfile() {
-  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], palette: state.palettes[0], touchControl: state.touchControl });
+  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], palette: state.palettes[0], touchControl: state.touchControl, trailColor: state.trailColors[0] });
 }
 
 // Botão de música ambiente (melhoria #13)
@@ -708,6 +710,7 @@ if (!navigator.vibrate) {
 }
 
 updateGamesPlayedBadge(loadGamesPlayed());
+updateSessionStatsDisplay(loadSessionGamesToday());
 updateBestByModeDisplay();
 
 function updateBestByModeDisplay() {
@@ -734,6 +737,7 @@ if (profile.color) state.colors[0] = profile.color;
 if (profile.head) state.heads[0] = profile.head;
 if (profile.pattern) state.patterns[0] = profile.pattern;
 if (profile.palette) state.palettes[0] = profile.palette;
+if (profile.trailColor) state.trailColors[0] = profile.trailColor;
 if (profile.touchControl) { state.touchControl = profile.touchControl; $('touchControl').value = profile.touchControl; }
 applyTouchControl();
 applyComfortSettings();
