@@ -299,11 +299,23 @@ function drawMinimap() {
 export function renderScores() {
   let h = '';
   const teamBadge = ['🔵', '🔴'];
+
+  // Descobre quem tá na frente (só faz sentido com mais de 1 jogador, e com pontuação > 0)
+  let leaderIdx = -1;
+  if (state.count > 1) {
+    let maxScore = 0;
+    for (let i = 0; i < state.count; i++) {
+      if ((state.scores[i] || 0) > maxScore) { maxScore = state.scores[i]; leaderIdx = i; }
+    }
+  }
+
   for (let i = 0; i < state.count; i++) {
     const boost = state.boosting[i] ? ' • ⚡' : '';
     const team = state.teamMode ? ` ${teamBadge[state.teams[i]] || ''}` : '';
     const wins = state.tournamentMode ? ` • 🏆${state.tournamentWins[i] || 0}` : '';
-    h += `<div class="score" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b>${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}</div>`;
+    const leader = i === leaderIdx ? ' 👑' : '';
+    const leaderClass = i === leaderIdx ? ' leaderScore' : '';
+    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b>${leader}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}</div>`;
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
