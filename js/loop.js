@@ -177,6 +177,7 @@ export function tryBoost(i) {
   state.boosting[i] = true;
   state.boostUntil[i] = now + BOOST_DURATION;
   state.boostReadyAt[i] = now + BOOST_COOLDOWN;
+  state.boostReadySoundPlayed[i] = false;
   sfx.boost();
   vibrate(15);
   return true;
@@ -338,6 +339,13 @@ function tick() {
     }
     state.dirs[i] = state.nextDirs[i];
     if (state.boosting[i] && now >= state.boostUntil[i]) state.boosting[i] = false;
+
+    // Aviso sonoro sutil quando o turbo (só o MEU, não o dos outros) está quase liberado
+    if (i === mySlot && !state.boosting[i] && !state.boostReadySoundPlayed[i] &&
+        state.boostReadyAt[i] > now && state.boostReadyAt[i] - now <= 400) {
+      sfx.boostReady();
+      state.boostReadySoundPlayed[i] = true;
+    }
   }
 
   const aliveIdx = [];
