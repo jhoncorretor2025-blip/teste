@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.48.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.48.0">
+<title>🐍 Snake Arena v2.49.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.49.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -47,7 +47,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.48.0</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.49.0</span></h1>
     <p class="sub">Até 6 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
@@ -154,6 +154,7 @@
           <label class="check"><input id="showMe" type="checkbox" checked> Mostrar meu nome</label>
           <label class="check"><input id="showOthers" type="checkbox" checked> Mostrar nomes dos outros</label>
           <label class="check"><input id="vibrationOn" type="checkbox" checked> 📳 Vibração</label>
+          <button id="silentModeBtn" class="refresh" type="button" style="margin-top:6px">🔇📳 Modo Silencioso (só vibração, sem som)</button>
           <select id="touchControl" class="select" aria-label="Tipo de controle no celular" style="margin-top:8px">
             <option value="joystick">🕹️ Controle: Joystick (bolinha)</option>
             <option value="dpad">⬆️ Controle: Setas (botões)</option>
@@ -276,13 +277,13 @@
             <button id="dpadDown" class="dpadBtn dpadDown" type="button" aria-label="Baixo"><svg viewBox="0 0 24 24" width="60%" height="60%"><path d="M12 20 L4 8 L20 8 Z" fill="currentColor"/></svg></button>
           </div>
           <div id="stickText" class="stickText">Arraste para virar</div>
-          <button id="boostTouch" class="boostTouch" type="button">⚡<br>TURBO</button>
+          <button id="boostTouch" class="boostTouch" type="button">⚡<br>TURBO<span id="boostFuelCount" class="boostFuelCount">0</span></button>
         </div>
       </div>
       <p class="sub">💻 PC: use o controle escolhido. 📱 Celular: use o joystick.</p>
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.48.0"></script>
+<script type="module" src="js/main.js?v=2.49.0"></script>
 </body>
 </html>
