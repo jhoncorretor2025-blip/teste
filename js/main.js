@@ -5,7 +5,7 @@ import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate
 import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS } from './config.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen } from './loop.js';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
@@ -67,8 +67,11 @@ net.setHandlers({
 $('hostBtn').addEventListener('click', () => {
   unlockAudio();
   $('hostBtn').disabled = true;
+  const originalHostText = $('hostBtn').textContent;
+  $('hostBtn').textContent = '⏳ Criando sala...';
   net.hostRoom(
     (roomId) => {
+      $('hostBtn').textContent = originalHostText;
       $('hostPanel').classList.remove('hidden');
       $('roomCode').textContent = roomId;
       $('roomStatus').textContent = '👥 0 amigo(s) conectado(s). Compartilha o link e espera a galera entrar!';
@@ -78,6 +81,7 @@ $('hostBtn').addEventListener('click', () => {
     },
     (err) => {
       $('hostBtn').disabled = false;
+      $('hostBtn').textContent = originalHostText;
       alert('Não consegui criar a sala: ' + (err?.message || err));
     }
   );
@@ -121,15 +125,19 @@ $('joinBtn').addEventListener('click', () => {
   if (!code) return;
   unlockAudio();
   $('joinBtn').disabled = true;
-  $('joinStatus').textContent = 'Conectando...';
+  const originalJoinText = $('joinBtn').textContent;
+  $('joinBtn').textContent = '⏳ Entrando...';
+  $('joinStatus').textContent = '🔄 Conectando com a sala...';
   net.joinRoom(code,
     () => {
       $('joinStatus').textContent = '';
+      $('joinBtn').textContent = originalJoinText;
       document.querySelector('.siteHeader').classList.add('hidden');
       startClientGame();
     },
     (err) => {
       $('joinBtn').disabled = false;
+      $('joinBtn').textContent = originalJoinText;
       let msg = '❌ Não consegui entrar. ';
       if (err?.type === 'peer-unavailable') msg += 'Essa sala não existe (ou já fechou) — confere o código com quem criou, ou pede pra criar de novo.';
       else if (err?.type === 'network' || err?.type === 'server-error' || err?.type === 'disconnected' || err?.type === 'socket-error' || err?.type === 'socket-closed') msg += 'Parece que a internet caiu no meio do caminho — confere sua conexão e tenta de novo.';
@@ -297,6 +305,7 @@ $('back').addEventListener('click', () => {
   if (state.running && !confirm('Tem certeza que quer sair da partida? O progresso dessa rodada não é salvo.')) return;
   state.running = false;
   clearInterval(state.timer);
+  clearSavedGame();
   net.disconnect();
   releaseWakeLock();
   $('count').disabled = false;
@@ -838,6 +847,18 @@ function applyQuickRepeat() {
   };
 }
 applyQuickRepeat();
+
+// Se tinha uma partida rolando quando o navegador fechou sem querer, oferece continuar
+const savedGame = loadSavedGame();
+if (savedGame) {
+  $('resumeGameBtn').classList.remove('hidden');
+  $('resumeGameBtn').addEventListener('click', () => {
+    document.querySelector('.siteHeader').classList.add('hidden');
+    requestWakeLock();
+    resumeSavedGame(savedGame);
+    $('resumeGameBtn').classList.add('hidden');
+  });
+}
 
 // Efeito de "ondinha" ao tocar nos botões — confirma visualmente que o toque registrou
 document.addEventListener('pointerdown', (e) => {
