@@ -7,7 +7,7 @@ import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall } from 
 import { aiDir } from './ai.js';
 import { render } from './render.js';
 import { syncSettings, label } from './players.js';
-import { startMission, trackFoodForMission, renderMission } from './mission.js';
+import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
 import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES } from './storage.js';
@@ -185,6 +185,7 @@ export function tryBoost(i) {
 
 // Mata uma minhoca: derrama comida, faz explosão, som/vibração e guarda o recorde
 export function kill(i) {
+  trackDeathForMission(i);
   saveBest(state.scores[i]);
   saveBestByMode(state.mode, state.tournamentMode, state.scores[i]);
   state.best = Math.max(state.best, state.scores[i]);
@@ -200,6 +201,7 @@ export function kill(i) {
   state.foodsEaten[i] = 0;
   state.grow[i] = 0;
   state.boosting[i] = false;
+  state.comboCount[i] = 0;
   state.respawnAt[i] = Date.now() + 900;
   sfx.death();
   vibrate(150);
@@ -237,7 +239,7 @@ function stepMovement(indices) {
 
   indices.forEach(i => {
     if (i in die) {
-      if (die[i] >= 0) state.eliminations[die[i]] = (state.eliminations[die[i]] || 0) + 1;
+      if (die[i] >= 0) { state.eliminations[die[i]] = (state.eliminations[die[i]] || 0) + 1; trackEliminationForMission(die[i]); }
       kill(i);
       return;
     }
@@ -245,14 +247,24 @@ function stepMovement(indices) {
     state.snakes[i].unshift(h);
     const f = state.foods.find(q => q.x === h.x && q.y === h.y);
     if (f) {
-      state.scores[i] += f.value;
+      // Combo de velocidade: comer rápido e seguido dá pontos extras, que vão subindo
+      const eatNow = Date.now();
+      state.comboCount[i] = (eatNow - (state.lastEatAt[i] || 0) < 2200) ? (state.comboCount[i] || 0) + 1 : 1;
+      state.lastEatAt[i] = eatNow;
+      const combo = state.comboCount[i];
+      const comboBonus = combo >= 3 ? Math.min(5, combo - 2) : 0;
+
+      state.scores[i] += f.value + comboBonus;
       state.foodsEaten[i] += f.value;
       state.grow[i] += f.value;
-      if (state.tournamentMode) state.tournamentRoundScore[i] += f.value;
+      if (state.tournamentMode) state.tournamentRoundScore[i] += f.value + comboBonus;
       state.foods.splice(state.foods.indexOf(f), 1);
       burst(h.x, h.y, f.kind === 'bonus' ? '#ffd24d' : state.colors[i], f.kind === 'bonus' ? 24 : 12);
       sfx[f.kind === 'bonus' ? 'star' : f.kind === 'drop' ? 'drop' : 'eat']();
       if (f.kind === 'bonus') vibrate(20);
+      if (comboBonus > 0) {
+        state.toast = { x: h.x, y: h.y, text: `🔥 Combo x${combo}! +${comboBonus}`, color: '#ff9f4d', until: Date.now() + 900 };
+      }
       trackFoodForMission(i, f);
     }
     if (state.grow[i] > 0) state.grow[i]--;
@@ -322,6 +334,9 @@ function tick() {
     endTournamentRound();
     return;
   }
+
+  checkSurvivalMission();
+  if (state.mission?.type === 'survive') renderMission(); // atualiza a contagem regressiva na tela
 
   const now = Date.now();
   const diff = DIFFICULTY[state.difficulty] || DIFFICULTY.normal;
