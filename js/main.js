@@ -9,7 +9,7 @@ import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryB
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -127,7 +127,7 @@ $('joinBtn').addEventListener('click', () => {
   $('joinBtn').disabled = true;
   const originalJoinText = $('joinBtn').textContent;
   $('joinBtn').textContent = '⏳ Entrando...';
-  $('joinStatus').textContent = '🔄 Conectando com a sala...';
+  $('joinStatus').innerHTML = '<span class="spinner"></span>Conectando com a sala...';
   net.joinRoom(code,
     () => {
       $('joinStatus').textContent = '';
@@ -315,6 +315,7 @@ $('back').addEventListener('click', () => {
   document.querySelector('.siteHeader').classList.remove('hidden');
   renderLeaderboard();
   updateTopRecordDisplay();
+  updateBestByModeDisplay();
   applyQuickRepeat();
   resetFavicon();
   if (pendingUpdateReg) { showUpdateBanner(pendingUpdateReg); pendingUpdateReg = null; }
@@ -707,6 +708,14 @@ if (!navigator.vibrate) {
 }
 
 updateGamesPlayedBadge(loadGamesPlayed());
+updateBestByModeDisplay();
+
+function updateBestByModeDisplay() {
+  const all = loadAllModeBests();
+  const box = $('bestByModeDisplay');
+  if (!box) return;
+  box.innerHTML = `🏆 Recordes por modo:<br>Clássico: <b>${all.classic || 0}</b> • ⚡ Turbo: <b>${all.turbo || 0}</b> • 🎪 Torneio (rodada): <b>${all.tournament || 0}</b>`;
+}
 
 try {
   const savedZoom = localStorage.getItem('snakeArenaZoom');
