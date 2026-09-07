@@ -11,7 +11,7 @@
 // Pequeno), então a câmera segue de perto o tempo todo, em qualquer tamanho de mapa.
 
 import { $ } from './utils.js';
-import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS, BOARD_THEMES } from './config.js';
+import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS, BOARD_THEMES, MILESTONE_STEP } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
 import { mySlot, isOnline } from './net.js';
@@ -73,8 +73,34 @@ const STARS = Array.from({ length: 90 }, () => ({
   o: 0.12 + Math.random() * 0.35,
 }));
 
+// Camada extra de estrelas bem ao fundo — se move só uma fração do quanto a câmera anda,
+// dando aquela sensação de profundidade/paralaxe (como se estivesse mais longe)
+const FAR_STARS = Array.from({ length: 50 }, () => ({
+  rx: Math.random(), ry: Math.random(),
+  r: Math.random() * 1 + 0.2,
+  o: 0.06 + Math.random() * 0.14,
+}));
+
 function drawStars() {
   const t = Date.now() / 4000;
+
+  // Camada distante (paralaxe): posição fixa no "mundo grande", só reage a uma fração
+  // do movimento da câmera — parece mais longe, quase parada
+  ctx.save();
+  for (const s of FAR_STARS) {
+    const worldX = s.rx * state.mapW * 2 - state.mapW * 0.5;
+    const worldY = s.ry * state.mapH * 2 - state.mapH * 0.5;
+    const x = offX + (worldX - camX * 0.35) * cell;
+    const y = offY + (worldY - camY * 0.35) * cell;
+    if (x < -10 || x > canvas.width + 10 || y < -10 || y > canvas.height + 10) continue;
+    ctx.globalAlpha = s.o;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(x, y, s.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
   ctx.save();
   for (const s of STARS) {
     const wx = (s.rx * state.mapW + t * s.speed) % state.mapW;
@@ -93,6 +119,13 @@ function drawStars() {
 function drawHead(x, y, shape, color) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.25;
   const cx = sx(x) + pad, cy = sy(y) + pad;
+
+  // Mesma sombrinha sutil da cabeça, pra combinar com o corpo
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath();
+  ctx.roundRect(cx + size * 0.06, cy + size * 0.12, size, size, r);
+  ctx.fill();
+
   ctx.fillStyle = color;
   ctx.beginPath();
   if (shape === 'square') {
@@ -165,6 +198,26 @@ function drawHead(x, y, shape, color) {
     ctx.arc(cx + size * 0.86, cy + size * 0.06, size * 0.16, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  // Olhinhos em toda cabeça, com uma piscadinha de vez em quando — dá mais vida e é
+  // barato de desenhar (só dois pontinhos ou dois tracinhos quando pisca)
+  const eyeY = cy + size * 0.36;
+  const eyeR = size * 0.09;
+  const blinking = Math.sin(Date.now() / 480 + x * 7 + y * 3) > 0.985;
+  ctx.fillStyle = '#0b1220';
+  ctx.strokeStyle = '#0b1220';
+  ctx.lineWidth = Math.max(1, eyeR * 0.9);
+  if (blinking) {
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.28 - eyeR, eyeY); ctx.lineTo(cx + size * 0.28 + eyeR, eyeY);
+    ctx.moveTo(cx + size * 0.72 - eyeR, eyeY); ctx.lineTo(cx + size * 0.72 + eyeR, eyeY);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(cx + size * 0.28, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.arc(cx + size * 0.72, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 // Clareia (percent > 0) ou escurece (percent < 0) uma cor hex — usado no padrão Tricolor
@@ -183,6 +236,12 @@ function shadeColor(hex, percent) {
 function drawBodySegment(x, y, color, pattern, k, palette) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.22;
   const cx = sx(x) + pad, cy = sy(y) + pad;
+
+  // Sombrinha sutil embaixo, pra dar uma sensação de profundidade (bem barata de desenhar)
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath();
+  ctx.roundRect(cx + size * 0.06, cy + size * 0.12, size, size, r);
+  ctx.fill();
 
   let fillColor = color;
   if (pattern === 'tricolor') {
@@ -315,7 +374,12 @@ export function renderScores() {
     const wins = state.tournamentMode ? ` • 🏆${state.tournamentWins[i] || 0}` : '';
     const leader = i === leaderIdx ? ' 👑' : '';
     const leaderClass = i === leaderIdx ? ' leaderScore' : '';
-    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b>${leader}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}</div>`;
+    const len = state.snakes[i]?.length || 0;
+    const milestoneProgress = state.alive[i] ? Math.max(0, Math.min(1, (len - state.milestones[i]) / MILESTONE_STEP)) : 0;
+    const progressBar = state.alive[i]
+      ? `<div class="milestoneBar"><div class="milestoneBarFill" style="width:${Math.round(milestoneProgress * 100)}%;background:${state.colors[i]}"></div></div>`
+      : '';
+    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} <b>${label(i)}</b>${leader}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ ${state.scores[i] || 0} • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
@@ -390,9 +454,20 @@ export function draw() {
   ctx.save();
   const borderColor = state.noWalls ? '#4dd9ff' : '#ff4d4d';
   ctx.strokeStyle = borderColor;
-  ctx.lineWidth = Math.max(2, cell * 0.12);
-  ctx.shadowBlur = cell * 0.6;
   ctx.shadowColor = borderColor;
+
+  // Se a SUA minhoca estiver perto da borda (e ela machucar), a borda pulsa mais forte
+  // como um aviso de perigo — ajuda bastante quem tem dificuldade de perceber o limite
+  let dangerPulse = 0;
+  if (!state.noWalls) {
+    const myHead = state.snakes[mySlot]?.[0];
+    if (myHead) {
+      const distToEdge = Math.min(myHead.x, myHead.y, state.mapW - myHead.x, state.mapH - myHead.y);
+      if (distToEdge < 4) dangerPulse = (1 - distToEdge / 4) * (0.5 + Math.sin(Date.now() / 130) * 0.5);
+    }
+  }
+  ctx.lineWidth = Math.max(2, cell * (0.12 + dangerPulse * 0.16));
+  ctx.shadowBlur = cell * (0.6 + dangerPulse * 1.2);
   if (state.noWalls) ctx.setLineDash([cell * 0.4, cell * 0.25]);
   ctx.strokeRect(sx(0), sy(0), state.mapW * cell, state.mapH * cell);
   ctx.setLineDash([]);
@@ -434,7 +509,34 @@ export function draw() {
       ctx.shadowColor = state.colors[i];
       ctx.globalAlpha = k === 0 ? 1 : (boosting ? 0.92 : 0.82);
       if (k === 0) {
-        drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
+        // Efeito "squash": achata rapidinho a cabeça bem no instante que vira uma curva,
+        // dá uma sensação de movimento mais viva (efeito clássico de animação)
+        const sinceTurn = Date.now() - (state.lastTurnAt[i] || 0);
+        const squash = sinceTurn < 140 ? 1 - (1 - sinceTurn / 140) * 0.22 : 1;
+        if (squash !== 1) {
+          const hx = sx(p.x) + cell / 2, hy = sy(p.y) + cell / 2;
+          ctx.save();
+          ctx.translate(hx, hy);
+          ctx.scale(1 / squash, squash);
+          ctx.translate(-hx, -hy);
+          drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
+          ctx.restore();
+        } else {
+          drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
+        }
+        // Destaque na SUA própria minhoca — um aneizinho branco pulsante ao redor da
+        // cabeça, fácil de achar você mesmo no meio de várias minhocas na tela
+        if (i === mySlot) {
+          const pulse = 0.5 + Math.sin(Date.now() / 260) * 0.5;
+          ctx.save();
+          ctx.globalAlpha = 0.35 + pulse * 0.35;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = Math.max(1.5, cell * 0.06);
+          ctx.beginPath();
+          ctx.arc(sx(p.x) + cell / 2, sy(p.y) + cell / 2, cell * (0.62 + pulse * 0.08), 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
       } else {
         drawBodySegment(p.x, p.y, state.colors[i], state.patterns[i] || 'solid', k, state.palettes[i]);
       }
@@ -490,6 +592,21 @@ export function draw() {
   drawMinimap();
   checkMissionConfetti();
   updateAndDrawConfetti();
+
+  // Números de pontos flutuando ("+1", "+5"...) — sobem devagar e desaparecem
+  const FLOAT_DURATION = 700;
+  state.floatingScores = state.floatingScores.filter((fs) => Date.now() - fs.bornAt < FLOAT_DURATION);
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.font = `900 ${Math.round(cell * 0.5)}px system-ui, sans-serif`;
+  for (const fs of state.floatingScores) {
+    const age = Date.now() - fs.bornAt;
+    const progress = age / FLOAT_DURATION;
+    ctx.globalAlpha = Math.max(0, 1 - progress);
+    ctx.fillStyle = fs.color;
+    ctx.fillText(fs.text, sx(fs.x) + cell / 2, sy(fs.y) - progress * cell * 1.4);
+  }
+  ctx.restore();
 
   // Reação rápida (emoji) recebida de outro jogador — aparece grande no centro por um instante
   if (state.reactionToast && Date.now() < state.reactionToast.until) {
