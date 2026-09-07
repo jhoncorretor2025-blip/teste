@@ -265,6 +265,11 @@ function stepMovement(indices) {
       if (comboBonus > 0) {
         state.toast = { x: h.x, y: h.y, text: `🔥 Combo x${combo}! +${comboBonus}`, color: '#ff9f4d', until: Date.now() + 900 };
       }
+      state.floatingScores.push({
+        x: h.x, y: h.y, text: `+${f.value + comboBonus}`,
+        color: f.kind === 'bonus' ? '#ffd24d' : state.colors[i],
+        bornAt: Date.now(),
+      });
       trackFoodForMission(i, f);
     }
     if (state.grow[i] > 0) state.grow[i]--;
@@ -353,7 +358,11 @@ function tick() {
       state.nextDirs[i] = aiDir(i);
       if (!state.boosting[i] && now >= state.boostReadyAt[i] && Math.random() < cpuBoostChance) tryBoost(i);
     }
+    const prevDir = state.dirs[i];
     state.dirs[i] = state.nextDirs[i];
+    if (prevDir && (prevDir.x !== state.dirs[i].x || prevDir.y !== state.dirs[i].y)) {
+      state.lastTurnAt[i] = Date.now();
+    }
     if (state.boosting[i] && now >= state.boostUntil[i]) state.boosting[i] = false;
 
     // Aviso sonoro sutil quando o turbo (só o MEU, não o dos outros) está quase liberado
