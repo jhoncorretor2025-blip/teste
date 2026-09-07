@@ -506,7 +506,7 @@ export function draw() {
       const p = s[k];
       const fade = Math.max(0, 1 - k / trailReach);
       ctx.shadowBlur = boosting ? cell * 0.8 : cell * (0.15 + 0.35 * fade);
-      ctx.shadowColor = state.colors[i];
+      ctx.shadowColor = (state.trailColors[i] && state.trailColors[i] !== 'auto') ? state.trailColors[i] : state.colors[i];
       ctx.globalAlpha = k === 0 ? 1 : (boosting ? 0.92 : 0.82);
       if (k === 0) {
         // Efeito "squash": achata rapidinho a cabeça bem no instante que vira uma curva,
