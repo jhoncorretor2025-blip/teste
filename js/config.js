@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.39.0';
+export const VERSION = '2.40.0';
 
 // --- Zoom da câmera (quanto do mapa aparece na tela de cada vez) ---
 export const ZOOM_LEVELS = [
@@ -89,7 +89,9 @@ export const REACTIONS = ['👍', '😂', '🔥', '❤️', '😮'];
 // lookahead = no Difícil, ela evita se encurralar em becos sem saída.
 export const DIFFICULTY = {
   easy: { label: '🙂 Fácil', mistake: 0.35, boostPerSecond: 0.01, lookahead: false },
+  easymid: { label: '😌 Fácil+', mistake: 0.20, boostPerSecond: 0.015, lookahead: false },
   normal: { label: '😐 Médio', mistake: 0.08, boostPerSecond: 0.02, lookahead: false },
+  hardmid: { label: '😬 Médio+', mistake: 0.04, boostPerSecond: 0.028, lookahead: true },
   hard: { label: '😈 Difícil', mistake: 0, boostPerSecond: 0.035, lookahead: true },
 };
 
