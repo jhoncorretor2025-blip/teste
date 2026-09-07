@@ -56,6 +56,7 @@ export const state = {
   reactionToast: null, // {emoji, text, until} — reação rápida recebida de outro jogador
   floatingScores: [], // números "+1", "+5" etc. que sobem e desaparecem ao comer
   lastTurnAt: [0, 0, 0, 0, 0, 0], // quando cada minhoca virou por último — pro efeito "squash" na cabeça
+  trailColors: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto'], // cor do rastro neon, separada da cor da minhoca
   deathMessage: null, // {text, until} — aviso grande de "Você morreu" pro jogador local
   tournamentMode: false, // modo torneio: melhor de 3 rodadas
   tournamentRound: 0, // rodada atual (1, 2 ou 3)
