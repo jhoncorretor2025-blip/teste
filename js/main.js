@@ -221,6 +221,9 @@ document.addEventListener('tournamentOver', (e) => {
   const { champion, wins } = e.detail;
   $('endTitle').textContent = '🏆 Torneio Finalizado!';
   const placar = wins.map((w, i) => `${i === champion ? '👑 ' : ''}${label(i)}: ${w} rodada${w === 1 ? '' : 's'}`).join(' • ');
+  // Vibração de "vitória" — animada e crescente, bem diferente da de derrota, só pra
+  // quem realmente venceu (nos outros dispositivos, seus jogadores não são o campeão)
+  if (champion === net.mySlot) vibrate([40, 30, 40, 30, 40, 30, 200]);
   $('endText').textContent = `${label(champion)} venceu o torneio! ${placar}`;
   $('overlay').classList.remove('hidden');
 
@@ -381,6 +384,20 @@ $('vibrationOn').addEventListener('change', e => {
   state.vibrationOn = e.target.checked;
   setVibrationEnabled(state.vibrationOn);
   saveVibration(state.vibrationOn);
+});
+
+// Modo Silencioso — liga som mudo e vibração num clique só, prático pra biblioteca,
+// sala de aula ou qualquer lugar que precise ficar quieto mas ainda sentir o jogo
+$('silentModeBtn').addEventListener('click', () => {
+  state.muted = true;
+  setMuted(true);
+  $('mute').textContent = '🔇';
+  saveMuted(true);
+  state.vibrationOn = true;
+  setVibrationEnabled(true);
+  $('vibrationOn').checked = true;
+  saveVibration(true);
+  announce('Modo silencioso ativado: som desligado, vibração ligada.');
 });
 
 // Mostra um resuminho das configurações escolhidas bem em cima do botão "Criar sala",
@@ -727,6 +744,7 @@ if (!navigator.vibrate) {
   $('vibrationOn').closest('label')?.after(note);
   $('tapVibration').disabled = true;
   $('tapVibration').checked = false;
+  $('silentModeBtn').textContent = '🔇 Modo Silencioso (sem vibração neste navegador)';
 }
 
 updateGamesPlayedBadge(loadGamesPlayed());
@@ -927,6 +945,7 @@ $('copyConfigCodeBtn').addEventListener('click', async () => {
   } catch { alert(code); }
 });
 $('applyConfigCodeBtn').addEventListener('click', () => {
+  if (!confirm('Isso vai substituir suas configurações atuais (tema, mapa, dificuldade, etc). Continuar?')) return;
   try {
     const cfg = JSON.parse(decodeURIComponent(atob($('pasteConfigCode').value.trim())));
     if (cfg.mode) { $('mode').value = cfg.mode; state.mode = cfg.mode; }
