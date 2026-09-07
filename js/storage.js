@@ -19,6 +19,39 @@ export function saveBest(score) {
   return best;
 }
 
+// Recorde separado por modo (Clássico, Turbo Worms, Torneio) — melhoria #6
+const MODE_BEST_KEY = 'snakeArenaBestByMode';
+
+function modeLabelKey(mode, tournamentMode) {
+  if (tournamentMode) return 'tournament';
+  return mode === 'turbo' ? 'turbo' : 'classic';
+}
+
+export function loadBestByMode(mode, tournamentMode) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MODE_BEST_KEY)) || {};
+    return all[modeLabelKey(mode, tournamentMode)] || 0;
+  } catch { return 0; }
+}
+
+export function saveBestByMode(mode, tournamentMode, score) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MODE_BEST_KEY)) || {};
+    const key = modeLabelKey(mode, tournamentMode);
+    const best = all[key] || 0;
+    if (score > best) {
+      all[key] = score;
+      localStorage.setItem(MODE_BEST_KEY, JSON.stringify(all));
+      return score;
+    }
+    return best;
+  } catch { return score; }
+}
+
+export function loadAllModeBests() {
+  try { return JSON.parse(localStorage.getItem(MODE_BEST_KEY)) || {}; } catch { return {}; }
+}
+
 // Preferência de som mudo
 export function loadMuted() {
   return localStorage.getItem(MUTE_KEY) === '1';
