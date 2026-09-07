@@ -49,3 +49,7 @@ h1{text-shadow:0 0 12px currentColor}
 .appSplashTitle{color:#fff;font-size:1.3rem;font-weight:900;font-family:"Courier New",ui-monospace,monospace;letter-spacing:1px}
 .appSplash.fadeOut{opacity:0;pointer-events:none}
 @keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #4a6ba8;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.leaderScore{box-shadow:0 0 0 2px #ffd24d,0 0 12px #ffd24d88;font-weight:700}
