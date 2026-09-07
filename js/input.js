@@ -142,5 +142,19 @@ export function setupInput() {
       if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return; // arrasto curto demais, ignora
       moveMine(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? D.right : D.left) : (dy > 0 ? D.down : D.up));
     });
+
+    // Duplo toque na arena também ativa o turbo — alternativa ao botão dedicado,
+    // funciona em qualquer modo de controle (joystick, setas ou arrastar o dedo)
+    let lastTapTime = 0;
+    arenaEl.addEventListener('pointerdown', () => {
+      const now = Date.now();
+      if (now - lastTapTime < 300) {
+        tapVibrate();
+        boostMine();
+        lastTapTime = 0; // evita disparar de novo com um 3º toque rápido
+      } else {
+        lastTapTime = now;
+      }
+    });
   }
 }
