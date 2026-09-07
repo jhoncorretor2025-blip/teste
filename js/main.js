@@ -27,7 +27,10 @@ net.setHandlers({
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s).`;
     makePlayers();
   },
-  onStateUpdate: (msg) => applyRemoteState(msg),
+  onStateUpdate: (msg) => {
+    applyRemoteState(msg);
+    capturePartnerNameOnce(msg.names?.[0]);
+  },
   // Aplica de verdade a direção/turbo que o amigo manda — sem isso a minhoca dele
   // nunca virava, só seguia reto na direção que nasceu (bug relatado)
   onInput: (slot, msg) => {
@@ -133,6 +136,8 @@ $('joinBtn').addEventListener('click', () => {
       $('joinStatus').textContent = '';
       $('joinBtn').textContent = originalJoinText;
       document.querySelector('.siteHeader').classList.add('hidden');
+      saveLastOnlineRoom(code, null);
+      partnerNameCaptured = false; // sala nova — pode capturar o nome de quem hospeda de novo
       startClientGame();
     },
     (err) => {
@@ -218,6 +223,16 @@ document.addEventListener('tournamentOver', (e) => {
   const placar = wins.map((w, i) => `${i === champion ? '👑 ' : ''}${label(i)}: ${w} rodada${w === 1 ? '' : 's'}`).join(' • ');
   $('endText').textContent = `${label(champion)} venceu o torneio! ${placar}`;
   $('overlay').classList.remove('hidden');
+
+  // Só o anfitrião pode reiniciar — e só faz sentido mostrar esse botão se ainda tiver
+  // gente conectada na sala (não desconecta ninguém, só começa um torneio novo na hora)
+  const showPlayAgain = net.isOnline() && net.isHost();
+  $('playAgainSameRoomBtn').classList.toggle('hidden', !showPlayAgain);
+  $('playAgainSameRoomBtn').onclick = () => {
+    $('overlay').classList.add('hidden');
+    startOnlineHostGame();
+  };
+
   $('continueBtn').onclick = () => {
     $('overlay').classList.add('hidden');
     $('back').click();
@@ -1038,3 +1053,43 @@ setTimeout(() => {
   splash.classList.add('fadeOut');
   setTimeout(() => splash.remove(), 450);
 }, 350);
+
+// Lembra a última sala online que a pessoa entrou (e com quem), pra facilitar tentar de
+// novo depois — útil se a sala ainda tiver aberta e a pessoa só perdeu a conexão à toa.
+// Não garante que vai funcionar (a sala pode ter fechado), só poupa de digitar o código de novo.
+const LAST_ROOM_KEY = 'snakeArenaLastRoom';
+
+function saveLastOnlineRoom(code, partnerName) {
+  try {
+    const existing = JSON.parse(localStorage.getItem(LAST_ROOM_KEY)) || {};
+    localStorage.setItem(LAST_ROOM_KEY, JSON.stringify({ code, partnerName: partnerName || existing.partnerName || null }));
+  } catch {}
+  updateLastRoomButton();
+}
+
+let partnerNameCaptured = false;
+function capturePartnerNameOnce(name) {
+  if (partnerNameCaptured || !name) return;
+  partnerNameCaptured = true;
+  try {
+    const existing = JSON.parse(localStorage.getItem(LAST_ROOM_KEY)) || {};
+    localStorage.setItem(LAST_ROOM_KEY, JSON.stringify({ ...existing, partnerName: name }));
+  } catch {}
+  updateLastRoomButton();
+}
+
+function updateLastRoomButton() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(LAST_ROOM_KEY)); } catch {}
+  const btn = $('lastRoomBtn');
+  if (!data?.code) { btn.classList.add('hidden'); return; }
+  btn.textContent = data.partnerName
+    ? `🔄 Tentar de novo: sala de ${data.partnerName} (${data.code})`
+    : `🔄 Tentar de novo: última sala (${data.code})`;
+  btn.classList.remove('hidden');
+  btn.onclick = () => {
+    $('joinCode').value = data.code;
+    $('joinBtn').click();
+  };
+}
+updateLastRoomButton();
