@@ -10,7 +10,7 @@ import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, renderMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
-import { saveBest, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES } from './storage.js';
+import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
@@ -186,6 +186,7 @@ export function tryBoost(i) {
 // Mata uma minhoca: derrama comida, faz explosão, som/vibração e guarda o recorde
 export function kill(i) {
   saveBest(state.scores[i]);
+  saveBestByMode(state.mode, state.tournamentMode, state.scores[i]);
   state.best = Math.max(state.best, state.scores[i]);
   if (state.types[i] === 'human') addToLeaderboard(state.names[i], state.scores[i]);
   dropFood(i);
