@@ -50,6 +50,7 @@ export const sfx = {
   death: () => beep({ freq: 220, duration: 0.35, type: 'sawtooth', volume: 0.18, slideTo: 60 }),
   boost: () => beep({ freq: 300, duration: 0.12, type: 'square', volume: 0.12, slideTo: 600 }),
   mission: () => beep({ freq: 660, duration: 0.22, type: 'triangle', volume: 0.22, slideTo: 990 }),
+  boostReady: () => beep({ freq: 880, duration: 0.08, type: 'sine', volume: 0.13, slideTo: 1200 }),
 };
 
 // Alguns navegadores só liberam áudio depois de um clique do usuário.
