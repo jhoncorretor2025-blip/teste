@@ -2,7 +2,14 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.49.0';
+export const VERSION = '2.50.0';
+
+// --- Minhoca Caçadora: aparece quando o líder come muita comida, persegue ele
+// por um tempo, é invencível (mata quem tocar, mas ninguém consegue matá-la) ---
+export const HUNTER_MILESTONES = [
+  { foodThreshold: 100, durationSec: 35 },
+  { foodThreshold: 150, durationSec: 50 },
+];
 
 // --- Zoom da câmera (quanto do mapa aparece na tela de cada vez) ---
 export const ZOOM_LEVELS = [
