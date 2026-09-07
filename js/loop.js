@@ -223,7 +223,7 @@ export function kill(i) {
   state.comboCount[i] = 0;
   state.respawnAt[i] = Date.now() + 900;
   sfx.death();
-  vibrate(150);
+  vibrate([80, 40, 160]); // padrão de "derrota" — dois toques curtos e um mais longo
   if (i === mySlot) {
     state.deathMessage = { text: '💀 Você morreu!', until: Date.now() + 1400 };
   }
