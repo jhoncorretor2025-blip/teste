@@ -323,6 +323,36 @@ function updateAndDrawConfetti() {
   ctx.restore();
 }
 
+// Desenha a Minhoca Caçadora — visual bem diferente das minhocas normais, pra ficar
+// claro que é uma ameaça especial: escura, com um brilho vermelho pulsante e uma
+// caveira na cabeça em vez de olhinhos fofos.
+function drawHunter() {
+  if (!state.hunterActive || !state.hunterSnake.length) return;
+  const pulse = 0.5 + Math.sin(Date.now() / 150) * 0.5;
+  ctx.save();
+  ctx.shadowColor = '#ff2222';
+  ctx.shadowBlur = cell * (0.7 + pulse * 0.5);
+  for (let k = state.hunterSnake.length - 1; k >= 0; k--) {
+    const p = state.hunterSnake[k];
+    const pad = cell * 0.08, size = cell - pad * 2;
+    const cx = sx(p.x) + pad, cy = sy(p.y) + pad;
+    ctx.fillStyle = k === 0 ? '#3a0a0a' : '#1a0505';
+    ctx.beginPath();
+    ctx.roundRect(cx, cy, size, size, cell * 0.2);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(255,40,40,${0.5 + pulse * 0.5})`;
+    ctx.lineWidth = Math.max(1, cell * 0.05);
+    ctx.stroke();
+  }
+  // Caveirinha na cabeça, pra ficar claro que é perigosa
+  const head = state.hunterSnake[0];
+  ctx.font = `${Math.round(cell * 0.75)}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('💀', sx(head.x) + cell / 2, sy(head.y) + cell / 2);
+  ctx.restore();
+}
+
 function drawMinimap() {
   if (viewW >= state.mapW && viewH >= state.mapH) return; // mapa já cabe inteiro, não precisa
   const mmW = Math.min(120, canvas.width * 0.28);
@@ -579,6 +609,8 @@ export function draw() {
       ctx.fillText(`${label(i)} • 🍎 ${state.foodsEaten[i] || 0}`, sx(h.x) + cell / 2, sy(h.y) - 4);
     }
   }
+
+  drawHunter();
 
   for (const p of state.particles) {
     const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
