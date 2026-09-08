@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.50.0';
+export const VERSION = '2.51.0';
 
 // --- Minhoca Caçadora: aparece quando o líder come muita comida, persegue ele
 // por um tempo, é invencível (mata quem tocar, mas ninguém consegue matá-la) ---
@@ -124,6 +124,8 @@ export const HEAD_SHAPES = [
   { name: '🐰 Coelhinho', value: 'bunny' },
   { name: '🐲 Dragãozinho', value: 'dragon' },
   { name: '🐻 Ursinho', value: 'bear' },
+  { name: '🌻 Girassol', value: 'sunflower' },
+  { name: '🌹 Rosa', value: 'rose' },
 ];
 
 // --- Padrão de pele do corpo (parte da personalização/"skin") ---
