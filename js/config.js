@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.51.0';
+export const VERSION = '2.52.0';
 
 // --- Minhoca Caçadora: aparece quando o líder come muita comida, persegue ele
 // por um tempo, é invencível (mata quem tocar, mas ninguém consegue matá-la) ---
@@ -28,6 +28,8 @@ export const BOARD_THEMES = [
   { value: 'forest', name: '🌲 Floresta', bg: '#04150d', grid: '#123322', food: '🍄' },
   { value: 'night', name: '🟣 Roxo Noite', bg: '#150a26', grid: '#2a1a45', food: '🍒' },
   { value: 'void', name: '⚫ Vazio', bg: '#000000', grid: '#1a1a1a', food: '🍎' },
+  { value: 'sunflower', name: '🌻 Campo de Girassóis', bg: '#2b2008', grid: '#4a3a10', food: '🌻' },
+  { value: 'garden', name: '🌸 Jardim de Flores', bg: '#131f10', grid: '#2a3f24', food: '🌸' },
 ];
 
 // --- Tamanho do mapa escolhível no menu ---
