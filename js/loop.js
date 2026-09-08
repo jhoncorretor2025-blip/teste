@@ -10,7 +10,7 @@ import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
-import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime } from './storage.js';
+import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
@@ -92,6 +92,8 @@ export function reset() {
   state.hunterActive = false;
   state.hunterSnake = [];
   state.hunterMilestoneIndex = 0;
+  state.boostUsedCount = Array(6).fill(0);
+  state.lastTurnAt = Array(6).fill(Date.now());
   for (let i = 0; i < state.count; i++) spawn(i);
   ensureFoods();
   startMission();
@@ -137,6 +139,7 @@ export function startGame() {
   setVibrationEnabled(state.vibrationOn);
   updateGamesPlayedBadge(incrementGamesPlayed());
   updateSessionStatsDisplay(incrementSessionGames());
+  updateStreakAndLastPlayed();
   reset();
   switchScreen('menu', 'game');
   $('overlay').classList.add('hidden');
@@ -197,6 +200,7 @@ export function tryBoost(i) {
   dropOne(h.x, h.y, i);
 
   state.boosting[i] = true;
+  state.boostUsedCount[i] = (state.boostUsedCount[i] || 0) + 1;
   state.boostUntil[i] = now + BOOST_DURATION;
   state.boostReadyAt[i] = now + BOOST_COOLDOWN;
   state.boostReadySoundPlayed[i] = false;
