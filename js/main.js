@@ -9,7 +9,7 @@ import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryB
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -21,11 +21,13 @@ net.setHandlers({
     state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s). Pode clicar em "Jogar" quando quiser!`;
     makePlayers();
+    $('startFromHostPanel').classList.add('waitingPulse'); // chama atenção: tem gente esperando
   },
   onPeerLeft: () => {
     state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s).`;
     makePlayers();
+    if (net.connectedCount() === 0) $('startFromHostPanel').classList.remove('waitingPulse');
   },
   onStateUpdate: (msg) => {
     applyRemoteState(msg);
@@ -164,6 +166,16 @@ function doStart() {
   saveQuickRepeat();
   document.querySelector('.siteHeader').classList.add('hidden');
   maybeSuggestLandscape();
+  $('startFromHostPanel').classList.remove('waitingPulse');
+  // Toque pessoal: jogando sozinho, a arena ganha um contorno na cor da sua minhoca
+  const arenaEl = document.querySelector('.arena');
+  if (arenaEl) {
+    if (state.count === 1 && !(net.isOnline())) {
+      arenaEl.style.boxShadow = `0 0 0 3px ${state.colors[0]}, 0 8px 30px ${state.colors[0]}55`;
+    } else {
+      arenaEl.style.boxShadow = '';
+    }
+  }
   if (net.isOnline() && net.isHost()) startOnlineHostGame();
   else startGame();
 }
@@ -331,6 +343,7 @@ $('back').addEventListener('click', () => {
   $('joinBtn').disabled = false;
   switchScreen('game', 'menu');
   document.querySelector('.siteHeader').classList.remove('hidden');
+  document.querySelector('.arena').style.boxShadow = '';
   renderLeaderboard();
   updateTopRecordDisplay();
   updateBestByModeDisplay();
@@ -363,7 +376,16 @@ document.querySelector('.tabBar')?.addEventListener('click', (e) => {
   btn.classList.add('active');
   btn.setAttribute('aria-selected', 'true');
   const tab = btn.dataset.tab;
-  document.querySelectorAll('.tabPanel').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== tab));
+  const current = document.querySelector('.tabPanel:not(.hidden)');
+  if (current) current.classList.add('tabFading');
+  setTimeout(() => {
+    document.querySelectorAll('.tabPanel').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== tab));
+    const next = document.querySelector('.tabPanel:not(.hidden)');
+    if (next) {
+      next.classList.add('tabFading');
+      requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('tabFading')));
+    }
+  }, 120);
 });
 
 $('refresh').addEventListener('click', () => {
@@ -371,7 +393,14 @@ $('refresh').addEventListener('click', () => {
 });
 
 $('mode').addEventListener('change', e => { state.mode = e.target.value; updateRoomSettingsPreview(); });
-$('difficulty').addEventListener('change', e => { state.difficulty = e.target.value; updateRoomSettingsPreview(); });
+function updateDifficultyColor() {
+  const val = $('difficulty').value;
+  const cls = (val === 'easy' || val === 'easymid') ? 'diff-easy' : (val === 'hard' || val === 'hardmid') ? 'diff-hard' : 'diff-normal';
+  $('difficulty').classList.remove('diff-easy', 'diff-normal', 'diff-hard');
+  $('difficulty').classList.add(cls);
+}
+$('difficulty').addEventListener('change', e => { state.difficulty = e.target.value; updateRoomSettingsPreview(); updateDifficultyColor(); });
+updateDifficultyColor();
 $('speedSelect').addEventListener('change', updateRoomSettingsPreview);
 $('mapSize').addEventListener('change', updateRoomSettingsPreview);
 $('zoomLevel').addEventListener('change', (e) => {
@@ -404,22 +433,27 @@ $('silentModeBtn').addEventListener('click', () => {
 // pra ficar claro o que vai valer na sala antes de criar
 function updateRoomSettingsPreview() {
   const get = (id) => $(id).selectedOptions[0]?.text || '';
-  const parts = [get('mode'), get('speedSelect'), get('mapSize'), get('difficulty')];
+  const humanCount = state.types.slice(0, state.count).filter((t) => t === 'human').length;
+  const cpuCount = state.count - humanCount;
+  const composition = cpuCount > 0 ? `${humanCount} humano${humanCount === 1 ? '' : 's'}, ${cpuCount} CPU` : `${humanCount} humano${humanCount === 1 ? '' : 's'}`;
+  const parts = [composition, get('mode'), get('speedSelect'), get('mapSize'), get('difficulty')];
   if ($('noWalls').checked) parts.push('🌀 Sem paredes');
   if ($('teamMode').checked) parts.push('🤝 Modo Times');
   if ($('tournamentMode').checked) parts.push('🏆 Modo Torneio');
   $('roomSettingsPreview').textContent = '⚙️ Vai criar a sala com: ' + parts.join(' • ');
+  $('playSummaryDisplay').textContent = composition + (state.count > 1 ? ' na partida' : '');
 }
 
 $('count').addEventListener('change', e => {
   state.count = +e.target.value;
   if (!state.types[0]) state.types[0] = 'human'; // sempre garante que você seja humano
   makePlayers();
+  updateRoomSettingsPreview();
 });
 
 $('players').addEventListener('change', e => {
   const i = +e.target.dataset.i;
-  if (e.target.classList.contains('ptype')) state.types[i] = e.target.value;
+  if (e.target.classList.contains('ptype')) { state.types[i] = e.target.value; updateRoomSettingsPreview(); }
   if (e.target.classList.contains('pcontrol')) { state.controls[i] = e.target.value; makePlayers(); }
   if (e.target.classList.contains('pcolor')) { state.colors[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ptrail')) { state.trailColors[i] = e.target.value; if (i === 0) persistProfile(); }
@@ -430,9 +464,24 @@ $('players').addEventListener('change', e => {
   if (e.target.classList.contains('pshow')) state.show[i] = e.target.checked;
 });
 
+$('players').addEventListener('click', e => {
+  const btn = e.target.closest('.randomColorBtn');
+  if (!btn) return;
+  const idx = Number(btn.dataset.i);
+  const options = COLORS.filter((c) => c !== state.colors[idx]);
+  const newColor = options[Math.floor(Math.random() * options.length)] || COLORS[0];
+  state.colors[idx] = newColor;
+  const select = document.querySelector(`.pcolor[data-i="${idx}"]`);
+  if (select) select.value = newColor;
+  if (idx === 0) persistProfile();
+});
+
 // Ligar/desligar o modo Times reconstrói os cards de jogador (mostra/esconde o seletor de time)
 $('teamMode').addEventListener('change', () => { makePlayers(); updateRoomSettingsPreview(); });
-$('tournamentMode').addEventListener('change', updateRoomSettingsPreview);
+$('tournamentMode').addEventListener('change', e => {
+  updateRoomSettingsPreview();
+  $('tournamentMode').closest('.tournamentBox').classList.toggle('active', e.target.checked);
+});
 
 // Botões de gravar tecla personalizada: clica, aperta a tecla que quiser, pronto
 $('players').addEventListener('click', (e) => {
@@ -1112,3 +1161,36 @@ function updateLastRoomButton() {
   };
 }
 updateLastRoomButton();
+
+// Versão do jogo no rodapé do menu (melhoria #11)
+$('versionFooter').textContent = `Snake Arena • v${VERSION}`;
+
+// Mensagem de "bem-vindo de volta" com a data da última vez e a sequência de dias —
+// mostra o que já tava salvo ANTES dessa visita contar como uma partida nova
+const previousLastPlayed = loadLastPlayedAt();
+const previousStreak = loadStreakDays();
+if (previousLastPlayed) {
+  const daysSince = Math.floor((Date.now() - previousLastPlayed) / (24 * 60 * 60 * 1000));
+  const quando = daysSince === 0 ? 'hoje mais cedo' : daysSince === 1 ? 'ontem' : `há ${daysSince} dias`;
+  const streakTexto = previousStreak > 1 ? ` • 🔥 ${previousStreak} dias seguidos jogando!` : '';
+  $('welcomeBackDisplay').textContent = `👋 Bem-vindo de volta! Última vez: ${quando}${streakTexto}`;
+}
+
+// Convite genérico pra chamar alguém sem precisar já ter criado uma sala (melhoria #12)
+$('genericInviteBtn').addEventListener('click', shareLink);
+
+// Aviso gentil de "ainda aí?" — se a SUA minhoca ficar muito tempo sem virar de jeito
+// nenhum enquanto a partida tá rolando, é sinal de que talvez tenha saído do celular
+let afkWarned = false;
+setInterval(() => {
+  if (!state.running || state.paused) { afkWarned = false; return; }
+  const idleMs = Date.now() - (state.lastTurnAt[net.mySlot] || Date.now());
+  if (idleMs > 30000 && !afkWarned) {
+    afkWarned = true;
+    const h = state.snakes[net.mySlot]?.[0];
+    if (h) state.toast = { x: h.x, y: h.y, text: '👋 Ainda aí?', color: '#8fd3ff', until: Date.now() + 2500 };
+    announce('Você está aí? Faz um tempo que não muda de direção.');
+  } else if (idleMs < 30000) {
+    afkWarned = false;
+  }
+}, 5000);
