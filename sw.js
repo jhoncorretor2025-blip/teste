@@ -1,7 +1,7 @@
 // Service Worker do Snake Arena — deixa o jogo instalável e jogável offline (modo local).
 // O multiplayer online continua precisando de internet, claro (é conexão em tempo real).
 
-const CACHE = 'snake-arena-v2.52.0';
+const CACHE = 'snake-arena-v2.53.0';
 const ASSETS = [
   './',
   './index.html',
@@ -29,7 +29,13 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then((cache) => cache.addAll(ASSETS))
+      // A biblioteca do multiplayer vem de outro site (CDN) — cacheia à parte, sem
+      // deixar isso travar a instalação toda se por acaso falhar (offline ou CDN fora do ar)
+      .then(() => caches.open(CACHE))
+      .then((cache) => cache.add('https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js').catch(() => {}))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -51,7 +57,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE).then((cache) => cache.put(event.request, copy));
           return res;
         })
-        .catch(() => cached);
+        .catch(() => cached || (event.request.mode === 'navigate' ? caches.match('./index.html') : undefined));
       return cached || fetchPromise;
     })
   );
