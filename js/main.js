@@ -5,7 +5,7 @@ import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate
 import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS } from './config.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay } from './loop.js';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
@@ -353,6 +353,7 @@ $('back').addEventListener('click', () => {
   if (state.running && !confirm('Tem certeza que quer sair da partida? O progresso dessa rodada não é salvo.')) return;
   state.running = false;
   clearInterval(state.timer);
+  clearSavedGame();
   net.disconnect();
   releaseWakeLock();
   $('count').disabled = false;
@@ -1253,3 +1254,16 @@ function updateConnectionTypeDisplay() {
 const netConn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 if (netConn) netConn.addEventListener('change', updateConnectionTypeDisplay);
 updateConnectionTypeDisplay();
+
+// Se tinha uma partida local rolando quando o navegador fechou sem querer, oferece
+// continuar de onde parou — só aparece se realmente tiver algo salvo, e some depois de usado
+const savedGame = loadSavedGame();
+if (savedGame) {
+  $('resumeGameBtn').classList.remove('hidden');
+  $('resumeGameBtn').addEventListener('click', () => {
+    document.querySelector('.siteHeader').classList.add('hidden');
+    requestWakeLock();
+    resumeSavedGame(savedGame);
+    $('resumeGameBtn').classList.add('hidden');
+  });
+}
