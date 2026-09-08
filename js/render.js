@@ -198,6 +198,40 @@ function drawHead(x, y, shape, color) {
     ctx.beginPath();
     ctx.arc(cx + size * 0.86, cy + size * 0.06, size * 0.16, 0, Math.PI * 2);
     ctx.fill();
+  } else if (shape === 'sunflower') {
+    // Pétalas amarelas ao redor, com um centro escuro — a base colorida já fica por
+    // baixo, mas as pétalas dominam a aparência
+    const ccx = cx + size / 2, ccy = cy + size / 2, r = size / 2;
+    ctx.fillStyle = '#ffd23f';
+    for (let a = 0; a < 8; a++) {
+      const ang = (a / 8) * Math.PI * 2;
+      const px = ccx + Math.cos(ang) * r * 0.82;
+      const py = ccy + Math.sin(ang) * r * 0.82;
+      ctx.beginPath();
+      ctx.ellipse(px, py, r * 0.34, r * 0.19, ang, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#6b4423';
+    ctx.beginPath();
+    ctx.arc(ccx, ccy, r * 0.52, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (shape === 'rose') {
+    // Pétalas rosa em camadas, criando um efeito de rosa desabrochando
+    const ccx = cx + size / 2, ccy = cy + size / 2, r = size / 2;
+    const petalColors = ['#a3134f', '#e91e8c', '#ff8fc4'];
+    for (let layer = 0; layer < 3; layer++) {
+      ctx.fillStyle = petalColors[layer];
+      const layerR = r * (0.95 - layer * 0.22);
+      const petals = 5;
+      for (let a = 0; a < petals; a++) {
+        const ang = (a / petals) * Math.PI * 2 + layer * 0.4;
+        const px = ccx + Math.cos(ang) * layerR * 0.48;
+        const py = ccy + Math.sin(ang) * layerR * 0.48;
+        ctx.beginPath();
+        ctx.ellipse(px, py, layerR * 0.42, layerR * 0.3, ang, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
   }
 
   // Olhinhos em toda cabeça, com uma piscadinha de vez em quando — dá mais vida e é
@@ -370,6 +404,22 @@ function drawMinimap() {
   ctx.fill();
   ctx.stroke();
 
+  // Comidinhas e estrelas também aparecem no minimapa, bem pequenininhas
+  for (const f of state.foods) {
+    ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : f.kind === 'drop' ? (state.colors[f.owner] || '#ff4f7a') : '#ff4f7a';
+    ctx.beginPath();
+    ctx.arc(mx + f.x * scale, my + f.y * scale, f.kind === 'bonus' ? 1.6 : 1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // A Minhoca Caçadora também aparece, pra dar um aviso de longe de onde ela tá
+  if (state.hunterActive && state.hunterSnake[0]) {
+    ctx.fillStyle = '#ff2222';
+    ctx.beginPath();
+    ctx.arc(mx + state.hunterSnake[0].x * scale, my + state.hunterSnake[0].y * scale, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   for (let i = 0; i < state.count; i++) {
     if (!state.alive[i] || !state.snakes[i]?.[0]) continue;
     const h = state.snakes[i][0];
@@ -399,12 +449,26 @@ export function renderScores() {
     }
   }
 
+  // No Modo Torneio, também descobre quem tá ganhando o TORNEIO (mais rodadas vencidas
+  // até agora) — diferente de quem tá liderando só essa rodada
+  let tournamentLeaderIdx = -1;
+  if (state.tournamentMode && state.count > 1) {
+    let maxWins = 0;
+    for (let i = 0; i < state.count; i++) {
+      if ((state.tournamentWins[i] || 0) > maxWins) { maxWins = state.tournamentWins[i]; tournamentLeaderIdx = i; }
+    }
+  }
+
   for (let i = 0; i < state.count; i++) {
     const boost = state.boosting[i] ? ' • ⚡' : '';
     const team = state.teamMode ? ` ${teamBadge[state.teams[i]] || ''}` : '';
     const wins = state.tournamentMode ? ` • 🏆${state.tournamentWins[i] || 0}` : '';
     const leader = i === leaderIdx ? ' 👑' : '';
-    const leaderClass = i === leaderIdx ? ' leaderScore' : '';
+    const leaderClass = (i === leaderIdx ? ' leaderScore' : '') + (i === tournamentLeaderIdx ? ' tournamentLeading' : '');
+    // Recorde histórico batido AGORA é diferente de só liderar a rodada — usa um troféu
+    // dourado especial, já que é uma conquista maior (bate o melhor de sempre desse aparelho)
+    const beatingRecord = (state.scores[i] || 0) > 0 && (state.scores[i] || 0) > state.best;
+    const recordBadge = beatingRecord ? ' <span class="newRecordBadge">🏆 NOVO RECORDE!</span>' : '';
     const len = state.snakes[i]?.length || 0;
     const milestoneProgress = state.alive[i] ? Math.max(0, Math.min(1, (len - state.milestones[i]) / MILESTONE_STEP)) : 0;
     const progressBar = state.alive[i]
@@ -414,7 +478,7 @@ export function renderScores() {
     const youBadge = (i === mySlot && state.count > 1) ? ' <span class="youBadge">🫵 Você</span>' : '';
     // Ícone Humano/CPU — ajuda a saber de relance quem é controlado por gente de verdade
     const typeIcon = state.types[i] === 'cpu' ? '🤖' : '🧑';
-    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} ${typeIcon} <b>${label(i)}</b>${youBadge}${leader}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
+    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} ${typeIcon} <b>${label(i)}</b>${youBadge}${leader}${recordBadge}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
@@ -423,6 +487,8 @@ export function renderScores() {
   // Indicador de quantos turbos ainda dá pra usar (baseado na comida acumulada)
   const fuelBox = $('boostFuelCount');
   if (fuelBox) fuelBox.textContent = state.foodsEaten[mySlot] || 0;
+  const usedBox = $('boostUsedDisplay');
+  if (usedBox) usedBox.textContent = `⚡ Turbo usado: ${state.boostUsedCount[mySlot] || 0}x`;
 
   // Contador de jogadores online (melhoria #13) — só aparece durante partidas online
   const onlineBox = $('onlineCount');
