@@ -134,12 +134,65 @@ export function switchScreen(hideId, showId) {
 // funciona mesmo se o navegador fechar sem avisar, já que vai salvando aos poucos
 setInterval(() => { if (state.running) addPlaytime(3000); }, 3000);
 
+// Salva e retoma a partida — pra quando o navegador fecha sem querer no meio do jogo.
+// Só faz sentido no LOCAL (offline), já que uma sala online depende da conexão em tempo
+// real com quem estava jogando junto, e essa conexão não existe mais depois de fechar.
+const SAVE_KEY = 'snakeArenaSavedGame';
+const SAVE_FIELDS = [
+  'count', 'types', 'names', 'colors', 'heads', 'patterns', 'palettes', 'controls', 'trailColors',
+  'mode', 'difficulty', 'mapW', 'mapH', 'mapSize', 'noWalls', 'theme', 'speed',
+  'teamMode', 'teams', 'tournamentMode', 'tournamentRound', 'tournamentWins',
+  'tournamentRoundScore', 'tournamentRoundEndsAt', 'zoom',
+  'snakes', 'alive', 'dirs', 'nextDirs', 'foods', 'scores', 'foodsEaten', 'grow',
+  'respawnAt', 'milestones', 'eliminations', 'boosting', 'boostUsedCount', 'mission',
+  'hunterActive', 'hunterSnake', 'hunterDir', 'hunterEndsAt', 'hunterMilestoneIndex',
+];
+
+function snapshotGameState() {
+  if (isOnline()) return; // online nunca salva — a sala já não existiria mais depois
+  if (!state.running) return;
+  const snap = { ts: Date.now() };
+  for (const key of SAVE_FIELDS) snap[key] = state[key];
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(snap)); } catch {}
+}
+
+export function loadSavedGame() {
+  try {
+    const snap = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (!snap) return null;
+    if (Date.now() - snap.ts > 30 * 60 * 1000) { clearSavedGame(); return null; } // mais de 30min, descarta
+    return snap;
+  } catch { return null; }
+}
+
+export function clearSavedGame() {
+  try { localStorage.removeItem(SAVE_KEY); } catch {}
+}
+
+setInterval(snapshotGameState, 3000);
+
+// Retoma uma partida salva — não passa pela contagem regressiva, já entra direto de
+// onde parou, com o jogo já rodando
+export function resumeSavedGame(snap) {
+  for (const key of SAVE_FIELDS) if (key in snap) state[key] = snap[key];
+  switchScreen('menu', 'game');
+  $('overlay').classList.add('hidden');
+  $('badge').textContent = (state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO') + (state.noWalls ? ' 🌀' : '');
+  const spd = SPEEDS.find((s) => s.value === state.speed) || SPEEDS[1];
+  currentInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
+  state.paused = false;
+  state.running = true;
+  render();
+  state.timer = setInterval(tick, currentInterval);
+}
+
 export function startGame() {
   syncSettings();
   setVibrationEnabled(state.vibrationOn);
   updateGamesPlayedBadge(incrementGamesPlayed());
   updateSessionStatsDisplay(incrementSessionGames());
   updateStreakAndLastPlayed();
+  clearSavedGame();
   reset();
   switchScreen('menu', 'game');
   $('overlay').classList.add('hidden');
@@ -339,6 +392,7 @@ function endTournamentRound() {
     }
     state.tournamentChampion = champion;
     state.running = false;
+    clearSavedGame();
     render();
     document.dispatchEvent(new CustomEvent('tournamentOver', {
       detail: { champion, wins: [...state.tournamentWins].slice(0, state.count) },
