@@ -62,6 +62,7 @@ export function makePlayers() {
         <button type="button" class="bindKey" data-i="${i}" data-dir="boost">⚡ ${keyLabel(customKeys.boost)}</button>
       </div>
       <select class="select pcolor" data-i="${i}" aria-label="Cor da minhoca">${colorOptions}</select>
+      <button class="iconBtn randomColorBtn" data-i="${i}" type="button" aria-label="Sortear cor aleatória" title="Sortear cor aleatória">🎲</button>
       <select class="select ptrail" data-i="${i}" aria-label="Cor do rastro neon">${trailOptions}</select>
       <select class="select phead" data-i="${i}" aria-label="Formato da cabeça">${headOptions}</select>
       <select class="select ppattern" data-i="${i}" aria-label="Padrão da pele">${patternOptions}</select>
