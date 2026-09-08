@@ -22,6 +22,11 @@ net.setHandlers({
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s). Pode clicar em "Jogar" quando quiser!`;
     makePlayers();
     $('startFromHostPanel').classList.add('waitingPulse'); // chama atenção: tem gente esperando
+    // Se a pessoa saiu da aba (foi ver outra coisa) enquanto esperava, um toque sonoro
+    // de notificação avisa que já pode voltar e começar a partida
+    if (window.Notification && window.Notification.permission === 'granted' && document.hidden) {
+      try { new window.Notification('🐍 Snake Arena', { body: 'Um amigo entrou na sua sala! Volte pra começar a jogar.' }); } catch {}
+    }
   },
   onPeerLeft: () => {
     state.count = Math.min(6, 1 + net.connectedCount());
@@ -87,6 +92,11 @@ $('hostBtn').addEventListener('click', () => {
       $('count').disabled = true;
       state.count = 1;
       makePlayers();
+      // Pede permissão de notificação só agora, no momento que faz sentido (criou uma
+      // sala e vai esperar alguém entrar) — nunca pede isso sem contexto, ao carregar a página
+      if (window.Notification && window.Notification.permission === 'default') {
+        window.Notification.requestPermission().catch(() => {});
+      }
     },
     (err) => {
       $('hostBtn').disabled = false;
@@ -568,6 +578,18 @@ $('controlSize').addEventListener('input', (e) => {
   document.documentElement.style.setProperty('--ctrl-scale', state.controlSize / 100);
   persistComfortSettings();
 });
+
+// Botões rápidos de tamanho dos controles, direto na tela do jogo — não precisa abrir
+// o menu de configurações só pra isso
+function adjustControlSize(delta) {
+  state.controlSize = Math.max(70, Math.min(150, state.controlSize + delta));
+  document.documentElement.style.setProperty('--ctrl-scale', state.controlSize / 100);
+  $('controlSize').value = state.controlSize;
+  persistComfortSettings();
+  vibrate(10);
+}
+$('ctrlSizeUpBtn').addEventListener('click', () => adjustControlSize(10));
+$('ctrlSizeDownBtn').addEventListener('click', () => adjustControlSize(-10));
 
 // Inverter o lado dos controles (bom pra quem é canhoto)
 $('controlsSwapped').addEventListener('change', (e) => {
