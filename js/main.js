@@ -70,6 +70,10 @@ net.setHandlers({
 });
 
 $('hostBtn').addEventListener('click', () => {
+  if (!navigator.onLine) {
+    $('roomStatus').textContent = '📡 Sem conexão com a internet — o multiplayer online precisa de internet pra funcionar. O modo local continua funcionando normalmente!';
+    return;
+  }
   unlockAudio();
   $('hostBtn').disabled = true;
   const originalHostText = $('hostBtn').textContent;
@@ -128,6 +132,10 @@ function extractRoomCode(raw) {
 $('joinBtn').addEventListener('click', () => {
   const code = extractRoomCode($('joinCode').value);
   if (!code) return;
+  if (!navigator.onLine) {
+    $('joinStatus').textContent = '📡 Sem conexão com a internet — não dá pra entrar numa sala sem internet. Confere o wi-fi ou os dados móveis.';
+    return;
+  }
   unlockAudio();
   $('joinBtn').disabled = true;
   const originalJoinText = $('joinBtn').textContent;
@@ -1194,3 +1202,32 @@ setInterval(() => {
     afkWarned = false;
   }
 }, 5000);
+
+// Aviso proativo de "sem internet" — atualiza na hora se a conexão cair ou voltar,
+// mesmo sem a pessoa ter tentado clicar em nada ainda
+function updateConnectivityWarning() {
+  const box = $('connectivityWarning');
+  if (!box) return;
+  box.classList.toggle('hidden', navigator.onLine);
+}
+window.addEventListener('online', updateConnectivityWarning);
+window.addEventListener('offline', updateConnectivityWarning);
+updateConnectivityWarning();
+
+// Indicador de "no wi-fi" vs "nos dados móveis" — só funciona em navegadores que
+// suportam a API de Informação de Rede (a maioria dos Android; iPhone/Safari não tem)
+function updateConnectionTypeDisplay() {
+  const box = $('connectionTypeDisplay');
+  if (!box) return;
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (!conn) { box.textContent = ''; return; }
+  const isWifi = conn.type === 'wifi';
+  const isCellular = conn.type === 'cellular';
+  if (isWifi) box.textContent = '📶 Conectado no Wi-Fi';
+  else if (isCellular) box.textContent = '📱 Conectado nos dados móveis';
+  else if (conn.effectiveType) box.textContent = `📡 Conexão: ${conn.effectiveType}`;
+  else box.textContent = '';
+}
+const netConn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+if (netConn) netConn.addEventListener('change', updateConnectionTypeDisplay);
+updateConnectionTypeDisplay();
