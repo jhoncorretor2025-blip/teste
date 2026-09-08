@@ -482,6 +482,8 @@ export function renderScores() {
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
+  const scoresBottomBox = $('scoresBottom');
+  if (scoresBottomBox) scoresBottomBox.innerHTML = h;
   $('alive').textContent = state.alive.filter(Boolean).length;
 
   // Indicador de quantos turbos ainda dá pra usar (baseado na comida acumulada)
