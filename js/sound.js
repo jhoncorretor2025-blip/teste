@@ -46,7 +46,12 @@ function beep({ freq = 440, duration = 0.08, type = 'sine', volume = 0.2, slideT
 export const sfx = {
   eat: () => beep({ freq: 520, duration: 0.07, type: 'square', volume: 0.15 }),
   star: () => beep({ freq: 700, duration: 0.16, type: 'triangle', volume: 0.2, slideTo: 1100 }),
-  drop: () => beep({ freq: 380, duration: 0.09, type: 'sine', volume: 0.14, slideTo: 460 }),
+  // Comida derrubada (de outro jogador) tem um som de "moeda dupla" — bem diferente da
+  // comida normal, pra dar destaque de que veio de uma disputa, não só nasceu sozinha
+  drop: () => {
+    beep({ freq: 500, duration: 0.06, type: 'triangle', volume: 0.15, slideTo: 640 });
+    setTimeout(() => beep({ freq: 640, duration: 0.09, type: 'triangle', volume: 0.16, slideTo: 820 }), 55);
+  },
   death: () => beep({ freq: 220, duration: 0.35, type: 'sawtooth', volume: 0.18, slideTo: 60 }),
   boost: () => beep({ freq: 300, duration: 0.12, type: 'square', volume: 0.12, slideTo: 600 }),
   mission: () => beep({ freq: 660, duration: 0.22, type: 'triangle', volume: 0.22, slideTo: 990 }),
