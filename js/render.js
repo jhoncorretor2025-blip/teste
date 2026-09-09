@@ -388,8 +388,9 @@ function drawHunter() {
 }
 
 function drawMinimap() {
-  if (viewW >= state.mapW && viewH >= state.mapH) return; // mapa já cabe inteiro, não precisa
-  const mmW = Math.min(120, canvas.width * 0.28);
+  // Antes só aparecia em mapas grandes (que não cabiam na câmera de uma vez); agora
+  // aparece sempre, já que ver comida/minhocas de relance ajuda em qualquer tamanho de mapa
+  const mmW = Math.min(150, canvas.width * 0.34);
   const mmH = mmW * (state.mapH / state.mapW);
   const mx = canvas.width - mmW - 14, my = 14;
   const scale = mmW / state.mapW;
@@ -404,29 +405,41 @@ function drawMinimap() {
   ctx.fill();
   ctx.stroke();
 
-  // Comidinhas e estrelas também aparecem no minimapa, bem pequenininhas
+  // Comidinhas e estrelas no minimapa — bem maiores e com contorno branco, pra dar
+  // pra ver de relance mesmo numa tela pequena de celular
   for (const f of state.foods) {
+    const r = f.kind === 'bonus' ? 3.2 : 2.2;
     ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : f.kind === 'drop' ? (state.colors[f.owner] || '#ff4f7a') : '#ff4f7a';
     ctx.beginPath();
-    ctx.arc(mx + f.x * scale, my + f.y * scale, f.kind === 'bonus' ? 1.6 : 1, 0, Math.PI * 2);
+    ctx.arc(mx + f.x * scale, my + f.y * scale, r, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
   }
 
   // A Minhoca Caçadora também aparece, pra dar um aviso de longe de onde ela tá
   if (state.hunterActive && state.hunterSnake[0]) {
     ctx.fillStyle = '#ff2222';
     ctx.beginPath();
-    ctx.arc(mx + state.hunterSnake[0].x * scale, my + state.hunterSnake[0].y * scale, 2.4, 0, Math.PI * 2);
+    ctx.arc(mx + state.hunterSnake[0].x * scale, my + state.hunterSnake[0].y * scale, 3.2, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
   }
 
   for (let i = 0; i < state.count; i++) {
     if (!state.alive[i] || !state.snakes[i]?.[0]) continue;
     const h = state.snakes[i][0];
+    const r = i === mySlot ? 4.5 : 3.5;
     ctx.fillStyle = state.colors[i];
     ctx.beginPath();
-    ctx.arc(mx + h.x * scale, my + h.y * scale, i === mySlot ? 3 : 2, 0, Math.PI * 2);
+    ctx.arc(mx + h.x * scale, my + h.y * scale, r, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
   }
 
   // retângulo mostrando a área que a câmera tá vendo agora
