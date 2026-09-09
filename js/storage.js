@@ -1,3 +1,5 @@
+import { ACHIEVEMENTS, BOARD_THEMES, HEAD_SHAPES } from './config.js';
+
 // Guarda o recorde (melhor pontuação) e a preferência de som no navegador do jogador, entre visitas.
 // Usa localStorage: fica salvo só naquele navegador/celular, não é compartilhado entre pessoas.
 
@@ -164,4 +166,118 @@ export function formatPlaytime(ms) {
   const minutes = totalMinutes % 60;
   if (hours > 0) return `${hours}h ${minutes}min`;
   return `${minutes}min`;
+}
+
+// Data da última vez que jogou + sequência de dias seguidos jogando — melhoria #14/#17
+const LAST_PLAYED_KEY = 'snakeArenaLastPlayedAt';
+const STREAK_KEY = 'snakeArenaStreakDays';
+
+export function loadLastPlayedAt() {
+  return Number(localStorage.getItem(LAST_PLAYED_KEY)) || null;
+}
+
+export function loadStreakDays() {
+  return Number(localStorage.getItem(STREAK_KEY)) || 0;
+}
+
+// Chamado toda vez que uma partida começa — atualiza a data e a sequência de dias
+export function updateStreakAndLastPlayed() {
+  const now = Date.now();
+  const today = new Date(now).toDateString();
+  const previousLastPlayed = loadLastPlayedAt();
+  let streak = loadStreakDays();
+
+  if (!previousLastPlayed) {
+    streak = 1; // primeira vez jogando
+  } else {
+    const previousDay = new Date(previousLastPlayed).toDateString();
+    if (previousDay === today) {
+      // já jogou hoje, mantém a sequência como está
+    } else {
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      const gapDays = Math.round((new Date(today).getTime() - new Date(previousDay).getTime()) / oneDayMs);
+      streak = gapDays === 1 ? streak + 1 : 1;
+    }
+  }
+
+  try {
+    localStorage.setItem(LAST_PLAYED_KEY, String(now));
+    localStorage.setItem(STREAK_KEY, String(streak));
+  } catch {}
+  return { lastPlayedAt: previousLastPlayed, streak };
+}
+
+// --- Galeria de Conquistas ---
+const UNLOCKED_KEY = 'snakeArenaUnlockedAchievements';
+const PROGRESS_KEY = 'snakeArenaAchievementProgress';
+
+export function loadUnlockedAchievements() {
+  try { return JSON.parse(localStorage.getItem(UNLOCKED_KEY)) || []; } catch { return []; }
+}
+
+function loadAchievementProgress() {
+  try {
+    return { totalFoods: 0, totalStars: 0, totalMissions: 0, themesUsed: [], headsUsed: [], ...JSON.parse(localStorage.getItem(PROGRESS_KEY)) };
+  } catch {
+    return { totalFoods: 0, totalStars: 0, totalMissions: 0, themesUsed: [], headsUsed: [] };
+  }
+}
+
+function saveAchievementProgress(progress) {
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch {}
+}
+
+// Desbloqueia uma conquista (se ainda não tiver sido) e retorna os dados dela se for
+// a primeira vez — quem chamou usa isso pra mostrar um aviso festivo na tela
+export function unlockAchievement(id) {
+  const unlocked = loadUnlockedAchievements();
+  if (unlocked.includes(id)) return null;
+  unlocked.push(id);
+  try { localStorage.setItem(UNLOCKED_KEY, JSON.stringify(unlocked)); } catch {}
+  return ACHIEVEMENTS.find((a) => a.id === id) || null;
+}
+
+// Soma nos contadores cumulativos (comida/estrela/missão/tema/cabeça) e desbloqueia
+// automaticamente qualquer conquista cumulativa que tenha batido a meta agora
+export function trackCumulativeProgress(field, amountOrValue) {
+  const progress = loadAchievementProgress();
+  const newlyUnlocked = [];
+
+  if (field === 'themesUsed' || field === 'headsUsed') {
+    if (!progress[field].includes(amountOrValue)) progress[field].push(amountOrValue);
+  } else {
+    progress[field] = (progress[field] || 0) + amountOrValue;
+  }
+  saveAchievementProgress(progress);
+
+  for (const a of ACHIEVEMENTS.filter((x) => x.cumulative === field)) {
+    const target = a.target === 'ALL_THEMES' ? BOARD_THEMES.length : a.target === 'ALL_HEADS' ? HEAD_SHAPES.length : a.target;
+    const current = Array.isArray(progress[field]) ? progress[field].length : progress[field];
+    if (current >= target) {
+      const unlocked = unlockAchievement(a.id);
+      if (unlocked) newlyUnlocked.push(unlocked);
+    }
+  }
+  return newlyUnlocked;
+}
+
+// --- Histórico de confrontos com um amigo específico (por nome), online ---
+const MATCH_HISTORY_KEY = 'snakeArenaMatchHistory';
+
+export function loadMatchHistory(partnerName) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY)) || {};
+    return all[partnerName] || { wins: 0, losses: 0 };
+  } catch { return { wins: 0, losses: 0 }; }
+}
+
+export function recordMatchResult(partnerName, won) {
+  if (!partnerName) return;
+  try {
+    const all = JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY)) || {};
+    const entry = all[partnerName] || { wins: 0, losses: 0 };
+    if (won) entry.wins++; else entry.losses++;
+    all[partnerName] = entry;
+    localStorage.setItem(MATCH_HISTORY_KEY, JSON.stringify(all));
+  } catch {}
 }
