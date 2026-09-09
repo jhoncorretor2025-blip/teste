@@ -6,6 +6,12 @@
 //  - Quem entra na sala é "cliente" — só manda a direção que quer ir, e recebe de volta
 //    a posição de todo mundo pra desenhar na tela (não simula nada, só mostra).
 // Isso evita jogadores trapaceando e mantém todo mundo sincronizado com uma fonte de verdade só.
+//
+// Migração automática de anfitrião (melhoria #2): se quem hospeda cair, a sala não
+// morre — o cliente com o menor "slot" assume como novo anfitrião automaticamente,
+// usando um ID derivado do código original (código + "-mig"), e os outros reconectam
+// nesse ID sozinhos. O jogo em si recomeça do zero no novo anfitrião (não dá pra
+// continuar a simulação exata de onde parou, já que só quem hospedava tinha os dados).
 
 export let role = 'local'; // 'local' | 'host' | 'client'
 export let mySlot = 0;     // qual minhoca (0, 1 ou 2) é a "sua" nesse aparelho
@@ -15,6 +21,11 @@ let conns = [];       // host: uma conexão pra cada amigo conectado
 let hostConn = null;  // cliente: a conexão com o anfitrião
 
 let handlers = {};
+
+let originalRoomId = null; // guarda o código ORIGINAL da sala, pra calcular o ID de migração
+let knownPeers = [];       // [{slot, id}] — quem tá na sala, pra saber quem vira o próximo anfitrião
+let deliberateDisconnect = false; // true quando a própria pessoa clicou em sair (não tenta migrar)
+let migrating = false;
 
 export function setHandlers(h) {
   handlers = h;
@@ -31,17 +42,37 @@ function getPeerCtor() {
   return window.Peer;
 }
 
+function migratedRoomId(roomId) {
+  return roomId + '-mig';
+}
+
+// Host: manda pra todo mundo conectado a lista de quem tá na sala agora (incluindo o
+// próprio anfitrião no slot 0) — os clientes guardam isso pra saber quem assume se o
+// anfitrião cair
+function broadcastPeerList() {
+  const list = [{ slot: 0, id: peer.id }, ...conns.map((c, idx) => ({ slot: idx + 1, id: c.peer }))];
+  broadcastRaw({ type: 'peerlist', peers: list });
+}
+
 // Cria uma sala nova. Chama onReady(codigoDaSala) quando o código já pode ser compartilhado.
-export function hostRoom(onReady, onFail) {
+// forcedId (opcional): usado internamente na migração, pra o novo anfitrião nascer com
+// um ID PREVISÍVEL que os outros clientes conseguem adivinhar sozinhos.
+export function hostRoom(onReady, onFail, forcedId) {
   role = 'host';
   mySlot = 0;
+  deliberateDisconnect = false;
   const Peer = getPeerCtor();
-  peer = new Peer();
+  peer = forcedId ? new Peer(forcedId) : new Peer();
   let firstOpen = true;
 
   peer.on('open', id => {
-    if (firstOpen) { firstOpen = false; onReady(id); }
-    else { handlers.onConnectionStatus && handlers.onConnectionStatus('connected'); }
+    if (firstOpen) {
+      firstOpen = false;
+      originalRoomId = forcedId ? originalRoomId : id; // migração já sabe o id original
+      onReady(id);
+    } else {
+      handlers.onConnectionStatus && handlers.onConnectionStatus('connected');
+    }
   });
   peer.on('error', err => onFail && onFail(err));
 
@@ -63,12 +94,14 @@ export function hostRoom(onReady, onFail) {
 
     conn.on('open', () => {
       conn.send({ type: 'welcome', slot });
+      broadcastPeerList();
       handlers.onPeerJoined && handlers.onPeerJoined(slot);
     });
     conn.on('data', msg => handlers.onInput && handlers.onInput(slot, msg));
     conn.on('close', () => {
       const idx = conns.indexOf(conn);
       if (idx >= 0) conns.splice(idx, 1);
+      broadcastPeerList();
       handlers.onPeerLeft && handlers.onPeerLeft(slot);
     });
   });
@@ -77,6 +110,8 @@ export function hostRoom(onReady, onFail) {
 // Entra numa sala existente usando o código do anfitrião.
 export function joinRoom(hostId, onJoined, onFail) {
   role = 'client';
+  deliberateDisconnect = false;
+  if (!migrating) originalRoomId = hostId; // se já tá migrando, mantém o id ORIGINAL guardado
   const Peer = getPeerCtor();
   peer = new Peer();
   let firstOpen = true;
@@ -104,13 +139,50 @@ export function joinRoom(hostId, onJoined, onFail) {
         handlers.onReaction && handlers.onReaction(msg.emoji, msg.from);
       } else if (msg.type === 'chat') {
         handlers.onChat && handlers.onChat(msg.text, msg.from);
+      } else if (msg.type === 'peerlist') {
+        knownPeers = msg.peers;
       } else if (msg.type === 'full') {
         // sala já tava cheia (3 jogadores) — não dá pra entrar
         onFail && onFail(new Error('full'));
       }
     });
+    hostConn.on('close', () => {
+      if (deliberateDisconnect || migrating) return; // saída de propósito, ou já migrando — nada a fazer
+      attemptHostMigration();
+    });
     hostConn.on('error', err => onFail && onFail(err));
   });
+}
+
+// Se o anfitrião cair sem avisar, tenta migrar a sala sozinho — o cliente com o menor
+// slot vira o novo anfitrião, e os outros reconectam automaticamente nele
+function attemptHostMigration() {
+  if (migrating || !originalRoomId) { handlers.onMigrationFailed && handlers.onMigrationFailed(); return; }
+  migrating = true;
+  handlers.onHostLeft && handlers.onHostLeft();
+
+  const survivors = knownPeers.filter((p) => p.slot !== 0).sort((a, b) => a.slot - b.slot);
+  if (!survivors.length) { handlers.onMigrationFailed && handlers.onMigrationFailed(); return; }
+
+  const iAmNext = survivors[0].id === peer.id;
+  const newHostId = migratedRoomId(originalRoomId);
+
+  if (iAmNext) {
+    hostRoom(
+      () => { migrating = false; handlers.onBecameNewHost && handlers.onBecameNewHost(newHostId); },
+      () => { migrating = false; handlers.onMigrationFailed && handlers.onMigrationFailed(); },
+      newHostId
+    );
+  } else {
+    // Dá um tempinho pro novo anfitrião terminar de subir antes de tentar conectar nele
+    setTimeout(() => {
+      joinRoom(
+        newHostId,
+        (slot) => { migrating = false; handlers.onRejoinedAfterMigration && handlers.onRejoinedAfterMigration(slot); },
+        () => { migrating = false; handlers.onMigrationFailed && handlers.onMigrationFailed(); }
+      );
+    }, 2000);
+  }
 }
 
 // Host: manda o estado atual do jogo pra todo mundo conectado
@@ -130,6 +202,10 @@ export function sendInput(msg) {
 
 // Encerra a conexão e volta pro modo local (usado ao clicar em "Sair"/"Menu")
 export function disconnect() {
+  deliberateDisconnect = true;
+  migrating = false;
+  originalRoomId = null;
+  knownPeers = [];
   conns.forEach(c => { try { c.close(); } catch {} });
   conns = [];
   if (hostConn) { try { hostConn.close(); } catch {} }
