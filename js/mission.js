@@ -9,6 +9,12 @@ import { state } from './state.js';
 import { $, announce } from './utils.js';
 import { sfx } from './sound.js';
 import { burst } from './food.js';
+import { mySlot } from './net.js';
+import { trackCumulativeProgress, unlockAchievement } from './storage.js';
+
+function announceAchievements(list) {
+  (list || []).forEach((a, idx) => setTimeout(() => document.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: a })), idx * 3400));
+}
 
 function pickMission() {
   const pool = MISSIONS.filter((m) => m.type !== 'eliminate' || state.count > 1);
@@ -33,7 +39,7 @@ export function renderMission() {
   }
 }
 
-function completeMission(winnerIdx) {
+function completeMission(winnerIdx, mySlotAlsoWon) {
   const m = state.mission;
   m.done = true;
   if (winnerIdx != null) state.scores[winnerIdx] += m.reward;
@@ -41,6 +47,7 @@ function completeMission(winnerIdx) {
   if (h) burst(h.x, h.y, '#ffd24d', 30);
   sfx.mission();
   announce(`Missão completa: ${m.label}!`);
+  if (winnerIdx === mySlot || mySlotAlsoWon) announceAchievements(trackCumulativeProgress('totalMissions', 1));
   setTimeout(startMission, 900);
 }
 
@@ -86,6 +93,6 @@ export function checkSurvivalMission() {
       anyWinner = true;
     }
   }
-  completeMission(null); // a recompensa já foi distribuída manualmente acima
+  completeMission(null, !m.diedSet.has(mySlot) && state.alive[mySlot]); // a recompensa já foi distribuída manualmente acima
   if (!anyWinner) announce('Ninguém sobreviveu a tempo — próxima missão!');
 }
