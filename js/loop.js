@@ -10,7 +10,7 @@ import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
-import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed } from './storage.js';
+import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
@@ -74,6 +74,7 @@ export function spawn(i) {
   state.respawnAt[i] = 0;
   state.boosting[i] = false;
   state.milestones[i] = 3; // já nasce com 3 partes, não conta como marco de crescimento
+  state.spawnedAt[i] = Date.now();
   burst(p.x, p.y, state.colors[i], 14);
 }
 
@@ -193,6 +194,12 @@ export function startGame() {
   updateSessionStatsDisplay(incrementSessionGames());
   updateStreakAndLastPlayed();
   clearSavedGame();
+
+  announceAchievement(unlockAchievement('first_game'));
+  announceAchievements(trackCumulativeProgress('themesUsed', state.theme));
+  announceAchievements(trackCumulativeProgress('headsUsed', state.heads[0]));
+  if (isOnline()) announceAchievement(unlockAchievement('social'));
+
   reset();
   switchScreen('menu', 'game');
   $('overlay').classList.add('hidden');
@@ -265,6 +272,7 @@ export function tryBoost(i) {
 // Mata uma minhoca: derrama comida, faz explosão, som/vibração e guarda o recorde
 export function kill(i) {
   trackDeathForMission(i);
+  if (state.hunterActive) state.hunterVictims.add(i);
   saveBest(state.scores[i]);
   saveBestByMode(state.mode, state.tournamentMode, state.scores[i]);
   state.best = Math.max(state.best, state.scores[i]);
@@ -318,7 +326,11 @@ function stepMovement(indices) {
 
   indices.forEach(i => {
     if (i in die) {
-      if (die[i] >= 0) { state.eliminations[die[i]] = (state.eliminations[die[i]] || 0) + 1; trackEliminationForMission(die[i]); }
+      if (die[i] >= 0) {
+        state.eliminations[die[i]] = (state.eliminations[die[i]] || 0) + 1;
+        trackEliminationForMission(die[i]);
+        if (die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('eliminator'));
+      }
       kill(i);
       return;
     }
@@ -350,6 +362,14 @@ function stepMovement(indices) {
         bornAt: Date.now(),
       });
       trackFoodForMission(i, f);
+
+      // Conquistas — só rastreadas pra VOCÊ (mySlot), já que são do seu aparelho
+      if (i === mySlot) {
+        announceAchievements(trackCumulativeProgress('totalFoods', f.value));
+        if (f.kind === 'bonus') announceAchievements(trackCumulativeProgress('totalStars', 1));
+        if (combo >= 5) announceAchievement(unlockAchievement('combo_master'));
+        if (state.scores[i] >= 100) announceAchievement(unlockAchievement('century'));
+      }
     }
     if (state.grow[i] > 0) state.grow[i]--;
     else state.snakes[i].pop();
@@ -391,6 +411,7 @@ function endTournamentRound() {
       if (state.tournamentWins[i] > state.tournamentWins[champion]) champion = i;
     }
     state.tournamentChampion = champion;
+    if (champion === mySlot) announceAchievement(unlockAchievement('tournament_champion'));
     state.running = false;
     clearSavedGame();
     render();
@@ -415,6 +436,16 @@ function endTournamentRound() {
 // Acha quem tá comendo mais nessa partida agora (só entre quem tá vivo) — é quem a
 // Minhoca Caçadora persegue. Comida reseta quando morre, então precisa tá numa sequência
 // boa sem morrer pra "merecer" a visita dela.
+// Avisa na tela quando uma conquista da galeria é desbloqueada — reaproveita o mesmo
+// popup que já existia pros marcos de "partidas jogadas"
+function announceAchievement(achievement) {
+  if (!achievement) return;
+  document.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: achievement }));
+}
+function announceAchievements(list) {
+  (list || []).forEach((a, idx) => setTimeout(() => announceAchievement(a), idx * 3400));
+}
+
 function findFoodLeader() {
   let leaderFood = -1, leaderIdx = -1;
   for (let i = 0; i < state.count; i++) {
@@ -437,6 +468,7 @@ function checkHunterSpawn() {
 
 function spawnHunter(durationSec) {
   const p = freeCell();
+  state.hunterVictims = new Set();
   state.hunterSnake = [{ x: p.x, y: p.y }, { x: p.x - 1, y: p.y }, { x: p.x - 2, y: p.y }];
   state.hunterDir = { x: 1, y: 0 };
   state.hunterActive = true;
@@ -452,6 +484,7 @@ function updateHunter() {
   if (!state.hunterActive) return;
   if (Date.now() >= state.hunterEndsAt) {
     state.hunterActive = false;
+    if (!state.hunterVictims.has(mySlot)) announceAchievement(unlockAchievement('hunter_escape'));
     state.hunterSnake = [];
     return;
   }
@@ -485,6 +518,9 @@ function tick() {
   if (state.mission?.type === 'survive') renderMission(); // atualiza a contagem regressiva na tela
 
   checkHunterSpawn();
+  if (state.alive[mySlot] && Date.now() - state.spawnedAt[mySlot] >= 120000) {
+    announceAchievement(unlockAchievement('survivor'));
+  }
   updateHunter();
 
   const now = Date.now();
@@ -573,12 +609,21 @@ export function startClientGame() {
   $('badge').textContent = '🌐 Aguardando o anfitrião iniciar...';
   state.running = true;
   state.paused = false;
+  state.receivedFirstState = false;
+  $('clientReadyBtn').classList.remove('hidden');
+  $('clientReadyBtn').textContent = '✅ Estou Pronto!';
+  $('clientReadyBtn').disabled = false;
   updateSessionStatsDisplay(incrementSessionGames());
+  announceAchievement(unlockAchievement('social'));
   render();
 }
 
 // Aplica um pacote de estado recebido do anfitrião (chamado pelo net.js) e redesenha a tela.
 export function applyRemoteState(msg) {
+  if (!state.receivedFirstState) {
+    state.receivedFirstState = true;
+    $('clientReadyBtn').classList.add('hidden');
+  }
   state.snakes = msg.snakes || [];
   state.dirs = msg.dirs || [];
   state.foods = msg.foods || [];
