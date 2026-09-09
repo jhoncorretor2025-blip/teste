@@ -64,6 +64,10 @@ export const state = {
   hunterDir: { x: 1, y: 0 },
   hunterEndsAt: 0,
   hunterMilestoneIndex: 0, // quantos marcos (100, 150...) já foram usados nessa partida
+  boostUsedCount: [0, 0, 0, 0, 0, 0], // quantas vezes cada um usou o turbo nessa partida
+  spawnedAt: [0, 0, 0, 0, 0, 0], // quando cada minhoca nasceu por último — pra conquista de sobreviver
+  hunterVictims: new Set(), // quem morreu enquanto a Minhoca Caçadora estava ativa nessa aparição
+  receivedFirstState: false, // cliente: já recebeu o primeiro pacote de estado real do anfitrião?
   deathMessage: null, // {text, until} — aviso grande de "Você morreu" pro jogador local
   tournamentMode: false, // modo torneio: melhor de 3 rodadas
   tournamentRound: 0, // rodada atual (1, 2 ou 3)
