@@ -2,7 +2,26 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.55.0';
+export const VERSION = '2.57.0';
+
+// --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
+// "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
+// as outras são checadas dentro de UMA partida só (em loop.js/mission.js).
+export const ACHIEVEMENTS = [
+  { id: 'first_game', name: 'Primeira Partida', desc: 'Jogue sua primeira partida', icon: '🎮' },
+  { id: 'appetite', name: 'Bom Apetite', desc: 'Coma 50 comidinhas no total (todas as partidas)', icon: '🍎', cumulative: 'totalFoods', target: 50 },
+  { id: 'star_hunter', name: 'Caçador de Estrelas', desc: 'Pegue 10 estrelas no total (todas as partidas)', icon: '⭐', cumulative: 'totalStars', target: 10 },
+  { id: 'combo_master', name: 'Combo Mestre', desc: 'Faça um combo de velocidade x5 numa partida', icon: '🔥' },
+  { id: 'survivor', name: 'Sobrevivente', desc: 'Sobreviva 2 minutos numa partida sem morrer', icon: '🛡️' },
+  { id: 'eliminator', name: 'Eliminador', desc: 'Elimine 3 adversários numa partida só', icon: '⚔️' },
+  { id: 'tournament_champion', name: 'Campeão de Torneio', desc: 'Vença um Modo Torneio', icon: '🏆' },
+  { id: 'hunter_escape', name: 'Escapou da Caçadora', desc: 'Sobreviva a uma aparição inteira da Minhoca Caçadora', icon: '💀' },
+  { id: 'chameleon', name: 'Camaleão', desc: 'Jogue em todos os temas de tabuleiro pelo menos uma vez', icon: '🌈', cumulative: 'themesUsed', target: 'ALL_THEMES' },
+  { id: 'collector', name: 'Colecionador', desc: 'Experimente todos os formatos de cabeça', icon: '🐍', cumulative: 'headsUsed', target: 'ALL_HEADS' },
+  { id: 'social', name: 'Sociável', desc: 'Jogue uma partida online com um amigo', icon: '👥' },
+  { id: 'mission_master', name: 'Missão Cumprida', desc: 'Complete 10 missões no total (todas as partidas)', icon: '🎯', cumulative: 'totalMissions', target: 10 },
+  { id: 'century', name: 'Century', desc: 'Faça 100 pontos numa única partida', icon: '💯' },
+];
 
 // --- Minhoca Caçadora: aparece quando o líder come muita comida, persegue ele
 // por um tempo, é invencível (mata quem tocar, mas ninguém consegue matá-la) ---
