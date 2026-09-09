@@ -9,30 +9,64 @@ import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryB
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
+// Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
+// já confirmou antes de decidir começar (mas continua podendo começar mesmo sem todos)
+const readyStatus = {};
+function updateReadyDisplay() {
+  const box = $('readyStatusDisplay');
+  if (!box) return;
+  const total = net.connectedCount();
+  if (total === 0) { box.textContent = ''; return; }
+  const readyCount = Object.values(readyStatus).filter(Boolean).length;
+  box.textContent = `✅ ${readyCount} de ${total} amigo(s) prontos`;
+}
+
+$('clientReadyBtn').addEventListener('click', () => {
+  net.sendInput({ type: 'ready', ready: true });
+  $('clientReadyBtn').textContent = '✅ Combinado, esperando começar...';
+  $('clientReadyBtn').disabled = true;
+});
+
+// Placar acumulado da sessão online — soma as vitórias de cada torneio enquanto a sala
+// continuar a mesma (usando o botão "Jogar de novo"), reseta se sair ou criar sala nova
+let sessionWins = {};
+function updateSessionScoreDisplay() {
+  const box = $('sessionScoreDisplay');
+  if (!box) return;
+  const total = Object.values(sessionWins).reduce((a, b) => a + b, 0);
+  if (total === 0) { box.classList.add('hidden'); return; }
+  const parts = Object.entries(sessionWins).map(([slot, w]) => `${label(Number(slot))}: ${w} vitória${w === 1 ? '' : 's'}`);
+  box.textContent = `📊 Nessa sala hoje: ${parts.join(' • ')}`;
+  box.classList.remove('hidden');
+}
+
 net.setHandlers({
   onPeerJoined: () => {
     state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s). Pode clicar em "Jogar" quando quiser!`;
     makePlayers();
     $('startFromHostPanel').classList.add('waitingPulse'); // chama atenção: tem gente esperando
+    updateReadyDisplay();
     // Se a pessoa saiu da aba (foi ver outra coisa) enquanto esperava, um toque sonoro
     // de notificação avisa que já pode voltar e começar a partida
     if (window.Notification && window.Notification.permission === 'granted' && document.hidden) {
       try { new window.Notification('🐍 Snake Arena', { body: 'Um amigo entrou na sua sala! Volte pra começar a jogar.' }); } catch {}
     }
   },
-  onPeerLeft: () => {
+  onPeerLeft: (slot) => {
     state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s).`;
     makePlayers();
     if (net.connectedCount() === 0) $('startFromHostPanel').classList.remove('waitingPulse');
+    delete readyStatus[slot];
+    updateReadyDisplay();
   },
   onStateUpdate: (msg) => {
     applyRemoteState(msg);
@@ -49,6 +83,9 @@ net.setHandlers({
     } else if (msg.type === 'chat') {
       appendChatMessage(slot, msg.text);
       net.broadcastRaw({ type: 'chat', text: msg.text, from: slot }); // repassa pra todo mundo
+    } else if (msg.type === 'ready') {
+      readyStatus[slot] = msg.ready;
+      updateReadyDisplay();
     }
   },
   onReaction: (emoji) => showReaction(emoji),
@@ -72,6 +109,21 @@ net.setHandlers({
       delete box.dataset.prevText;
     }
   },
+  // Migração automática de anfitrião — a sala não morre se quem hospedava cair
+  onHostLeft: () => {
+    $('joinStatus').textContent = '⚠️ O anfitrião saiu! Tentando reconectar a sala automaticamente...';
+    announce('O anfitrião saiu da sala. Tentando reconectar automaticamente.');
+  },
+  onBecameNewHost: () => {
+    $('roomStatus').textContent = '🔄 Você virou o novo anfitrião da sala! Esperando o resto da galera reconectar...';
+    $('hostPanel').classList.remove('hidden');
+  },
+  onRejoinedAfterMigration: () => {
+    $('joinStatus').textContent = '✅ Reconectado com o novo anfitrião! Aguardando a partida recomeçar...';
+  },
+  onMigrationFailed: () => {
+    $('joinStatus').textContent = '😕 Não deu pra reconectar a sala automaticamente. Peça um novo link/código.';
+  },
 });
 
 $('hostBtn').addEventListener('click', () => {
@@ -80,6 +132,8 @@ $('hostBtn').addEventListener('click', () => {
     return;
   }
   unlockAudio();
+  sessionWins = {};
+  updateSessionScoreDisplay();
   $('hostBtn').disabled = true;
   const originalHostText = $('hostBtn').textContent;
   $('hostBtn').textContent = '⏳ Criando sala...';
@@ -107,7 +161,7 @@ $('hostBtn').addEventListener('click', () => {
 });
 
 $('copyRoom').addEventListener('click', async () => {
-  const link = location.origin + location.pathname + '?room=' + $('roomCode').textContent;
+  const link = buildRoomLink();
   try {
     await navigator.clipboard.writeText(link);
     $('copyRoom').textContent = 'Copiado! ✅';
@@ -127,6 +181,20 @@ $('copyRoomCode').addEventListener('click', async () => {
 
 // Aceita tanto o código puro quanto o link inteiro colado (com "?room=..."),
 // já que muita gente cola o link inteiro em vez de só o código — não devia dar erro por isso.
+// Monta o link de convite já com as configurações da sala embutidas — permite mostrar
+// uma prévia pra quem recebe o link, ANTES de conectar de verdade (melhoria #9)
+function buildRoomLink() {
+  const params = new URLSearchParams({
+    room: $('roomCode').textContent,
+    mode: state.mode,
+    map: $('mapSize').value,
+    diff: state.difficulty,
+    theme: state.theme,
+    noWalls: state.noWalls ? '1' : '0',
+  });
+  return location.origin + location.pathname + '?' + params.toString();
+}
+
 function extractRoomCode(raw) {
   const trimmed = raw.trim();
   if (trimmed.includes('room=')) {
@@ -177,6 +245,23 @@ $('joinBtn').addEventListener('click', () => {
 const roomFromUrl = new URLSearchParams(location.search).get('room');
 if (roomFromUrl) $('joinCode').value = roomFromUrl;
 
+// Prévia da sala — se o link já veio com as configurações embutidas, mostra o que a
+// pessoa vai encontrar ANTES de precisar clicar em entrar de verdade
+const urlParams = new URLSearchParams(location.search);
+if (roomFromUrl && urlParams.get('mode')) {
+  const mapNames = { small: 'Pequeno', normal: 'Normal', large: 'Grande' };
+  const modeNames = { classic: 'Clássico', turbo: 'Turbo Worms' };
+  const diffNames = { easy: '🐣 Fácil', easymid: '🙂 Fácil+', normal: '😐 Médio', hardmid: '😈 Médio+', hard: '💀 Difícil' };
+  const parts = [
+    modeNames[urlParams.get('mode')] || urlParams.get('mode'),
+    `Mapa ${mapNames[urlParams.get('map')] || urlParams.get('map')}`,
+    diffNames[urlParams.get('diff')] || urlParams.get('diff'),
+  ];
+  if (urlParams.get('noWalls') === '1') parts.push('🌀 Sem paredes');
+  $('roomPreviewDisplay').textContent = `👀 Prévia da sala: ${parts.join(' • ')}`;
+  $('roomPreviewDisplay').classList.remove('hidden');
+}
+
 // --- Botões principais ---
 function doStart() {
   unlockAudio();
@@ -185,6 +270,8 @@ function doStart() {
   document.querySelector('.siteHeader').classList.add('hidden');
   maybeSuggestLandscape();
   $('startFromHostPanel').classList.remove('waitingPulse');
+  Object.keys(readyStatus).forEach((k) => delete readyStatus[k]);
+  updateReadyDisplay();
   // Toque pessoal: jogando sozinho, a arena ganha um contorno na cor da sua minhoca
   const arenaEl = document.querySelector('.arena');
   if (arenaEl) {
@@ -233,7 +320,16 @@ function resetFavicon() {
 
 // Pop-up animado de conquista — aparece por 2.5s e some sozinho
 document.addEventListener('achievementUnlocked', (e) => {
-  $('achievementSub').textContent = `🎮 ${e.detail.n} partidas jogadas neste aparelho`;
+  const { n, icon, name, desc } = e.detail;
+  if (n != null) {
+    // Formato antigo: marco de partidas jogadas
+    $('achievementPopup').querySelector('.achievementEmoji').textContent = '🏆';
+    $('achievementSub').textContent = `🎮 ${n} partidas jogadas neste aparelho`;
+  } else {
+    // Formato novo: conquista da galeria, com ícone e nome próprios
+    $('achievementPopup').querySelector('.achievementEmoji').textContent = icon || '🏆';
+    $('achievementSub').textContent = `${name} — ${desc}`;
+  }
   $('achievementPopup').classList.remove('hidden');
   requestAnimationFrame(() => $('achievementPopup').classList.add('show'));
   vibrate([30, 60, 30, 60, 60]);
@@ -241,7 +337,7 @@ document.addEventListener('achievementUnlocked', (e) => {
   achievementHideTimer = setTimeout(() => {
     $('achievementPopup').classList.remove('show');
     setTimeout(() => $('achievementPopup').classList.add('hidden'), 350);
-  }, 2500);
+  }, 3200);
 });
 let achievementHideTimer = null;
 
@@ -256,6 +352,17 @@ document.addEventListener('tournamentOver', (e) => {
   if (champion === net.mySlot) vibrate([40, 30, 40, 30, 40, 30, 200]);
   $('endText').textContent = `${label(champion)} venceu o torneio! ${placar}`;
   $('overlay').classList.remove('hidden');
+
+  // Histórico de confrontos (só faz sentido claro no 1x1) e placar acumulado da sessão —
+  // ambos só quando é online de verdade, já que contra CPU não é bem um "confronto"
+  if (net.isOnline() && state.count === 2) {
+    const opponentSlot = net.mySlot === 0 ? 1 : 0;
+    recordMatchResult(state.names[opponentSlot], champion === net.mySlot);
+  }
+  if (net.isOnline()) {
+    sessionWins[champion] = (sessionWins[champion] || 0) + 1;
+    updateSessionScoreDisplay();
+  }
 
   // Só o anfitrião pode reiniciar — e só faz sentido mostrar esse botão se ainda tiver
   // gente conectada na sala (não desconecta ninguém, só começa um torneio novo na hora)
@@ -355,6 +462,8 @@ $('back').addEventListener('click', () => {
   clearInterval(state.timer);
   clearSavedGame();
   net.disconnect();
+  sessionWins = {};
+  updateSessionScoreDisplay();
   releaseWakeLock();
   $('count').disabled = false;
   $('hostPanel').classList.add('hidden');
@@ -654,7 +763,7 @@ function applyComfortSettings() {
 
 // Convidar pelo WhatsApp — já abre com o link da sala preenchido, sem precisar copiar/colar
 $('whatsappInvite').addEventListener('click', () => {
-  const link = location.origin + location.pathname + '?room=' + $('roomCode').textContent;
+  const link = buildRoomLink();
   const texto = encodeURIComponent(`Vem jogar Snake Arena comigo! 🐍 ${link}`);
   window.open(`https://wa.me/?text=${texto}`, '_blank');
 });
@@ -662,7 +771,7 @@ $('whatsappInvite').addEventListener('click', () => {
 // Compartilhamento nativo da sala — abre o menu de compartilhar do próprio celular
 // (Telegram, SMS, e-mail, Instagram, o que a pessoa tiver instalado), não só WhatsApp
 $('nativeShareRoom').addEventListener('click', async () => {
-  const link = location.origin + location.pathname + '?room=' + $('roomCode').textContent;
+  const link = buildRoomLink();
   const texto = 'Vem jogar Snake Arena comigo! 🐍';
   if (navigator.share) {
     try { await navigator.share({ title: 'Snake Arena', text: texto, url: link }); }
@@ -1175,6 +1284,19 @@ function capturePartnerNameOnce(name) {
     localStorage.setItem(LAST_ROOM_KEY, JSON.stringify({ ...existing, partnerName: name }));
   } catch {}
   updateLastRoomButton();
+  showMatchHistory(name);
+}
+
+// Histórico de confrontos — mostra quantas vezes você já jogou (e venceu/perdeu) contra
+// essa pessoa em partidas 1x1 anteriores
+function showMatchHistory(partnerName) {
+  const box = $('matchHistoryDisplay');
+  if (!box) return;
+  const history = loadMatchHistory(partnerName);
+  const total = history.wins + history.losses;
+  if (total === 0) { box.classList.add('hidden'); return; }
+  box.textContent = `📜 Você já jogou ${total}x com ${partnerName}: ${history.wins} vitória${history.wins === 1 ? '' : 's'}, ${history.losses} derrota${history.losses === 1 ? '' : 's'}`;
+  box.classList.remove('hidden');
 }
 
 function updateLastRoomButton() {
