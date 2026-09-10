@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.58.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.58.0">
+<title>🐍 Snake Arena v2.59.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.59.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -47,7 +47,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.58.0</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.59.0</span></h1>
     <p class="sub">Até 6 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
@@ -70,6 +70,7 @@
         <button class="tabBtn" data-tab="personalizar" type="button" role="tab" aria-selected="false">🏷️ Personalizar</button>
         <button class="tabBtn" data-tab="online" type="button" role="tab" aria-selected="false">🌐 Online</button>
         <button class="tabBtn" data-tab="ranking" type="button" role="tab" aria-selected="false">🏆 Ranking</button>
+        <button class="tabBtn" data-tab="conquistas" type="button" role="tab" aria-selected="false">🏅 Conquistas</button>
       </div>
       <div class="tabPanel" data-panel="jogar">
         <div class="grid">
@@ -229,6 +230,13 @@
         <button id="copyStatsBtn" class="refresh" type="button" style="margin-top:8px">📋 Copiar minhas estatísticas</button>
       </section>
       </div>
+      <div class="tabPanel hidden" data-panel="conquistas">
+        <section class="card" style="margin-top:14px">
+        <h2>🏅 Galeria de Conquistas</h2>
+        <p class="cardDesc" id="achievementsProgress"></p>
+        <div id="achievementsGrid" class="achievementsGrid"></div>
+      </section>
+      </div>
     </section>
     <section id="game" class="gameBox hidden" aria-label="Arena do jogo">
       <div class="top">
@@ -301,6 +309,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.58.0"></script>
+<script type="module" src="js/main.js?v=2.59.0"></script>
 </body>
 </html>
