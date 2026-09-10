@@ -58,6 +58,7 @@ export const state = {
   lastTurnAt: [0, 0, 0, 0, 0, 0], // quando cada minhoca virou por último — pro efeito "squash" na cabeça
   trailColors: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto'], // cor do rastro neon, separada da cor da minhoca
   nameColor: 'auto', // cor do texto do SEU nome no placar (só o jogador 0/você)
+  shortcuts: { pause: 'KeyP', restart: 'KeyR', mute: 'KeyM', zoom: 'KeyZ', compact: 'KeyC' }, // atalhos de teclado remapeáveis
 
   // --- Minhoca Caçadora (invencível, persegue o líder) ---
   hunterActive: false,
