@@ -2,14 +2,14 @@
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
 import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
-import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS } from './config.js';
+import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS } from './config.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -585,6 +585,7 @@ $('players').addEventListener('change', e => {
   if (e.target.classList.contains('pcontrol')) { state.controls[i] = e.target.value; makePlayers(); }
   if (e.target.classList.contains('pcolor')) { state.colors[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ptrail')) { state.trailColors[i] = e.target.value; if (i === 0) persistProfile(); }
+  if (e.target.classList.contains('nameColorSelect')) { state.nameColor = e.target.value; persistProfile(); }
   if (e.target.classList.contains('phead')) { state.heads[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ppattern')) { state.patterns[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ppalette')) { state.palettes[i] = e.target.value; if (i === 0) persistProfile(); }
@@ -814,7 +815,7 @@ $('zoomToggle').addEventListener('click', () => {
 });
 
 function persistProfile() {
-  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], palette: state.palettes[0], touchControl: state.touchControl, trailColor: state.trailColors[0] });
+  saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], palette: state.palettes[0], touchControl: state.touchControl, trailColor: state.trailColors[0], nameColor: state.nameColor });
 }
 
 // Botão de música ambiente (melhoria #13)
@@ -965,6 +966,7 @@ if (profile.head) state.heads[0] = profile.head;
 if (profile.pattern) state.patterns[0] = profile.pattern;
 if (profile.palette) state.palettes[0] = profile.palette;
 if (profile.trailColor) state.trailColors[0] = profile.trailColor;
+if (profile.nameColor) state.nameColor = profile.nameColor;
 if (profile.touchControl) { state.touchControl = profile.touchControl; $('touchControl').value = profile.touchControl; }
 applyTouchControl();
 applyComfortSettings();
@@ -1389,3 +1391,25 @@ if (savedGame) {
     $('resumeGameBtn').classList.add('hidden');
   });
 }
+
+// Galeria de Conquistas — mostra cada uma com destaque se já foi desbloqueada, ou
+// esmaecida com "?" no lugar da descrição se ainda não
+function renderAchievementsGallery() {
+  const grid = $('achievementsGrid');
+  if (!grid) return;
+  const unlocked = loadUnlockedAchievements();
+  $('achievementsProgress').textContent = `${unlocked.length} de ${ACHIEVEMENTS.length} conquistas desbloqueadas`;
+  grid.innerHTML = ACHIEVEMENTS.map((a) => {
+    const isUnlocked = unlocked.includes(a.id);
+    return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}">
+      <span class="aIcon">${isUnlocked ? a.icon : '❓'}</span>
+      <span class="aName">${isUnlocked ? a.name : '???'}</span>
+      <span class="aDesc">${isUnlocked ? a.desc : 'Ainda não desbloqueada'}</span>
+    </div>`;
+  }).join('');
+}
+renderAchievementsGallery();
+document.addEventListener('achievementUnlocked', renderAchievementsGallery);
+document.querySelector('.tabBar')?.addEventListener('click', (e) => {
+  if (e.target.closest('.tabBtn')?.dataset.tab === 'conquistas') renderAchievementsGallery();
+});
