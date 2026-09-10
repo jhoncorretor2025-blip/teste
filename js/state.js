@@ -57,6 +57,7 @@ export const state = {
   floatingScores: [], // números "+1", "+5" etc. que sobem e desaparecem ao comer
   lastTurnAt: [0, 0, 0, 0, 0, 0], // quando cada minhoca virou por último — pro efeito "squash" na cabeça
   trailColors: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto'], // cor do rastro neon, separada da cor da minhoca
+  nameColor: 'auto', // cor do texto do SEU nome no placar (só o jogador 0/você)
 
   // --- Minhoca Caçadora (invencível, persegue o líder) ---
   hunterActive: false,
