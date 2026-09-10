@@ -281,3 +281,12 @@ export function recordMatchResult(partnerName, won) {
     localStorage.setItem(MATCH_HISTORY_KEY, JSON.stringify(all));
   } catch {}
 }
+
+// Atalhos de teclado remapeáveis (melhoria #1)
+const SHORTCUTS_KEY = 'snakeArenaShortcuts';
+export function saveShortcuts(shortcuts) {
+  try { localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts)); } catch {}
+}
+export function loadShortcuts() {
+  try { return JSON.parse(localStorage.getItem(SHORTCUTS_KEY)); } catch { return null; }
+}
