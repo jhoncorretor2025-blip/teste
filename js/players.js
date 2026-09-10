@@ -15,6 +15,7 @@ export function makePlayers() {
   box.innerHTML = '';
   const colorOptions = SNAKE_COLORS.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
   const trailOptions = `<option value="auto">🎨 Rastro igual à cor</option>` + colorOptions.replace(/<option value="([^"]+)">([^<]+)<\/option>/g, '<option value="$1">✨ Rastro $2</option>');
+  const nameColorOptions = `<option value="auto">🔤 Nome branco (padrão)</option>` + colorOptions.replace(/<option value="([^"]+)">([^<]+)<\/option>/g, '<option value="$1">🔤 Nome $2</option>');
   const headOptions = HEAD_SHAPES.map(h => `<option value="${h.value}">${h.name}</option>`).join('');
   const patternOptions = SKIN_PATTERNS.map(p => `<option value="${p.value}">${p.name}</option>`).join('');
   const paletteOptions = TRICOLOR_PALETTES.map(p => `<option value="${p.value}">${p.name}</option>`).join('');
@@ -64,6 +65,7 @@ export function makePlayers() {
       <select class="select pcolor" data-i="${i}" aria-label="Cor da minhoca">${colorOptions}</select>
       <button class="iconBtn randomColorBtn" data-i="${i}" type="button" aria-label="Sortear cor aleatória" title="Sortear cor aleatória">🎲</button>
       <select class="select ptrail" data-i="${i}" aria-label="Cor do rastro neon">${trailOptions}</select>
+      ${i === 0 ? `<select class="select nameColorSelect" aria-label="Cor do seu nome no placar">${nameColorOptions}</select>` : ''}
       <select class="select phead" data-i="${i}" aria-label="Formato da cabeça">${headOptions}</select>
       <select class="select ppattern" data-i="${i}" aria-label="Padrão da pele">${patternOptions}</select>
       <select class="select ppalette" data-i="${i}" aria-label="Cores do Tricolor">${paletteOptions}</select>
@@ -76,6 +78,7 @@ export function makePlayers() {
     d.querySelector('.pcontrol').value = state.controls[i] || 'arrows';
     d.querySelector('.pcolor').value = state.colors[i];
     d.querySelector('.ptrail').value = state.trailColors[i] || 'auto';
+    if (i === 0) d.querySelector('.nameColorSelect').value = state.nameColor || 'auto';
     d.querySelector('.phead').value = state.heads[i] || 'round';
     d.querySelector('.ppattern').value = state.patterns[i] || 'solid';
     d.querySelector('.ppalette').value = state.palettes[i] || 'auto';
