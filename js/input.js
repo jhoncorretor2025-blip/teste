@@ -51,7 +51,7 @@ function matchesBoostKey(i, code) {
 
 function handleKey(e) {
   if (!state.running) return;
-  if (e.code === 'KeyP' && !(isOnline() && !isHost())) { state.paused = !state.paused; return; }
+  if (e.code === state.shortcuts.pause && !(isOnline() && !isHost())) { state.paused = !state.paused; return; }
   if (state.paused) return;
 
   if (isOnline() && !isHost()) {
