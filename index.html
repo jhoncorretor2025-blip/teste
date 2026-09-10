@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.59.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.59.0">
+<title>🐍 Snake Arena v2.60.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.60.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -47,7 +47,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.59.0</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.60.0</span></h1>
     <p class="sub">Até 6 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
@@ -171,9 +171,22 @@
           <label class="check"><input id="tapVibration" type="checkbox" checked> 👆 Vibrar ao tocar nos botões</label>
           <label class="check"><input id="bigTextMode" type="checkbox"> 🔠 Modo texto grande (mais simples)</label>
           <label class="check"><input id="lightMode" type="checkbox"> ☀️ Modo claro (interface clara)</label>
+          <label class="check"><input id="customCursorToggle" type="checkbox" checked> 🍎 Cursor personalizado (só no PC)</label>
           <label class="check" style="margin-top:8px;display:block">🔊 Volume dos efeitos: <input id="sfxVolume" type="range" min="0" max="100" value="100" style="width:100%;margin-top:4px"></label>
           <label class="check" style="margin-top:4px;display:block">🎵 Volume da música: <input id="musicVolume" type="range" min="0" max="100" value="60" style="width:100%;margin-top:4px"></label>
           <div class="muted" style="margin-top:8px">🟢 P1 • 🩷 P2 • 🔵 P3 • 🟡 P4 • 🟣 P5 • 🟠 P6</div>
+          <div class="tip" style="margin-top:10px">
+            <b>⌨️ Atalhos de teclado (PC)</b> — clique num botão e aperte a tecla nova
+            <div class="row" style="margin-top:6px">
+              <button type="button" class="bindShortcut" data-action="pause" id="shortcutPause">⏸️ Pausar: <span></span></button>
+              <button type="button" class="bindShortcut" data-action="restart" id="shortcutRestart">🔄 Reiniciar: <span></span></button>
+            </div>
+            <div class="row" style="margin-top:6px">
+              <button type="button" class="bindShortcut" data-action="mute" id="shortcutMute">🔊 Mudo: <span></span></button>
+              <button type="button" class="bindShortcut" data-action="zoom" id="shortcutZoom">🔎 Zoom: <span></span></button>
+              <button type="button" class="bindShortcut" data-action="compact" id="shortcutCompact">⛶ Maximizar: <span></span></button>
+            </div>
+          </div>
           <button id="resetSettings" class="btn alt" type="button" style="margin-top:10px;width:100%">♻️ Resetar configurações</button>
           <button id="installHelpBtn" class="refresh" type="button" style="margin-top:8px;width:100%">📲 Como instalar como app</button>
           <div id="versionFooter" class="muted" style="margin-top:10px;text-align:center;font-size:.68rem"></div>
@@ -245,6 +258,7 @@
           <button id="ctrlSizeDownBtn" class="iconBtn" type="button" aria-label="Diminuir tamanho dos controles">🔽🎮</button>
           <button id="ctrlSizeUpBtn" class="iconBtn" type="button" aria-label="Aumentar tamanho dos controles">🔼🎮</button>
           <button id="compactBtn" class="iconBtn" type="button" aria-label="Maximizar arena (esconder placar e menus)">⛶</button>
+          <button id="pipBtn" class="iconBtn" type="button" aria-label="Janela flutuante (Picture-in-Picture)">🪟</button>
           <button id="touchControlToggle" class="iconBtn" type="button" aria-label="Trocar entre joystick e setas">🕹️</button>
           <button id="zoomToggle" class="iconBtn" type="button" aria-label="Trocar o zoom da câmera">🔎</button>
           <button id="mute" class="iconBtn" type="button" aria-label="Ligar/desligar som">🔊</button>
@@ -278,6 +292,7 @@
       <div id="mission" class="mission"></div>
       <div class="arena">
         <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Snake Arena"></canvas>
+        <video id="pipVideo" muted playsinline style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video>
         <div id="countdownOverlay" class="overlay hidden">
           <div class="overlayCard">
             <h2 id="countdownText" style="font-size:3.2rem;margin:0">3</h2>
@@ -309,6 +324,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.59.0"></script>
+<script type="module" src="js/main.js?v=2.60.0"></script>
 </body>
 </html>
