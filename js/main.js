@@ -9,7 +9,7 @@ import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryB
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, saveShortcuts, loadShortcuts } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -979,10 +979,12 @@ setupInput();
 document.addEventListener('keydown', (e) => {
   const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
   if (typing || $('game').classList.contains('hidden')) return;
-  if (e.code === 'KeyR') { e.preventDefault(); $('restart').click(); }
-  else if (e.code === 'KeyM') { e.preventDefault(); $('mute').click(); }
-  else if (e.code === 'KeyZ') { e.preventDefault(); $('zoomToggle').click(); }
-  else if (e.code === 'KeyC') { e.preventDefault(); $('compactBtn').click(); }
+  const sc = state.shortcuts;
+  if (e.code === sc.restart) { e.preventDefault(); $('restart').click(); }
+  else if (e.code === sc.mute) { e.preventDefault(); $('mute').click(); }
+  else if (e.code === sc.zoom) { e.preventDefault(); $('zoomToggle').click(); }
+  else if (e.code === sc.compact) { e.preventDefault(); $('compactBtn').click(); }
+  else if (e.code === 'F11') { e.preventDefault(); $('compactBtn').click(); } // atalho #8: F11 já aciona o modo maximizado do próprio jogo
 });
 
 setupTutorial();
@@ -1412,4 +1414,78 @@ renderAchievementsGallery();
 document.addEventListener('achievementUnlocked', renderAchievementsGallery);
 document.querySelector('.tabBar')?.addEventListener('click', (e) => {
   if (e.target.closest('.tabBtn')?.dataset.tab === 'conquistas') renderAchievementsGallery();
+});
+
+// Atalhos de teclado remapeáveis (melhoria #1) — clica no botão, aperta a tecla nova
+function shortcutKeyLabel(code) {
+  return code ? code.replace('Key', '').replace('Arrow', '').replace('Digit', '') : '?';
+}
+const savedShortcuts = loadShortcuts();
+if (savedShortcuts) Object.assign(state.shortcuts, savedShortcuts);
+function updateShortcutButtons() {
+  for (const action of Object.keys(state.shortcuts)) {
+    const btn = document.querySelector(`.bindShortcut[data-action="${action}"]`);
+    const span = btn?.querySelector('span');
+    if (span) span.textContent = shortcutKeyLabel(state.shortcuts[action]);
+  }
+}
+let listeningForShortcut = null;
+document.querySelectorAll('.bindShortcut').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.bindShortcut').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    btn.querySelector('span').textContent = 'Aperte uma tecla...';
+    listeningForShortcut = btn.dataset.action;
+  });
+});
+document.addEventListener('keydown', (e) => {
+  if (!listeningForShortcut) return;
+  e.preventDefault();
+  state.shortcuts[listeningForShortcut] = e.code;
+  saveShortcuts(state.shortcuts);
+  listeningForShortcut = null;
+  document.querySelectorAll('.bindShortcut').forEach((b) => b.classList.remove('active'));
+  updateShortcutButtons();
+});
+updateShortcutButtons();
+
+// Cursor personalizado (melhoria #5) — só faz sentido no PC (celular não tem cursor de
+// mouse pra trocar), e a pessoa pode desligar se preferir a setinha normal
+const CURSOR_KEY = 'snakeArenaCustomCursor';
+function applyCustomCursor(on) {
+  document.body.classList.toggle('customCursor', on && !isTouchDevice);
+}
+const cursorSaved = localStorage.getItem(CURSOR_KEY);
+const cursorOn = cursorSaved === null ? true : cursorSaved === '1';
+$('customCursorToggle').checked = cursorOn;
+$('customCursorToggle').disabled = isTouchDevice;
+if (isTouchDevice) $('customCursorToggle').closest('label').title = 'Cursor personalizado só faz sentido em aparelhos com mouse.';
+applyCustomCursor(cursorOn);
+$('customCursorToggle').addEventListener('change', (e) => {
+  applyCustomCursor(e.target.checked);
+  try { localStorage.setItem(CURSOR_KEY, e.target.checked ? '1' : '0'); } catch {}
+});
+
+// Janela flutuante / Picture-in-Picture (melhoria #7) — captura o canvas do jogo como
+// um "vídeo ao vivo" e pede pro navegador abrir numa janelinha sempre visível por cima
+$('pipBtn').addEventListener('click', async () => {
+  if (!document.pictureInPictureEnabled) {
+    alert('Seu navegador não suporta janela flutuante (Picture-in-Picture). Funciona bem no Chrome/Edge.');
+    return;
+  }
+  try {
+    const canvas = $('arenaCanvas');
+    const video = $('pipVideo');
+    if (!video.srcObject) {
+      video.srcObject = canvas.captureStream(30); // 30 quadros por segundo é suficiente
+      await video.play();
+    }
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+    } else {
+      await video.requestPictureInPicture();
+    }
+  } catch {
+    alert('Não consegui abrir a janela flutuante agora. Tenta de novo.');
+  }
 });
