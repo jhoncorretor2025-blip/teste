@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.61.0';
+export const VERSION = '2.62.0';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
