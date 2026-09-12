@@ -96,8 +96,27 @@ export function hostRoom(onReady, onFail, forcedId) {
     }
     pendingConns.push(conn);
 
+    // Segurança de compatibilidade: se a pessoa que tentou entrar estiver com uma versão
+    // ANTIGA do jogo em cache no navegador (de antes do pedido de aprovação existir), ela
+    // nunca vai mandar "joinRequest" — sem isso, ela ficaria presa pra sempre e o anfitrião
+    // nunca veria o popup. Depois de 6 segundos sem receber o pedido, deixa entrar direto,
+    // do jeito antigo, em vez de travar os dois lados.
+    let gotJoinRequest = false;
+    const compatTimer = setTimeout(() => {
+      if (gotJoinRequest) return;
+      const pIdx = pendingConns.indexOf(conn);
+      if (pIdx < 0) return; // já foi removida (por exemplo, a conexão caiu nesse meio tempo)
+      pendingConns.splice(pIdx, 1);
+      conns.push(conn);
+      conn.send({ type: 'welcome', slot });
+      broadcastPeerList();
+      handlers.onPeerJoined && handlers.onPeerJoined(slot);
+    }, 6000);
+
     conn.on('data', msg => {
       if (msg.type === 'joinRequest') {
+        gotJoinRequest = true;
+        clearTimeout(compatTimer);
         // Só avisa o anfitrião AGORA, com o nome de quem quer entrar — não deixa
         // entrar direto, espera a aprovação (melhoria: pedido de entrada)
         handlers.onJoinRequest && handlers.onJoinRequest({ conn, slot, name: msg.name });
@@ -106,6 +125,7 @@ export function hostRoom(onReady, onFail, forcedId) {
       }
     });
     conn.on('close', () => {
+      clearTimeout(compatTimer);
       const pIdx = pendingConns.indexOf(conn);
       if (pIdx >= 0) pendingConns.splice(pIdx, 1);
       const idx = conns.indexOf(conn);
