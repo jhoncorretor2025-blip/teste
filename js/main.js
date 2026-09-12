@@ -2,7 +2,7 @@
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
 import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
-import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS } from './config.js';
+import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS } from './config.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
@@ -48,6 +48,10 @@ function updateSessionScoreDisplay() {
 }
 
 net.setHandlers({
+  onJoinRequest: (request) => {
+    const name = safe(request.name, 'Alguém');
+    showJoinApprovalPrompt(name, request);
+  },
   onPeerJoined: () => {
     state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s). Pode clicar em "Jogar" quando quiser!`;
@@ -219,7 +223,7 @@ $('joinBtn').addEventListener('click', () => {
   const originalJoinText = $('joinBtn').textContent;
   $('joinBtn').textContent = '⏳ Entrando...';
   $('joinStatus').innerHTML = '<span class="spinner"></span>Conectando com a sala...';
-  net.joinRoom(code,
+  net.joinRoom(code, state.names[0],
     () => {
       $('joinStatus').textContent = '';
       $('joinBtn').textContent = originalJoinText;
@@ -235,14 +239,30 @@ $('joinBtn').addEventListener('click', () => {
       if (err?.type === 'peer-unavailable') msg += 'Essa sala não existe (ou já fechou) — confere o código com quem criou, ou pede pra criar de novo.';
       else if (err?.type === 'network' || err?.type === 'server-error' || err?.type === 'disconnected' || err?.type === 'socket-error' || err?.type === 'socket-closed') msg += 'Parece que a internet caiu no meio do caminho — confere sua conexão e tenta de novo.';
       else if (err?.message === 'full') msg += 'Essa sala já está cheia (máximo de 6 jogadores).';
+      else if (err?.message === 'timeout') msg = '⏱️ A conexão com a sala travou e não completou. Isso acontece às vezes entre certas redes (dados móveis de operadoras diferentes, Wi-Fi corporativo). Tenta: os dois no mesmo Wi-Fi, ou um dos dois trocar pra dados móveis.';
+      else if (err?.message === 'rejected') msg = '🚫 O dono da sala não aceitou sua entrada dessa vez.';
       else msg += 'Confere o código ou pede pro seu amigo criar a sala de novo.';
       $('joinStatus').textContent = msg;
+    },
+    () => {
+      // Conexão técnica já rolou — agora só falta o dono da sala aceitar de verdade
+      $('joinStatus').innerHTML = '<span class="spinner"></span>Conectado! Esperando o dono da sala aceitar sua entrada...';
     }
   );
 });
 
 // Se a pessoa abriu um link de convite (?room=CODIGO), já deixa o código preenchido
 const roomFromUrl = new URLSearchParams(location.search).get('room');
+
+// Atalhos de app (melhoria #2) — segurar o ícone no Android oferece "Jogar Rápido" e
+// "Ver Conquistas", que chegam aqui como parâmetros na URL
+const urlAction = new URLSearchParams(location.search);
+if (urlAction.get('tab') === 'conquistas') {
+  document.querySelector('[data-tab="conquistas"]')?.click();
+}
+if (urlAction.get('quickplay') === '1') {
+  setTimeout(() => $('startHero')?.click(), 300); // um tiquinho de atraso pra tudo terminar de montar
+}
 if (roomFromUrl) $('joinCode').value = roomFromUrl;
 
 // Prévia da sala — se o link já veio com as configurações embutidas, mostra o que a
@@ -536,7 +556,13 @@ $('zoomLevel').addEventListener('change', (e) => {
   persistZoom();
 });
 $('noWalls').addEventListener('change', updateRoomSettingsPreview);
-$('boardTheme').addEventListener('change', e => state.theme = e.target.value);
+// Cor da barra de status do navegador combina com o tema do tabuleiro escolhido —
+// no Android/iPhone isso pinta a área da hora/bateria da mesma cor do jogo
+function updateStatusBarColor() {
+  const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
+  $('metaThemeColor')?.setAttribute('content', theme.bg);
+}
+$('boardTheme').addEventListener('change', e => { state.theme = e.target.value; updateStatusBarColor(); });
 $('vibrationOn').addEventListener('change', e => {
   state.vibrationOn = e.target.checked;
   setVibrationEnabled(state.vibrationOn);
@@ -607,6 +633,25 @@ $('players').addEventListener('click', e => {
 
 // Ligar/desligar o modo Times reconstrói os cards de jogador (mostra/esconde o seletor de time)
 $('teamMode').addEventListener('change', () => { makePlayers(); updateRoomSettingsPreview(); });
+
+// Formato da partida (Times vs Todos-contra-Todos) e cor do time, direto na aba Online —
+// tudo isso já existia espalhado (checkbox de time + cor por jogador), aqui só fica mais
+// claro e junto num lugar só, logo de cara, antes de criar a sala
+$('myTeamColor').innerHTML = SNAKE_COLORS.map((c) => `<option value="${c.hex}">${c.name}</option>`).join('');
+$('onlineFormat').addEventListener('change', (e) => {
+  const isTeams = e.target.value === 'teams';
+  $('teamMode').checked = isTeams;
+  $('teamMode').dispatchEvent(new window.Event('change'));
+  $('teamColorRow').classList.toggle('hidden', !isTeams);
+});
+$('myTeamColor').addEventListener('change', (e) => {
+  const color = e.target.value;
+  // Aplica a cor escolhida em TODO MUNDO do seu time (você é sempre o slot 0, o anfitrião)
+  for (let i = 0; i < state.count; i++) {
+    if (state.teams[i] === state.teams[0]) state.colors[i] = color;
+  }
+  makePlayers();
+});
 $('tournamentMode').addEventListener('change', e => {
   updateRoomSettingsPreview();
   $('tournamentMode').closest('.tournamentBox').classList.toggle('active', e.target.checked);
@@ -726,6 +771,14 @@ $('bigTextMode').addEventListener('change', (e) => {
 $('lightMode').addEventListener('change', (e) => {
   state.lightMode = e.target.checked;
   document.querySelector('.app').classList.toggle('lightMode', state.lightMode);
+  if (state.lightMode) { state.amoledMode = false; $('amoledMode').checked = false; document.querySelector('.app').classList.remove('amoledMode'); }
+  persistComfortSettings();
+});
+
+$('amoledMode').addEventListener('change', (e) => {
+  state.amoledMode = e.target.checked;
+  document.querySelector('.app').classList.toggle('amoledMode', state.amoledMode);
+  if (state.amoledMode) { state.lightMode = false; $('lightMode').checked = false; document.querySelector('.app').classList.remove('lightMode'); }
   persistComfortSettings();
 });
 
@@ -737,6 +790,7 @@ function persistComfortSettings() {
       tapVibration: state.tapVibration,
       bigTextMode: state.bigTextMode,
       lightMode: state.lightMode,
+      amoledMode: state.amoledMode,
     }));
   } catch {}
 }
@@ -749,6 +803,7 @@ function applyComfortSettings() {
   if (typeof saved.tapVibration === 'boolean') state.tapVibration = saved.tapVibration;
   if (typeof saved.bigTextMode === 'boolean') state.bigTextMode = saved.bigTextMode;
   if (typeof saved.lightMode === 'boolean') state.lightMode = saved.lightMode;
+  if (typeof saved.amoledMode === 'boolean') state.amoledMode = saved.amoledMode;
 
   $('controlSize').value = state.controlSize;
   document.documentElement.style.setProperty('--ctrl-scale', state.controlSize / 100);
@@ -760,6 +815,8 @@ function applyComfortSettings() {
   document.querySelector('.app').classList.toggle('bigText', state.bigTextMode);
   $('lightMode').checked = state.lightMode;
   document.querySelector('.app').classList.toggle('lightMode', state.lightMode);
+  $('amoledMode').checked = state.amoledMode;
+  document.querySelector('.app').classList.toggle('amoledMode', state.amoledMode);
 }
 
 // Convidar pelo WhatsApp — já abre com o link da sala preenchido, sem precisar copiar/colar
@@ -1488,4 +1545,40 @@ $('pipBtn').addEventListener('click', async () => {
   } catch {
     alert('Não consegui abrir a janela flutuante agora. Tenta de novo.');
   }
+});
+
+updateStatusBarColor(); // já deixa a barra de status combinando com o tema salvo/padrão
+
+// No iPhone, o teclado que aparece pode cobrir o campo que a pessoa tá digitando —
+// rola a tela suavemente pra manter o campo visível assim que o teclado sobe (melhoria #8)
+document.addEventListener('focusin', (e) => {
+  if (!['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+  if (e.target.type === 'range' || e.target.type === 'checkbox') return;
+  setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+});
+
+// Pedido de entrada na sala — mostra o nome de quem quer entrar e espera o anfitrião
+// decidir. Se mais de um pedido chegar ao mesmo tempo, empilha e mostra um de cada vez.
+const joinRequestQueue = [];
+function showJoinApprovalPrompt(name, request) {
+  joinRequestQueue.push({ name, request });
+  if (joinRequestQueue.length === 1) displayNextJoinRequest();
+}
+function displayNextJoinRequest() {
+  const next = joinRequestQueue[0];
+  if (!next) { $('joinApprovalOverlay').classList.add('hidden'); return; }
+  $('joinApprovalText').textContent = `${next.name} quer entrar na sua sala. Aceitar?`;
+  $('joinApprovalOverlay').classList.remove('hidden');
+  vibrate([30, 50, 30]);
+  announce(`${next.name} pediu para entrar na sala.`);
+}
+$('joinApproveBtn').addEventListener('click', () => {
+  const next = joinRequestQueue.shift();
+  if (next) net.approveJoinRequest(next.request);
+  displayNextJoinRequest();
+});
+$('joinRejectBtn').addEventListener('click', () => {
+  const next = joinRequestQueue.shift();
+  if (next) net.rejectJoinRequest(next.request);
+  displayNextJoinRequest();
 });
