@@ -18,6 +18,8 @@ export let mySlot = 0;     // qual minhoca (0, 1 ou 2) é a "sua" nesse aparelho
 
 let peer = null;
 let conns = [];       // host: uma conexão pra cada amigo conectado
+let pendingConns = []; // pedidos de entrada esperando o anfitrião aceitar ou recusar
+let myName = null; // nome usado ao entrar — guardado pra reusar se precisar reconectar após migração
 let hostConn = null;  // cliente: a conexão com o anfitrião
 
 let handlers = {};
@@ -83,34 +85,56 @@ export function hostRoom(onReady, onFail, forcedId) {
     if (peer && !peer.destroyed) { try { peer.reconnect(); } catch {} }
   });
 
+  pendingConns = []; // reseta a fila de pedidos toda vez que uma nova sala é criada
+
   peer.on('connection', conn => {
-    const slot = conns.length + 1; // slot 0 é o anfitrião; próximos são 1, 2
+    const slot = conns.length + pendingConns.length + 1; // reserva o próximo slot livre
     if (slot > 5) {
-      // Sala já tem 3 jogadores — avisa quem tentou entrar antes de fechar a conexão
+      // Sala já tem 5 jogadores — avisa quem tentou entrar antes de fechar a conexão
       conn.on('open', () => { conn.send({ type: 'full' }); conn.close(); });
       return;
     }
-    conns.push(conn);
+    pendingConns.push(conn);
 
-    conn.on('open', () => {
-      conn.send({ type: 'welcome', slot });
-      broadcastPeerList();
-      handlers.onPeerJoined && handlers.onPeerJoined(slot);
+    conn.on('data', msg => {
+      if (msg.type === 'joinRequest') {
+        // Só avisa o anfitrião AGORA, com o nome de quem quer entrar — não deixa
+        // entrar direto, espera a aprovação (melhoria: pedido de entrada)
+        handlers.onJoinRequest && handlers.onJoinRequest({ conn, slot, name: msg.name });
+      } else {
+        handlers.onInput && handlers.onInput(slot, msg);
+      }
     });
-    conn.on('data', msg => handlers.onInput && handlers.onInput(slot, msg));
     conn.on('close', () => {
+      const pIdx = pendingConns.indexOf(conn);
+      if (pIdx >= 0) pendingConns.splice(pIdx, 1);
       const idx = conns.indexOf(conn);
-      if (idx >= 0) conns.splice(idx, 1);
-      broadcastPeerList();
-      handlers.onPeerLeft && handlers.onPeerLeft(slot);
+      if (idx >= 0) { conns.splice(idx, 1); broadcastPeerList(); handlers.onPeerLeft && handlers.onPeerLeft(slot); }
     });
   });
 }
 
+// Anfitrião aceita o pedido de entrada — só AGORA a pessoa realmente entra na sala
+export function approveJoinRequest(request) {
+  const pIdx = pendingConns.indexOf(request.conn);
+  if (pIdx >= 0) pendingConns.splice(pIdx, 1);
+  conns.push(request.conn);
+  request.conn.send({ type: 'welcome', slot: request.slot });
+  broadcastPeerList();
+  handlers.onPeerJoined && handlers.onPeerJoined(request.slot);
+}
+
+// Anfitrião recusa o pedido — avisa a pessoa e fecha a conexão
+export function rejectJoinRequest(request) {
+  try { request.conn.send({ type: 'rejected' }); } catch {}
+  request.conn.close();
+}
+
 // Entra numa sala existente usando o código do anfitrião.
-export function joinRoom(hostId, onJoined, onFail) {
+export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval) {
   role = 'client';
   deliberateDisconnect = false;
+  myName = name;
   if (!migrating) originalRoomId = hostId; // se já tá migrando, mantém o id ORIGINAL guardado
   const Peer = getPeerCtor();
   peer = new Peer();
@@ -127,10 +151,28 @@ export function joinRoom(hostId, onJoined, onFail) {
     if (!firstOpen) { handlers.onConnectionStatus && handlers.onConnectionStatus('connected'); return; }
     firstOpen = false;
     hostConn = peer.connect(hostId, { reliable: true });
+
+    // Esse timeout cobre só a parte TÉCNICA da conexão (o "aperto de mão" direto entre
+    // os dois aparelhos) — não conta a espera pela aprovação humana do anfitrião, que
+    // pode demorar mais um pouco sem ser sinal de rede quebrada
+    let connectionOpened = false;
+    const connectTimeoutId = setTimeout(() => {
+      if (!connectionOpened) onFail && onFail(new Error('timeout'));
+    }, 15000);
+
+    hostConn.on('open', () => {
+      connectionOpened = true;
+      clearTimeout(connectTimeoutId);
+      hostConn.send({ type: 'joinRequest', name: myName });
+      onWaitingApproval && onWaitingApproval();
+    });
+
     hostConn.on('data', msg => {
       if (msg.type === 'welcome') {
         mySlot = msg.slot;
         onJoined && onJoined(msg.slot);
+      } else if (msg.type === 'rejected') {
+        onFail && onFail(new Error('rejected'));
       } else if (msg.type === 'state') {
         handlers.onStateUpdate && handlers.onStateUpdate(msg);
       } else if (msg.type === 'countdown') {
@@ -177,7 +219,7 @@ function attemptHostMigration() {
     // Dá um tempinho pro novo anfitrião terminar de subir antes de tentar conectar nele
     setTimeout(() => {
       joinRoom(
-        newHostId,
+        newHostId, myName,
         (slot) => { migrating = false; handlers.onRejoinedAfterMigration && handlers.onRejoinedAfterMigration(slot); },
         () => { migrating = false; handlers.onMigrationFailed && handlers.onMigrationFailed(); }
       );
@@ -208,6 +250,8 @@ export function disconnect() {
   knownPeers = [];
   conns.forEach(c => { try { c.close(); } catch {} });
   conns = [];
+  pendingConns.forEach(c => { try { c.close(); } catch {} });
+  pendingConns = [];
   if (hostConn) { try { hostConn.close(); } catch {} }
   hostConn = null;
   if (peer) { try { peer.destroy(); } catch {} }
