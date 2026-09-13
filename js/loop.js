@@ -227,6 +227,18 @@ export function startGame() {
   runCountdown(3, () => {
     state.running = true;
     if (state.tournamentMode) state.tournamentRoundEndsAt = Date.now() + TOURNAMENT_ROUND_MS;
+    // Dados que quase nunca mudam durante a partida (cor, nome, cabeça, tema, tamanho do
+    // mapa etc.) — mandados uma vez só aqui, separado do pacote frequente de cada instante,
+    // pra manter os pacotes de cada tick bem menores (e mais confiáveis em mapas grandes)
+    if (isHost()) {
+      broadcastRaw({
+        type: 'state',
+        colors: state.colors, names: state.names, heads: state.heads,
+        patterns: state.patterns, palettes: state.palettes, trailColors: state.trailColors,
+        mapW: state.mapW, mapH: state.mapH, theme: state.theme,
+        teamMode: state.teamMode, teams: state.teams,
+      });
+    }
     state.timer = setInterval(tick, currentInterval);
   });
 }
@@ -578,19 +590,22 @@ function tick() {
   if (state.flash > 0) state.flash = Math.max(0, state.flash - 1);
   render();
 
-  // Anfitrião: manda o estado do jogo pra todo mundo conectado, várias vezes por segundo
+  // Anfitrião: manda o estado do jogo pra todo mundo conectado, várias vezes por segundo.
+  // Só os campos que MUDAM de verdade a cada instante — cor, nome, formato de cabeça,
+  // tema, tamanho do mapa etc. quase nunca mudam durante a partida, então mandar tudo
+  // isso de novo a cada pacotinho só deixa o pacote maior à toa (o que pode causar falha
+  // de transmissão silenciosa em mapas grandes com minhocas compridas). Esses dados "que
+  // quase nunca mudam" são mandados à parte, só quando a partida começa.
   if (isHost()) {
     broadcastState({
       snakes: state.snakes, foods: state.foods, scores: state.scores,
       foodsEaten: state.foodsEaten, eliminations: state.eliminations,
-      alive: state.alive, boosting: state.boosting, colors: state.colors,
-      names: state.names, show: state.show, showOthers: state.showOthers,
+      alive: state.alive, boosting: state.boosting,
+      show: state.show, showOthers: state.showOthers,
       count: state.count, mission: state.mission, best: state.best,
       dirs: state.dirs, shake: state.shake, flash: state.flash,
-      heads: state.heads, toast: state.toast, patterns: state.patterns, palettes: state.palettes, trailColors: state.trailColors,
+      toast: state.toast,
       hunterActive: state.hunterActive, hunterSnake: state.hunterSnake,
-      mapW: state.mapW, mapH: state.mapH, theme: state.theme,
-      teamMode: state.teamMode, teams: state.teams,
     });
   }
 }
@@ -653,33 +668,33 @@ export function applyRemoteState(msg) {
     // mesmo com o ResizeObserver, alguns celulares demoram um pouquinho a mais.
     setTimeout(render, 200);
   }
-  state.snakes = msg.snakes || [];
-  state.dirs = msg.dirs || [];
-  state.foods = msg.foods || [];
-  state.scores = msg.scores || [];
-  state.foodsEaten = msg.foodsEaten || [];
-  state.eliminations = msg.eliminations || [];
-  state.alive = msg.alive || [];
-  state.boosting = msg.boosting || [];
+  state.snakes = msg.snakes || state.snakes;
+  state.dirs = msg.dirs || state.dirs;
+  state.foods = msg.foods || state.foods;
+  state.scores = msg.scores || state.scores;
+  state.foodsEaten = msg.foodsEaten || state.foodsEaten;
+  state.eliminations = msg.eliminations || state.eliminations;
+  state.alive = msg.alive || state.alive;
+  state.boosting = msg.boosting || state.boosting;
   state.colors = msg.colors || state.colors;
   state.names = msg.names || state.names;
   state.show = msg.show || state.show;
-  state.showOthers = msg.showOthers;
+  state.showOthers = msg.showOthers ?? state.showOthers;
   state.count = msg.count || state.count;
-  state.mission = msg.mission;
-  state.best = msg.best || 0;
-  state.shake = msg.shake || 0;
-  state.flash = msg.flash || 0;
+  state.mission = msg.mission ?? state.mission;
+  state.best = msg.best ?? state.best;
+  state.shake = msg.shake ?? 0;
+  state.flash = msg.flash ?? 0;
   state.heads = msg.heads || state.heads;
   state.patterns = msg.patterns || state.patterns;
   state.trailColors = msg.trailColors || state.trailColors;
-  state.hunterActive = !!msg.hunterActive;
-  state.hunterSnake = msg.hunterSnake || [];
+  state.hunterActive = msg.hunterActive ?? state.hunterActive;
+  state.hunterSnake = msg.hunterSnake || state.hunterSnake;
   state.palettes = msg.palettes || state.palettes;
   state.mapW = msg.mapW || state.mapW;
   state.theme = msg.theme || state.theme;
   state.mapH = msg.mapH || state.mapH;
-  state.teamMode = !!msg.teamMode;
+  state.teamMode = msg.teamMode ?? state.teamMode;
   state.teams = msg.teams || state.teams;
   state.toast = msg.toast || null;
   renderMission();
