@@ -50,6 +50,23 @@ function resizeCanvas() {
 }
 
 window.addEventListener('resize', resizeCanvas);
+
+// Observa a área da arena de verdade (ResizeObserver) — muito mais confiável que
+// adivinhar com setTimeout quando a transição de tela termina ou quando o layout do
+// celular termina de se ajustar. Corrige o canvas assim que o tamanho real mudar,
+// não importa quanto tempo isso demore em cada aparelho.
+if (typeof ResizeObserver !== 'undefined') {
+  const arenaEl = canvas.parentElement;
+  if (arenaEl) {
+    const ro = new ResizeObserver(() => {
+      // resizeCanvas() sozinho limpa o conteúdo do canvas (é assim que <canvas> funciona
+      // ao mudar de tamanho) — por isso chama render() inteiro, que redesenha tudo de
+      // novo com o tamanho certo, em vez de deixar a tela em branco depois do ajuste
+      if (arenaEl.clientWidth > 0 && arenaEl.clientHeight > 0) render();
+    });
+    ro.observe(arenaEl);
+  }
+}
 window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 60));
 resizeCanvas();
 
