@@ -1592,3 +1592,8 @@ $('joinRejectBtn').addEventListener('click', () => {
   if (next) net.rejectJoinRequest(next.request);
   displayNextJoinRequest();
 });
+
+// Botão de diagnóstico — mostra/esconde o painel técnico sem precisar mexer na URL
+$('diagToggleBtn').addEventListener('click', () => {
+  $('diagPanel').classList.toggle('hidden');
+});
