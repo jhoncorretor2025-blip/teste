@@ -611,7 +611,9 @@ export function startClientGame() {
   state.running = true;
   state.paused = false;
   state.receivedFirstState = false;
-  $('clientReadyBtn').classList.remove('hidden');
+  $('clientReadyOverlay').classList.remove('hidden');
+  $('clientReadyOverlay').querySelector('h2').textContent = '🌐 Você entrou na sala!';
+  $('clientReadyOverlay').querySelector('p').textContent = 'Avise que já está pronto pra começar.';
   $('clientReadyBtn').textContent = '✅ Estou Pronto!';
   $('clientReadyBtn').disabled = false;
   updateSessionStatsDisplay(incrementSessionGames());
@@ -631,7 +633,11 @@ export function startClientGame() {
 export function applyRemoteState(msg) {
   if (!state.receivedFirstState) {
     state.receivedFirstState = true;
-    $('clientReadyBtn').classList.add('hidden');
+    $('clientReadyOverlay').classList.add('hidden');
+    // Momento mais crítico pra tela preta: é AGORA que a partida de verdade começa a
+    // aparecer pro cliente. Força mais um redesenho logo em seguida, de segurança —
+    // mesmo com o ResizeObserver, alguns celulares demoram um pouquinho a mais.
+    setTimeout(render, 200);
   }
   state.snakes = msg.snakes || [];
   state.dirs = msg.dirs || [];
