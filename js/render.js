@@ -92,7 +92,17 @@ resizeCanvas();
 // segue a própria, inclusive no online) — sem deixar a janela sair dos limites do mapa.
 function updateCamera() {
   const mySnake = state.snakes[mySlot];
-  const target = mySnake && mySnake[0] ? mySnake[0] : { x: state.mapW / 2, y: state.mapH / 2 };
+  let target = mySnake && mySnake[0] ? mySnake[0] : null;
+  // Respaldo mais esperto: se por algum motivo a SUA minhoca não for encontrada (ex: um
+  // problema de sincronização), segue QUALQUER minhoca viva em vez do centro fixo do
+  // mapa — em mapas grandes, cair no centro quando ninguém nasceu ali deixava a câmera
+  // mostrando uma área vazia, dando a falsa impressão de que nada estava sendo desenhado.
+  if (!target) {
+    for (let i = 0; i < state.count; i++) {
+      if (state.alive[i] && state.snakes[i]?.[0]) { target = state.snakes[i][0]; break; }
+    }
+  }
+  if (!target) target = { x: state.mapW / 2, y: state.mapH / 2 };
   camX = Math.max(0, Math.min(state.mapW - viewW, target.x - viewW / 2));
   camY = Math.max(0, Math.min(state.mapH - viewH, target.y - viewH / 2));
 }
@@ -828,6 +838,8 @@ export function render() {
         `arena pai: ${canvas.parentElement.clientWidth}x${canvas.parentElement.clientHeight}`,
         `cell=${cell} viewW=${viewW} viewH=${viewH} offX=${offX} offY=${offY}`,
         `mySlot=${mySlot} state.count=${state.count} isOnline=${isOnline()}`,
+        `câmera: camX=${camX.toFixed(1)} camY=${camY.toFixed(1)} (mapa: ${state.mapW}x${state.mapH})`,
+        `posição de cada minhoca: ${state.snakes.map((s, i) => s?.[0] ? `[${i}]:(${s[0].x},${s[0].y})` : `[${i}]:vazia`).join(' ')}`,
         `state.snakes.length=${state.snakes.length} snake[mySlot] existe? ${!!state.snakes[mySlot]?.length}`,
         `state.alive=${JSON.stringify(state.alive)}`,
         `hasRoundRect nativo=${typeof canvas.getContext('2d').roundRect === 'function'}`,
