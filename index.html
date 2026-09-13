@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.63.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.63.0">
+<title>🐍 Snake Arena v2.64.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.64.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -57,7 +57,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.63.0</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.64.0</span></h1>
     <p class="sub">Até 6 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
@@ -310,11 +310,17 @@
         </div>
       </div>
       <div class="status"><b id="badge">🏆 CLÁSSICO</b> <span>☠️ <b id="alive">0</b> vivos</span> <span id="onlineCount" class="hidden">🌐 <b id="onlineCountNum">0</b> online</span> <span id="tournamentStatus" class="hidden">🏆 Rodada <b id="tournamentRoundNum">1</b>/3 • ⏱️ <b id="tournamentSecondsLeft">60</b>s</span> <span id="batteryStatus" class="hidden">🔋 <b id="batteryPercent">100</b>%</span> <span id="boostUsedDisplay"></span></div>
-      <button id="clientReadyBtn" class="btn hidden" type="button" style="margin:8px auto;display:block;background:#1f8a4c;color:#fff">✅ Estou Pronto!</button>
       <div id="mission" class="mission"></div>
       <div class="arena">
         <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Snake Arena"></canvas>
         <video id="pipVideo" muted playsinline style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video>
+        <div id="clientReadyOverlay" class="overlay hidden">
+          <div class="overlayCard">
+            <h2>🌐 Você entrou na sala!</h2>
+            <p>Avise que já está pronto pra começar.</p>
+            <button id="clientReadyBtn" class="btn" type="button" style="background:#1f8a4c;color:#fff">✅ Estou Pronto!</button>
+          </div>
+        </div>
         <div id="countdownOverlay" class="overlay hidden">
           <div class="overlayCard">
             <h2 id="countdownText" style="font-size:3.2rem;margin:0">3</h2>
@@ -346,6 +352,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.63.0"></script>
+<script type="module" src="js/main.js?v=2.64.0"></script>
 </body>
 </html>
