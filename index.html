@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.64.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.64.0">
+<title>🐍 Snake Arena v2.65.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.65.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -57,7 +57,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.64.0</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.65.0</span></h1>
     <p class="sub">Até 6 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
@@ -314,6 +314,7 @@
       <div class="arena">
         <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Snake Arena"></canvas>
         <video id="pipVideo" muted playsinline style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video>
+        <div id="renderErrorBanner" class="landscapeHint hidden" style="background:#5a1f2a;border-color:#ff5577"></div>
         <div id="clientReadyOverlay" class="overlay hidden">
           <div class="overlayCard">
             <h2>🌐 Você entrou na sala!</h2>
@@ -352,6 +353,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.64.0"></script>
+<script type="module" src="js/main.js?v=2.65.0"></script>
 </body>
 </html>
