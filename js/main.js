@@ -97,6 +97,11 @@ net.setHandlers({
   onReaction: (emoji) => showReaction(emoji),
   onChat: (text, from) => appendChatMessage(from, text),
   onCountdown: (n) => {
+    // Assim que a contagem regressiva chega, o jogo já tá prestes a começar de verdade —
+    // esconde a tela de "aguardando pronto" AQUI TAMBÉM, não só quando o primeiro estado
+    // chegar. Sem isso, se o primeiro pacote de estado demorasse ou se perdesse, a pessoa
+    // ficava presa atrás de uma tela quase preta pra sempre, mesmo o jogo já tendo começado.
+    $('clientReadyOverlay').classList.add('hidden');
     $('countdownOverlay').classList.remove('hidden');
     $('countdownText').textContent = n > 0 ? String(n) : 'VAI! 🚀';
     if (n <= 0) setTimeout(() => $('countdownOverlay').classList.add('hidden'), 500);
@@ -407,7 +412,7 @@ document.addEventListener('tournamentOver', (e) => {
 // Confere a pontuação a cada meio segundo e atualiza o ícone da aba — não precisa ser
 // em todo quadro, só rápido o bastante pra sentir que tá "ao vivo"
 setInterval(() => {
-  if (state.running) updateScoreFavicon(state.scores[net.mySlot] || 0);
+  if (state.running) { try { updateScoreFavicon(state.scores[net.mySlot] || 0); } catch {} }
 }, 500);
 
 document.querySelector('.reactionRow')?.addEventListener('click', (e) => {
