@@ -20,6 +20,24 @@ const canvas = $('arenaCanvas');
 let wasNearEdge = false; // controla a vibração de aviso de borda, só dispara uma vez
 const ctx = canvas.getContext('2d');
 
+// Substituto do ctx.roundRect() — essa função de canvas é relativamente NOVA (Safari 16+
+// de 2022, Chrome 99+ de 2022). Em celulares com navegador mais antigo/desatualizado ela
+// nem existe, e SEM esse substituto o jogo inteiro parava de desenhar silenciosamente
+// bem no meio de um quadro (mapa, minhoca, tudo ficava preto) assim que tentasse chamar
+// uma função que não existe.
+if (ctx && typeof ctx.roundRect !== 'function') {
+  ctx.roundRect = function (x, y, w, h, r) {
+    const radius = typeof r === 'number' ? r : (r?.[0] ?? 0);
+    this.beginPath();
+    this.moveTo(x + radius, y);
+    this.arcTo(x + w, y, x + w, y + h, radius);
+    this.arcTo(x + w, y + h, x, y + h, radius);
+    this.arcTo(x, y + h, x, y, radius);
+    this.arcTo(x, y, x + w, y, radius);
+    this.closePath();
+  };
+}
+
 let cell = 20, offX = 0, offY = 0; // tamanho de cada célula e deslocamento pra centralizar
 let viewW = 32, viewH = 25; // tamanho real da janela mostrada (nunca maior que o mapa)
 let camX = 0, camY = 0; // canto superior-esquerdo da câmera, em células do mundo
@@ -794,9 +812,25 @@ export function draw() {
   ctx.restore();
 }
 
+let renderErrorShown = false;
 export function render() {
-  renderScores();
-  draw();
+  try {
+    renderScores();
+    draw();
+  } catch (err) {
+    // Se o desenho travar por qualquer motivo (navegador antigo, etc.), mostra um aviso
+    // visível na tela em vez de deixar tudo preto sem nenhuma pista do que aconteceu —
+    // só uma vez, pra não spammar a tela a cada quadro
+    if (!renderErrorShown) {
+      renderErrorShown = true;
+      const box = document.getElementById('renderErrorBanner');
+      if (box) {
+        box.textContent = '⚠️ Seu navegador teve um problema pra desenhar o jogo. Tenta atualizar o navegador ou usar outro (Chrome/Safari mais recentes).';
+        box.classList.remove('hidden');
+        box.classList.add('show');
+      }
+    }
+  }
 }
 
 // Exposto só pra fins de teste/depuração — mostra onde a câmera está agora
