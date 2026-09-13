@@ -30,7 +30,9 @@ function updateReadyDisplay() {
 
 $('clientReadyBtn').addEventListener('click', () => {
   net.sendInput({ type: 'ready', ready: true });
-  $('clientReadyBtn').textContent = '✅ Combinado, esperando começar...';
+  $('clientReadyOverlay').querySelector('h2').textContent = '✅ Prontinho!';
+  $('clientReadyOverlay').querySelector('p').textContent = 'Esperando o dono da sala começar a partida...';
+  $('clientReadyBtn').textContent = 'Aguardando...';
   $('clientReadyBtn').disabled = true;
 });
 
