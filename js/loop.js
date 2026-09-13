@@ -184,6 +184,7 @@ export function resumeSavedGame(snap) {
   state.paused = false;
   state.running = true;
   render();
+  setTimeout(render, 250); // mesma proteção do startClientGame — corrige o canvas depois da transição de tela
   state.timer = setInterval(tick, currentInterval);
 }
 
@@ -616,6 +617,14 @@ export function startClientGame() {
   updateSessionStatsDisplay(incrementSessionGames());
   announceAchievement(unlockAchievement('social'));
   render();
+  // A troca de tela (switchScreen) tem uma transição suave de 150ms antes da arena ficar
+  // visível de verdade — se desenhar só uma vez agora, o canvas mede o tamanho do pai
+  // ENQUANTO ele ainda tá escondido (tamanho zero!) e fica preso assim até que uma
+  // partida de verdade comece a chegar. Redesenha de novo depois que a transição termina,
+  // e mais uma vez um pouco depois por segurança (celulares às vezes demoram mais pra
+  // recalcular o layout depois de mudar o "display").
+  setTimeout(render, 250);
+  setTimeout(render, 600);
 }
 
 // Aplica um pacote de estado recebido do anfitrião (chamado pelo net.js) e redesenha a tela.
