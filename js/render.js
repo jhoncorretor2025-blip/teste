@@ -814,6 +814,23 @@ export function draw() {
 
 let renderErrorShown = false;
 export function render() {
+  const diag = document.getElementById('diagPanel');
+  if (diag && !diag.classList.contains('hidden')) {
+    try {
+      diag.textContent = [
+        `canvas: ${canvas.width}x${canvas.height} (estilo: ${canvas.style.width} x ${canvas.style.height})`,
+        `arena pai: ${canvas.parentElement.clientWidth}x${canvas.parentElement.clientHeight}`,
+        `cell=${cell} viewW=${viewW} viewH=${viewH} offX=${offX} offY=${offY}`,
+        `mySlot=${mySlot} state.count=${state.count} isOnline=${isOnline()}`,
+        `state.snakes.length=${state.snakes.length} snake[mySlot] existe? ${!!state.snakes[mySlot]?.length}`,
+        `state.alive=${JSON.stringify(state.alive)}`,
+        `hasRoundRect nativo=${typeof canvas.getContext('2d').roundRect === 'function'}`,
+        `game.compact=${document.getElementById('game')?.classList.contains('compact')}`,
+      ].join('\n');
+    } catch (diagErr) {
+      diag.textContent = 'Erro ao gerar diagnóstico: ' + diagErr.message;
+    }
+  }
   try {
     renderScores();
     draw();
@@ -825,10 +842,11 @@ export function render() {
       renderErrorShown = true;
       const box = document.getElementById('renderErrorBanner');
       if (box) {
-        box.textContent = '⚠️ Seu navegador teve um problema pra desenhar o jogo. Tenta atualizar o navegador ou usar outro (Chrome/Safari mais recentes).';
+        box.textContent = `⚠️ Erro ao desenhar: ${err.message}. Tenta atualizar o navegador ou usar outro (Chrome/Safari mais recentes).`;
         box.classList.remove('hidden');
         box.classList.add('show');
       }
+      if (diag) diag.textContent += `\n\n*** ERRO CAPTURADO: ${err.message}\n${err.stack || ''}`;
     }
   }
 }
