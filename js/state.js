@@ -59,6 +59,7 @@ export const state = {
   trailColors: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto'], // cor do rastro neon, separada da cor da minhoca
   nameColor: 'auto', // cor do texto do SEU nome no placar (só o jogador 0/você)
   shortcuts: { pause: 'KeyP', restart: 'KeyR', mute: 'KeyM', zoom: 'KeyZ', compact: 'KeyC' }, // atalhos de teclado remapeáveis
+  amoledMode: false, // preto puro (#000), economiza bateria em telas OLED
 
   // --- Minhoca Caçadora (invencível, persegue o líder) ---
   hunterActive: false,
@@ -70,6 +71,8 @@ export const state = {
   spawnedAt: [0, 0, 0, 0, 0, 0], // quando cada minhoca nasceu por último — pra conquista de sobreviver
   hunterVictims: new Set(), // quem morreu enquanto a Minhoca Caçadora estava ativa nessa aparição
   receivedFirstState: false, // cliente: já recebeu o primeiro pacote de estado real do anfitrião?
+  debugStatesReceived: 0, // diagnóstico: quantos pacotes de estado o cliente já recebeu
+  debugLastStateAt: 0, // diagnóstico: timestamp do último pacote de estado recebido
   deathMessage: null, // {text, until} — aviso grande de "Você morreu" pro jogador local
   tournamentMode: false, // modo torneio: melhor de 3 rodadas
   tournamentRound: 0, // rodada atual (1, 2 ou 3)
