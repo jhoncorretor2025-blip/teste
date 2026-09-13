@@ -14,6 +14,7 @@ import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
+let clientReadyFallbackTimer = null; // rede de segurança pra nunca deixar o cliente preso na tela de espera
 
 // Acha uma célula livre e, de preferência, BEM longe de qualquer minhoca viva —
 // evita o problema de nascer de novo já grudado num adversário e morrer na hora
@@ -619,6 +620,17 @@ export function startClientGame() {
   updateSessionStatsDisplay(incrementSessionGames());
   announceAchievement(unlockAchievement('social'));
   render();
+  // Rede de segurança final: se por QUALQUER motivo nem a contagem regressiva nem o
+  // primeiro pacote de estado chegarem (problema de rede raro, mas real), a pessoa NUNCA
+  // deve ficar presa pra sempre atrás dessa tela — depois de um tempo bom (20s, dá tempo
+  // de sobra pro anfitrião ver o pedido e clicar em Jogar), esconde de qualquer jeito.
+  clearTimeout(clientReadyFallbackTimer);
+  clientReadyFallbackTimer = setTimeout(() => {
+    if (!state.receivedFirstState) {
+      $('clientReadyOverlay').classList.add('hidden');
+      $('badge').textContent = '⚠️ Sem notícias do anfitrião ainda — pode ser instabilidade de rede.';
+    }
+  }, 20000);
   // A troca de tela (switchScreen) tem uma transição suave de 150ms antes da arena ficar
   // visível de verdade — se desenhar só uma vez agora, o canvas mede o tamanho do pai
   // ENQUANTO ele ainda tá escondido (tamanho zero!) e fica preso assim até que uma
@@ -631,6 +643,8 @@ export function startClientGame() {
 
 // Aplica um pacote de estado recebido do anfitrião (chamado pelo net.js) e redesenha a tela.
 export function applyRemoteState(msg) {
+  state.debugStatesReceived = (state.debugStatesReceived || 0) + 1;
+  state.debugLastStateAt = Date.now();
   if (!state.receivedFirstState) {
     state.receivedFirstState = true;
     $('clientReadyOverlay').classList.add('hidden');
