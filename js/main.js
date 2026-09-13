@@ -255,6 +255,9 @@ $('joinBtn').addEventListener('click', () => {
 
 // Se a pessoa abriu um link de convite (?room=CODIGO), já deixa o código preenchido
 const roomFromUrl = new URLSearchParams(location.search).get('room');
+if (new URLSearchParams(location.search).get('diag') === '1') {
+  $('diagPanel').classList.remove('hidden');
+}
 
 // Atalhos de app (melhoria #2) — segurar o ícone no Android oferece "Jogar Rápido" e
 // "Ver Conquistas", que chegam aqui como parâmetros na URL
