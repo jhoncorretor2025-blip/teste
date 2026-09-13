@@ -20,13 +20,13 @@ const canvas = $('arenaCanvas');
 let wasNearEdge = false; // controla a vibração de aviso de borda, só dispara uma vez
 const ctx = canvas.getContext('2d');
 
-// Substituto do ctx.roundRect() — essa função de canvas é relativamente NOVA (Safari 16+
-// de 2022, Chrome 99+ de 2022). Em celulares com navegador mais antigo/desatualizado ela
-// nem existe, e SEM esse substituto o jogo inteiro parava de desenhar silenciosamente
-// bem no meio de um quadro (mapa, minhoca, tudo ficava preto) assim que tentasse chamar
-// uma função que não existe.
-if (ctx && typeof ctx.roundRect !== 'function') {
-  ctx.roundRect = function (x, y, w, h, r) {
+// Substituto do roundRect() aplicado no PROTÓTIPO — protege QUALQUER canvas do jogo (o
+// principal, o do favicon, minimapa, etc.), não só o que foi criado primeiro. Essa função
+// de canvas é relativamente NOVA (Safari 16+/2022, Chrome 99+/2022); em celulares com
+// navegador mais antigo ela nem existe, e SEM esse substituto o jogo (ou até só o ícone
+// da aba) parava de desenhar silenciosamente ao tentar chamar uma função inexistente.
+if (typeof window.CanvasRenderingContext2D !== 'undefined' && typeof window.CanvasRenderingContext2D.prototype.roundRect !== 'function') {
+  window.CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
     const radius = typeof r === 'number' ? r : (r?.[0] ?? 0);
     this.beginPath();
     this.moveTo(x + radius, y);
@@ -813,11 +813,17 @@ export function draw() {
 }
 
 let renderErrorShown = false;
+let renderCallCount = 0;
 export function render() {
   const diag = document.getElementById('diagPanel');
   if (diag && !diag.classList.contains('hidden')) {
     try {
       diag.textContent = [
+        `>>> render() chamado ${++renderCallCount}x até agora`,
+        `pacotes de estado recebidos do anfitrião: ${state.debugStatesReceived || 0}`,
+        `último pacote recebido há: ${state.debugLastStateAt ? ((Date.now() - state.debugLastStateAt) / 1000).toFixed(1) + 's atrás' : 'NUNCA recebeu nenhum'}`,
+        `receivedFirstState=${state.receivedFirstState}`,
+        `role=${isOnline() ? (mySlot === 0 ? 'ANFITRIÃO' : 'CLIENTE') : 'local'}`,
         `canvas: ${canvas.width}x${canvas.height} (estilo: ${canvas.style.width} x ${canvas.style.height})`,
         `arena pai: ${canvas.parentElement.clientWidth}x${canvas.parentElement.clientHeight}`,
         `cell=${cell} viewW=${viewW} viewH=${viewH} offX=${offX} offY=${offY}`,
