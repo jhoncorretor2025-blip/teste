@@ -627,6 +627,9 @@ export function startClientGame() {
   state.running = true;
   state.paused = false;
   state.receivedFirstState = false;
+  // Temporário: mostra o diagnóstico técnico automaticamente pra quem ENTRA numa sala,
+  // sem precisar tocar em nenhum botão — facilita muito mandar um print de ajuda
+  $('diagPanel').classList.remove('hidden');
   $('clientReadyOverlay').classList.remove('hidden');
   $('clientReadyOverlay').querySelector('h2').textContent = '🌐 Você entrou na sala!';
   $('clientReadyOverlay').querySelector('p').textContent = 'Avise que já está pronto pra começar.';
