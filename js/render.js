@@ -668,6 +668,7 @@ export function draw() {
 
   for (let i = 0; i < state.count; i++) if (state.alive[i]) {
     const s = state.snakes[i];
+    if (!s || !s.length) continue; // proteção: marcada como viva mas sem dados ainda (ex: acabou de entrar) — não trava o resto do desenho
     const boosting = state.boosting[i];
 
     ctx.save();
