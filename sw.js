@@ -1,7 +1,7 @@
 // Service Worker do Snake Arena — deixa o jogo instalável e jogável offline (modo local).
 // O multiplayer online continua precisando de internet, claro (é conexão em tempo real).
 
-const CACHE = 'snake-arena-v2.55.0';
+const CACHE = 'snake-arena-v2.71.0';
 const ASSETS = [
   './',
   './index.html',
@@ -27,6 +27,15 @@ const ASSETS = [
   './icon.svg',
 ];
 
+// Arquivos "principais" do jogo (html/css/js) — pra esses, SEMPRE tenta pegar a versão
+// mais nova da internet primeiro, e só usa o que tá guardado se realmente não tiver
+// conexão. Antes o jogo mostrava a versão em cache na hora e só atualizava por baixo
+// dos panos pra da PRÓXIMA vez — isso fazia a pessoa ficar sempre "uma versão atrasada"
+// mesmo com internet boa. Agora, com internet, é sempre a versão mais nova de verdade.
+function ehArquivoPrincipal(url) {
+  return /\.(html|js|css)$/.test(url.pathname) || url.pathname.endsWith('/');
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
@@ -49,6 +58,26 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+
+  if (ehArquivoPrincipal(url)) {
+    // Rede primeiro, com um limite de tempo curto — se a internet estiver ruim/lenta
+    // de verdade, cai pro cache guardado em vez de travar a pessoa esperando
+    event.respondWith(
+      Promise.race([
+        fetch(event.request).then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+          return res;
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000)),
+      ]).catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Outros arquivos (ícone, fonte externa do multiplayer etc.) continuam com o
+  // comportamento antigo — cache primeiro, atualiza por baixo dos panos
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetchPromise = fetch(event.request)
@@ -57,7 +86,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE).then((cache) => cache.put(event.request, copy));
           return res;
         })
-        .catch(() => cached || (event.request.mode === 'navigate' ? caches.match('./index.html') : undefined));
+        .catch(() => cached);
       return cached || fetchPromise;
     })
   );
