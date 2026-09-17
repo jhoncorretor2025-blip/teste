@@ -1079,6 +1079,15 @@ if ('serviceWorker' in navigator) {
         }
       });
     });
+
+    // Checagem ativa: por padrão, o navegador só verifica se tem versão nova de vez em
+    // quando (às vezes só uma vez por dia) — isso fazia a pessoa continuar numa versão
+    // velha por bastante tempo mesmo com internet boa. Agora checa na hora, e de novo
+    // toda vez que a pessoa volta pra aba (ex: saiu pro WhatsApp e voltou).
+    reg.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update().catch(() => {});
+    });
   }).catch(() => {});
 }
 
@@ -1090,11 +1099,13 @@ function showUpdateBanner(reg) {
     pendingUpdateReg = reg;
     return;
   }
-  $('updateBanner').classList.remove('hidden');
-  $('updateBannerBtn').onclick = () => {
+  // Fora de partida (no menu), aplica sozinho — sem precisar de clique. Só avisa rapidinho
+  // o que tá acontecendo, pra não parecer que a página travou/recarregou do nada.
+  announce('🔄 Atualizando o jogo pra versão mais nova...');
+  setTimeout(() => {
     if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
     location.reload();
-  };
+  }, 600);
 }
 
 // No celular, ativa o modo maximizado (⛶) sozinho na primeira partida — a maioria nem
