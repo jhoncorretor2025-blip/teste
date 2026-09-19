@@ -20,6 +20,8 @@ let peer = null;
 let conns = [];       // host: uma conexão pra cada amigo conectado
 let pendingConns = []; // pedidos de entrada esperando o anfitrião aceitar ou recusar
 let myName = null; // nome usado ao entrar — guardado pra reusar se precisar reconectar após migração
+let onJoinedCb = null; // callback de "entrou com sucesso" — reusado na reconexão automática
+let onFailCb = null; // callback de "falhou" — idem
 let hostConn = null;  // cliente: a conexão com o anfitrião
 
 let handlers = {};
@@ -71,6 +73,7 @@ export function hostRoom(onReady, onFail, forcedId) {
     if (firstOpen) {
       firstOpen = false;
       originalRoomId = forcedId ? originalRoomId : id; // migração já sabe o id original
+      iniciarPingAnfitriao();
       onReady(id);
     } else {
       handlers.onConnectionStatus && handlers.onConnectionStatus('connected');
@@ -120,12 +123,17 @@ export function hostRoom(onReady, onFail, forcedId) {
         // Só avisa o anfitrião AGORA, com o nome de quem quer entrar — não deixa
         // entrar direto, espera a aprovação (melhoria: pedido de entrada)
         handlers.onJoinRequest && handlers.onJoinRequest({ conn, slot, name: msg.name });
+      } else if (msg.type === 'ping') {
+        try { conn.send({ type: 'pong', ts: msg.ts }); } catch {}
+      } else if (msg.type === 'pong') {
+        pingStats[slot] = Date.now() - msg.ts;
       } else {
         handlers.onInput && handlers.onInput(slot, msg);
       }
     });
     conn.on('close', () => {
       clearTimeout(compatTimer);
+      delete pingStats[slot];
       const pIdx = pendingConns.indexOf(conn);
       if (pIdx >= 0) pendingConns.splice(pIdx, 1);
       const idx = conns.indexOf(conn);
@@ -155,6 +163,8 @@ export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval) {
   role = 'client';
   deliberateDisconnect = false;
   myName = name;
+  onJoinedCb = onJoined;
+  onFailCb = onFail;
   if (!migrating) originalRoomId = hostId; // se já tá migrando, mantém o id ORIGINAL guardado
   const Peer = getPeerCtor();
   peer = new Peer();
@@ -185,39 +195,75 @@ export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval) {
       clearTimeout(connectTimeoutId);
       hostConn.send({ type: 'joinRequest', name: myName });
       onWaitingApproval && onWaitingApproval();
+      iniciarPingCliente();
     });
 
-    hostConn.on('data', msg => {
-      if (msg.type === 'welcome') {
-        mySlot = msg.slot;
-        onJoined && onJoined(msg.slot);
-      } else if (msg.type === 'rejected') {
-        onFail && onFail(new Error('rejected'));
-      } else if (msg.type === 'state') {
-        handlers.onStateUpdate && handlers.onStateUpdate(msg);
-      } else if (msg.type === 'countdown') {
-        handlers.onCountdown && handlers.onCountdown(msg.n);
-      } else if (msg.type === 'reaction') {
-        handlers.onReaction && handlers.onReaction(msg.emoji, msg.from);
-      } else if (msg.type === 'chat') {
-        handlers.onChat && handlers.onChat(msg.text, msg.from);
-      } else if (msg.type === 'peerlist') {
-        knownPeers = msg.peers;
-      } else if (msg.type === 'full') {
-        // sala já tava cheia (3 jogadores) — não dá pra entrar
-        onFail && onFail(new Error('full'));
-      }
-    });
-    hostConn.on('close', () => {
-      if (deliberateDisconnect || migrating) return; // saída de propósito, ou já migrando — nada a fazer
-      attemptHostMigration();
-    });
-    hostConn.on('error', err => onFail && onFail(err));
+    configurarHostConnHandlers();
   });
+}
+
+// Registra os handlers de dados/fechamento da conexão com o anfitrião — extraído em
+// função própria pra poder ser chamado de novo depois de uma reconexão automática
+// (melhoria #11), sem duplicar toda essa lógica
+function configurarHostConnHandlers() {
+  hostConn.on('data', msg => {
+    if (msg.type === 'welcome') {
+      mySlot = msg.slot;
+      onJoinedCb && onJoinedCb(msg.slot);
+    } else if (msg.type === 'rejected') {
+      onFailCb && onFailCb(new Error('rejected'));
+    } else if (msg.type === 'state') {
+      handlers.onStateUpdate && handlers.onStateUpdate(msg);
+    } else if (msg.type === 'countdown') {
+      handlers.onCountdown && handlers.onCountdown(msg.n);
+    } else if (msg.type === 'reaction') {
+      handlers.onReaction && handlers.onReaction(msg.emoji, msg.from);
+    } else if (msg.type === 'chat') {
+      handlers.onChat && handlers.onChat(msg.text, msg.from);
+    } else if (msg.type === 'peerlist') {
+      knownPeers = msg.peers;
+    } else if (msg.type === 'full') {
+      // sala já tava cheia (3 jogadores) — não dá pra entrar
+      onFailCb && onFailCb(new Error('full'));
+    } else if (msg.type === 'ping') {
+      try { hostConn.send({ type: 'pong', ts: msg.ts }); } catch {}
+    } else if (msg.type === 'pong') {
+      hostLatency = Date.now() - msg.ts;
+    }
+  });
+  hostConn.on('close', () => {
+    if (deliberateDisconnect || migrating) return; // saída de propósito, ou já migrando — nada a fazer
+    tentarReconexaoDireta();
+  });
+  hostConn.on('error', err => onFailCb && onFailCb(err));
 }
 
 // Se o anfitrião cair sem avisar, tenta migrar a sala sozinho — o cliente com o menor
 // slot vira o novo anfitrião, e os outros reconectam automaticamente nele
+// Reconexão automática (melhoria #11) — antes de assumir que o anfitrião sumiu de vez e
+// partir pra migração (trocar de anfitrião), tenta reconectar direto nele de novo, já
+// que às vezes é só um probleminha passageiro de rede (o anfitrião continua lá).
+function tentarReconexaoDireta() {
+  if (migrating || !originalRoomId) { attemptHostMigration(); return; }
+  handlers.onConnectionStatus && handlers.onConnectionStatus('disconnected');
+  setTimeout(() => {
+    if (deliberateDisconnect || migrating) return;
+    const novaConn = peer.connect(originalRoomId, { reliable: true });
+    let conectou = false;
+    const timeoutReconexao = setTimeout(() => { if (!conectou) attemptHostMigration(); }, 4000);
+    novaConn.on('open', () => {
+      conectou = true;
+      clearTimeout(timeoutReconexao);
+      hostConn = novaConn;
+      // Reaplica os mesmos handlers de dados/fechamento que a conexão original tinha
+      configurarHostConnHandlers();
+      hostConn.send({ type: 'joinRequest', name: myName }); // reentra normalmente, como se tivesse acabado de chegar
+      handlers.onConnectionStatus && handlers.onConnectionStatus('connected');
+    });
+    novaConn.on('error', () => { if (!conectou) { clearTimeout(timeoutReconexao); attemptHostMigration(); } });
+  }, 1500);
+}
+
 function attemptHostMigration() {
   if (migrating || !originalRoomId) { handlers.onMigrationFailed && handlers.onMigrationFailed(); return; }
   migrating = true;
@@ -275,6 +321,23 @@ export function broadcastRaw(msg) {
 // Cliente: manda direção/turbo pro host
 export function sendInput(msg) {
   if (hostConn) { try { hostConn.send(msg); } catch {} }
+}
+
+// --- Ping/Latência (melhoria #15) — cada lado manda um "oi" com a hora certinha, e o
+// outro lado devolve na mesma hora; a diferença entre agora e aquela hora é o ping.
+export const pingStats = {}; // host: latência (ms) de cada jogador conectado, por slot
+export let hostLatency = null; // cliente: latência (ms) até o anfitrião
+
+function iniciarPingCliente() {
+  setInterval(() => {
+    if (hostConn && hostConn.open) { try { hostConn.send({ type: 'ping', ts: Date.now() }); } catch {} }
+  }, 3000);
+}
+
+function iniciarPingAnfitriao() {
+  setInterval(() => {
+    conns.forEach((c) => { try { c.send({ type: 'ping', ts: Date.now() }); } catch {} });
+  }, 3000);
 }
 
 // Encerra a conexão e volta pro modo local (usado ao clicar em "Sair"/"Menu")
