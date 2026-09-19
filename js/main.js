@@ -267,8 +267,13 @@ if (new URLSearchParams(location.search).get('diag') === '1') {
 // Atalhos de app (melhoria #2) — segurar o ícone no Android oferece "Jogar Rápido" e
 // "Ver Conquistas", que chegam aqui como parâmetros na URL
 const urlAction = new URLSearchParams(location.search);
-if (urlAction.get('tab') === 'conquistas') {
-  document.querySelector('[data-tab="conquistas"]')?.click();
+const ABAS_VALIDAS = ['jogar', 'personalizar', 'online', 'ranking', 'conquistas'];
+const tabDaUrl = urlAction.get('tab');
+if (tabDaUrl && ABAS_VALIDAS.includes(tabDaUrl)) {
+  switchToTab(tabDaUrl, 'replace');
+} else if (roomFromUrl) {
+  // Abriu um link de convite de sala — já vai direto pra aba Online, sem precisar clicar
+  switchToTab('online', 'replace');
 }
 if (urlAction.get('quickplay') === '1') {
   setTimeout(() => $('startHero')?.click(), 300); // um tiquinho de atraso pra tudo terminar de montar
@@ -526,14 +531,15 @@ function updateTopRecordDisplay() {
   $('topRecordDisplay').innerHTML = `🏅 Seu recorde: <b>${state.best || 0}</b> pontos`;
 }
 
-// Abas do menu (Jogar / Personalizar / Online / Ranking) — deixa a tela inicial mais limpa
-document.querySelector('.tabBar')?.addEventListener('click', (e) => {
-  const btn = e.target.closest('.tabBtn');
+// Abas do menu (Jogar / Personalizar / Online / Ranking / Conquistas) — cada uma agora
+// tem seu próprio link (?tab=nome), então dá pra favoritar, compartilhar ou usar o botão
+// "voltar" do navegador pra trocar de aba, em vez de tudo ficar no mesmo endereço.
+function switchToTab(tab, modoUrl = 'push') {
+  const btn = document.querySelector(`.tabBtn[data-tab="${tab}"]`);
   if (!btn) return;
   document.querySelectorAll('.tabBtn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
   btn.classList.add('active');
   btn.setAttribute('aria-selected', 'true');
-  const tab = btn.dataset.tab;
   const current = document.querySelector('.tabPanel:not(.hidden)');
   if (current) current.classList.add('tabFading');
   setTimeout(() => {
@@ -544,6 +550,29 @@ document.querySelector('.tabBar')?.addEventListener('click', (e) => {
       requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('tabFading')));
     }
   }, 120);
+
+  if (modoUrl === 'push' || modoUrl === 'replace') {
+    const params = new URLSearchParams(location.search);
+    params.set('tab', tab);
+    const novaUrl = location.pathname + '?' + params.toString();
+    if (modoUrl === 'push') history.pushState({ tab }, '', novaUrl);
+    // "replace" marca a aba atual no histórico SEM criar uma entrada nova — usado quando
+    // a troca acontece sozinha ao abrir a página (ex: veio de um link de sala), pra o
+    // botão "voltar" do navegador saber corretamente pra qual aba voltar depois
+    else history.replaceState({ tab }, '', novaUrl);
+  }
+}
+
+document.querySelector('.tabBar')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tabBtn');
+  if (!btn) return;
+  switchToTab(btn.dataset.tab, 'push');
+});
+
+// Botão "voltar"/"avançar" do navegador troca de aba também, em vez de sair do jogo
+window.addEventListener('popstate', (e) => {
+  const tab = e.state?.tab || new URLSearchParams(location.search).get('tab') || 'jogar';
+  switchToTab(tab, 'none'); // não mexe na URL de novo, já veio de lá
 });
 
 $('refresh').addEventListener('click', () => {
