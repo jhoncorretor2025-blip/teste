@@ -1,7 +1,7 @@
 // Service Worker do Snake Arena — deixa o jogo instalável e jogável offline (modo local).
 // O multiplayer online continua precisando de internet, claro (é conexão em tempo real).
 
-const CACHE = 'snake-arena-v2.71.0';
+const CACHE = 'snake-arena-v2.72.0';
 const ASSETS = [
   './',
   './index.html',
@@ -62,7 +62,10 @@ self.addEventListener('fetch', (event) => {
 
   if (ehArquivoPrincipal(url)) {
     // Rede primeiro, com um limite de tempo curto — se a internet estiver ruim/lenta
-    // de verdade, cai pro cache guardado em vez de travar a pessoa esperando
+    // de verdade, cai pro cache guardado em vez de travar a pessoa esperando.
+    // IMPORTANTE: essa cadeia de respaldo tem que SEMPRE terminar numa resposta de
+    // verdade — se cair tudo (sem rede E sem nada em cache ainda, como na primeira
+    // vez que alguém abre o link), a pessoa NÃO pode ficar com "nada acontece" na tela.
     event.respondWith(
       Promise.race([
         fetch(event.request).then((res) => {
@@ -71,7 +74,17 @@ self.addEventListener('fetch', (event) => {
           return res;
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000)),
-      ]).catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html')))
+      ]).catch(() =>
+        caches.match(event.request)
+          .then((cached) => cached || caches.match('./index.html'))
+          .then((cached) => cached || fetch(event.request)) // sem cache nenhum ainda? tenta a rede de novo, sem pressa dessa vez
+          .catch(() =>
+            new Response(
+              '<!doctype html><html><body style="background:#07101d;color:#fff;font-family:sans-serif;text-align:center;padding:40px 20px"><h2>📡 Sem conexão</h2><p>Não consegui carregar o jogo agora. Confere sua internet e tenta de novo.</p><button onclick="location.reload()" style="padding:12px 24px;border-radius:10px;border:none;background:#3fcf68;color:#07101d;font-weight:bold;font-size:16px">🔄 Tentar de novo</button></body></html>',
+              { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+            )
+          )
+      )
     );
     return;
   }
@@ -86,7 +99,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE).then((cache) => cache.put(event.request, copy));
           return res;
         })
-        .catch(() => cached);
+        .catch(() => cached || new Response('', { status: 504 })); // nunca deixa "undefined" chegar no respondWith
       return cached || fetchPromise;
     })
   );
