@@ -14,7 +14,7 @@ import { $, vibrate } from './utils.js';
 import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS, BOARD_THEMES, MILESTONE_STEP } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
-import { mySlot, isOnline } from './net.js';
+import { mySlot, isOnline, isHost, sendDiag } from './net.js';
 
 const canvas = $('arenaCanvas');
 let wasNearEdge = false; // controla a vibração de aviso de borda, só dispara uma vez
@@ -845,6 +845,12 @@ export function render() {
         `state.alive=${JSON.stringify(state.alive)}`,
         `hasRoundRect nativo=${typeof canvas.getContext('2d').roundRect === 'function'}`,
         `game.compact=${document.getElementById('game')?.classList.contains('compact')}`,
+        ...(isHost() ? [
+          `--- DIAGNÓSTICO DE ENVIO (você é o anfitrião) ---`,
+          `tentativas de enviar: ${sendDiag.tentativas} | sucessos: ${sendDiag.sucessos} | falhas: ${sendDiag.falhas}`,
+          `conexões ativas na última tentativa de envio: ${sendDiag.ultimaContagemConns}`,
+          `último erro de envio: ${sendDiag.ultimoErro || '(nenhum)'}`,
+        ] : []),
       ].join('\n');
     } catch (diagErr) {
       diag.textContent = 'Erro ao gerar diagnóstico: ' + diagErr.message;
