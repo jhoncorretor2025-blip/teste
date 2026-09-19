@@ -252,9 +252,24 @@ export function broadcastState(payload) {
   broadcastRaw({ type: 'state', ...payload });
 }
 
+// Diagnóstico de envio — pra saber se o anfitrião está REALMENTE conseguindo mandar os
+// pacotes, ou se tá falhando silenciosamente (por isso existe: um bug real onde os
+// erros de conn.send() eram simplesmente descartados sem deixar nenhuma pista)
+export const sendDiag = { tentativas: 0, sucessos: 0, falhas: 0, ultimoErro: null, ultimaContagemConns: 0 };
+
 // Host: manda qualquer mensagem crua pra todo mundo conectado (usado também pela contagem regressiva)
 export function broadcastRaw(msg) {
-  conns.forEach(c => { try { c.send(msg); } catch {} });
+  sendDiag.ultimaContagemConns = conns.length;
+  conns.forEach(c => {
+    sendDiag.tentativas++;
+    try {
+      c.send(msg);
+      sendDiag.sucessos++;
+    } catch (err) {
+      sendDiag.falhas++;
+      sendDiag.ultimoErro = `${err?.message || err} (conexão aberta? ${c.open})`;
+    }
+  });
 }
 
 // Cliente: manda direção/turbo pro host
