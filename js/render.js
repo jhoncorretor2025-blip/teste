@@ -14,7 +14,7 @@ import { $, vibrate } from './utils.js';
 import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS, BOARD_THEMES, MILESTONE_STEP } from './config.js';
 import { state } from './state.js';
 import { label } from './players.js';
-import { mySlot, isOnline, isHost, sendDiag } from './net.js';
+import { mySlot, isOnline, isHost, sendDiag, pingStats, hostLatency } from './net.js';
 
 const canvas = $('arenaCanvas');
 let wasNearEdge = false; // controla a vibração de aviso de borda, só dispara uma vez
@@ -494,6 +494,24 @@ function drawMinimap() {
   ctx.restore();
 }
 
+// Indicador visual de sinal (melhoria #1) — barrinhas coloridas tipo celular, baseadas
+// no ping de cada jogador. Só aparece online, e nunca pro próprio jogador local (não
+// faz sentido medir ping até você mesmo).
+function sinalIndicador(i) {
+  if (!isOnline()) return '';
+  let ping = null;
+  if (isHost()) {
+    if (i === mySlot) return ''; // você é o anfitrião, não tem ping até você mesmo
+    ping = pingStats[i];
+  } else {
+    if (i !== 0) return ''; // cliente só sabe o ping até o anfitrião (slot 0)
+    ping = hostLatency;
+  }
+  if (ping == null) return ' <span class="sinalBadge" title="Medindo...">📶</span>';
+  const cor = ping < 100 ? '#3fcf68' : ping < 250 ? '#ffd24d' : '#ff5577';
+  return ` <span class="sinalBadge" style="color:${cor}" title="${ping}ms de ping">📶 ${ping}ms</span>`;
+}
+
 export function renderScores() {
   let h = '';
   const teamBadge = ['🔵', '🔴'];
@@ -534,10 +552,11 @@ export function renderScores() {
       : '';
     // "Você" — só faz sentido mostrar com mais de 1 jogador na tela, senão é óbvio demais
     const youBadge = (i === mySlot && state.count > 1) ? ' <span class="youBadge">🫵 Você</span>' : '';
+    const sinalBadge = sinalIndicador(i);
     // Ícone Humano/CPU — ajuda a saber de relance quem é controlado por gente de verdade
     const typeIcon = state.types[i] === 'cpu' ? '🤖' : '🧑';
     const nameStyle = (i === 0 && state.nameColor && state.nameColor !== 'auto') ? ` style="color:${state.nameColor}"` : '';
-    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} ${typeIcon} <b${nameStyle}>${label(i)}</b>${youBadge}${leader}${recordBadge}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
+    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} ${typeIcon} <b${nameStyle}>${label(i)}</b>${youBadge}${sinalBadge}${leader}${recordBadge}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
