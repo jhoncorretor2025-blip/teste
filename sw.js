@@ -1,7 +1,7 @@
 // Service Worker do Snake Arena — deixa o jogo instalável e jogável offline (modo local).
 // O multiplayer online continua precisando de internet, claro (é conexão em tempo real).
 
-const CACHE = 'snake-arena-v2.77.0';
+const CACHE = 'snake-arena-v2.78.0';
 const ASSETS = [
   './',
   './index.html',
@@ -59,6 +59,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
+
+  // version.txt é o "sensor" de versão nova — precisa SEMPRE ir direto na rede de
+  // verdade, sem o Service Worker interceptar ou guardar em cache de jeito nenhum,
+  // senão ele mesmo acabaria escondendo a prova de que existe uma versão mais nova.
+  if (url.pathname.endsWith('/version.txt')) return; // deixa passar direto, sem responder nada aqui
 
   if (ehArquivoPrincipal(url)) {
     // Rede primeiro, com um limite de tempo curto — se a internet estiver ruim/lenta
