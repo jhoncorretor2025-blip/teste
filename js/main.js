@@ -102,6 +102,7 @@ net.setHandlers({
     // chegar. Sem isso, se o primeiro pacote de estado demorasse ou se perdesse, a pessoa
     // ficava presa atrás de uma tela quase preta pra sempre, mesmo o jogo já tendo começado.
     $('clientReadyOverlay').classList.add('hidden');
+    if (!state.debugCountdownRecebidoAt) state.debugCountdownRecebidoAt = Date.now();
     $('countdownOverlay').classList.remove('hidden');
     $('countdownText').textContent = n > 0 ? String(n) : 'VAI! 🚀';
     if (n <= 0) setTimeout(() => $('countdownOverlay').classList.add('hidden'), 500);
@@ -1637,3 +1638,49 @@ $('joinRejectBtn').addEventListener('click', () => {
 $('diagToggleBtn').addEventListener('click', () => {
   $('diagPanel').classList.toggle('hidden');
 });
+
+// Recuperação de conexão travada (melhoria #10 + robustez) — se o cliente ficar muito
+// tempo sem receber nenhum pacote do anfitrião durante uma partida ativa, primeiro avisa,
+// e se continuar demorando ainda mais, força uma reconexão de verdade — é um problema
+// conhecido do WebRTC/PeerJS onde um lado "trava" silenciosamente sem soltar erro nenhum,
+// e recriar a conexão do zero costuma resolver.
+let avisoInstavelMostrado = false;
+let reconexaoForcadaTentada = false;
+setInterval(() => {
+  if (!net.isOnline() || net.isHost() || !state.running) return;
+
+  // Dois jeitos de medir "há quanto tempo sem novidade": se já recebeu o primeiro
+  // pacote alguma vez, mede a partir do ÚLTIMO recebido; se NUNCA recebeu nada (o
+  // caso mais crítico, é o que a pessoa realmente reportou), mede a partir de quando
+  // a contagem regressiva chegou (prova de que o anfitrião já tinha começado a mandar
+  // coisa havia um tempo, então o "silêncio total" depois disso é bem suspeito).
+  let semNoticias;
+  if (state.receivedFirstState) {
+    semNoticias = Date.now() - (state.debugLastStateAt || 0);
+  } else if (state.debugCountdownRecebidoAt) {
+    semNoticias = Date.now() - state.debugCountdownRecebidoAt;
+  } else if (state.debugJoinedAt) {
+    // Nem a contagem regressiva chegou ainda — pode ser só que o anfitrião ainda não
+    // clicou em "Jogar" (normal, não é bug), então dá uma janela bem maior antes de
+    // desconfiar de verdade que o canal travou completamente
+    semNoticias = Date.now() - state.debugJoinedAt;
+    if (semNoticias < 20000) return;
+  } else {
+    return;
+  }
+
+  if (semNoticias > 5000 && !avisoInstavelMostrado) {
+    avisoInstavelMostrado = true;
+    $('badge').textContent = '⚠️ Conexão instável — sem novidades do anfitrião há alguns segundos...';
+  } else if (semNoticias < 3000 && avisoInstavelMostrado) {
+    avisoInstavelMostrado = false;
+    reconexaoForcadaTentada = false;
+    $('badge').textContent = '🌐 ONLINE';
+  }
+
+  if (semNoticias > 10000 && !reconexaoForcadaTentada) {
+    reconexaoForcadaTentada = true;
+    $('badge').textContent = '🔄 Reconectando de verdade (a conexão travou sem avisar)...';
+    net.forcarReconexaoPorDadosParados();
+  }
+}, 2000);
