@@ -123,6 +123,15 @@ export function hostRoom(onReady, onFail, forcedId) {
         // Só avisa o anfitrião AGORA, com o nome de quem quer entrar — não deixa
         // entrar direto, espera a aprovação (melhoria: pedido de entrada)
         handlers.onJoinRequest && handlers.onJoinRequest({ conn, slot, name: msg.name });
+      } else if (msg.type === 'reconnectRequest') {
+        // Reconexão automática (não é gente nova pedindo pra entrar, é alguém que já
+        // tava na sala e a conexão só piscou) — entra direto, SEM esperar aprovação
+        // manual de novo. Não faria sentido a pessoa reconectar sozinha e o anfitrião
+        // ter que notar um popup novo e clicar de novo — isso derrotaria o propósito
+        // de ser "automático".
+        gotJoinRequest = true;
+        clearTimeout(compatTimer);
+        approveJoinRequest({ conn, slot, name: msg.name });
       } else if (msg.type === 'ping') {
         try { conn.send({ type: 'pong', ts: msg.ts }); } catch {}
       } else if (msg.type === 'pong') {
@@ -243,6 +252,16 @@ function configurarHostConnHandlers() {
 // Reconexão automática (melhoria #11) — antes de assumir que o anfitrião sumiu de vez e
 // partir pra migração (trocar de anfitrião), tenta reconectar direto nele de novo, já
 // que às vezes é só um probleminha passageiro de rede (o anfitrião continua lá).
+// Força uma reconexão de verdade quando os dados param de chegar mesmo a conexão
+// dizendo que continua "aberta" — isso é um problema conhecido e documentado do
+// WebRTC/PeerJS em algumas situações raras: um lado consegue mandar sem erro nenhum,
+// mas os dados nunca chegam do outro lado, como se o canal tivesse "entupido" sem
+// avisar. Fechar e reconectar do zero costuma resolver, já que cria um canal novo.
+export function forcarReconexaoPorDadosParados() {
+  if (role !== 'client' || migrating || deliberateDisconnect) return;
+  if (hostConn) { try { hostConn.close(); } catch {} }
+}
+
 function tentarReconexaoDireta() {
   if (migrating || !originalRoomId) { attemptHostMigration(); return; }
   handlers.onConnectionStatus && handlers.onConnectionStatus('disconnected');
@@ -257,7 +276,7 @@ function tentarReconexaoDireta() {
       hostConn = novaConn;
       // Reaplica os mesmos handlers de dados/fechamento que a conexão original tinha
       configurarHostConnHandlers();
-      hostConn.send({ type: 'joinRequest', name: myName }); // reentra normalmente, como se tivesse acabado de chegar
+      hostConn.send({ type: 'reconnectRequest', name: myName }); // reconexão automática — entra direto, sem esperar aprovação manual de novo
       handlers.onConnectionStatus && handlers.onConnectionStatus('connected');
     });
     novaConn.on('error', () => { if (!conectou) { clearTimeout(timeoutReconexao); attemptHostMigration(); } });
