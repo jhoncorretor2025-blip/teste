@@ -1121,6 +1121,38 @@ if ('serviceWorker' in navigator) {
   }).catch(() => {});
 }
 
+// Checagem de versão à parte, direta da internet (segurança extra) — em vez de
+// depender só do mecanismo de atualização do Service Worker (que pode demorar a
+// "perceber" uma versão nova em certos navegadores/situações), busca um arquivinho
+// simples (version.txt) direto do servidor, adicionando um número aleatório na URL
+// pra IMPOSSIBILITAR que fique preso em cache de qualquer camada (navegador, proxy,
+// etc.). Se a versão aí for diferente da que está rodando agora, força uma atualização
+// completa sozinho, sem precisar de nenhuma ação da pessoa.
+async function checarVersaoDeVerdade() {
+  try {
+    const resp = await fetch(`./version.txt?nocache=${Date.now()}-${Math.random()}`, { cache: 'no-store' });
+    if (!resp.ok) return;
+    const versaoNoServidor = (await resp.text()).trim();
+    if (versaoNoServidor && versaoNoServidor !== VERSION && !state.running) {
+      announce(`🔄 Versão nova encontrada (${versaoNoServidor}) — atualizando sozinho...`);
+      if ('caches' in window) {
+        const nomes = await caches.keys();
+        await Promise.all(nomes.map((n) => caches.delete(n)));
+      }
+      if (navigator.serviceWorker) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      setTimeout(() => location.reload(), 800);
+    }
+  } catch {} // sem internet ou o arquivo não existe — não faz nada, sem problema
+}
+checarVersaoDeVerdade();
+setInterval(checarVersaoDeVerdade, 60000); // confere de novo a cada minuto, caso publique algo novo enquanto a pessoa já está com o jogo aberto
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') checarVersaoDeVerdade();
+});
+
 let pendingUpdateReg = null;
 function showUpdateBanner(reg) {
   // Se tiver uma partida rolando, não interrompe na hora — espera a pessoa voltar pro
