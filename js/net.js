@@ -189,7 +189,7 @@ export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval) {
   peer.on('open', () => {
     if (!firstOpen) { handlers.onConnectionStatus && handlers.onConnectionStatus('connected'); return; }
     firstOpen = false;
-    hostConn = peer.connect(hostId, { reliable: true });
+    hostConn = peer.connect(hostId, { reliable: true, serialization: 'json' });
 
     // Esse timeout cobre só a parte TÉCNICA da conexão (o "aperto de mão" direto entre
     // os dois aparelhos) — não conta a espera pela aprovação humana do anfitrião, que
@@ -267,7 +267,7 @@ function tentarReconexaoDireta() {
   handlers.onConnectionStatus && handlers.onConnectionStatus('disconnected');
   setTimeout(() => {
     if (deliberateDisconnect || migrating) return;
-    const novaConn = peer.connect(originalRoomId, { reliable: true });
+    const novaConn = peer.connect(originalRoomId, { reliable: true, serialization: 'json' });
     let conectou = false;
     const timeoutReconexao = setTimeout(() => { if (!conectou) attemptHostMigration(); }, 4000);
     novaConn.on('open', () => {
