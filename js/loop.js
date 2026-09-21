@@ -627,6 +627,8 @@ export function startClientGame() {
   state.running = true;
   state.paused = false;
   state.receivedFirstState = false;
+  state.debugCountdownRecebidoAt = 0;
+  state.debugJoinedAt = Date.now(); // quando terminou de entrar de vez — base pra detectar se NADA chegar depois
   // Temporário: mostra o diagnóstico técnico automaticamente pra quem ENTRA numa sala,
   // sem precisar tocar em nenhum botão — facilita muito mandar um print de ajuda
   $('diagPanel').classList.remove('hidden');
