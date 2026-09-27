@@ -35,6 +35,40 @@ export function ensureFoods() {
   }
 }
 
+// Consolidação de comida acumulada em estrelas — quando MUITA comida se espalha pelo
+// mapa (o mais comum: depois que várias minhocas grandes morrem de uma vez, derramando
+// tudo o que comeram), fica poluído visualmente e difícil de ver o que é importante.
+// A cada 5 comidas "comuns" (normal ou derramada) acima do limite, um grupo delas pisca
+// por um tempinho e depois se funde numa única estrela — assim o mapa se "limpa"
+// sozinho, e ainda dá uma recompensa maior por aquilo que seria só clutter.
+const LIMITE_COMIDA_ANTES_DE_CONSOLIDAR = 50;
+const QUANTIDADE_POR_ESTRELA = 5;
+const TEMPO_PISCANDO_MS = 1500;
+
+export function checkFoodConsolidation() {
+  const comuns = state.foods.filter((f) => (f.kind === 'normal' || f.kind === 'drop') && !f.piscando);
+  if (comuns.length < LIMITE_COMIDA_ANTES_DE_CONSOLIDAR) return;
+  // Pega o primeiro grupo de 5 e marca pra começar a piscar (o desenho na tela cuida
+  // do efeito visual sozinho, olhando pra essa marcação)
+  const grupo = comuns.slice(0, QUANTIDADE_POR_ESTRELA);
+  const consolidaEm = Date.now() + TEMPO_PISCANDO_MS;
+  grupo.forEach((f) => { f.piscando = true; f.consolidaEm = consolidaEm; });
+}
+
+export function updateFoodConsolidation() {
+  const prontas = state.foods.filter((f) => f.piscando && Date.now() >= f.consolidaEm);
+  if (prontas.length === 0) return;
+  // Todas as que ficaram marcadas no MESMO instante nascem juntas — vira 1 estrela no
+  // lugar da primeira delas
+  const centro = { x: prontas[0].x, y: prontas[0].y };
+  prontas.forEach((f) => {
+    const idx = state.foods.indexOf(f);
+    if (idx >= 0) state.foods.splice(idx, 1);
+  });
+  state.foods.push({ x: centro.x, y: centro.y, kind: 'bonus', value: 5 });
+  return centro; // devolve onde a estrela nasceu, pra quem chamou poder tocar um efeito
+}
+
 // Quando uma minhoca morre, ela "derrama" comida no tabuleiro proporcional ao que comeu
 export function dropFood(i) {
   for (let n = 0; n < state.foodsEaten[i]; n++) {
