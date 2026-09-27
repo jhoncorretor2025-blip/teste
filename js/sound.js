@@ -56,6 +56,13 @@ export const sfx = {
   boost: () => beep({ freq: 300, duration: 0.12, type: 'square', volume: 0.12, slideTo: 600 }),
   mission: () => beep({ freq: 660, duration: 0.22, type: 'triangle', volume: 0.22, slideTo: 990 }),
   boostReady: () => beep({ freq: 880, duration: 0.08, type: 'sine', volume: 0.13, slideTo: 1200 }),
+  // Som de "chefe chegando" (Minhoca Caçadora) — bem diferente dos outros, grave e
+  // dramático, em 3 batidas descendentes, pra dar aquela sensação de perigo chegando
+  hunterArrives: () => {
+    beep({ freq: 160, duration: 0.35, type: 'sawtooth', volume: 0.26, slideTo: 90 });
+    setTimeout(() => beep({ freq: 140, duration: 0.3, type: 'sawtooth', volume: 0.24, slideTo: 80 }), 220);
+    setTimeout(() => beep({ freq: 110, duration: 0.55, type: 'square', volume: 0.3, slideTo: 50 }), 470);
+  },
 };
 
 // Alguns navegadores só liberam áudio depois de um clique do usuário.
