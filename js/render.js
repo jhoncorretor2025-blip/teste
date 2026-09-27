@@ -453,8 +453,8 @@ function drawMinimap() {
   // Comidinhas e estrelas no minimapa — bem maiores e com contorno branco, pra dar
   // pra ver de relance mesmo numa tela pequena de celular
   for (const f of state.foods) {
-    const r = f.kind === 'bonus' ? 3.2 : 2.2;
-    ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : f.kind === 'drop' ? (state.colors[f.owner] || '#ff4f7a') : '#ff4f7a';
+    const r = f.kind === 'bonus' || f.kind === 'streak' ? 3.2 : 2.2;
+    ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : f.kind === 'streak' ? '#c084fc' : f.kind === 'drop' ? (state.colors[f.owner] || '#ff4f7a') : '#ff4f7a';
     ctx.beginPath();
     ctx.arc(mx + f.x * scale, my + f.y * scale, r, 0, Math.PI * 2);
     ctx.fill();
@@ -671,11 +671,30 @@ export function draw() {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    if (f.piscando) {
+      // Prestes a virar estrela — pisca rapidinho e já brilha dourado, dando a dica
+      // visual de que está prestes a se transformar
+      const piscaVisivel = Math.floor(Date.now() / 120) % 2 === 0;
+      if (!piscaVisivel) { ctx.restore(); continue; }
+      ctx.font = `${cell}px sans-serif`;
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = '#ffd24d';
+      ctx.fillText(f.kind === 'drop' ? theme.food : theme.food, x, y);
+      ctx.restore();
+      continue;
+    }
     if (f.kind === 'bonus') {
       ctx.font = `${cell * 1.2}px sans-serif`;
       ctx.shadowBlur = 12 + Math.sin(t) * 7;
       ctx.shadowColor = '#ffd24d';
       ctx.fillText('⭐', x, y);
+    } else if (f.kind === 'streak') {
+      // Comida de sequência vencedora — uma coroa roxa brilhante, bem diferente de tudo
+      // o resto, pra deixar claro que é uma recompensa especial rara
+      ctx.font = `${cell * 1.25}px sans-serif`;
+      ctx.shadowBlur = 14 + Math.sin(t * 1.3) * 8;
+      ctx.shadowColor = '#c084fc';
+      ctx.fillText('👑', x, y);
     } else {
       ctx.font = `${cell}px sans-serif`;
       ctx.shadowBlur = 8;
