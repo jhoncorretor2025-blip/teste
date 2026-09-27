@@ -3,7 +3,7 @@
 import { $ } from './utils.js';
 import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP, SPECIAL_MILESTONES, TOURNAMENT_ROUNDS, TOURNAMENT_ROUND_MS, HUNTER_MILESTONES } from './config.js';
 import { state } from './state.js';
-import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall } from './food.js';
+import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall, checkFoodConsolidation, updateFoodConsolidation } from './food.js';
 import { aiDir, hunterDir } from './ai.js';
 import { render } from './render.js';
 import { syncSettings, label } from './players.js';
@@ -94,6 +94,8 @@ export function reset() {
   state.hunterActive = false;
   state.hunterSnake = [];
   state.hunterMilestoneIndex = 0;
+  state.streakBonusActive = false;
+  state.streakBonusNextAt = 0;
   state.boostUsedCount = Array(6).fill(0);
   state.lastTurnAt = Array(6).fill(Date.now());
   for (let i = 0; i < state.count; i++) spawn(i);
@@ -364,15 +366,18 @@ function stepMovement(indices) {
       state.grow[i] += f.value;
       if (state.tournamentMode) state.tournamentRoundScore[i] += f.value + comboBonus;
       state.foods.splice(state.foods.indexOf(f), 1);
-      burst(h.x, h.y, f.kind === 'bonus' ? '#ffd24d' : state.colors[i], f.kind === 'bonus' ? 24 : 12);
-      sfx[f.kind === 'bonus' ? 'star' : f.kind === 'drop' ? 'drop' : 'eat']();
-      if (f.kind === 'bonus') vibrate(20);
+      const corComida = f.kind === 'bonus' ? '#ffd24d' : f.kind === 'streak' ? '#c084fc' : state.colors[i];
+      burst(h.x, h.y, corComida, f.kind === 'bonus' || f.kind === 'streak' ? 24 : 12);
+      sfx[f.kind === 'bonus' ? 'star' : f.kind === 'streak' ? 'star' : f.kind === 'drop' ? 'drop' : 'eat']();
+      if (f.kind === 'bonus' || f.kind === 'streak') vibrate(f.kind === 'streak' ? [15, 30, 15] : 20);
       if (comboBonus > 0) {
         state.toast = { x: h.x, y: h.y, text: `🔥 Combo x${combo}! +${comboBonus}`, color: '#ff9f4d', until: Date.now() + 900 };
+      } else if (f.kind === 'streak') {
+        state.toast = { x: h.x, y: h.y, text: `👑 Bônus de sequência! +${f.value}`, color: '#c084fc', until: Date.now() + 1200 };
       }
       state.floatingScores.push({
         x: h.x, y: h.y, text: `+${f.value + comboBonus}`,
-        color: f.kind === 'bonus' ? '#ffd24d' : state.colors[i],
+        color: corComida,
         bornAt: Date.now(),
       });
       trackFoodForMission(i, f);
@@ -468,6 +473,47 @@ function findFoodLeader() {
   return { leaderIdx, leaderFood };
 }
 
+// Comida de sequência vencedora — só faz sentido comparar com o "segundo lugar" se
+// tiver mais de um jogador na partida. Acha o líder e a maior pontuação entre TODOS OS
+// OUTROS jogadores, pra saber a vantagem de verdade (não só o valor absoluto do líder).
+const VANTAGEM_MINIMA_SEQUENCIA = 25;
+const INTERVALO_COMIDA_SEQUENCIA_MS = 15000;
+function ativarComidaSequenciaSeMerecer() {
+  if (state.count < 2) return;
+  const { leaderIdx, leaderFood } = findFoodLeader();
+  if (leaderIdx === -1) return;
+  let segundoLugar = -1;
+  for (let i = 0; i < state.count; i++) {
+    if (i !== leaderIdx && state.alive[i] && state.foodsEaten[i] > segundoLugar) segundoLugar = state.foodsEaten[i];
+  }
+  if (segundoLugar === -1) return; // não tem mais ninguém vivo pra comparar
+  if (leaderFood - segundoLugar >= VANTAGEM_MINIMA_SEQUENCIA) {
+    state.streakBonusActive = true;
+    state.streakBonusNextAt = Date.now() + INTERVALO_COMIDA_SEQUENCIA_MS;
+  }
+}
+
+// Chamado a cada instante — enquanto a sequência vencedora estiver ativa, solta uma
+// comidinha especial (valendo 10, bem mais que o normal) a cada 15 segundos. Se a
+// vantagem cair abaixo do mínimo no meio do caminho, desliga sozinho.
+function updateStreakBonusFood() {
+  if (!state.streakBonusActive) return;
+  const { leaderIdx, leaderFood } = findFoodLeader();
+  let segundoLugar = -1;
+  for (let i = 0; i < state.count; i++) {
+    if (i !== leaderIdx && state.alive[i] && state.foodsEaten[i] > segundoLugar) segundoLugar = state.foodsEaten[i];
+  }
+  if (leaderIdx === -1 || segundoLugar === -1 || leaderFood - segundoLugar < VANTAGEM_MINIMA_SEQUENCIA) {
+    state.streakBonusActive = false; // perdeu a vantagem — a recompensa extra some
+    return;
+  }
+  if (Date.now() >= state.streakBonusNextAt) {
+    const p = freeCell();
+    state.foods.push({ x: p.x, y: p.y, kind: 'streak', value: 10 });
+    state.streakBonusNextAt = Date.now() + INTERVALO_COMIDA_SEQUENCIA_MS;
+  }
+}
+
 // Confere se é hora de fazer a Minhoca Caçadora aparecer — só uma checagem simples de
 // "o líder já comeu o suficiente pro próximo marco?"
 function checkHunterSpawn() {
@@ -483,12 +529,29 @@ function checkHunterSpawn() {
 function spawnHunter(durationSec) {
   const p = freeCell();
   state.hunterVictims = new Set();
-  state.hunterSnake = [{ x: p.x, y: p.y }, { x: p.x - 1, y: p.y }, { x: p.x - 2, y: p.y }];
+  // A Minhoca Caçadora agora nasce bem grande (no mínimo 50 partes) — bem mais
+  // ameaçadora de se ver chegando. Pra garantir que cabe em QUALQUER tamanho de mapa
+  // (até no menor deles) sem nunca sair dos limites, percorre o mapa inteiro numa
+  // varredura em zigue-zague (linha por linha) a partir da posição da cabeça, pegando
+  // as primeiras 50 células dessa varredura — cada uma é garantidamente uma célula
+  // válida do mapa, sem precisar checar limite nenhum manualmente.
+  const TAMANHO_MINIMO_CACADORA = Math.min(50, state.mapW * state.mapH);
+  const corpo = [];
+  for (let passo = 0; passo < TAMANHO_MINIMO_CACADORA; passo++) {
+    const linha = (p.y + Math.floor((p.x + passo) / state.mapW)) % state.mapH;
+    const indiceNaLinha = (p.x + passo) % state.mapW;
+    // Zigue-zague: em linhas "pares" de deslocamento, anda pra direita; nas ímpares,
+    // pra esquerda — assim o corpo sempre continua vizinho célula-a-célula, sem "pulos"
+    const linhaRelativa = Math.floor((p.x + passo) / state.mapW);
+    const coluna = linhaRelativa % 2 === 0 ? indiceNaLinha : state.mapW - 1 - indiceNaLinha;
+    corpo.push({ x: coluna, y: linha });
+  }
+  state.hunterSnake = corpo;
   state.hunterDir = { x: 1, y: 0 };
   state.hunterActive = true;
   state.hunterEndsAt = Date.now() + durationSec * 1000;
   state.toast = { x: p.x, y: p.y, text: '☠️ Minhoca Caçadora apareceu!', color: '#ff2222', until: Date.now() + 2800 };
-  sfx.mission();
+  sfx.hunterArrives();
   vibrate([40, 60, 40, 60, 40]);
 }
 
@@ -500,6 +563,11 @@ function updateHunter() {
     state.hunterActive = false;
     if (!state.hunterVictims.has(mySlot)) announceAchievement(unlockAchievement('hunter_escape'));
     state.hunterSnake = [];
+    // Depois que a Minhoca Caçadora vai embora, confere se o líder abriu uma vantagem
+    // grande (25+ comidinhas) sobre o segundo colocado — se sim, liga a "comida de
+    // sequência vencedora": uma comidinha especial valendo 10 pontos, aparecendo a
+    // cada 15 segundos, como recompensa extra por ter sobrevivido e continuar na frente
+    ativarComidaSequenciaSeMerecer();
     return;
   }
 
@@ -536,6 +604,13 @@ function tick() {
     announceAchievement(unlockAchievement('survivor'));
   }
   updateHunter();
+  updateStreakBonusFood();
+  checkFoodConsolidation();
+  const estrelaNascida = updateFoodConsolidation();
+  if (estrelaNascida) {
+    burst(estrelaNascida.x, estrelaNascida.y, '#ffd24d', 20);
+    sfx.star();
+  }
 
   const now = Date.now();
   const diff = DIFFICULTY[state.difficulty] || DIFFICULTY.normal;
