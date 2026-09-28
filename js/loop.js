@@ -825,6 +825,8 @@ export function startClientGame() {
   // Temporário: mostra o diagnóstico técnico automaticamente pra quem ENTRA numa sala,
   // sem precisar tocar em nenhum botão — facilita muito mandar um print de ajuda
   $('diagPanel').classList.remove('hidden');
+  state.diagAutoShown = true; // foi aberto sozinho: some sozinho quando os dados começarem a chegar
+  state.diagManual = false;
   $('clientReadyOverlay').classList.remove('hidden');
   $('clientReadyOverlay').querySelector('h2').textContent = '🌐 Você entrou na sala!';
   $('clientReadyOverlay').querySelector('p').textContent = 'Avise que já está pronto pra começar.';
@@ -861,6 +863,13 @@ export function applyRemoteState(msg) {
   if (!state.receivedFirstState) {
     state.receivedFirstState = true;
     $('clientReadyOverlay').classList.add('hidden');
+    // O painel de diagnóstico só abria sozinho pra ajudar a caçar o problema de "nada chega".
+    // Agora que os dados chegaram, ele já cumpriu o papel e some — a não ser que a pessoa
+    // tenha aberto de propósito pelo botão 🩺 (aí fica até ela fechar).
+    if (state.diagAutoShown) {
+      state.diagAutoShown = false;
+      if (!state.diagManual) $('diagPanel').classList.add('hidden');
+    }
     // Momento mais crítico pra tela preta: é AGORA que a partida de verdade começa a
     // aparecer pro cliente. Força mais um redesenho logo em seguida, de segurança —
     // mesmo com o ResizeObserver, alguns celulares demoram um pouquinho a mais.
