@@ -1,0 +1,14 @@
+{
+  "name": "snake-arena",
+  "private": true,
+  "type": "module",
+  "description": "Snake Arena — jogo da minhoquinha (site estático, sem build). Veja AGENTS.md.",
+  "scripts": {
+    "verificar": "python3 tools/verificar-projeto.py",
+    "mapa": "python3 tools/gerar-mapa.py",
+    "test": "node tests/rodar-tudo.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.1"
+  }
+}

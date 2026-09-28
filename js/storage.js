@@ -1,3 +1,10 @@
+// Tudo que o jogo guarda no navegador da pessoa (localStorage): recordes, perfil e
+// configurações, conquistas, histórico de partidas, atalhos de teclado, escolhas de time.
+// Cada dado tem seu par salvar/carregar; todos protegidos com try/catch, então se o
+// navegador bloquear o armazenamento (aba anônima, por exemplo) o jogo segue funcionando.
+// As chaves ficam nas constantes *_KEY de cada bloco — mude o NOME de uma chave e todo mundo
+// perde o que tinha salvo, então evite.
+
 import { ACHIEVEMENTS, BOARD_THEMES, HEAD_SHAPES } from './config.js';
 
 // Guarda o recorde (melhor pontuação) e a preferência de som no navegador do jogador, entre visitas.
