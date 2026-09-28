@@ -4,6 +4,7 @@
 import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
 import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS } from './config.js';
 import { planTeams } from './teams.js';
+import { loadTeamPrefs, saveTeamPrefs } from './storage.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
@@ -240,6 +241,7 @@ function syncTeamCapacity() {
     const total = state.teamSizeMine + state.teamSizeOther;
     $('teamSizeHint').textContent = `Total: ${total} minhocas — cabem até ${total - 1} amigo(s) na sala, e o que sobrar vira 🤖 CPU.`;
   }
+  salvarPrefsDeTime();
   recomputeLobbyTeams();
   updateRoomSettingsPreview();
 }
@@ -300,6 +302,7 @@ $('joinBtn').addEventListener('click', () => {
   $('joinBtn').textContent = '⏳ Entrando...';
   $('joinStatus').innerHTML = '<span class="spinner"></span>Conectando com a sala...';
   const escolhaDeTime = $('joinTeamRow').classList.contains('hidden') ? 'mine' : ($('joinTeamChoice').value === 'other' ? 'other' : 'mine');
+  if (!$('joinTeamRow').classList.contains('hidden')) salvarPrefsDeTime();
   net.joinRoom(code, state.names[0],
     (slot, time) => {
       $('joinStatus').textContent = '';
@@ -771,6 +774,29 @@ $('players').addEventListener('click', e => {
 $('teamMode').addEventListener('change', () => { makePlayers(); syncTeamCapacity(); });
 $('teamSizeMine').addEventListener('change', syncTeamCapacity);
 $('teamSizeOther').addEventListener('change', syncTeamCapacity);
+$('joinTeamChoice').addEventListener('change', () => salvarPrefsDeTime());
+
+// Lembra as escolhas de time entre uma visita e outra: o tamanho de cada lado (quem cria a
+// sala) e "com o anfitrião / contra" (quem entra). O FORMATO (Times ou Todos contra Todos)
+// não é lembrado de propósito: ele também liga o modo Times do jogo local, e abrir o jogo
+// já em Times sem a pessoa pedir seria uma surpresa chata.
+function salvarPrefsDeTime() {
+  saveTeamPrefs({
+    mine: +$('teamSizeMine').value,
+    other: +$('teamSizeOther').value,
+    joinChoice: $('joinTeamChoice').value === 'other' ? 'other' : 'mine',
+  });
+}
+(function restaurarPrefsDeTime() {
+  const p = loadTeamPrefs();
+  if (!p) return;
+  const tamanho = (v) => ([1, 2, 3].includes(Number(v)) ? String(Number(v)) : null); // ignora lixo salvo
+  if (tamanho(p.mine)) $('teamSizeMine').value = tamanho(p.mine);
+  if (tamanho(p.other)) $('teamSizeOther').value = tamanho(p.other);
+  if (p.joinChoice === 'other' || p.joinChoice === 'mine') $('joinTeamChoice').value = p.joinChoice;
+  state.teamSizeMine = +$('teamSizeMine').value;
+  state.teamSizeOther = +$('teamSizeOther').value;
+})();
 
 // Formato da partida (Times vs Todos-contra-Todos) e cor do time, direto na aba Online —
 // tudo isso já existia espalhado (checkbox de time + cor por jogador), aqui só fica mais
@@ -1782,6 +1808,9 @@ $('joinRejectBtn').addEventListener('click', () => {
 // Botão de diagnóstico — mostra/esconde o painel técnico sem precisar mexer na URL
 $('diagToggleBtn').addEventListener('click', () => {
   $('diagPanel').classList.toggle('hidden');
+  // Se a pessoa deixou aberto de propósito, não some sozinho; se fechou, também não reabre
+  state.diagManual = !$('diagPanel').classList.contains('hidden');
+  state.diagAutoShown = false;
 });
 
 // Recuperação de conexão travada (melhoria #10 + robustez) — se o cliente ficar muito
