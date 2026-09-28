@@ -1,8 +1,9 @@
 // O "coração" do jogo: nascer, resetar, iniciar partida e o tick (cada passo do jogo).
 
 import { $ } from './utils.js';
-import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP, SPECIAL_MILESTONES, TOURNAMENT_ROUNDS, TOURNAMENT_ROUND_MS, HUNTER_MILESTONES } from './config.js';
+import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP, SPECIAL_MILESTONES, TOURNAMENT_ROUNDS, TOURNAMENT_ROUND_MS, HUNTER_MILESTONES, COLORS } from './config.js';
 import { state } from './state.js';
+import { planTeams, unifyTeamColors } from './teams.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall, checkFoodConsolidation, updateFoodConsolidation } from './food.js';
 import { aiDir, hunterDir } from './ai.js';
 import { render } from './render.js';
@@ -782,8 +783,24 @@ function tick() {
 // Prepara e inicia uma partida ONLINE como anfitrião — o total de jogadores vira
 // "você + quantos amigos estão conectados agora", todos humanos (sem CPU no online).
 export function startOnlineHostGame() {
-  state.count = Math.min(6, 1 + connectedCount());
-  state.types = Array(state.count).fill('human');
+  const humanos = Math.min(6, 1 + connectedCount());
+  if ($('teamMode').checked) {
+    // Partida em Times: os tamanhos de cada lado vêm do anfitrião, cada amigo entra no lado
+    // que escolheu (se coube), e o que sobrar de vaga vira CPU
+    const prefs = Array.from({ length: humanos }, (_, i) => (state.teamPrefs[i] === 'other' ? 'other' : 'mine'));
+    const hostTeam = state.teams[0] === 1 ? 1 : 0;
+    const plano = planTeams({ sizeMine: state.teamSizeMine, sizeOther: state.teamSizeOther, prefs, hostTeam });
+    state.count = plano.count;
+    state.types = plano.types.slice();
+    for (let i = 0; i < plano.count; i++) state.teams[i] = plano.teams[i];
+    const cores = unifyTeamColors({ colors: state.colors, teams: state.teams, count: plano.count, hostTeam, palette: COLORS });
+    for (let i = 0; i < plano.count; i++) state.colors[i] = cores[i];
+    let numeroCpu = 0;
+    for (let i = 0; i < plano.count; i++) if (state.types[i] === 'cpu') state.names[i] = `🤖 CPU ${++numeroCpu}`;
+  } else {
+    state.count = humanos;
+    state.types = Array(state.count).fill('human');
+  }
   startGame();
 }
 
