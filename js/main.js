@@ -678,6 +678,19 @@ $('noWalls').addEventListener('change', updateRoomSettingsPreview);
 function updateStatusBarColor() {
   const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
   $('metaThemeColor')?.setAttribute('content', theme.bg);
+  updateThemePreview(theme);
+}
+
+// Prévia do mapa logo abaixo do seletor de tema: mostra o fundo, a comidinha e a decoração
+// do tema escolhido, pra ver a mudança na hora — sem precisar começar uma partida
+const ICONES_DECORACAO = { stars: '✦ ✧ ✦', bubbles: '○ ◦ ○', sand: '· ∙ ·', snow: '❄ ❅ ❄', spores: '● ∘ ●', sparkles: '✦ ✧ ✦', petals: '❀ ✿ ❀', none: '' };
+function updateThemePreview(theme) {
+  const el = $('themePreview');
+  if (!el) return;
+  el.style.background = `radial-gradient(circle at 50% 50%, ${theme.bg2 || theme.bg}, ${theme.bg} 78%)`;
+  el.style.borderColor = theme.grid;
+  el.style.color = theme.accent || '#fff';
+  el.textContent = `${theme.food}  ${ICONES_DECORACAO[theme.deco] || ''}  ${theme.food}`;
 }
 $('boardTheme').addEventListener('change', e => { state.theme = e.target.value; updateStatusBarColor(); });
 $('vibrationOn').addEventListener('change', e => {
@@ -1374,7 +1387,7 @@ $('applyConfigCodeBtn').addEventListener('click', () => {
     if (typeof cfg.teamMode === 'boolean') { $('teamMode').checked = cfg.teamMode; makePlayers(); }
     if (typeof cfg.tournamentMode === 'boolean') $('tournamentMode').checked = cfg.tournamentMode;
     if (cfg.zoom) { $('zoomLevel').value = cfg.zoom; state.zoom = cfg.zoom; persistZoom(); }
-    if (cfg.theme) { $('boardTheme').value = cfg.theme; state.theme = cfg.theme; }
+    if (cfg.theme) { $('boardTheme').value = cfg.theme; state.theme = cfg.theme; updateStatusBarColor(); }
     updateRoomSettingsPreview();
     $('configCodeStatus').textContent = '✅ Configurações aplicadas!';
     setTimeout(() => $('configCodeStatus').textContent = '', 2500);
