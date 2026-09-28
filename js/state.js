@@ -15,6 +15,9 @@ export const state = {
   palettes: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto'], // cores usadas no padrão Tricolor
   teamMode: false, // modo times: aliados não se eliminam entre si
   teams: [0, 1, 0, 1, 0, 1], // qual time (0 ou 1) cada jogador está
+  teamSizeMine: 2, // partida online em Times: quantas minhocas no time do anfitrião (contando CPUs)
+  teamSizeOther: 2, // ...e quantas no time adversário
+  teamPrefs: ['mine'], // preferência de time de cada humano, por slot ('mine' = com o anfitrião, 'other' = contra)
   touchControl: 'joystick', // controle de toque: 'joystick', 'dpad' ou 'swipe'
   zoom: 'normal', // zoom da câmera — preferência pessoal, cada jogador ajusta o seu
   controlSize: 100, // tamanho dos controles de toque (%), ajustável
