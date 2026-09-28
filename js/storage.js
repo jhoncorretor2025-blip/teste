@@ -290,3 +290,16 @@ export function saveShortcuts(shortcuts) {
 export function loadShortcuts() {
   try { return JSON.parse(localStorage.getItem(SHORTCUTS_KEY)); } catch { return null; }
 }
+
+// Escolhas de time que valem a pena lembrar entre uma visita e outra: o tamanho de cada lado
+// (pra quem cria a sala) e "no time de quem criou / no adversário" (pra quem entra).
+const TEAM_PREFS_KEY = 'snakeArenaTeamPrefs';
+export function saveTeamPrefs(prefs) {
+  try { localStorage.setItem(TEAM_PREFS_KEY, JSON.stringify(prefs)); } catch {}
+}
+export function loadTeamPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem(TEAM_PREFS_KEY));
+    return p && typeof p === 'object' && !Array.isArray(p) ? p : null;
+  } catch { return null; }
+}
