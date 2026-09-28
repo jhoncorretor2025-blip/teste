@@ -540,26 +540,31 @@ function checkHunterSpawn() {
   state.hunterMilestoneIndex++;
 }
 
+// Monta o corpo inicial da Minhoca Caçadora (50 partes) a partir da posição da cabeça.
+// Percorre o mapa em zigue-zague, linha por linha, então cada parte é vizinha da anterior.
+// O corpo ocupa umas 3 linhas, e vai SEMPRE pro lado do mapa que tem mais espaço (sobe se a
+// cabeça nasceu embaixo, desce se nasceu em cima) — antes ele "dava a volta" pelo outro
+// lado do mapa e a cauda reaparecia lá no topo, teletransportada, quebrando o corpo.
+export function montarCorpoDaCacadora(p, mapW, mapH, tamanho = 50) {
+  const total = Math.min(tamanho, mapW * mapH);
+  const sentidoVertical = p.y >= mapH / 2 ? -1 : 1;
+  const corpo = [];
+  for (let passo = 0; passo < total; passo++) {
+    const linhaRelativa = Math.floor((p.x + passo) / mapW);
+    const indiceNaLinha = (p.x + passo) % mapW;
+    // linhas "pares" andam pra direita, "ímpares" pra esquerda: sem pulos entre uma e outra
+    const coluna = linhaRelativa % 2 === 0 ? indiceNaLinha : mapW - 1 - indiceNaLinha;
+    const linha = Math.max(0, Math.min(mapH - 1, p.y + sentidoVertical * linhaRelativa));
+    corpo.push({ x: coluna, y: linha });
+  }
+  return corpo;
+}
+
 function spawnHunter(durationSec) {
   const p = freeCell();
   state.hunterVictims = new Set();
-  // A Minhoca Caçadora agora nasce bem grande (no mínimo 50 partes) — bem mais
-  // ameaçadora de se ver chegando. Pra garantir que cabe em QUALQUER tamanho de mapa
-  // (até no menor deles) sem nunca sair dos limites, percorre o mapa inteiro numa
-  // varredura em zigue-zague (linha por linha) a partir da posição da cabeça, pegando
-  // as primeiras 50 células dessa varredura — cada uma é garantidamente uma célula
-  // válida do mapa, sem precisar checar limite nenhum manualmente.
-  const TAMANHO_MINIMO_CACADORA = Math.min(50, state.mapW * state.mapH);
-  const corpo = [];
-  for (let passo = 0; passo < TAMANHO_MINIMO_CACADORA; passo++) {
-    const linha = (p.y + Math.floor((p.x + passo) / state.mapW)) % state.mapH;
-    const indiceNaLinha = (p.x + passo) % state.mapW;
-    // Zigue-zague: em linhas "pares" de deslocamento, anda pra direita; nas ímpares,
-    // pra esquerda — assim o corpo sempre continua vizinho célula-a-célula, sem "pulos"
-    const linhaRelativa = Math.floor((p.x + passo) / state.mapW);
-    const coluna = linhaRelativa % 2 === 0 ? indiceNaLinha : state.mapW - 1 - indiceNaLinha;
-    corpo.push({ x: coluna, y: linha });
-  }
+  // A Minhoca Caçadora nasce bem grande (50 partes) — bem mais ameaçadora de se ver chegando
+  const corpo = montarCorpoDaCacadora(p, state.mapW, state.mapH);
   state.hunterSnake = corpo;
   state.hunterDir = { x: 1, y: 0 };
   state.hunterActive = true;
