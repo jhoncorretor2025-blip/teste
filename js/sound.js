@@ -63,6 +63,12 @@ export const sfx = {
     setTimeout(() => beep({ freq: 140, duration: 0.3, type: 'sawtooth', volume: 0.24, slideTo: 80 }), 220);
     setTimeout(() => beep({ freq: 110, duration: 0.55, type: 'square', volume: 0.3, slideTo: 50 }), 470);
   },
+  // Batimento de coração ("tum-tum") — toca com mais frequência quanto mais perto a
+  // Minhoca Caçadora chega de você, aumentando a tensão sem precisar de nenhuma música
+  hunterHeartbeat: () => {
+    beep({ freq: 70, duration: 0.11, type: 'sine', volume: 0.32, slideTo: 45 });
+    setTimeout(() => beep({ freq: 60, duration: 0.14, type: 'sine', volume: 0.26, slideTo: 40 }), 130);
+  },
 };
 
 // Alguns navegadores só liberam áudio depois de um clique do usuário.
