@@ -606,6 +606,87 @@ function drawHunterVignette() {
   ctx.restore();
 }
 
+// Marcador de time na cabecinha: uma FORMA por time (▲ Azul, ■ Vermelho), além da cor —
+// ajuda quem tem dificuldade com cores e evita matar aliado sem querer.
+function desenharMarcadorDeTime(time, x, y) {
+  const r = cell * 0.2;
+  ctx.save();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = '#0b1220';
+  ctx.lineWidth = Math.max(1, cell * 0.06);
+  ctx.beginPath();
+  if (time === 0) {
+    ctx.moveTo(x, y - r);
+    ctx.lineTo(x + r, y + r * 0.85);
+    ctx.lineTo(x - r, y + r * 0.85);
+    ctx.closePath();
+  } else {
+    ctx.rect(x - r * 0.85, y - r * 0.85, r * 1.7, r * 1.7);
+  }
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+// Setinha na borda da tela apontando pra Minhoca Caçadora quando ela está FORA da tela.
+// Em mapa grande a câmera mostra só um pedaço, e antes só o minimapa avisava onde ela
+// estava — agora dá pra ver na hora de que lado o perigo vem, e a que distância (em casas).
+function drawHunterPointer() {
+  if (!state.hunterActive || !state.hunterSnake[0]) return;
+  const w = canvas.width, h = canvas.height;
+  const cabeca = state.hunterSnake[0];
+  const hx = sx(cabeca.x) + cell / 2, hy = sy(cabeca.y) + cell / 2;
+  const margem = cell * 0.6;
+  if (hx >= margem && hx <= w - margem && hy >= margem && hy <= h - margem) return; // já aparece na tela
+
+  // Ponto da borda (com uma folga) onde a linha do centro da tela até a caçadora cruza
+  const folga = cell * 1.5;
+  const dx = hx - w / 2, dy = hy - h / 2;
+  const escala = Math.min((w / 2 - folga) / Math.max(Math.abs(dx), 1e-6), (h / 2 - folga) / Math.max(Math.abs(dy), 1e-6));
+  let px = w / 2 + dx * escala, py = h / 2 + dy * escala;
+
+  // Não fica em cima do minimapa (canto de cima à direita): se cair ali, desce um pouquinho
+  const mmW = Math.min(150, w * 0.34), mmH = mmW * (state.mapH / state.mapW);
+  if (px > w - mmW - 14 - folga * 0.5 && py < 14 + mmH + folga * 0.5) py = 14 + mmH + folga;
+
+  // Distância até a SUA minhoca (ou até o centro da tela, se você estiver morto)
+  const eu = state.alive[mySlot] ? state.snakes[mySlot]?.[0] : null;
+  const distancia = Math.round(eu ? Math.hypot(eu.x - cabeca.x, eu.y - cabeca.y) : Math.hypot(dx, dy) / cell);
+
+  const angulo = Math.atan2(hy - py, hx - px);
+  const pulso = 0.5 + 0.5 * Math.sin(Date.now() / (60 + Math.min(distancia, 40) * 7)); // mais perto = pulsa mais rápido
+  const s = cell * (0.75 + pulso * 0.2);
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.rotate(angulo);
+  ctx.shadowColor = '#ff2222';
+  ctx.shadowBlur = cell * (0.6 + pulso * 0.6);
+  ctx.fillStyle = `rgba(255,50,50,${(0.75 + pulso * 0.25).toFixed(2)})`;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = Math.max(1, cell * 0.06);
+  ctx.beginPath();
+  ctx.moveTo(s, 0);
+  ctx.lineTo(-s * 0.6, s * 0.7);
+  ctx.lineTo(-s * 0.25, 0);
+  ctx.lineTo(-s * 0.6, -s * 0.7);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+
+  // Texto com a distância, um pouco pra dentro da tela (sem girar junto com a seta)
+  ctx.save();
+  ctx.font = `bold ${Math.round(cell * 0.6)}px system-ui`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(`☠️ ${distancia}`, px - Math.cos(angulo) * cell * 1.7, py - Math.sin(angulo) * cell * 1.7);
+  ctx.restore();
+}
+
 // Batimento cardíaco (melhoria #6) — quanto mais perto a caçadora, mais rápido bate.
 // Toca daqui porque o render roda tanto no anfitrião quanto nos celulares.
 let ultimoBatimentoEm = 0;
@@ -765,6 +846,15 @@ export function renderScores() {
     const typeIcon = state.types[i] === 'cpu' ? '🤖' : '🧑';
     const nameStyle = (i === 0 && state.nameColor && state.nameColor !== 'auto') ? ` style="color:${state.nameColor}"` : '';
     h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} ${typeIcon} <b${nameStyle}>${label(i)}</b>${youBadge}${sinalBadge}${leader}${recordBadge}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
+  }
+  // Placar somado dos times: quem está ganhando de relance (o de cima, em dourado)
+  if (state.teamMode && state.count > 1) {
+    const total = [0, 0];
+    for (let i = 0; i < state.count; i++) total[state.teams[i] === 1 ? 1 : 0] += state.scores[i] || 0;
+    const lider = total[0] === total[1] ? -1 : (total[0] > total[1] ? 0 : 1);
+    const cor = (t) => (lider === t ? '#ffd24d' : '#ffffff');
+    const borda = lider === -1 ? '#8aa0c8' : (lider === 0 ? '#63b3ff' : '#ff5577');
+    h = `<div class="score teamTotal" style="border-color:${borda}">🔵 Azul <b style="color:${cor(0)}">${total[0]}</b> × <b style="color:${cor(1)}">${total[1]}</b> Vermelho 🔴${lider === -1 ? ' • empate' : ''}</div>` + h;
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
@@ -973,6 +1063,8 @@ export function draw() {
     ctx.arc(cx + fx - px, cy + fy - py, cell * 0.1, 0, Math.PI * 2);
     ctx.fill();
 
+    if (state.teamMode && state.count > 1) desenharMarcadorDeTime(state.teams[i] === 1 ? 1 : 0, sx(h.x) + cell * 0.92, sy(h.y) + cell * 0.1);
+
     if (state.show[i] && (i === 0 || state.showOthers)) {
       ctx.fillStyle = '#fff';
       ctx.font = `bold ${cell * 0.6}px system-ui`;
@@ -1008,6 +1100,7 @@ export function draw() {
     ctx.restore();
   }
 
+  drawHunterPointer(); // setinha na borda quando a caçadora está fora da tela
   drawHunterVignette(); // melhoria #3 — borda vermelha quando a caçadora tá perto de você
   tocarBatimentoSePerto(); // melhoria #6 — batimento acelerando conforme ela se aproxima
   drawMinimap();
