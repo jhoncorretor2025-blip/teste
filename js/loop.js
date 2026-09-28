@@ -212,6 +212,13 @@ export function startGame() {
   if (isOnline()) announceAchievement(unlockAchievement('social'));
 
   reset();
+  // Aviso do tamanho do mapa logo que a partida começa — trocar de mapa quase não muda o que
+  // se vê na tela (a câmera mostra sempre uma "janelinha"), então o jogo avisa qual é o mapa
+  const NOME_DO_MAPA = { small: 'Pequeno', medium: 'Médio', large: 'Grande' };
+  const cabecaInicial = state.snakes[mySlot]?.[0];
+  if (cabecaInicial) {
+    state.toast = { x: cabecaInicial.x, y: cabecaInicial.y, text: `🗺️ Mapa ${NOME_DO_MAPA[state.mapSize] || ''} — ${state.mapW}×${state.mapH}`, color: '#8fd3ff', until: Date.now() + 5200 };
+  }
   switchScreen('menu', 'game');
   $('overlay').classList.add('hidden');
   $('badge').textContent = (state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO') + (state.noWalls ? ' 🌀' : '');
