@@ -96,6 +96,12 @@ export function reset() {
   state.hunterMilestoneIndex = 0;
   state.streakBonusActive = false;
   state.streakBonusNextAt = 0;
+  state.hunterBurstUntil = 0;
+  state.hunterNextBurstAt = 0;
+  state.hunterDistractedUntil = 0;
+  state.hunterDistractedTarget = -1;
+  state.hunterNearMiss = Array(6).fill(false);
+  state.hunterCloseToAnyone = false;
   state.boostUsedCount = Array(6).fill(0);
   state.lastTurnAt = Array(6).fill(Date.now());
   for (let i = 0; i < state.count; i++) spawn(i);
@@ -550,6 +556,11 @@ function spawnHunter(durationSec) {
   state.hunterDir = { x: 1, y: 0 };
   state.hunterActive = true;
   state.hunterEndsAt = Date.now() + durationSec * 1000;
+  state.hunterBurstUntil = 0;
+  state.hunterNextBurstAt = Date.now() + 5000; // primeira rajada só depois de uns 5s, dá tempo de reagir
+  state.hunterDistractedUntil = 0;
+  state.hunterDistractedTarget = -1;
+  state.hunterNearMiss = Array(6).fill(false);
   state.toast = { x: p.x, y: p.y, text: '☠️ Minhoca Caçadora apareceu!', color: '#ff2222', until: Date.now() + 2800 };
   sfx.hunterArrives();
   vibrate([40, 60, 40, 60, 40]);
@@ -557,12 +568,17 @@ function spawnHunter(durationSec) {
 
 // Move a Minhoca Caçadora um passo em direção a quem tá liderando agora (o alvo pode
 // mudar no meio da perseguição, se outra pessoa assumir a liderança), e mata quem tocar
-function updateHunter() {
+const RAIO_DISTRACAO = 6; // células de distância — turbo perto o suficiente pra "chamar atenção"
+const DURACAO_DISTRACAO_MS = 3000;
+const DURACAO_RAJADA_MS = 2500;
+const INTERVALO_ENTRE_RAJADAS_MS = 8000;
+export function updateHunter() {
   if (!state.hunterActive) return;
   if (Date.now() >= state.hunterEndsAt) {
     state.hunterActive = false;
     if (!state.hunterVictims.has(mySlot)) announceAchievement(unlockAchievement('hunter_escape'));
     state.hunterSnake = [];
+    state.hunterCloseToAnyone = false;
     // Depois que a Minhoca Caçadora vai embora, confere se o líder abriu uma vantagem
     // grande (25+ comidinhas) sobre o segundo colocado — se sim, liga a "comida de
     // sequência vencedora": uma comidinha especial valendo 10 pontos, aparecendo a
@@ -571,20 +587,98 @@ function updateHunter() {
     return;
   }
 
-  const { leaderIdx } = findFoodLeader();
   const head = state.hunterSnake[0];
-  const target = leaderIdx !== -1 ? state.snakes[leaderIdx][0] : null;
-  state.hunterDir = hunterDir(head, state.hunterDir, target);
 
-  const newHead = { x: head.x + state.hunterDir.x, y: head.y + state.hunterDir.y };
-  state.hunterSnake.unshift(newHead);
-  state.hunterSnake.pop(); // tamanho fixo, ela não cresce
+  // Melhoria #8 — Distração: se alguém usar o turbo perto o suficiente da caçadora
+  // (e não for ela quem já tá perseguindo), ela muda de alvo por alguns segundos —
+  // dá pra jogar em equipe, um "distraindo" ela pra proteger quem tá na mira
+  if (Date.now() >= state.hunterDistractedUntil) {
+    for (let i = 0; i < state.count; i++) {
+      if (!state.alive[i] || !state.boosting[i]) continue;
+      const h = state.snakes[i][0];
+      if (Math.abs(h.x - head.x) + Math.abs(h.y - head.y) <= RAIO_DISTRACAO) {
+        state.hunterDistractedTarget = i;
+        state.hunterDistractedUntil = Date.now() + DURACAO_DISTRACAO_MS;
+        break;
+      }
+    }
+  }
+
+  const distraida = Date.now() < state.hunterDistractedUntil && state.alive[state.hunterDistractedTarget];
+  const { leaderIdx } = findFoodLeader();
+  const alvoIdx = distraida ? state.hunterDistractedTarget : leaderIdx;
+  const alvoSnake = alvoIdx !== -1 && state.alive[alvoIdx] ? state.snakes[alvoIdx] : null;
+
+  // Melhoria #5 — Corta caminho: em vez de mirar só onde o alvo ESTÁ agora, mira um
+  // pouco à frente de pra onde ele tá indo, "cortando caminho" como um caçador de
+  // verdade faria, ficando mais difícil de despistar
+  let target = null;
+  if (alvoSnake) {
+    const alvoHead = alvoSnake[0];
+    const alvoDir = state.dirs[alvoIdx] || { x: 0, y: 0 };
+    const PASSOS_DE_PREVISAO = 3;
+    target = { x: alvoHead.x + alvoDir.x * PASSOS_DE_PREVISAO, y: alvoHead.y + alvoDir.y * PASSOS_DE_PREVISAO };
+  }
+
+  // Melhoria #4 — Rajada de velocidade: de vez em quando, anda 2 passos no lugar de 1
+  // por alguns segundos, deixando a perseguição mais imprevisível
+  if (!state.hunterBurstUntil && Date.now() >= state.hunterNextBurstAt) {
+    state.hunterBurstUntil = Date.now() + DURACAO_RAJADA_MS;
+  }
+  if (state.hunterBurstUntil && Date.now() >= state.hunterBurstUntil) {
+    state.hunterBurstUntil = 0;
+    state.hunterNextBurstAt = Date.now() + INTERVALO_ENTRE_RAJADAS_MS;
+  }
+  const passosNesseInstante = state.hunterBurstUntil ? 2 : 1;
+
+  for (let passo = 0; passo < passosNesseInstante; passo++) {
+    const h = state.hunterSnake[0];
+    state.hunterDir = hunterDir(h, state.hunterDir, target);
+    const newHead = { x: h.x + state.hunterDir.x, y: h.y + state.hunterDir.y };
+    state.hunterSnake.unshift(newHead);
+    state.hunterSnake.pop(); // tamanho fixo (a não ser que tenha crescido por uma vítima)
+  }
 
   // É invencível — ninguém a machuca, mas ela mata (sem dó) quem ela tocar
   for (let i = 0; i < state.count; i++) {
     if (!state.alive[i]) continue;
     const h = state.snakes[i][0];
-    if (state.hunterSnake.some((p) => p.x === h.x && p.y === h.y)) kill(i);
+    const tocou = state.hunterSnake.some((p) => p.x === h.x && p.y === h.y);
+    const distancia = Math.abs(h.x - state.hunterSnake[0].x) + Math.abs(h.y - state.hunterSnake[0].y);
+
+    if (tocou) {
+      // Melhoria #7 — Cresce a cada vítima: fica maior (e mais ameaçadora) a cada
+      // pessoa que ela pega durante a mesma aparição
+      for (let n = 0; n < 8; n++) {
+        const ultimo = state.hunterSnake[state.hunterSnake.length - 1];
+        state.hunterSnake.push({ ...ultimo });
+      }
+      kill(i);
+    } else {
+      // Melhoria #9 — Fuga por pouco: se chegou a ficar bem coladinho (1 célula) na
+      // caçadora e escapou vivo, ganha uma pontuação bônus de "escapada por pouco"
+      if (distancia === 1) {
+        state.hunterNearMiss[i] = true; // ficou colado nela — se escapar, vale o bônus
+      } else if (distancia > 2 && state.hunterNearMiss[i]) {
+        // Já se afastou vivo depois do susto: agora sim, ganha o bônus (e pode valer de novo depois)
+        state.hunterNearMiss[i] = false;
+        state.scores[i] += 3;
+        state.toast = { x: h.x, y: h.y, text: `😅 ${state.names[i] || 'Alguém'} escapou por pouco! +3`, color: '#4dd4ff', until: Date.now() + 1400 };
+      }
+    }
+  }
+
+  // Melhoria #10 — Aviso no minimapa: liga uma "bandeira" simples de "tem gente perto
+  // dela agora" (o desenho do minimapa usa isso pra piscar em vermelho)
+  const RAIO_PERIGO_MINIMAPA = 5;
+  state.hunterCloseToAnyone = false;
+  for (let i = 0; i < state.count; i++) {
+    if (!state.alive[i]) continue;
+    const h = state.snakes[i][0];
+    if (Math.abs(h.x - state.hunterSnake[0].x) + Math.abs(h.y - state.hunterSnake[0].y) <= RAIO_PERIGO_MINIMAPA) {
+      state.hunterCloseToAnyone = true;
+      break;
+    }
   }
 }
 
