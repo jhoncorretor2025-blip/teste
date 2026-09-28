@@ -70,6 +70,16 @@ Renomear uma chave `*_KEY` do `storage.js` "apaga" o que estava salvo. → Nunca
 
 **22. `state` tem arrays de 6 posições.** Novo dado por jogador precisa de um array de 6 no `state.js` e ser resetado em `reset()` (`loop.js`).
 
+## Legibilidade e histórico
+**23. Mexer no CSS quebra o visual sem ninguém perceber.**
+Causa: o `css/style.css` estava minificado — 56 linhas, uma delas com 13.642 caracteres. Editar no meio de uma linha assim é arriscado (para IA e para gente). → `python3 tools/formatar-css.py css/style.css` deixa uma declaração por linha e **garante** que o conteúdo é idêntico (confere sem espaços antes e depois; se não bater, não grava). O verificador reprova linhas com mais de 400 caracteres (exceto imagens embutidas `data:`).
+
+**24. O `git log` não conta o que foi feito.**
+Nas versões antigas, cada arquivo enviado virou um commit com a mesma mensagem: 686 commits, dos quais só umas 110 versões diferentes. → Leia o `CHANGELOG.md` (reconstruído desse histórico) e, ao publicar, use `tools/publicar.py` (um commit só, com mensagem que diz o que mudou).
+
+**25. A próxima IA não sabe o que já foi feito nem por quê, e refaz ou desfaz.**
+→ Registro obrigatório: `CHANGELOG.md` (feito), `docs/DECISOES.md` (por quê) e `docs/PENDENCIAS.md` (falta). O `bump-versao.py` e o verificador cobram o CHANGELOG.
+
 ---
 
 # Problema em aberto: multiplayer real no celular

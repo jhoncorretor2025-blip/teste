@@ -5,8 +5,13 @@ Por que existe: a versão vive em js/config.js, version.txt, sw.js (nome do cach
 Esquecer UM deles já causou cache velho e problemas de atualização. `version.txt` é o que faz
 os aparelhos já abertos se atualizarem sozinhos — então SÓ troque a versão quando o
 comportamento do jogo mudou (mudança só de docs/tests/tools não precisa de versão nova).
+
+Também cuida do CHANGELOG.md: move o que estiver em "## [Não lançado]" para a versão nova (com a
+data de hoje). Se "Não lançado" estiver vazio, deixa o lembrete "(descreva o que mudou nesta versão)"
+— e o verificar-projeto.py reprova enquanto ele estiver lá.
 """
 import re, sys
+from datetime import date
 from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 
@@ -29,4 +34,25 @@ troca('js/config.js', rf"(VERSION\s*=\s*')({re.escape(velha)})(')", rf"\g<1>{nov
 troca('sw.js', rf"(snake-arena-v){re.escape(velha)}", rf"\g<1>{nova}")
 troca('index.html', rf"(?<![\d.@]){re.escape(velha)}(?![\d.])", nova)
 (RAIZ / 'version.txt').write_text(nova, encoding='utf-8'); print('  version.txt: reescrito (sem quebra de linha no fim)')
+
+
+def atualizar_changelog(nova):
+    p = RAIZ / 'CHANGELOG.md'
+    if not p.exists():
+        print('  ⚠️  CHANGELOG.md não existe — registre a versão na mão.'); return
+    t = p.read_text(encoding='utf-8')
+    if re.search(rf'^## \[{re.escape(nova)}\]', t, re.M):
+        print(f'  CHANGELOG.md: já existe uma entrada da {nova} — não mexi.'); return
+    m = re.search(r'^## \[Não lançado\][^\n]*\n(.*?)(?=^## \[)', t, re.S | re.M)
+    if not m:
+        print('  ⚠️  não achei a seção "## [Não lançado]" no CHANGELOG.md — acrescente a entrada da versão na mão.'); return
+    util = [l for l in m.group(1).split('\n') if l.strip() and not l.strip().startswith('*(') and l.strip() != '_(nada por enquanto)_']
+    corpo = '\n'.join(util) if util else '- (descreva o que mudou nesta versão)'
+    secao_nova = f'## [{nova}] — {date.today().isoformat()}\n{corpo}\n\n'
+    reset = '## [Não lançado]\n*(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*\n_(nada por enquanto)_\n\n'
+    p.write_text(t[:m.start()] + reset + secao_nova + t[m.end():], encoding='utf-8')
+    print(f'  CHANGELOG.md: "Não lançado" movido para a versão {nova}' + ('' if util else ' — ⚠️ estava vazio: PREENCHA o lembrete antes de publicar'))
+
+
+atualizar_changelog(nova)
 print(f'✅ {velha} → {nova}. Agora rode: python3 tools/verificar-projeto.py')

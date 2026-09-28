@@ -105,7 +105,7 @@ for nome, sel in (('BOARD_THEMES', 'boardTheme'), ('MAP_SIZES', 'mapSize')):
 ok('temas e mapas iguais nos dois lugares') if not diferencas else falha('; '.join(diferencas), 'São duas listas separadas: tema novo precisa entrar na config E como <option> no HTML.')
 
 print('10) O que os guias citam existe de verdade no código')
-GUIAS = ['AGENTS.md', 'docs/ARQUITETURA.md', 'docs/PROTOCOLO-ONLINE.md', 'docs/ARMADILHAS.md']
+GUIAS = ['AGENTS.md', 'docs/ARQUITETURA.md', 'docs/PROTOCOLO-ONLINE.md', 'docs/ARMADILHAS.md', 'docs/DECISOES.md', 'docs/PENDENCIAS.md']
 EXTENSOES = r'\.(js|mjs|py|md|html|css|txt|json|webmanifest|svg)$'
 CITADOS_DE_PROPOSITO = {'js/hunter.js', 'hunter.js'}  # arquivo apagado, citado só pra avisar que não existe mais
 LIVRES = {'npm', 'node', 'python3', 'true', 'false', 'null', 'main', 'http'}  # palavras comuns que não são nomes do código
@@ -128,6 +128,21 @@ for guia in GUIAS:
 ok('todo arquivo, função e constante citados nos guias existem') if not inexistentes else falha(
     f'{len(inexistentes)} citação(ões) sem correspondente no código: {inexistentes[:8]}',
     'O guia está falando de algo que não existe mais (ou foi renomeado). Corrija o guia — documentação errada é pior que nenhuma.')
+
+print('11) Memória do projeto: CHANGELOG com a versão atual, decisões e pendências')
+problemas = []
+for arq in ('CHANGELOG.md', 'docs/DECISOES.md', 'docs/PENDENCIAS.md'):
+    if not (RAIZ / arq).exists(): problemas.append(f'falta {arq}')
+if (RAIZ / 'CHANGELOG.md').exists():
+    log = ler('CHANGELOG.md')
+    if not re.search(r'^## \[%s\]' % re.escape(versao), log, re.M): problemas.append(f'o CHANGELOG.md não tem "## [{versao}]" (a versão atual)')
+    if not re.search(r'^## \[Não lançado\]', log, re.M): problemas.append('o CHANGELOG.md não tem a seção "## [Não lançado]"')
+    if re.search(r'^\s*- \(descreva o que mudou', log, re.M): problemas.append('sobrou o lembrete "(descreva o que mudou…)" no CHANGELOG.md — preencha')
+ok('CHANGELOG tem a versão atual; decisões e pendências existem') if not problemas else falha('; '.join(problemas), 'Registre o que mudou em CHANGELOG.md → "Não lançado" (o bump-versao.py move pra versão nova). Sem esse registro, a próxima IA não sabe o que já foi feito.')
+
+print('12) CSS legível (sem linhas gigantes)')
+ruins_css = [(k + 1, len(l)) for k, l in enumerate(ler('css/style.css').split('\n')) if len(l) > 400 and 'data:' not in l]
+ok('nenhuma linha do CSS passa de 400 caracteres') if not ruins_css else falha(f'{len(ruins_css)} linha(s) gigante(s) em css/style.css: {ruins_css[:4]}', 'Rode `python3 tools/formatar-css.py css/style.css` — editar no meio de uma linha enorme é o jeito mais fácil de quebrar o visual.')
 
 print()
 if falhas:

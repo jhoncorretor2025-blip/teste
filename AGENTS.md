@@ -8,12 +8,13 @@
 - É um **site estático**: HTML + CSS + JavaScript (módulos ES). **Sem build, sem framework, sem servidor nosso.** O online é ponto a ponto (PeerJS/WebRTC, carregado de um CDN).
 - **Idioma: português do Brasil em tudo** (textos da tela, comentários no código, mensagens de commit). Quem mantém o projeto **não é programador**: explique o que fez em linguagem simples.
 
-## Comece por aqui (5 passos)
-1. Leia este arquivo e `docs/MAPA-DO-CODIGO.md` (mapa **gerado** do código — sempre em dia).
-2. Ache o lugar certo na tabela **"Onde mexer"** abaixo (e leia `docs/ARMADILHAS.md` se for mexer em rede, cache ou versão).
+## Comece por aqui (6 passos)
+1. Leia este arquivo, o **topo do `CHANGELOG.md`** (o que já foi feito) e `docs/PENDENCIAS.md` (o que falta). Depois o `docs/MAPA-DO-CODIGO.md` (mapa **gerado** do código, sempre em dia).
+2. Ache o lugar certo na tabela **"Onde mexer"** abaixo. Algo parece estranho? Leia `docs/DECISOES.md` antes de mudar (pode ser de propósito) e `docs/ARMADILHAS.md` se for mexer em rede, cache ou versão.
 3. Faça a mudança pequena e clara.
 4. Rode `npm run verificar` e `npm test` (faça `npm install` uma vez antes).
-5. Publique com `tools/publicar.py` — **um commit só** (veja "Publicar").
+5. **Registre o que fez** (veja "Registrar o que você fez", abaixo).
+6. Publique com `tools/publicar.py` — **um commit só** (veja "Publicar").
 
 ## Comandos
 | Para... | Comando |
@@ -23,7 +24,8 @@
 | Verificar o projeto antes de publicar | `npm run verificar` (= `python3 tools/verificar-projeto.py`) |
 | Rodar todos os testes | `npm test` (= `node tests/rodar-tudo.mjs`, leva cerca de meio minuto) |
 | Atualizar o mapa do código | `npm run mapa` (= `python3 tools/gerar-mapa.py`) |
-| Trocar a versão nos 4 lugares | `python3 tools/bump-versao.py 2.84.0` |
+| Trocar a versão nos 4 lugares (e mover o "Não lançado" do CHANGELOG para a versão nova) | `python3 tools/bump-versao.py 2.84.0` |
+| Deixar o CSS legível (uma declaração por linha, sem mudar o visual) | `python3 tools/formatar-css.py css/style.css` |
 | Publicar | `GITHUB_TOKEN=... python3 tools/publicar.py --mensagem "o que mudou" --enviar` (sem `--enviar` só mostra o que faria) |
 
 ## Estrutura de pastas
@@ -34,7 +36,9 @@ js/                     o código — main.js é o ÚNICO carregado pelo HTML; e
 sw.js                   service worker: modo offline + cache (tem a lista ASSETS — veja armadilhas)
 version.txt             número da versão; o jogo consulta e se atualiza sozinho nos aparelhos abertos
 manifest.webmanifest    app instalável (ícone, atalhos)   ·   icon.svg   o ícone
-docs/                   guias: MAPA-DO-CODIGO (gerado), ARQUITETURA, PROTOCOLO-ONLINE, ARMADILHAS, PADRAO-PARA-NOVOS-SITES
+CHANGELOG.md           o que JÁ FOI FEITO, versão por versão (a memória do projeto)
+docs/                   guias: MAPA-DO-CODIGO (gerado), ARQUITETURA, PROTOCOLO-ONLINE, ARMADILHAS,
+                        DECISOES (por que é assim), PENDENCIAS (o que falta), PADRAO-PARA-NOVOS-SITES
 tools/                  verificar-projeto, bump-versao, gerar-mapa, publicar
 tests/                  testes automáticos (jsdom, sem navegador de verdade); _ambiente.mjs é a base pra escrever novos
 package.json            só pra rodar os testes
@@ -77,12 +81,21 @@ package.json            só pra rodar os testes
 - Mudou o jeito de o jogo se comportar? **Troque a versão** (`tools/bump-versao.py`). Mudou só docs/tests/tools? **Não** troque (a versão nova faz todo aparelho aberto recarregar).
 - Não edite à mão o `docs/MAPA-DO-CODIGO.md` (é gerado).
 
+## Registrar o que você fez (obrigatório)
+Este projeto é mexido por várias IAs, uma depois da outra. O que evita retrabalho e desfazer coisas sem querer é o **registro**:
+- **`CHANGELOG.md` → "Não lançado":** o que mudou, em português simples, e o **porquê** quando não for óbvio. Vale para **qualquer** mudança (até só documentação).
+- **`docs/DECISOES.md`:** tomou ou mudou uma decisão? Escreva o quê, por quê e o que cuidar.
+- **`docs/PENDENCIAS.md`:** terminou algo de lá? **Apague o item.** Deixou algo pela metade ou achou um problema? Acrescente, com o que já foi tentado.
+- **`docs/ARMADILHAS.md`:** caiu numa armadilha nova? Acrescente (sintoma → causa → como evitar).
+- Trocou a versão? O `bump-versao.py` move o "Não lançado" para a versão nova e o verificador **reprova** se a versão atual não tiver entrada no CHANGELOG.
+
 ## Antes de publicar (checklist)
 1. `npm run mapa` (se mexeu em módulos ou no state).
 2. `npm run verificar` → tem que dar ✅.
 3. `npm test` → tem que dar ✅. Se mexeu em rede, teste também com **dois aparelhos de verdade** (o teste simula a rede; não substitui aparelho real).
 4. Módulo novo? Coloque em `ASSETS` no `sw.js` e cite em `AGENTS.md` (o verificador confere).
-5. Publique com `tools/publicar.py` e confira o resultado pela **API** do GitHub (o endereço `raw.githubusercontent.com` guarda cache e mostra versão velha por um tempo).
+5. **Registrou** no `CHANGELOG.md` (e em decisões/pendências, se for o caso)?
+6. Publique com `tools/publicar.py` e confira o resultado pela **API** do GitHub (o endereço `raw.githubusercontent.com` guarda cache e mostra versão velha por um tempo).
 
 ## Publicar
 O `tools/publicar.py` manda **todas** as mudanças num **único commit** (evita a enxurrada de builds do Pages, em que os intermediários dão "errored" — só o último importa). Ele precisa de um token do GitHub: peça ao dono para criar um *fine-grained token* com **Contents: Read and write** só neste repositório, e passe pela variável `GITHUB_TOKEN`. **Jamais grave o token em arquivo, commit ou mensagem** — o repositório é público (o verificador procura tokens e reprova).
@@ -96,6 +109,8 @@ O `tools/publicar.py` manda **todas** as mudanças num **único commit** (evita 
 6. `catch {}` vazio já escondeu erros de envio de rede; o painel 🩺 (diagnóstico) existe por causa disso.
 7. Testes com dois participantes exigem **cópias isoladas** do jogo (módulos usam `document` global).
 8. Código morto engana: tudo em `js/` precisa ser importado por alguém (o verificador confere).
+9. CSS com linhas gigantes: o `css/style.css` chegou a ter linhas de 13 mil caracteres; mantenha legível (`tools/formatar-css.py`, o verificador confere).
+10. O histórico do Git é ilegível (centenas de commits repetidos, um por arquivo, nas versões antigas): a memória do projeto é o `CHANGELOG.md`, não o `git log`.
 
 ## Problema em aberto
 O multiplayer **real** no celular ainda tem um bug sem causa confirmada (o celular do amigo não recebe os dados do jogo, embora o ping funcione). Está descrito, com o que já foi tentado, no fim de `docs/ARMADILHAS.md`. Se for investigar, comece pelo painel 🩺.

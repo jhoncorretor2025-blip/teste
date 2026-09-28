@@ -12,7 +12,7 @@ python3 -m http.server 8000
 (Não abre dando duplo clique no `index.html`: o navegador bloqueia módulos ES em arquivo local.)
 
 ## Para quem vai mexer no código (pessoa ou IA)
-Comece pelo **[AGENTS.md](AGENTS.md)**: ele explica a estrutura, onde mexer em cada coisa, como testar e como publicar. Também há guias em [`docs/`](docs/) — incluindo o **[padrão para usar em outros sites](docs/PADRAO-PARA-NOVOS-SITES.md)**.
+Comece pelo **[AGENTS.md](AGENTS.md)**: ele explica a estrutura, onde mexer em cada coisa, como testar e como publicar. Para saber **o que já foi feito**, veja o **[CHANGELOG.md](CHANGELOG.md)**; o que falta está em [`docs/PENDENCIAS.md`](docs/PENDENCIAS.md) e os porquês em [`docs/DECISOES.md`](docs/DECISOES.md). Também há guias em [`docs/`](docs/) — incluindo o **[padrão para usar em outros sites](docs/PADRAO-PARA-NOVOS-SITES.md)**.
 
 - Verificar o projeto: `npm run verificar`
 - Rodar os testes: `npm install` e depois `npm test`

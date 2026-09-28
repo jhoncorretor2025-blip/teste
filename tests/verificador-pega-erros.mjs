@@ -40,6 +40,10 @@ const CASOS = [
   [9, 'tema na config sem <option> no HTML', (d) => gravar(d, 'index.html', ler(d, 'index.html').replace(/<option value="garden">[^<]*<\/option>/, ''))],
   [9, 'tamanho de mapa no HTML que a config não tem', (d) => gravar(d, 'index.html', ler(d, 'index.html').replace('<option value="large">', '<option value="gigante">Gigante</option><option value="large">'))],
   [10, 'guia cita uma função que não existe', (d) => gravar(d, 'AGENTS.md', ler(d, 'AGENTS.md') + '\nMexa em `funcaoQueNaoExiste` para isso.\n')],
+  [11, 'versão atual sem entrada no CHANGELOG', (d) => { const v = ler(d, 'js/config.js').match(/VERSION = '([^']+)'/)[1]; gravar(d, 'CHANGELOG.md', ler(d, 'CHANGELOG.md').replace(`## [${v}]`, '## [0.0.1]')); }],
+  [11, 'lembrete "(descreva o que mudou…)" esquecido no CHANGELOG', (d) => gravar(d, 'CHANGELOG.md', ler(d, 'CHANGELOG.md').replace('## [Não lançado]', '## [Não lançado]\n- (descreva o que mudou nesta versão)'))],
+  [11, 'docs/PENDENCIAS.md apagado', (d) => fs.rmSync(path.join(d, 'docs/PENDENCIAS.md'))],
+  [12, 'linha gigante (minificada) no CSS', (d) => gravar(d, 'css/style.css', ler(d, 'css/style.css') + '\n.gigante{' + 'margin:0;'.repeat(80) + '}\n')],
   [10, 'guia cita um arquivo que não existe', (d) => gravar(d, 'AGENTS.md', ler(d, 'AGENTS.md') + '\nVeja `js/fantasma.js`.\n')],
 ];
 

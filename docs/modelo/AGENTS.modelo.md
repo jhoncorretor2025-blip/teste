@@ -11,7 +11,7 @@
 - **Idioma:** português do Brasil em tudo (textos, comentários, commits). Quem mantém **não é programador**: explique em linguagem simples.
 
 ## Comece por aqui
-1. Leia este arquivo e o mapa do código ([`docs/MAPA-DO-CODIGO.md`], se existir).
+1. Leia este arquivo, o **topo do `CHANGELOG.md`** (o que já foi feito) e `docs/PENDENCIAS.md` (o que falta), e o mapa do código ([`docs/MAPA-DO-CODIGO.md`], se existir).
 2. Ache o lugar certo em **"Onde mexer"**.
 3. Faça mudanças pequenas.
 4. Rode a verificação e os testes: **[COMANDOS]**.
@@ -50,8 +50,14 @@
 - [ex: comentários em português explicando o PORQUÊ; um arquivo por assunto; comentário no topo de cada arquivo]
 - Funcionalidade nova → teste novo. Bug corrigido → teste que **falharia** sem a correção.
 
+## Registrar o que você fez (obrigatório)
+- **`CHANGELOG.md` → "Não lançado":** o que mudou, em português simples, e o **porquê** quando não for óbvio.
+- **`docs/DECISOES.md`:** decisão tomada ou mudada: o quê, por quê, o que cuidar.
+- **`docs/PENDENCIAS.md`:** terminou algo? Apague. Deixou algo pela metade? Acrescente, com o que já foi tentado.
+- **`docs/ARMADILHAS.md`:** armadilha nova: sintoma → causa → como evitar.
+
 ## Antes de publicar (checklist)
-1. [verificação] → ✅   2. [testes] → ✅   3. [outros passos específicos do site]   4. Publicar e **conferir o resultado pela API** (não por endereços com cache).
+1. [verificação] → ✅   2. [testes] → ✅   3. [outros passos específicos do site]   4. **Registrou** no CHANGELOG (e em decisões/pendências)?   5. Publicar e **conferir o resultado pela API** (não por endereços com cache).
 
 ## Armadilhas
 Veja `docs/ARMADILHAS.md`. Ao cair numa armadilha nova, **acrescente lá**.
