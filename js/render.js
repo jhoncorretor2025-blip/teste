@@ -15,6 +15,7 @@ import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS, BOARD_THEMES, MILESTONE_STEP } f
 import { state } from './state.js';
 import { label } from './players.js';
 import { mySlot, isOnline, isHost, sendDiag, pingStats, hostLatency } from './net.js';
+import { sfx } from './sound.js';
 
 const canvas = $('arenaCanvas');
 let wasNearEdge = false; // controla a vibração de aviso de borda, só dispara uma vez
@@ -423,13 +424,97 @@ function drawHunter() {
     ctx.lineWidth = Math.max(1, cell * 0.05);
     ctx.stroke();
   }
-  // Caveirinha na cabeça, pra ficar claro que é perigosa
-  const head = state.hunterSnake[0];
-  ctx.font = `${Math.round(cell * 0.75)}px sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('💀', sx(head.x) + cell / 2, sy(head.y) + cell / 2);
   ctx.restore();
+
+  // Rastro de fumaça escura (melhoria #2) — desenhado direto a partir do corpo, sem
+  // depender de partículas (que só existem no anfitrião), então todo mundo vê igual.
+  // As últimas partes do corpo soltam "fiapos" escuros que sobem e vão sumindo.
+  const agora = Date.now();
+  const inicioFumaca = Math.max(1, state.hunterSnake.length - 14);
+  for (let k = inicioFumaca; k < state.hunterSnake.length; k++) {
+    const p = state.hunterSnake[k];
+    const idade = (k - inicioFumaca) / Math.max(1, state.hunterSnake.length - inicioFumaca); // 0 = perto do corpo, 1 = ponta
+    const balanco = Math.sin(agora / 260 + k * 1.7);
+    const fx = sx(p.x) + cell / 2 + balanco * cell * 0.25;
+    const fy = sy(p.y) + cell / 2 - idade * cell * 0.9 - ((agora / 90 + k * 3) % 6) * cell * 0.05;
+    ctx.save();
+    ctx.globalAlpha = 0.34 * (1 - idade * 0.7);
+    ctx.fillStyle = '#0b0b0f';
+    ctx.beginPath();
+    ctx.arc(fx, fy, cell * (0.28 + idade * 0.32), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Olhos vermelhos brilhantes e pulsantes na cabeça (melhoria #1) — bem mais
+  // reconhecível de longe do que a caveirinha de antes. A direção vem da posição da
+  // cabeça em relação ao segundo segmento, pra funcionar igual no celular.
+  const head = state.hunterSnake[0];
+  const neck = state.hunterSnake[1] || { x: head.x - 1, y: head.y };
+  let dx = Math.sign(head.x - neck.x), dy = Math.sign(head.y - neck.y);
+  if (!dx && !dy) dx = 1;
+  const hx = sx(head.x) + cell / 2, hy = sy(head.y) + cell / 2;
+  const perpX = -dy, perpY = dx; // perpendicular à direção do movimento
+  const olhoBrilho = 0.55 + pulse * 0.45;
+  ctx.save();
+  ctx.shadowColor = '#ff0000';
+  ctx.shadowBlur = cell * (0.8 + pulse * 0.9);
+  for (const lado of [-1, 1]) {
+    const ox = hx + dx * cell * 0.12 + perpX * lado * cell * 0.22;
+    const oy = hy + dy * cell * 0.12 + perpY * lado * cell * 0.22;
+    ctx.fillStyle = `rgba(255,${Math.round(30 + pulse * 40)},${Math.round(30 + pulse * 20)},${olhoBrilho})`;
+    ctx.beginPath();
+    ctx.arc(ox, oy, cell * (0.15 + pulse * 0.05), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff'; // pontinho de brilho no centro
+    ctx.beginPath();
+    ctx.arc(ox, oy, cell * 0.05, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Distância (em células) entre a cabeça da minhoca do jogador local e a cabeça da
+// Minhoca Caçadora — usada pela vinheta e pelo batimento. Calculada aqui, a partir do
+// que já é transmitido pra todo mundo, pra funcionar igual no anfitrião e nos celulares.
+function distanciaAteCacadora() {
+  if (!state.hunterActive || !state.hunterSnake[0]) return null;
+  if (!state.alive[mySlot] || !state.snakes[mySlot]?.[0]) return null;
+  const h = state.snakes[mySlot][0], c = state.hunterSnake[0];
+  return Math.hypot(h.x - c.x, h.y - c.y);
+}
+
+// Vinheta vermelha nas bordas da tela (melhoria #3) — fica mais forte quanto mais
+// perto a caçadora está de VOCÊ especificamente, dando aquela sensação de perigo.
+function drawHunterVignette() {
+  const d = distanciaAteCacadora();
+  if (d === null) return;
+  const RAIO_DE_PERIGO = 14;
+  const perigo = Math.max(0, Math.min(1, 1 - d / RAIO_DE_PERIGO));
+  if (perigo <= 0) return;
+  const pulso = 0.85 + Math.sin(Date.now() / (260 - perigo * 150)) * 0.15;
+  const w = canvas.width, h = canvas.height;
+  const g = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * (0.55 - perigo * 0.25), w / 2, h / 2, Math.hypot(w, h) / 2);
+  g.addColorStop(0, 'rgba(255,0,0,0)');
+  g.addColorStop(1, `rgba(255,0,0,${(0.62 * perigo * pulso).toFixed(3)})`);
+  ctx.save();
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  ctx.restore();
+}
+
+// Batimento cardíaco (melhoria #6) — quanto mais perto a caçadora, mais rápido bate.
+// Toca daqui porque o render roda tanto no anfitrião quanto nos celulares.
+let ultimoBatimentoEm = 0;
+function tocarBatimentoSePerto() {
+  const d = distanciaAteCacadora();
+  if (d === null || d > 14) return;
+  const intervalo = 260 + Math.max(0, d - 2) * 62; // ~260ms bem colada até ~1000ms lá longe
+  const agora = Date.now();
+  if (agora - ultimoBatimentoEm >= intervalo) {
+    ultimoBatimentoEm = agora;
+    sfx.hunterHeartbeat();
+  }
 }
 
 function drawMinimap() {
@@ -463,11 +548,31 @@ function drawMinimap() {
     ctx.stroke();
   }
 
-  // A Minhoca Caçadora também aparece, pra dar um aviso de longe de onde ela tá
+  // A Minhoca Caçadora também aparece, pra dar um aviso de longe de onde ela tá.
+  // Melhoria #10: quando ela chega perto de QUALQUER jogador (não só de você), o ponto
+  // dela pisca em vermelho com um anel crescendo — todo mundo fica sabendo que tem
+  // perigo rolando em algum canto do mapa. A proximidade é calculada aqui mesmo, com os
+  // dados que já chegam pra todos, então funciona igual no celular e no anfitrião.
   if (state.hunterActive && state.hunterSnake[0]) {
-    ctx.fillStyle = '#ff2222';
+    const hc = state.hunterSnake[0];
+    let alguemPerto = false;
+    for (let i = 0; i < state.count; i++) {
+      const s = state.snakes[i]?.[0];
+      if (state.alive[i] && s && Math.abs(s.x - hc.x) + Math.abs(s.y - hc.y) <= 5) { alguemPerto = true; break; }
+    }
+    const hx = mx + hc.x * scale, hy = my + hc.y * scale;
+    const piscaLigado = Math.floor(Date.now() / 200) % 2 === 0;
+    if (alguemPerto) {
+      const anel = ((Date.now() % 700) / 700);
+      ctx.strokeStyle = `rgba(255,60,60,${(1 - anel).toFixed(2)})`;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(hx, hy, 3.2 + anel * 9, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = alguemPerto && !piscaLigado ? '#ffffff' : '#ff2222';
     ctx.beginPath();
-    ctx.arc(mx + state.hunterSnake[0].x * scale, my + state.hunterSnake[0].y * scale, 3.2, 0, Math.PI * 2);
+    ctx.arc(hx, hy, alguemPerto ? 4.2 : 3.2, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 0.8;
@@ -802,6 +907,8 @@ export function draw() {
     ctx.restore();
   }
 
+  drawHunterVignette(); // melhoria #3 — borda vermelha quando a caçadora tá perto de você
+  tocarBatimentoSePerto(); // melhoria #6 — batimento acelerando conforme ela se aproxima
   drawMinimap();
   checkMissionConfetti();
   updateAndDrawConfetti();
