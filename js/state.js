@@ -67,6 +67,14 @@ export const state = {
   hunterDir: { x: 1, y: 0 },
   hunterEndsAt: 0,
   hunterMilestoneIndex: 0, // quantos marcos (100, 150...) já foram usados nessa partida
+  streakBonusActive: false, // comida de sequência vencedora — liga quando o líder abre 25+ de vantagem
+  streakBonusNextAt: 0, // quando a próxima comidinha especial (valendo 10) vai aparecer
+  hunterBurstUntil: 0, // até quando a rajada de velocidade atual dura (0 = sem rajada agora)
+  hunterNextBurstAt: 0, // quando a próxima rajada de velocidade pode começar
+  hunterDistractedUntil: 0, // até quando ela tá "distraída" perseguindo outro alvo (não o líder)
+  hunterDistractedTarget: -1, // o slot de quem a distraiu com o turbo (-1 = ninguém)
+  hunterNearMiss: [false, false, false, false, false, false], // por jogador: tá "por pouco" perto da caçadora agora?
+  hunterCloseToAnyone: false, // pra piscar no minimapa quando ela chega perto de QUALQUER jogador
   boostUsedCount: [0, 0, 0, 0, 0, 0], // quantas vezes cada um usou o turbo nessa partida
   spawnedAt: [0, 0, 0, 0, 0, 0], // quando cada minhoca nasceu por último — pra conquista de sobreviver
   hunterVictims: new Set(), // quem morreu enquanto a Minhoca Caçadora estava ativa nessa aparição
