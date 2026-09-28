@@ -2,7 +2,8 @@
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
 import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
-import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS } from './config.js';
+import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS } from './config.js';
+import { planTeams } from './teams.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
@@ -54,6 +55,17 @@ net.setHandlers({
     const name = safe(request.name, 'Alguém');
     showJoinApprovalPrompt(name, request);
   },
+  // O anfitrião decide em qual time cada amigo cai, respeitando o tamanho de cada lado
+  // e a escolha da pessoa (com o anfitrião ou contra ele). Devolve o time (0/1) ou undefined
+  // se a partida não for em times.
+  onAssignTeam: (slot, pref) => {
+    if (!$('teamMode').checked) return undefined;
+    state.teamPrefs[slot] = pref === 'other' ? 'other' : 'mine';
+    const prefs = Array.from({ length: slot + 1 }, (_, i) => (state.teamPrefs[i] === 'other' ? 'other' : 'mine'));
+    const plano = planTeams({ sizeMine: state.teamSizeMine, sizeOther: state.teamSizeOther, prefs, hostTeam: state.teams[0] === 1 ? 1 : 0 });
+    state.teams[slot] = plano.teams[slot];
+    return plano.teams[slot];
+  },
   onPeerJoined: () => {
     state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s). Pode clicar em "Jogar" quando quiser!`;
@@ -68,6 +80,7 @@ net.setHandlers({
   },
   onPeerLeft: (slot) => {
     state.count = Math.min(6, 1 + net.connectedCount());
+    state.teamPrefs.length = Math.min(state.teamPrefs.length, state.count);
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s).`;
     makePlayers();
     if (net.connectedCount() === 0) $('startFromHostPanel').classList.remove('waitingPulse');
@@ -144,6 +157,8 @@ $('hostBtn').addEventListener('click', () => {
     return;
   }
   unlockAudio();
+  state.teamPrefs = ['mine'];
+  syncTeamCapacity();
   sessionWins = {};
   updateSessionScoreDisplay();
   $('hostBtn').disabled = true;
@@ -204,8 +219,61 @@ function buildRoomLink() {
     theme: state.theme,
     noWalls: state.noWalls ? '1' : '0',
   });
+  if ($('teamMode').checked) {
+    params.set('fmt', 'teams');
+    params.set('ta', String(state.teamSizeMine));
+    params.set('tb', String(state.teamSizeOther));
+  }
   return location.origin + location.pathname + '?' + params.toString();
 }
+
+// --- Times online: capacidade, preferências e escolha de quem entra ---
+// Reaplica o tamanho de cada lado: define quantos cabem na sala e avisa o anfitrião quantas
+// CPUs vão completar as vagas.
+function syncTeamCapacity() {
+  const times = $('teamMode').checked;
+  state.teamSizeMine = +$('teamSizeMine').value || 2;
+  state.teamSizeOther = +$('teamSizeOther').value || 2;
+  net.setMaxPlayers(times ? state.teamSizeMine + state.teamSizeOther : 6);
+  $('teamSizeRow').classList.toggle('hidden', !times);
+  if (times) {
+    const total = state.teamSizeMine + state.teamSizeOther;
+    $('teamSizeHint').textContent = `Total: ${total} minhocas — cabem até ${total - 1} amigo(s) na sala, e o que sobrar vira 🤖 CPU.`;
+  }
+  recomputeLobbyTeams();
+  updateRoomSettingsPreview();
+}
+
+// Refaz o time de cada pessoa que já está na sala, com base nas escolhas e nos tamanhos
+function recomputeLobbyTeams() {
+  if (!(net.isOnline() && net.isHost()) || !$('teamMode').checked) return;
+  const humanos = 1 + net.connectedCount();
+  const prefs = Array.from({ length: humanos }, (_, i) => (state.teamPrefs[i] === 'other' ? 'other' : 'mine'));
+  const plano = planTeams({ sizeMine: state.teamSizeMine, sizeOther: state.teamSizeOther, prefs, hostTeam: state.teams[0] === 1 ? 1 : 0 });
+  for (let i = 0; i < humanos; i++) state.teams[i] = plano.teams[i];
+  makePlayers();
+}
+
+// Lê, de um link (ou só do "?room=...&fmt=teams&ta=2&tb=2"), se a sala é de times e de quantos
+function lerInfoDeTimes(texto) {
+  try {
+    const p = new URL(String(texto).trim(), location.origin).searchParams;
+    if (p.get('fmt') === 'teams') return { ta: +p.get('ta') || 2, tb: +p.get('tb') || 2 };
+  } catch {}
+  return null;
+}
+
+// Mostra (ou esconde) a escolha "no time de quem criou / no adversário" pra quem vai entrar
+function refreshJoinTeamChoice(info) {
+  $('joinTeamRow').classList.toggle('hidden', !info);
+  if (!info) return;
+  $('joinTeamChoice').options[0].textContent = `🤝 No time de quem criou a sala (time de ${info.ta})`;
+  $('joinTeamChoice').options[1].textContent = `⚔️ No time adversário (time de ${info.tb})`;
+}
+$('joinCode').addEventListener('input', () => {
+  const texto = $('joinCode').value;
+  if (texto.includes('room=')) refreshJoinTeamChoice(lerInfoDeTimes(texto)); // colou um link inteiro
+});
 
 function extractRoomCode(raw) {
   const trimmed = raw.trim();
@@ -231,14 +299,20 @@ $('joinBtn').addEventListener('click', () => {
   const originalJoinText = $('joinBtn').textContent;
   $('joinBtn').textContent = '⏳ Entrando...';
   $('joinStatus').innerHTML = '<span class="spinner"></span>Conectando com a sala...';
+  const escolhaDeTime = $('joinTeamRow').classList.contains('hidden') ? 'mine' : ($('joinTeamChoice').value === 'other' ? 'other' : 'mine');
   net.joinRoom(code, state.names[0],
-    () => {
+    (slot, time) => {
       $('joinStatus').textContent = '';
       $('joinBtn').textContent = originalJoinText;
       document.querySelector('.siteHeader').classList.add('hidden');
       saveLastOnlineRoom(code, null);
       partnerNameCaptured = false; // sala nova — pode capturar o nome de quem hospeda de novo
       startClientGame();
+      if (time === 0 || time === 1) {
+        const rotulo = TEAMS.find((t) => t.value === time)?.label || '';
+        $('clientReadyOverlay').querySelector('h2').textContent = `🌐 Você entrou no ${rotulo}!`;
+        announce(`Você entrou no ${rotulo}.`);
+      }
     },
     (err) => {
       $('joinBtn').disabled = false;
@@ -255,7 +329,8 @@ $('joinBtn').addEventListener('click', () => {
     () => {
       // Conexão técnica já rolou — agora só falta o dono da sala aceitar de verdade
       $('joinStatus').innerHTML = '<span class="spinner"></span>Conectado! Esperando o dono da sala aceitar sua entrada...';
-    }
+    },
+    escolhaDeTime
   );
 });
 
@@ -280,6 +355,7 @@ if (urlAction.get('quickplay') === '1') {
   setTimeout(() => $('startHero')?.click(), 300); // um tiquinho de atraso pra tudo terminar de montar
 }
 if (roomFromUrl) $('joinCode').value = roomFromUrl;
+if (roomFromUrl) refreshJoinTeamChoice(lerInfoDeTimes(location.search));
 
 // Prévia da sala — se o link já veio com as configurações embutidas, mostra o que a
 // pessoa vai encontrar ANTES de precisar clicar em entrar de verdade
@@ -294,6 +370,7 @@ if (roomFromUrl && urlParams.get('mode')) {
     diffNames[urlParams.get('diff')] || urlParams.get('diff'),
   ];
   if (urlParams.get('noWalls') === '1') parts.push('🌀 Sem paredes');
+  if (urlParams.get('fmt') === 'teams') parts.push(`🤝 Times ${urlParams.get('ta') || 2} vs ${urlParams.get('tb') || 2}`);
   $('roomPreviewDisplay').textContent = `👀 Prévia da sala: ${parts.join(' • ')}`;
   $('roomPreviewDisplay').classList.remove('hidden');
 }
@@ -632,7 +709,7 @@ function updateRoomSettingsPreview() {
   const composition = cpuCount > 0 ? `${humanCount} humano${humanCount === 1 ? '' : 's'}, ${cpuCount} CPU` : `${humanCount} humano${humanCount === 1 ? '' : 's'}`;
   const parts = [composition, get('mode'), get('speedSelect'), get('mapSize'), get('difficulty')];
   if ($('noWalls').checked) parts.push('🌀 Sem paredes');
-  if ($('teamMode').checked) parts.push('🤝 Modo Times');
+  if ($('teamMode').checked) parts.push(`🤝 Times ${state.teamSizeMine} vs ${state.teamSizeOther}`);
   if ($('tournamentMode').checked) parts.push('🏆 Modo Torneio');
   $('roomSettingsPreview').textContent = '⚙️ Vai criar a sala com: ' + parts.join(' • ');
   $('playSummaryDisplay').textContent = composition + (state.count > 1 ? ' na partida' : '');
@@ -655,7 +732,13 @@ $('players').addEventListener('change', e => {
   if (e.target.classList.contains('phead')) { state.heads[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ppattern')) { state.patterns[i] = e.target.value; if (i === 0) persistProfile(); }
   if (e.target.classList.contains('ppalette')) { state.palettes[i] = e.target.value; if (i === 0) persistProfile(); }
-  if (e.target.classList.contains('pteam')) state.teams[i] = +e.target.value;
+  if (e.target.classList.contains('pteam')) {
+    state.teams[i] = +e.target.value;
+    if (net.isOnline() && net.isHost()) {
+      if (i > 0) state.teamPrefs[i] = state.teams[i] === (state.teams[0] === 1 ? 1 : 0) ? 'mine' : 'other';
+      recomputeLobbyTeams();
+    }
+  }
   if (e.target.classList.contains('pshow')) state.show[i] = e.target.checked;
 });
 
@@ -672,7 +755,9 @@ $('players').addEventListener('click', e => {
 });
 
 // Ligar/desligar o modo Times reconstrói os cards de jogador (mostra/esconde o seletor de time)
-$('teamMode').addEventListener('change', () => { makePlayers(); updateRoomSettingsPreview(); });
+$('teamMode').addEventListener('change', () => { makePlayers(); syncTeamCapacity(); });
+$('teamSizeMine').addEventListener('change', syncTeamCapacity);
+$('teamSizeOther').addEventListener('change', syncTeamCapacity);
 
 // Formato da partida (Times vs Todos-contra-Todos) e cor do time, direto na aba Online —
 // tudo isso já existia espalhado (checkbox de time + cor por jogador), aqui só fica mais
@@ -1647,10 +1732,25 @@ function showJoinApprovalPrompt(name, request) {
   joinRequestQueue.push({ name, request });
   if (joinRequestQueue.length === 1) displayNextJoinRequest();
 }
+// Texto do popup: em partida de Times, diz em qual time a pessoa quer jogar — e avisa se
+// aquele lado já está cheio (aí ela vai pro outro)
+function textoDoPedidoDeEntrada(pedido) {
+  const base = `${pedido.name} quer entrar na sua sala`;
+  if (!$('teamMode').checked) return `${base}. Aceitar?`;
+  const pref = pedido.request.teamPref === 'other' ? 'other' : 'mine';
+  const slot = pedido.request.slot;
+  const prefs = Array.from({ length: slot + 1 }, (_, i) => (i === slot ? pref : (state.teamPrefs[i] === 'other' ? 'other' : 'mine')));
+  const plano = planTeams({ sizeMine: state.teamSizeMine, sizeOther: state.teamSizeOther, prefs, hostTeam: state.teams[0] === 1 ? 1 : 0 });
+  const lado = pref === 'other' ? 'no time ADVERSÁRIO ⚔️' : 'no SEU time 🤝';
+  const aviso = plano.redirecionado[slot]
+    ? ` Esse lado já está cheio — ${pedido.name} vai ficar ${pref === 'other' ? 'no seu time' : 'no time adversário'}.`
+    : '';
+  return `${base} e quer jogar ${lado}.${aviso} Aceitar?`;
+}
 function displayNextJoinRequest() {
   const next = joinRequestQueue[0];
   if (!next) { $('joinApprovalOverlay').classList.add('hidden'); return; }
-  $('joinApprovalText').textContent = `${next.name} quer entrar na sua sala. Aceitar?`;
+  $('joinApprovalText').textContent = textoDoPedidoDeEntrada(next);
   $('joinApprovalOverlay').classList.remove('hidden');
   vibrate([30, 50, 30]);
   announce(`${next.name} pediu para entrar na sala.`);
