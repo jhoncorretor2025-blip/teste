@@ -128,6 +128,109 @@ const FAR_STARS = Array.from({ length: 50 }, () => ({
   o: 0.06 + Math.random() * 0.14,
 }));
 
+// --- Fundo de cada tema ---
+// Antes só a cor de fundo e a das linhas mudavam de tema pra tema (e eram escuras e parecidas),
+// enquanto as estrelinhas brancas eram SEMPRE as mesmas — por isso parecia que só a comidinha
+// trocava. Agora cada tema tem seu brilho central e sua própria decoração animada flutuando.
+const DECO = Array.from({ length: 90 }, () => ({
+  rx: Math.random(), ry: Math.random(),
+  r: 0.5 + Math.random() * 1.1,   // tamanho relativo
+  sp: 0.45 + Math.random() * 0.9, // velocidade relativa
+  ph: Math.random() * Math.PI * 2, // fase (pra não pulsarem todos juntos)
+  o: 0.3 + Math.random() * 0.5,   // opacidade base
+}));
+const enrola = (v, span) => ((v % span) + span) % span;
+
+function drawThemeBackdrop(theme) {
+  const w = canvas.width, h = canvas.height;
+  ctx.fillStyle = theme.bg;
+  ctx.fillRect(0, 0, w, h);
+  // Brilho suave no centro, num tom mais claro do próprio tema — dá "clima" ao mapa
+  if (theme.bg2 && theme.bg2 !== theme.bg && typeof ctx.createRadialGradient === 'function') {
+    const g = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.hypot(w, h) / 2);
+    g.addColorStop(0, theme.bg2);
+    g.addColorStop(1, theme.bg);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+  }
+  if (theme.deco === 'stars') drawStars();
+  else if (theme.deco && theme.deco !== 'none') drawThemeDeco(theme);
+}
+
+function drawThemeDeco(theme) {
+  const t = Date.now() / 1000;
+  const spanX = state.mapW * 1.6, spanY = state.mapH * 1.6;
+  const kind = theme.deco;
+  ctx.save();
+  ctx.fillStyle = theme.accent;
+  ctx.strokeStyle = theme.accent;
+  for (const p of DECO) {
+    // cada tipo tem seu jeito de se mover: bolhas sobem, neve cai, areia voa de lado...
+    let dx = 0, dy = 0;
+    const balanco = Math.sin(t * 0.7 * p.sp + p.ph);
+    if (kind === 'bubbles') { dy = -1.1 * p.sp; dx = balanco * 0.5; }
+    else if (kind === 'snow') { dy = 0.9 * p.sp; dx = balanco * 0.7; }
+    else if (kind === 'sand') { dx = 2.1 * p.sp; dy = balanco * 0.25; }
+    else if (kind === 'spores') { dy = -0.3 * p.sp; dx = balanco * 0.45; }
+    else if (kind === 'petals') { dx = 0.8 * p.sp; dy = 0.6 * p.sp; }
+    const wx = enrola(p.rx * spanX + t * dx, spanX) - state.mapW * 0.3;
+    const wy = enrola(p.ry * spanY + t * dy, spanY) - state.mapH * 0.3;
+    // paralaxe leve: a decoração anda um pouco menos que a câmera, parecendo mais ao fundo
+    const x = offX + (wx - camX * 0.6) * cell;
+    const y = offY + (wy - camY * 0.6) * cell;
+    if (x < -20 || x > canvas.width + 20 || y < -20 || y > canvas.height + 20) continue;
+
+    if (kind === 'bubbles') {
+      ctx.globalAlpha = p.o * 0.6;
+      ctx.lineWidth = Math.max(1, cell * 0.05);
+      ctx.beginPath();
+      ctx.arc(x, y, cell * (0.1 + p.r * 0.14), 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (kind === 'snow') {
+      ctx.globalAlpha = p.o * 0.85;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(1, cell * 0.07 * p.r), 0, Math.PI * 2);
+      ctx.fill();
+    } else if (kind === 'sand') {
+      ctx.globalAlpha = p.o * 0.55;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(0.8, cell * 0.045 * p.r), 0, Math.PI * 2);
+      ctx.fill();
+    } else if (kind === 'spores') {
+      ctx.shadowColor = theme.accent;
+      ctx.shadowBlur = cell * 0.5;
+      ctx.globalAlpha = p.o * (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(t * 1.5 + p.ph)));
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(1, cell * 0.09 * p.r), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    } else if (kind === 'sparkles') {
+      const brilho = Math.max(0, Math.sin(t * 1.8 * p.sp + p.ph));
+      if (brilho < 0.05) continue;
+      const L = cell * 0.3 * p.r;
+      ctx.globalAlpha = brilho * p.o;
+      ctx.lineWidth = Math.max(1, cell * 0.04);
+      ctx.beginPath();
+      ctx.moveTo(x - L, y); ctx.lineTo(x + L, y);
+      ctx.moveTo(x, y - L); ctx.lineTo(x, y + L);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(1, cell * 0.05), 0, Math.PI * 2);
+      ctx.fill();
+    } else if (kind === 'petals') {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(t * 0.8 * p.sp + p.ph);
+      ctx.globalAlpha = p.o * 0.65;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, cell * 0.14 * p.r, cell * 0.06 * p.r, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+}
+
 function drawStars() {
   const t = Date.now() / 4000;
 
@@ -728,9 +831,7 @@ export function draw() {
   if (state.shake) ctx.translate((Math.random() - 0.5) * state.shake, (Math.random() - 0.5) * state.shake);
 
   const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
-  ctx.fillStyle = theme.bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  drawStars();
+  drawThemeBackdrop(theme);
 
   ctx.strokeStyle = theme.grid;
   const gxStart = Math.floor(camX), gxEnd = Math.ceil(camX + viewW);
