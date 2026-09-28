@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.81.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.81.0">
+<title>🐍 Snake Arena v2.82.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.82.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -57,7 +57,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.81.0</span></h1>
+    <h1>🐍 Snake Arena <span class="version">v2.82.0</span></h1>
     <p class="sub">Até 6 jogadores • controles configuráveis • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
   </header>
@@ -112,9 +112,9 @@
             <option value="veryfast">⚡ Velocidade Muito Rápida</option>
           </select>
           <select id="mapSize" class="select" aria-label="Tamanho do mapa" style="margin-top:8px">
-            <option value="small">🔹 Mapa Pequeno</option>
-            <option value="medium" selected>🔸 Mapa Médio</option>
-            <option value="large">🔷 Mapa Grande</option>
+            <option value="small">🔹 Mapa Pequeno (28×22)</option>
+            <option value="medium" selected>🔸 Mapa Médio (40×31)</option>
+            <option value="large">🔷 Mapa Grande (56×44)</option>
           </select>
           <select id="zoomLevel" class="select" aria-label="Zoom da câmera" style="margin-top:8px">
             <option value="close">🔍 Câmera Perto</option>
@@ -132,6 +132,7 @@
             <option value="sunflower">🌻 Tema Campo de Girassóis</option>
             <option value="garden">🌸 Tema Jardim de Flores</option>
           </select>
+          <div id="themePreview" class="themePreview" aria-hidden="true"></div>
           <select id="difficulty" class="select" aria-label="Dificuldade da CPU" style="margin-top:8px">
             <option value="easy">🐣 CPU Fácil</option>
             <option value="easymid">🙂 CPU Fácil+</option>
@@ -378,6 +379,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.81.0"></script>
+<script type="module" src="js/main.js?v=2.82.0"></script>
 </body>
 </html>
