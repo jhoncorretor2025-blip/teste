@@ -22,6 +22,11 @@ let pendingConns = []; // pedidos de entrada esperando o anfitrião aceitar ou r
 let myName = null; // nome usado ao entrar — guardado pra reusar se precisar reconectar após migração
 let onJoinedCb = null; // callback de "entrou com sucesso" — reusado na reconexão automática
 let onFailCb = null; // callback de "falhou" — idem
+let myTeamPref = 'mine'; // 'mine' (no time do anfitrião) ou 'other' (no adversário) — guardado pra reenviar na reconexão
+let maxPlayers = 6; // capacidade da sala (no modo Times, é a soma dos dois lados)
+
+// O anfitrião ajusta a capacidade da sala (ex: no modo Times 2 vs 2, cabem 4)
+export function setMaxPlayers(n) { maxPlayers = Math.max(1, Math.min(6, Math.round(n) || 6)); }
 let hostConn = null;  // cliente: a conexão com o anfitrião
 
 let handlers = {};
@@ -92,8 +97,8 @@ export function hostRoom(onReady, onFail, forcedId) {
 
   peer.on('connection', conn => {
     const slot = conns.length + pendingConns.length + 1; // reserva o próximo slot livre
-    if (slot > 5) {
-      // Sala já tem 5 jogadores — avisa quem tentou entrar antes de fechar a conexão
+    if (slot >= maxPlayers) {
+      // Sala já está na capacidade — avisa quem tentou entrar antes de fechar a conexão
       conn.on('open', () => { conn.send({ type: 'full' }); conn.close(); });
       return;
     }
@@ -111,9 +116,7 @@ export function hostRoom(onReady, onFail, forcedId) {
       if (pIdx < 0) return; // já foi removida (por exemplo, a conexão caiu nesse meio tempo)
       pendingConns.splice(pIdx, 1);
       conns.push(conn);
-      conn.send({ type: 'welcome', slot });
-      broadcastPeerList();
-      handlers.onPeerJoined && handlers.onPeerJoined(slot);
+      finalizeJoin(conn, slot, 'mine');
     }, 6000);
 
     conn.on('data', msg => {
@@ -122,7 +125,7 @@ export function hostRoom(onReady, onFail, forcedId) {
         clearTimeout(compatTimer);
         // Só avisa o anfitrião AGORA, com o nome de quem quer entrar — não deixa
         // entrar direto, espera a aprovação (melhoria: pedido de entrada)
-        handlers.onJoinRequest && handlers.onJoinRequest({ conn, slot, name: msg.name });
+        handlers.onJoinRequest && handlers.onJoinRequest({ conn, slot, name: msg.name, teamPref: msg.teamPref });
       } else if (msg.type === 'reconnectRequest') {
         // Reconexão automática (não é gente nova pedindo pra entrar, é alguém que já
         // tava na sala e a conexão só piscou) — entra direto, SEM esperar aprovação
@@ -131,7 +134,7 @@ export function hostRoom(onReady, onFail, forcedId) {
         // de ser "automático".
         gotJoinRequest = true;
         clearTimeout(compatTimer);
-        approveJoinRequest({ conn, slot, name: msg.name });
+        approveJoinRequest({ conn, slot, name: msg.name, teamPref: msg.teamPref });
       } else if (msg.type === 'ping') {
         try { conn.send({ type: 'pong', ts: msg.ts }); } catch {}
       } else if (msg.type === 'pong') {
@@ -156,9 +159,17 @@ export function approveJoinRequest(request) {
   const pIdx = pendingConns.indexOf(request.conn);
   if (pIdx >= 0) pendingConns.splice(pIdx, 1);
   conns.push(request.conn);
-  request.conn.send({ type: 'welcome', slot: request.slot });
+  finalizeJoin(request.conn, request.slot, request.teamPref);
+}
+
+// Caminho ÚNICO pra alguém entrar de vez (aprovado na mão, reconexão ou compatibilidade):
+// o anfitrião decide o time (se for partida em Times) ANTES de responder, pra a pessoa já
+// saber em qual time caiu logo na resposta de boas-vindas.
+function finalizeJoin(conn, slot, teamPref) {
+  const team = handlers.onAssignTeam ? handlers.onAssignTeam(slot, teamPref) : undefined;
+  try { conn.send({ type: 'welcome', slot, team }); } catch {}
   broadcastPeerList();
-  handlers.onPeerJoined && handlers.onPeerJoined(request.slot);
+  handlers.onPeerJoined && handlers.onPeerJoined(slot);
 }
 
 // Anfitrião recusa o pedido — avisa a pessoa e fecha a conexão
@@ -168,10 +179,11 @@ export function rejectJoinRequest(request) {
 }
 
 // Entra numa sala existente usando o código do anfitrião.
-export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval) {
+export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval, teamPref = 'mine') {
   role = 'client';
   deliberateDisconnect = false;
   myName = name;
+  myTeamPref = teamPref === 'other' ? 'other' : 'mine';
   onJoinedCb = onJoined;
   onFailCb = onFail;
   if (!migrating) originalRoomId = hostId; // se já tá migrando, mantém o id ORIGINAL guardado
@@ -202,7 +214,7 @@ export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval) {
     hostConn.on('open', () => {
       connectionOpened = true;
       clearTimeout(connectTimeoutId);
-      hostConn.send({ type: 'joinRequest', name: myName });
+      hostConn.send({ type: 'joinRequest', name: myName, teamPref: myTeamPref });
       onWaitingApproval && onWaitingApproval();
       iniciarPingCliente();
     });
@@ -218,7 +230,7 @@ function configurarHostConnHandlers() {
   hostConn.on('data', msg => {
     if (msg.type === 'welcome') {
       mySlot = msg.slot;
-      onJoinedCb && onJoinedCb(msg.slot);
+      onJoinedCb && onJoinedCb(msg.slot, msg.team);
     } else if (msg.type === 'rejected') {
       onFailCb && onFailCb(new Error('rejected'));
     } else if (msg.type === 'state') {
@@ -276,7 +288,7 @@ function tentarReconexaoDireta() {
       hostConn = novaConn;
       // Reaplica os mesmos handlers de dados/fechamento que a conexão original tinha
       configurarHostConnHandlers();
-      hostConn.send({ type: 'reconnectRequest', name: myName }); // reconexão automática — entra direto, sem esperar aprovação manual de novo
+      hostConn.send({ type: 'reconnectRequest', name: myName, teamPref: myTeamPref }); // reconexão automática — entra direto, sem esperar aprovação manual de novo
       handlers.onConnectionStatus && handlers.onConnectionStatus('connected');
     });
     novaConn.on('error', () => { if (!conectou) { clearTimeout(timeoutReconexao); attemptHostMigration(); } });
@@ -306,7 +318,9 @@ function attemptHostMigration() {
       joinRoom(
         newHostId, myName,
         (slot) => { migrating = false; handlers.onRejoinedAfterMigration && handlers.onRejoinedAfterMigration(slot); },
-        () => { migrating = false; handlers.onMigrationFailed && handlers.onMigrationFailed(); }
+        () => { migrating = false; handlers.onMigrationFailed && handlers.onMigrationFailed(); },
+        undefined,
+        myTeamPref // mantém a escolha de time original ao reentrar depois da migração
       );
     }, 2000);
   }
