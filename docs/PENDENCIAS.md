@@ -21,6 +21,12 @@ Com o anfitrião no PC e o amigo no celular, o celular não recebe os dados do j
 ## 🟢 Correção aplicada na 2.86.0
 - **Slots do multiplayer:** corrigido o risco de os slots mudarem quando alguém sai da sala. O slot agora fica associado à própria conexão.
 
+## 🟢 Melhorias aplicadas na 2.90.0
+- **Lobby online:** lista visual em tempo real com jogadores, pronto, times e ping individual.
+- **Configuração da sala:** resumo atualizado em tempo real.
+- **Pronto:** anfitrião contado como pronto.
+- **Slots:** visualização usa o slot real da conexão.
+
 ## 🟠 Pontos frágeis conhecidos (ainda não corrigidos)
 - **Configuração estável — corrigida na 2.85.0.** Nomes, cores, tamanho do mapa, tema e times agora são enviados em `roomConfig` sempre que uma entrada é finalizada, inclusive em reconexões. O bug de estado que não chega ao celular continua em investigação.
 - **Texto de qualidade da conexão — corrigido na 2.85.0.** Quando só existe `effectiveType`, a interface agora mostra "Qualidade estimada", sem chamar isso de tipo de rede.
