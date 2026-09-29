@@ -2,7 +2,7 @@
 // Todos os outros arquivos importam esse mesmo objeto "state" e leem/alteram ele.
 // Os arrays por jogador vão até 6 posições (você + até 5 adversários).
 
-import { COLORS } from './config.js';
+import { COLORS, HUNTER_DEFAULTS } from './config.js';
 
 export const state = {
   count: 1,
@@ -65,6 +65,7 @@ export const state = {
   amoledMode: false, // preto puro (#000), economiza bateria em telas OLED
 
   // --- Minhoca Caçadora (invencível, persegue o líder) ---
+  hunterConfig: JSON.parse(JSON.stringify(HUNTER_DEFAULTS)),
   hunterActive: false,
   hunterSnake: [], // segmentos dela, no mesmo formato de uma minhoca normal
   hunterDir: { x: 1, y: 0 },
