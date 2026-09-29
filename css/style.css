@@ -2187,3 +2187,7 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
 
 /* v2.91.0 — resultado online */
 #endText{white-space:pre-line;line-height:1.55}
+
+
+/* v2.92.0 — abandono protegido + lobby completo + confronto detalhado */
+.onlineLobbyStatus{margin-top:7px;padding:7px 8px;border-radius:9px;background:rgba(103,239,138,.07);border:1px solid rgba(103,239,138,.18);color:#bde9c9;font-size:.7rem;line-height:1.35}.onlineLobbyDisconnected{color:#ff9f6e;font-size:.68rem}#onlineClientLobby{margin-top:9px}@media(max-width:700px){.onlineLobbyStatus{font-size:.68rem}}
