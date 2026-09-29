@@ -1,3 +1,10 @@
+## 2.94.2 — Carregamento visível
+- Nova tela de inicialização com progresso visual: 0% → 10% → 20% → 30% → 45% → 50% → 70% → 90% → 100%.
+- O carregador agora identifica quando o JavaScript principal ou o módulo online demora/trava.
+- O erro fica visível na própria tela, com opção de tentar novamente, em vez de deixar o usuário preso na tela da cobra.
+- PeerJS passou a ser carregado pelo inicializador para que a espera também seja visível.
+- Cache e versão atualizados para 2.94.2.
+
 ## 2.94.1 — Correção de inicialização
 - Corrigida a ordem de declaração da configuração da Minhoca Inimiga.
 - O erro de inicialização fazia o JavaScript parar antes de esconder a tela de abertura, deixando o celular preso no splash da Mioquinha.
