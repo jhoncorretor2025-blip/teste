@@ -35,7 +35,7 @@ Causa: só o **anfitrião** roda o `tick`. Partículas, marcadores calculados no
 Causa: precisa entrar em **dois** lugares — o envio (`broadcastState`) e o recebimento (`applyRemoteState`, com `??`). → veja `PROTOCOLO-ONLINE.md`.
 
 **11. Quem entra depois do início da partida vê tudo sem nome, cor ou mapa.**
-Causa: o pacote "raro" (`colors, names, mapW, theme, teams…`) é enviado **uma vez**, no começo. A reconexão automática cai no mesmo problema. → Ponto frágil **ainda não corrigido**; a correção natural é reenviar o pacote raro ao cliente que entra/reconecta.
+Causa: o pacote "raro" (`colors, names, mapW, theme, teams…`) é enviado **uma vez**, no começo. A reconexão automática cai no mesmo problema. → Corrigido na 2.85.0: o host agora envia um pacote pequeno `roomConfig` toda vez que a entrada é finalizada, inclusive na reconexão.
 
 **12. Erro de envio some sem deixar rastro.**
 Causa: um `catch {}` vazio engolia as falhas de `conn.send`. → `broadcastRaw` agora conta tentativas/falhas em `sendDiag`, e o painel 🩺 mostra isso no anfitrião. Não volte a engolir erro de rede.
