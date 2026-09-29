@@ -92,6 +92,39 @@ net.setHandlers({
     applyRemoteState(msg);
     capturePartnerNameOnce(msg.names?.[0]);
   },
+  // A configuração estável da sala agora pode chegar a qualquer momento: entrada tardia,
+  // reconexão ou após uma troca de anfitrião. Ela não depende do primeiro pacote de estado.
+  onRoomConfig: (msg) => {
+    state.colors = msg.colors || state.colors;
+    state.names = msg.names || state.names;
+    state.heads = msg.heads || state.heads;
+    state.patterns = msg.patterns || state.patterns;
+    state.palettes = msg.palettes || state.palettes;
+    state.trailColors = msg.trailColors || state.trailColors;
+    state.mapW = msg.mapW || state.mapW;
+    state.mapH = msg.mapH || state.mapH;
+    state.theme = msg.theme || state.theme;
+    state.teamMode = msg.teamMode ?? state.teamMode;
+    state.teams = msg.teams || state.teams;
+    state.count = msg.count || state.count;
+    render();
+  },
+  // O host é a fonte oficial desses dados. O net.js pede a configuração sempre que
+  // alguém entra ou reconecta, então não há dependência do pacote raro inicial.
+  getRoomConfig: () => ({
+    colors: state.colors,
+    names: state.names,
+    heads: state.heads,
+    patterns: state.patterns,
+    palettes: state.palettes,
+    trailColors: state.trailColors,
+    mapW: state.mapW,
+    mapH: state.mapH,
+    theme: state.theme,
+    teamMode: state.teamMode,
+    teams: state.teams,
+    count: state.count,
+  }),
   // Aplica de verdade a direção/turbo que o amigo manda — sem isso a minhoca dele
   // nunca virava, só seguia reto na direção que nasceu (bug relatado)
   onInput: (slot, msg) => {
@@ -1638,7 +1671,7 @@ function updateConnectionTypeDisplay() {
   const isCellular = conn.type === 'cellular';
   if (isWifi) box.textContent = '📶 Conectado no Wi-Fi';
   else if (isCellular) box.textContent = '📱 Conectado nos dados móveis';
-  else if (conn.effectiveType) box.textContent = `📡 Conexão: ${conn.effectiveType}`;
+  else if (conn.effectiveType) box.textContent = `📡 Qualidade estimada: ${String(conn.effectiveType).toUpperCase()}`;
   else box.textContent = '';
 }
 const netConn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
