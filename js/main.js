@@ -489,10 +489,11 @@ if (new URLSearchParams(location.search).get('diag') === '1') {
 // Atalhos de app (melhoria #2) — segurar o ícone no Android oferece "Jogar Rápido" e
 // "Ver Conquistas", que chegam aqui como parâmetros na URL
 const urlAction = new URLSearchParams(location.search);
-const ABAS_VALIDAS = ['jogar', 'personalizar', 'online', 'ranking', 'conquistas'];
+const ABAS_VALIDAS = ['jogar', 'personalizar', 'online', 'progresso', 'ranking', 'conquistas'];
 const tabDaUrl = urlAction.get('tab');
+const secaoDaUrl = urlAction.get('section') || 'stats';
 if (tabDaUrl && ABAS_VALIDAS.includes(tabDaUrl)) {
-  switchToTab(tabDaUrl, 'replace');
+  switchToTab(tabDaUrl, 'replace', secaoDaUrl);
 } else if (roomFromUrl) {
   // Abriu um link de convite de sala — já vai direto pra aba Online, sem precisar clicar
   switchToTab('online', 'replace');
@@ -752,13 +753,31 @@ $('shareHero').addEventListener('click', shareLink);
 
 // Mostra o recorde pessoal em destaque logo no topo do menu (fácil de ver sem rolar a tela)
 function updateTopRecordDisplay() {
-  $('topRecordDisplay').innerHTML = `🏅 Seu recorde: <b>${state.best || 0}</b> pontos`;
+  const best = state.best || 0;
+  $('topRecordDisplay').innerHTML = `🏅 Seu recorde: <b>${best}</b> pontos`;
+  $('progressRecordMini')?.replaceChildren(document.createTextNode(`🏅 ${best}`));
+  $('progressBestValue')?.replaceChildren(document.createTextNode(String(best)));
+  $('progressGamesValue')?.replaceChildren(document.createTextNode(String(loadGamesPlayed() || 0)));
+  $('progressSessionValue')?.replaceChildren(document.createTextNode(String(loadSessionGamesToday() || 0)));
 }
 
-// Abas do menu (Jogar / Personalizar / Online / Ranking / Conquistas) — cada uma agora
-// tem seu próprio link (?tab=nome), então dá pra favoritar, compartilhar ou usar o botão
-// "voltar" do navegador pra trocar de aba, em vez de tudo ficar no mesmo endereço.
-function switchToTab(tab, modoUrl = 'push') {
+// Navegação principal: quatro áreas simples. Os nomes antigos "ranking" e "conquistas"
+// continuam aceitos em links antigos e atalhos, mas agora apontam para Progresso.
+const TAB_ALIASES = { ranking: 'progresso', conquistas: 'progresso' };
+function activateProgressSection(section = 'stats') {
+  const valid = ['stats', 'ranking', 'achievements', 'history'];
+  const target = valid.includes(section) ? section : 'stats';
+  document.querySelectorAll('.progressNavBtn').forEach((b) => {
+    const active = b.dataset.progressSection === target;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.progressSection').forEach((p) => {
+    p.classList.toggle('hidden', p.dataset.progressPanel !== target);
+  });
+}
+function switchToTab(tab, modoUrl = 'push', progressSection = null) {
+  tab = TAB_ALIASES[tab] || tab;
   const btn = document.querySelector(`.tabBtn[data-tab="${tab}"]`);
   if (!btn) return;
   document.querySelectorAll('.tabBtn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
@@ -773,17 +792,17 @@ function switchToTab(tab, modoUrl = 'push') {
       next.classList.add('tabFading');
       requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('tabFading')));
     }
+    if (tab === 'progresso') activateProgressSection(progressSection || 'stats');
   }, 120);
 
   if (modoUrl === 'push' || modoUrl === 'replace') {
     const params = new URLSearchParams(location.search);
     params.set('tab', tab);
+    if (tab === 'progresso' && progressSection && progressSection !== 'stats') params.set('section', progressSection);
+    else params.delete('section');
     const novaUrl = location.pathname + '?' + params.toString();
-    if (modoUrl === 'push') history.pushState({ tab }, '', novaUrl);
-    // "replace" marca a aba atual no histórico SEM criar uma entrada nova — usado quando
-    // a troca acontece sozinha ao abrir a página (ex: veio de um link de sala), pra o
-    // botão "voltar" do navegador saber corretamente pra qual aba voltar depois
-    else history.replaceState({ tab }, '', novaUrl);
+    if (modoUrl === 'push') history.pushState({ tab, section: progressSection }, '', novaUrl);
+    else history.replaceState({ tab, section: progressSection }, '', novaUrl);
   }
 }
 
@@ -793,14 +812,55 @@ document.querySelector('.tabBar')?.addEventListener('click', (e) => {
   switchToTab(btn.dataset.tab, 'push');
 });
 
-// Botão "voltar"/"avançar" do navegador troca de aba também, em vez de sair do jogo
+document.querySelectorAll('.progressNavBtn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    activateProgressSection(btn.dataset.progressSection);
+    const params = new URLSearchParams(location.search);
+    params.set('tab', 'progresso');
+    if (btn.dataset.progressSection === 'stats') params.delete('section');
+    else params.set('section', btn.dataset.progressSection);
+    history.pushState({ tab: 'progresso', section: btn.dataset.progressSection }, '', location.pathname + '?' + params.toString());
+  });
+});
+
+// Botão "voltar"/"avançar" do navegador troca de área também, em vez de sair do jogo.
 window.addEventListener('popstate', (e) => {
-  const tab = e.state?.tab || new URLSearchParams(location.search).get('tab') || 'jogar';
-  switchToTab(tab, 'none'); // não mexe na URL de novo, já veio de lá
+  const params = new URLSearchParams(location.search);
+  switchToTab(e.state?.tab || params.get('tab') || 'jogar', 'none', e.state?.section || params.get('section') || 'stats');
 });
 
 $('refresh').addEventListener('click', () => {
   location.href = location.pathname + '?v=' + VERSION + '&t=' + Date.now();
+});
+
+$('gameSettingsToggle')?.addEventListener('click', () => {
+  const box = $('gameAdvancedSettings');
+  const btn = $('gameSettingsToggle');
+  if (!box || !btn) return;
+  const open = box.classList.toggle('hidden') === false;
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  btn.querySelector('span').textContent = open ? '▴' : '▾';
+  btn.classList.toggle('open', open);
+});
+
+document.querySelectorAll('.settingsJump').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const target = $('settingsSection' + btn.dataset.settingsJump.charAt(0).toUpperCase() + btn.dataset.settingsJump.slice(1));
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+});
+
+$('settingsSearch')?.addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  const panel = document.querySelector('.tabPanel[data-panel="personalizar"]');
+  if (!panel) return;
+  panel.querySelectorAll('label.check, select.select, button.bindShortcut, #silentModeBtn, #resetSettings, #installHelpBtn').forEach((el) => {
+    if (!q) { el.classList.remove('searchDimmed'); el.style.removeProperty('display'); return; }
+    const text = (el.textContent + ' ' + (el.id || '') + ' ' + (el.getAttribute('aria-label') || '')).toLowerCase();
+    const match = text.includes(q);
+    el.classList.toggle('searchDimmed', !match);
+    el.style.display = match ? '' : 'none';
+  });
 });
 
 $('mode').addEventListener('change', e => { state.mode = e.target.value; updateRoomSettingsPreview(); });
