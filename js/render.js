@@ -157,6 +157,206 @@ function drawThemeBackdrop(theme) {
   else if (theme.deco && theme.deco !== 'none') drawThemeDeco(theme);
 }
 
+
+// --- Decoração física do mapa (bioma) ---
+// Diferente das partículas flutuantes, estes objetos têm posição FIXA no mundo.
+// Isso evita que flores/girassóis pisquem ou troquem de lugar a cada frame.
+// São apenas decorativos: não interferem em colisão, comida ou movimentação.
+let biomeCacheKey = '';
+let biomeObjects = [];
+
+function biomeRand(seed) {
+  let x = (seed >>> 0) || 1;
+  return function () {
+    x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
+    return ((x >>> 0) / 4294967296);
+  };
+}
+
+function getBiomeObjects(theme) {
+  const key = `${theme.value}:${state.mapW}x${state.mapH}`;
+  if (key === biomeCacheKey && biomeObjects.length) return biomeObjects;
+
+  biomeCacheKey = key;
+  const rand = biomeRand(
+    Array.from(theme.value).reduce((a, c) => ((a * 31 + c.charCodeAt(0)) >>> 0), state.mapW * 97 + state.mapH * 193)
+  );
+  const amount = {
+    sunflower: 64, garden: 72, forest: 34, desert: 28,
+    ice: 30, deep: 34, space: 22, night: 48, void: 24
+  }[theme.value] || 0;
+
+  biomeObjects = Array.from({ length: amount }, () => ({
+    x: 1.2 + rand() * Math.max(1, state.mapW - 2.4),
+    y: 1.2 + rand() * Math.max(1, state.mapH - 2.4),
+    s: 0.65 + rand() * 0.75,
+    r: rand()
+  }));
+  return biomeObjects;
+}
+
+function drawSunflowerWorld(x, y, size, variant = 0) {
+  const stem = Math.max(1.2, cell * 0.07 * size);
+  ctx.save();
+  ctx.globalAlpha = 0.78;
+  // sombra
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.beginPath(); ctx.ellipse(x, y + cell * 0.34 * size, cell * 0.25 * size, cell * 0.08 * size, 0, 0, Math.PI * 2); ctx.fill();
+  // caule
+  ctx.strokeStyle = variant > 0.5 ? '#4f9d43' : '#6fb34f';
+  ctx.lineWidth = stem;
+  ctx.beginPath(); ctx.moveTo(x, y + cell * 0.30 * size); ctx.lineTo(x, y - cell * 0.02 * size); ctx.stroke();
+  // folhas
+  ctx.fillStyle = '#5ca943';
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.ellipse(x + side * cell * 0.16 * size, y + cell * 0.18 * size, cell * 0.16 * size, cell * 0.07 * size, side * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // pétalas
+  const petals = 10;
+  for (let i = 0; i < petals; i++) {
+    const a = i / petals * Math.PI * 2;
+    ctx.fillStyle = i % 2 ? '#ffd84a' : '#ffc928';
+    ctx.beginPath();
+    ctx.ellipse(
+      x + Math.cos(a) * cell * 0.22 * size,
+      y + Math.sin(a) * cell * 0.22 * size,
+      cell * 0.12 * size, cell * 0.075 * size, a, 0, Math.PI * 2
+    );
+    ctx.fill();
+  }
+  ctx.fillStyle = '#70451f';
+  ctx.beginPath(); ctx.arc(x, y, cell * 0.14 * size, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#a66b2c';
+  ctx.beginPath(); ctx.arc(x - cell * 0.04 * size, y - cell * 0.04 * size, cell * 0.055 * size, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawFlowerWorld(x, y, size, variant = 0) {
+  const palettes = [
+    ['#ff6fae', '#ffd7e8'], ['#a78bfa', '#e9ddff'],
+    ['#ffd34d', '#fff0a6'], ['#ff7a59', '#ffd0c5'], ['#62d7ff', '#d5f7ff']
+  ];
+  const [c1, c2] = palettes[Math.floor(variant * palettes.length) % palettes.length];
+  ctx.save();
+  ctx.globalAlpha = 0.76;
+  ctx.strokeStyle = '#4f9d43';
+  ctx.lineWidth = Math.max(1, cell * 0.055 * size);
+  ctx.beginPath(); ctx.moveTo(x, y + cell * 0.28 * size); ctx.lineTo(x, y); ctx.stroke();
+  ctx.fillStyle = '#5ca943';
+  ctx.beginPath(); ctx.ellipse(x - cell * 0.12 * size, y + cell * 0.18 * size, cell * 0.13 * size, cell * 0.055 * size, -0.4, 0, Math.PI * 2); ctx.fill();
+  for (let i = 0; i < 6; i++) {
+    const a = i / 6 * Math.PI * 2;
+    ctx.fillStyle = i % 2 ? c1 : c2;
+    ctx.beginPath();
+    ctx.ellipse(x + Math.cos(a) * cell * 0.16 * size, y + Math.sin(a) * cell * 0.16 * size, cell * 0.105 * size, cell * 0.065 * size, a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#8b5a2b';
+  ctx.beginPath(); ctx.arc(x, y, cell * 0.075 * size, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawTreeWorld(x, y, size) {
+  ctx.save();
+  ctx.globalAlpha = 0.64;
+  ctx.fillStyle = '#5a3821';
+  ctx.fillRect(x - cell * 0.065 * size, y, cell * 0.13 * size, cell * 0.38 * size);
+  ctx.fillStyle = '#2f8a4b';
+  ctx.beginPath(); ctx.arc(x, y - cell * 0.05 * size, cell * 0.30 * size, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#4faa5a';
+  ctx.beginPath(); ctx.arc(x - cell * 0.16 * size, y - cell * 0.16 * size, cell * 0.18 * size, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawCactusWorld(x, y, size) {
+  ctx.save();
+  ctx.globalAlpha = 0.62;
+  ctx.strokeStyle = '#62a83d';
+  ctx.lineCap = 'round';
+  ctx.lineWidth = cell * 0.13 * size;
+  ctx.beginPath(); ctx.moveTo(x, y + cell * 0.32 * size); ctx.lineTo(x, y - cell * 0.22 * size); ctx.moveTo(x, y - cell * 0.03 * size); ctx.lineTo(x + cell * 0.18 * size, y - cell * 0.10 * size); ctx.moveTo(x + cell * 0.18 * size, y - cell * 0.10 * size); ctx.lineTo(x + cell * 0.18 * size, y - cell * 0.25 * size); ctx.stroke();
+  ctx.restore();
+}
+
+function drawPineWorld(x, y, size) {
+  ctx.save();
+  ctx.globalAlpha = 0.60;
+  ctx.fillStyle = '#dff5ff';
+  ctx.beginPath();
+  ctx.moveTo(x, y - cell * 0.42 * size);
+  ctx.lineTo(x - cell * 0.28 * size, y + cell * 0.25 * size);
+  ctx.lineTo(x + cell * 0.28 * size, y + cell * 0.25 * size);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#a9d8ea';
+  ctx.beginPath(); ctx.moveTo(x, y - cell * 0.15 * size); ctx.lineTo(x - cell * 0.34 * size, y + cell * 0.34 * size); ctx.lineTo(x + cell * 0.34 * size, y + cell * 0.34 * size); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawRockWorld(x, y, size, ice = false) {
+  ctx.save();
+  ctx.globalAlpha = 0.48;
+  ctx.fillStyle = ice ? '#b8e8f5' : '#a97b4f';
+  ctx.beginPath();
+  ctx.moveTo(x - cell * 0.28 * size, y + cell * 0.18 * size);
+  ctx.lineTo(x - cell * 0.16 * size, y - cell * 0.16 * size);
+  ctx.lineTo(x + cell * 0.08 * size, y - cell * 0.24 * size);
+  ctx.lineTo(x + cell * 0.29 * size, y + cell * 0.10 * size);
+  ctx.lineTo(x + cell * 0.12 * size, y + cell * 0.22 * size);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawSeaweedWorld(x, y, size) {
+  ctx.save();
+  ctx.globalAlpha = 0.48;
+  ctx.strokeStyle = '#4bd1a5';
+  ctx.lineWidth = Math.max(1, cell * 0.07 * size);
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x + i * cell * 0.12 * size, y + cell * 0.30 * size);
+    ctx.quadraticCurveTo(x + i * cell * 0.20 * size, y, x + i * cell * 0.05 * size, y - cell * 0.34 * size);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBiomeDecorations(theme) {
+  const objects = getBiomeObjects(theme);
+  if (!objects.length) return;
+  ctx.save();
+  for (const o of objects) {
+    const x = sx(o.x) + cell / 2;
+    const y = sy(o.y) + cell / 2;
+    if (x < -cell * 2 || x > canvas.width + cell * 2 || y < -cell * 2 || y > canvas.height + cell * 2) continue;
+    if (theme.value === 'sunflower') drawSunflowerWorld(x, y, o.s, o.r);
+    else if (theme.value === 'garden') drawFlowerWorld(x, y, o.s, o.r);
+    else if (theme.value === 'forest') drawTreeWorld(x, y, o.s);
+    else if (theme.value === 'desert') (o.r > 0.38 ? drawCactusWorld(x, y, o.s) : drawRockWorld(x, y, o.s));
+    else if (theme.value === 'ice') (o.r > 0.35 ? drawPineWorld(x, y, o.s) : drawRockWorld(x, y, o.s, true));
+    else if (theme.value === 'deep') drawSeaweedWorld(x, y, o.s);
+    else if (theme.value === 'space') {
+      ctx.globalAlpha = 0.30;
+      ctx.fillStyle = o.r > 0.55 ? '#9ec5ff' : '#ffffff';
+      ctx.beginPath(); ctx.arc(x, y, cell * 0.18 * o.s, 0, Math.PI * 2); ctx.fill();
+    } else if (theme.value === 'night') {
+      const pulse = 0.35 + 0.35 * Math.sin(Date.now() / 650 + o.r * 10);
+      ctx.globalAlpha = pulse;
+      ctx.fillStyle = o.r > 0.5 ? '#ffd85a' : '#b8f7ff';
+      ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = cell * 0.5;
+      ctx.beginPath(); ctx.arc(x, y, Math.max(1.2, cell * 0.08 * o.s), 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+    } else if (theme.value === 'void') {
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = '#7d8797';
+      ctx.lineWidth = Math.max(1, cell * 0.035);
+      ctx.beginPath(); ctx.arc(x, y, cell * 0.20 * o.s, 0, Math.PI * 1.4); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
 function drawThemeDeco(theme) {
   const t = Date.now() / 1000;
   const spanX = state.mapW * 1.6, spanY = state.mapH * 1.6;
@@ -922,6 +1122,7 @@ export function draw() {
 
   const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
   drawThemeBackdrop(theme);
+  drawBiomeDecorations(theme);
 
   ctx.strokeStyle = theme.grid;
   const gxStart = Math.floor(camX), gxEnd = Math.ceil(camX + viewW);
