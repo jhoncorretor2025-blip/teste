@@ -1849,3 +1849,181 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     font-size:.69rem;
   }
 }
+
+
+/* v2.88.0 — navegação reorganizada: Jogar / Online / Progresso / Config. */
+.settingsLauncher {
+  width:100%;
+  margin:8px 0 10px;
+  padding:11px 13px;
+  border:1px solid #35527d;
+  border-radius:11px;
+  background:#111f36;
+  color:#eaf1ff;
+  font-weight:900;
+  text-align:left;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.settingsLauncher:hover,
+.settingsLauncher.open {
+  background:#172b49;
+  border-color:#5d80b4;
+}
+.gameAdvancedSettings {
+  animation:fadeIn .18s ease;
+}
+.progressHero {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.progressRecordMini {
+  min-width:76px;
+  padding:10px;
+  border-radius:12px;
+  text-align:center;
+  background:#0a1526;
+  border:1px solid #304a70;
+  color:#ffd85c;
+  font-weight:900;
+}
+.progressNav {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin:12px 0 10px;
+}
+.progressNavBtn {
+  border:1px solid #30476d;
+  border-radius:9px;
+  background:#0d192d;
+  color:#aebed7;
+  padding:9px 5px;
+  font-size:.76rem;
+  font-weight:800;
+  cursor:pointer;
+}
+.progressNavBtn.active {
+  background:#1d3355;
+  color:#fff;
+  border-color:#5e82b8;
+}
+.progressStatGrid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+}
+.progressStat {
+  padding:11px 8px;
+  border-radius:11px;
+  background:#0b1627;
+  border:1px solid #293f61;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.progressStat span {
+  color:#8fa2c0;
+  font-size:.72rem;
+}
+.progressStat b {
+  color:#fff;
+  font-size:1.15rem;
+}
+.settingsCategoryGrid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin:8px 0;
+}
+.settingsJump {
+  border:1px solid #30476d;
+  border-radius:9px;
+  background:#0d192d;
+  color:#c8d5e8;
+  padding:8px 5px;
+  font-size:.72rem;
+  font-weight:800;
+  cursor:pointer;
+}
+.settingsJump:hover {
+  background:#172b49;
+}
+.settingsSearchWrap {
+  margin:8px 0 10px;
+}
+.settingsSearchWrap .input {
+  width:100%;
+}
+.searchDimmed {
+  opacity:.35 !important;
+}
+.settingsSectionAnchor {
+  scroll-margin-top:80px;
+  height:0;
+}
+@media(min-width:701px) {
+  .tabBar {
+    position:sticky;
+    top:8px;
+    z-index:20;
+  }
+}
+@media(max-width:700px) {
+  body {
+    padding-bottom:72px;
+  }
+  .tabBar {
+    position:fixed;
+    left:8px;
+    right:8px;
+    bottom:8px;
+    z-index:100;
+    margin:0;
+    padding:5px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:3px;
+    border:1px solid #30476d;
+    border-radius:16px;
+    background:rgba(8,18,32,.94);
+    backdrop-filter:blur(12px);
+    box-shadow:0 10px 35px rgba(0,0,0,.45);
+  }
+  .tabBar .tabBtn {
+    min-height:50px;
+    padding:5px 2px;
+    font-size:.68rem;
+    border-radius:11px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+  }
+  .tabBar .tabBtn span {
+    display:block;
+    font-size:.68rem;
+  }
+  .progressNav {
+    grid-template-columns:repeat(2,1fr);
+  }
+  .progressStatGrid {
+    grid-template-columns:repeat(3,1fr);
+  }
+  .settingsCategoryGrid {
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+@media(max-width:420px) {
+  .progressStatGrid {
+    grid-template-columns:1fr;
+  }
+  .progressHero {
+    align-items:flex-start;
+  }
+}
