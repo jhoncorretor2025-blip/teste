@@ -2006,14 +2006,8 @@ if (navigator.getBattery) {
   }).catch(() => {});
 }
 
-// Esconde a tela de splash suavemente assim que o jogo terminou de montar a interface —
-// dá uma sensação de "app de verdade" abrindo, em vez de aparecer tudo de repente
-setTimeout(() => {
-  const splash = $('appSplash');
-  if (!splash) return;
-  splash.classList.add('fadeOut');
-  setTimeout(() => splash.remove(), 450);
-}, 350);
+// A tela de carregamento agora é controlada pelo inicializador do index.html.
+// Isso permite mostrar progresso e, principalmente, informar se o JavaScript travar.
 
 // Lembra a última sala online que a pessoa entrou (e com quem), pra facilitar tentar de
 // novo depois — útil se a sala ainda tiver aberta e a pessoa só perdeu a conexão à toa.
