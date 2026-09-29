@@ -541,8 +541,10 @@ function updateStreakBonusFood() {
 // "o líder já comeu o suficiente pro próximo marco?"
 function checkHunterSpawn() {
   if (state.hunterActive) return;
-  if (state.hunterMilestoneIndex >= HUNTER_MILESTONES.length) return;
-  const milestone = HUNTER_MILESTONES[state.hunterMilestoneIndex];
+  if (state.hunterMilestoneIndex >= (state.hunterConfig?.milestones?.length || HUNTER_MILESTONES.length)) return;
+  const hunterCfg = state.hunterConfig || { enabled: true, milestones: HUNTER_MILESTONES };
+  if (hunterCfg.enabled === false) return;
+  const milestone = hunterCfg.milestones[state.hunterMilestoneIndex] || HUNTER_MILESTONES[state.hunterMilestoneIndex];
   const { leaderIdx, leaderFood } = findFoodLeader();
   if (leaderIdx === -1 || leaderFood < milestone.foodThreshold) return;
   spawnHunter(milestone.durationSec);
@@ -573,7 +575,8 @@ function spawnHunter(durationSec) {
   const p = freeCell();
   state.hunterVictims = new Set();
   // A Minhoca Caçadora nasce bem grande (50 partes) — bem mais ameaçadora de se ver chegando
-  const corpo = montarCorpoDaCacadora(p, state.mapW, state.mapH);
+  const hunterCfg = state.hunterConfig || {};
+  const corpo = montarCorpoDaCacadora(p, state.mapW, state.mapH, hunterCfg.bodyLength || 50);
   state.hunterSnake = corpo;
   state.hunterDir = { x: 1, y: 0 };
   state.hunterActive = true;
@@ -590,7 +593,7 @@ function spawnHunter(durationSec) {
 
 // Move a Minhoca Caçadora um passo em direção a quem tá liderando agora (o alvo pode
 // mudar no meio da perseguição, se outra pessoa assumir a liderança), e mata quem tocar
-const RAIO_DISTRACAO = 6; // células de distância — turbo perto o suficiente pra "chamar atenção"
+const RAIO_DISTRACAO = 6; // valores padrão; a aba de configuração pode sobrescrever
 const DURACAO_DISTRACAO_MS = 3000;
 const DURACAO_RAJADA_MS = 2500;
 const INTERVALO_ENTRE_RAJADAS_MS = 8000;
@@ -618,9 +621,9 @@ export function updateHunter() {
     for (let i = 0; i < state.count; i++) {
       if (!state.alive[i] || !state.boosting[i]) continue;
       const h = state.snakes[i][0];
-      if (Math.abs(h.x - head.x) + Math.abs(h.y - head.y) <= RAIO_DISTRACAO) {
+      if (Math.abs(h.x - head.x) + Math.abs(h.y - head.y) <= (state.hunterConfig?.distractionRadius || RAIO_DISTRACAO)) {
         state.hunterDistractedTarget = i;
-        state.hunterDistractedUntil = Date.now() + DURACAO_DISTRACAO_MS;
+        state.hunterDistractedUntil = Date.now() + (state.hunterConfig?.distractionDurationSec || DURACAO_DISTRACAO_MS / 1000) * 1000;
         break;
       }
     }
@@ -638,18 +641,18 @@ export function updateHunter() {
   if (alvoSnake) {
     const alvoHead = alvoSnake[0];
     const alvoDir = state.dirs[alvoIdx] || { x: 0, y: 0 };
-    const PASSOS_DE_PREVISAO = 3;
+    const PASSOS_DE_PREVISAO = state.hunterConfig?.predictionSteps ?? 3;
     target = { x: alvoHead.x + alvoDir.x * PASSOS_DE_PREVISAO, y: alvoHead.y + alvoDir.y * PASSOS_DE_PREVISAO };
   }
 
   // Melhoria #4 — Rajada de velocidade: de vez em quando, anda 2 passos no lugar de 1
   // por alguns segundos, deixando a perseguição mais imprevisível
   if (!state.hunterBurstUntil && Date.now() >= state.hunterNextBurstAt) {
-    state.hunterBurstUntil = Date.now() + DURACAO_RAJADA_MS;
+    state.hunterBurstUntil = Date.now() + (state.hunterConfig?.burstDurationSec || DURACAO_RAJADA_MS / 1000) * 1000;
   }
   if (state.hunterBurstUntil && Date.now() >= state.hunterBurstUntil) {
     state.hunterBurstUntil = 0;
-    state.hunterNextBurstAt = Date.now() + INTERVALO_ENTRE_RAJADAS_MS;
+    state.hunterNextBurstAt = Date.now() + (state.hunterConfig?.burstIntervalSec || INTERVALO_ENTRE_RAJADAS_MS / 1000) * 1000;
   }
   const passosNesseInstante = state.hunterBurstUntil ? 2 : 1;
 
@@ -671,7 +674,7 @@ export function updateHunter() {
     if (tocou) {
       // Melhoria #7 — Cresce a cada vítima: fica maior (e mais ameaçadora) a cada
       // pessoa que ela pega durante a mesma aparição
-      for (let n = 0; n < 8; n++) {
+      for (let n = 0; n < (state.hunterConfig?.growthPerVictim || 8); n++) {
         const ultimo = state.hunterSnake[state.hunterSnake.length - 1];
         state.hunterSnake.push({ ...ultimo });
       }
