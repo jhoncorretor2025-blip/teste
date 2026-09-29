@@ -20,14 +20,16 @@ import * as net from './net.js';
 // --- Multiplayer online (criar/entrar em sala) ---
 // Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
 // já confirmou antes de decidir começar (mas continua podendo começar mesmo sem todos)
-const readyStatus = {};
+const readyStatus = { 0: true };
+let onlineLobbyPlayers = [];
+let onlineLobbyConfig = null;
 function updateReadyDisplay() {
   const box = $('readyStatusDisplay');
   if (!box) return;
   const total = net.connectedCount();
   if (total === 0) { box.textContent = ''; return; }
   const readyCount = Object.values(readyStatus).filter(Boolean).length;
-  box.textContent = `✅ ${readyCount} de ${total} amigo(s) prontos`;
+  box.textContent = `✅ ${readyCount} de ${total} jogador(es) prontos`;
 }
 
 $('clientReadyBtn').addEventListener('click', () => {
@@ -74,6 +76,7 @@ net.setHandlers({
     makePlayers();
     $('startFromHostPanel').classList.add('waitingPulse'); // chama atenção: tem gente esperando
     updateReadyDisplay();
+    broadcastOnlineLobby();
     // Se a pessoa saiu da aba (foi ver outra coisa) enquanto esperava, um toque sonoro
     // de notificação avisa que já pode voltar e começar a partida
     if (window.Notification && window.Notification.permission === 'granted' && document.hidden) {
@@ -89,6 +92,13 @@ net.setHandlers({
     if (net.connectedCount() === 0) $('startFromHostPanel').classList.remove('waitingPulse');
     delete readyStatus[slot];
     updateReadyDisplay();
+    broadcastOnlineLobby();
+  },
+  onPeerList: () => broadcastOnlineLobby(),
+  onLobby: (players, config) => {
+    onlineLobbyPlayers = Array.isArray(players) ? players : [];
+    onlineLobbyConfig = config || null;
+    renderOnlineLobby();
   },
   onStateUpdate: (msg) => {
     applyRemoteState(msg);
@@ -139,8 +149,9 @@ net.setHandlers({
       appendChatMessage(slot, msg.text);
       net.broadcastRaw({ type: 'chat', text: msg.text, from: slot }); // repassa pra todo mundo
     } else if (msg.type === 'ready') {
-      readyStatus[slot] = msg.ready;
+      readyStatus[slot] = !!msg.ready;
       updateReadyDisplay();
+      broadcastOnlineLobby();
     }
   },
   onReaction: (emoji) => showReaction(emoji),
@@ -192,8 +203,12 @@ document.querySelectorAll('.onlinePreset').forEach((btn) => {
 });
 $('onlineDiagBtn').addEventListener('click', runOnlineDiagnostics);
 $('leaveOnlineBtn').addEventListener('click', leaveOnlineLobby);
-setInterval(updateOnlineLobbyUI, 1000);
+setInterval(() => {
+  updateOnlineLobbyUI();
+  if (net.isOnline() && net.isHost()) broadcastOnlineLobby();
+}, 1000);
 updateOnlineLobbyUI();
+renderOnlineLobby();
 
 $('hostBtn').addEventListener('click', () => {
   if (!navigator.onLine) {
@@ -204,6 +219,9 @@ $('hostBtn').addEventListener('click', () => {
   state.teamPrefs = ['mine'];
   syncTeamCapacity();
   sessionWins = {};
+  onlineLobbyPlayers = [];
+  onlineLobbyConfig = null;
+  renderOnlineLobby();
   updateSessionScoreDisplay();
   $('hostBtn').disabled = true;
   const originalHostText = $('hostBtn').textContent;
@@ -285,7 +303,75 @@ function applyOnlinePreset(name) {
   announce(`${labels[name]} aplicado.`);
 }
 
-function updateOnlineLobbyUI() {
+function getOnlineLobbyConfig() {
+  const text = (id) => $(id)?.selectedOptions?.[0]?.text || '';
+  return {
+    format: $('onlineFormat')?.value || 'ffa',
+    mode: text('mode'),
+    speed: text('speedSelect'),
+    map: text('mapSize'),
+    difficulty: text('difficulty'),
+    theme: text('boardTheme'),
+    noWalls: $('noWalls')?.checked || false,
+    teams: $('teamMode')?.checked ? `${state.teamSizeMine} × ${state.teamSizeOther}` : null,
+    tournament: $('tournamentMode')?.checked || false,
+  };
+}
+
+function broadcastOnlineLobby() {
+  if (!net.isOnline() || !net.isHost()) return;
+  const players = net.getConnectedPeers().map((p) => ({
+    slot: p.slot,
+    host: !!p.host,
+    name: state.names[p.slot] || (p.host ? 'Anfitrião' : `Jogador ${p.slot + 1}`),
+    team: state.teamMode ? state.teams[p.slot] : null,
+    ready: p.host ? true : !!readyStatus[p.slot],
+    ping: Number.isFinite(p.ping) ? Math.round(p.ping) : null,
+  }));
+  const config = getOnlineLobbyConfig();
+  onlineLobbyPlayers = players;
+  onlineLobbyConfig = config;
+  renderOnlineLobby();
+  net.broadcastRaw({ type: 'lobby', players, config });
+}
+
+function renderOnlineLobby() {
+  const box = $('onlineLobbyPlayers');
+  if (!box) return;
+  const players = onlineLobbyPlayers.slice().sort((a, b) => a.slot - b.slot);
+  if (!players.length) {
+    box.innerHTML = '<div class="onlineLobbyEmpty">👥 Crie a sala ou entre em uma para ver quem está jogando.</div>';
+    return;
+  }
+  const teamNames = { 0: '🔵 Azul', 1: '🔴 Vermelho' };
+  const signal = (ping) => {
+    if (!Number.isFinite(ping)) return '📶';
+    if (ping < 80) return '🟢';
+    if (ping < 160) return '🟡';
+    return '🔴';
+  };
+  box.innerHTML = players.map((p) => {
+    const team = p.team == null ? '' : ` <span class="onlineLobbyTeam">${teamNames[p.team] || `Time ${p.team + 1}`}</span>`;
+    const status = p.ready ? '<span class="onlineLobbyReady">✅ Pronto</span>' : '<span class="onlineLobbyWaiting">⏳ Aguardando</span>';
+    const ping = p.host ? '👑 Host' : `${signal(p.ping)} ${Number.isFinite(p.ping) ? `${Math.round(p.ping)} ms` : '—'}`;
+    return `<div class="onlineLobbyPlayer">
+      <div class="onlineLobbyAvatar">${p.host ? '👑' : '🐍'}</div>
+      <div class="onlineLobbyPlayerMain"><b>${escapeChatText(p.name || 'Jogador')}</b><span>P${p.slot + 1}${team}</span></div>
+      <div class="onlineLobbyPlayerMeta">${status}<small>${ping}</small></div>
+    </div>`;
+  }).join('');
+  const count = players.length;
+  const ready = players.filter(p => p.ready).length;
+  const cfg = onlineLobbyConfig;
+  const configText = cfg
+    ? `${cfg.format === 'teams' ? '🤝 Times' : '⚔️ Todos contra todos'} • ${cfg.map} • ${cfg.speed}${cfg.noWalls ? ' • 🌀 Sem paredes' : ''}${cfg.tournament ? ' • 🏆 Torneio' : ''}${cfg.teams ? ` • ${cfg.teams}` : ''}`
+    : '';
+  const cfgBox = $('onlineLobbyConfig');
+  if (cfgBox) cfgBox.textContent = configText ? `⚙️ Configuração da sala: ${configText}` : '';
+  const summary = $('onlineLobbySummary');
+  if (summary) summary.textContent = `👥 ${count}/6 jogadores • ✅ ${ready}/${count} prontos`;
+}
+
   const active = net.isOnline();
   $('leaveOnlineBtn')?.classList.toggle('hidden', !active);
   const host = net.isHost();
@@ -531,6 +617,10 @@ function doStart() {
   maybeSuggestLandscape();
   $('startFromHostPanel').classList.remove('waitingPulse');
   Object.keys(readyStatus).forEach((k) => delete readyStatus[k]);
+  readyStatus[0] = true;
+  onlineLobbyPlayers = [];
+  onlineLobbyConfig = null;
+  renderOnlineLobby();
   updateReadyDisplay();
   // Toque pessoal: jogando sozinho, a arena ganha um contorno na cor da sua minhoca
   const arenaEl = document.querySelector('.arena');
