@@ -1,5 +1,15 @@
 # Histórico do que já foi feito (CHANGELOG)
 
+## [2.93.0] — 2026-09-29
+- **Mapas/biomas:** adicionada uma camada real de decoração fixa no mundo, separada das partículas animadas.
+- **Campo de Girassóis:** agora mostra girassóis desenhados no próprio Canvas, com caule, folhas, pétalas e centro.
+- **Jardim de Flores:** agora mostra flores coloridas distribuídas pelo mapa.
+- **Outros biomas:** Floresta ganhou árvores, Deserto ganhou cactos/rochas, Gelo ganhou pinheiros/rochas, Azul Profundo ganhou algas, Espacial ganhou pontos de profundidade, Roxo Noite ganhou vagalumes e Vazio ganhou detalhes sutis.
+- **Estabilidade visual:** as posições das decorações são determinísticas por tema/tamanho do mapa, então elas não ficam trocando de lugar a cada frame.
+- **Performance:** os objetos são formas simples de Canvas, aparecem apenas quando estão na área visível e não participam das colisões.
+- **Fundos:** Espacial, Campo de Girassóis e Jardim de Flores receberam fundos mais visíveis, reduzindo a sensação de “mapa preto”.
+- **Versão:** 2.93.0.
+
 ## [2.92.0] — 2026-09-29
 - **Online — abandono protegido:** jogador que cai durante a partida não desloca os slots; uma CPU assume temporariamente e o retorno devolve o controle.
 - **Online — confronto detalhado:** histórico 1×1 acumula partidas, vitórias, derrotas, taxa de vitórias, média de pontos, comidas e eliminações.
