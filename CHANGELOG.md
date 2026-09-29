@@ -1,3 +1,8 @@
+## 2.94.4
+- Correção e republicação do inicializador para forçar uma versão nova do carregador.
+- Versão incrementada para evitar que navegadores mantenham o pacote antigo em cache.
+- Mantida a captura de erro do carregamento para mostrar o erro real caso algum módulo falhe.
+
 ## 2.94.3 — Versão visível no carregamento
 - A tela inicial agora mostra explicitamente a versão do jogo antes do carregamento começar.
 - Versão 2.94.3 usada como marcador visual para confirmar que o arquivo novo chegou ao aparelho.
