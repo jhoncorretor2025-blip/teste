@@ -29,6 +29,13 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 - **Robustez:** a visualização usa os slots reais das conexões.
 - **Versão:** 2.90.0 e cache do Service Worker sincronizado.
 
+## [2.91.0] — 2026-09-29
+- **Online — resultado detalhado:** ao finalizar um torneio, o resultado agora mostra colocação, rodadas vencidas, comidas, eliminações e pontuação de cada jogador.
+- **Online — resultado sincronizado:** o anfitrião envia o resultado final para todos os participantes, em vez de cada aparelho calcular uma versão diferente.
+- **Online — revanche:** o anfitrião pode iniciar outra partida usando a mesma sala e os mesmos jogadores, sem novo convite.
+- **Online — clientes:** quem não é anfitrião vê que a revanche está aguardando o anfitrião e entra automaticamente na nova contagem regressiva.
+- **Versão:** atualizada para 2.91.0.
+
 ## [Não lançado]
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 - **Padrão para qualquer IA:** `AGENTS.md` (porta de entrada) e `CLAUDE.md`, `README.md`, guias em `docs/` (arquitetura, protocolo online, armadilhas, padrão para outros sites), mapa do código **gerado**, ferramentas em `tools/` (verificar, trocar versão, gerar mapa, publicar num commit só) e testes em `tests/` (agora dentro do repositório; antes só existiam na máquina de quem trabalhava). Publicado no commit `19d62ba`.
