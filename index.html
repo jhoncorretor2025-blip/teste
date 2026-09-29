@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v2.91.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.91.0">
+<title>🐍 Mioquinha v2.92.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.92.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -57,7 +57,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v2.91.0</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v2.92.0</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
   </header>
@@ -297,6 +297,7 @@
              <div class="onlineLobbyHeader"><b>👥 Quem está na sala</b><span id="onlineLobbySummary" class="onlineLobbySummary">0/6</span></div>
              <div id="onlineLobbyPlayers" class="onlineLobbyPlayers" aria-live="polite"></div>
              <div id="onlineLobbyConfig" class="onlineLobbyConfig"></div>
+             <div id="onlineLobbyStatus" class="onlineLobbyStatus">🟢 Sala pronta para receber jogadores.</div>
            </div>
           <button id="startFromHostPanel" class="btn" type="button" style="margin-top:10px;width:100%">🚀 Jogar</button>
         </div>
@@ -313,6 +314,7 @@
           <button id="joinBtn" class="btn alt" type="button">🔗 Entrar em sala</button>
         </div>
         <div id="joinStatus" class="muted" style="margin-top:6px"></div>
+        <div id="onlineClientLobby" class="onlineLobbyCard hidden"><div class="onlineLobbyHeader"><b>🌐 Lobby da partida</b><span id="onlineClientLobbyStatus" class="onlineLobbyStatus">Aguardando...</span></div><div id="onlineClientLobbyPlayers" class="onlineLobbyPlayers"></div><div id="onlineClientLobbyConfig" class="onlineLobbyConfig"></div></div>
         <button id="lastRoomBtn" class="refresh hidden" type="button" style="margin-top:6px"></button>
       </section>
       </div>
@@ -461,6 +463,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.91.0"></script>
+<script type="module" src="js/main.js?v=2.92.0"></script>
 </body>
 </html>
