@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Snake Arena v2.83.1</title>
+<title>🐍 Mioquinha 🐍 v2.84.0</title>
 <link rel="stylesheet" href="css/style.css?v=2.83.1">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
@@ -14,7 +14,7 @@
 <body>
 <div id="appSplash" class="appSplash">
   <img src="icon.svg" alt="" width="88" height="88">
-  <div class="appSplashTitle">🐍 Snake Arena</div>
+  <div class="appSplashTitle">🐍 Mioquinha 🐍</div>
 </div>
 <div class="app">
   <div id="updateBanner" class="updateBanner hidden">
@@ -32,7 +32,7 @@
   </div>
   <div id="tutorial" class="overlay hidden">
     <div class="overlayCard">
-      <h2>🐍 Bem-vindo ao Snake Arena!</h2>
+      <h2>🐍 Bem-vindo à Mioquinha!</h2>
       <p>🎮 Mova com <b>Setas</b>, <b>WASD</b> ou <b>IJKL</b> — depende do controle que você escolher pra cada jogador.</p>
       <p>⚡ Use o <b>turbo</b> com <b>Espaço / Shift / Enter</b> (ou o botão redondo no celular). Ele custa <b>1 comidinha</b> por uso — guarde ele pra pegar a ⭐ estrela antes de alguém, ou pra cortar na frente de um adversário!</p>
       <p>📱 No celular, arraste o dedo no canto esquerdo da arena pra virar.</p>
@@ -57,9 +57,9 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Snake Arena <span class="version">v2.83.1</span></h1>
-    <p class="sub">Até 6 jogadores • controles configuráveis • CPU • PC e celular</p>
-    <button id="refresh" class="refreshBig" type="button" aria-label="Atualizar jogo (buscar versão mais nova)">🔄 Atualizar jogo</button>
+    <h1>🐍 Mioquinha 🐍 <span class="version">v2.84.0</span></h1>
+    <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
+    <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
   </header>
   <main>
     <section id="menu" class="panel">
@@ -72,7 +72,7 @@
           <button id="shareHero" class="btn alt" type="button">📤 Compartilhar</button>
         </div>
         <button id="resumeGameBtn" class="btn hidden" type="button" style="margin-top:8px;width:100%;background:#1f8a4c;color:#fff">▶️ Continuar partida anterior</button>
-        <button id="resumeGameBtn" class="btn hidden" type="button" style="margin-top:8px;width:100%;background:#1f8a4c;color:#fff">▶️ Continuar partida anterior</button>
+        
         <button id="quickRepeatBtn" class="btn alt hidden" type="button" style="margin-top:8px;width:100%"></button>
       </div>
       <div class="tabBar" role="tablist">
@@ -338,7 +338,7 @@
       <div id="diagPanel" class="hidden" style="background:#000;color:#0f0;font-family:monospace;font-size:.65rem;padding:6px;text-align:left;white-space:pre-wrap;word-break:break-all"></div>
       <div id="mission" class="mission"></div>
       <div class="arena">
-        <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Snake Arena"></canvas>
+        <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Mioquinha 🐍"></canvas>
         <video id="pipVideo" muted playsinline style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video>
         <div id="renderErrorBanner" class="landscapeHint hidden" style="background:#5a1f2a;border-color:#ff5577"></div>
         <div id="clientReadyOverlay" class="overlay hidden">
