@@ -2,6 +2,12 @@
 
 Este arquivo é a **memória do projeto**: qualquer IA (ou pessoa) lê aqui o que já foi feito antes de mexer, e registra o que fez depois. Mais recente primeiro.
 
+## [2.85.0] — 2026-09-29
+- **Online:** a configuração estável da sala (nomes, cores, cabeças, skins, mapa, tema e times) agora é reenviada ao entrar e reconectar, evitando cliente tardio sem essas informações.
+- **Online:** a configuração ficou separada do pacote frequente de estado, reduzindo a dependência do primeiro pacote raro.
+- **Conexão:** quando o navegador só informa `effectiveType`, a interface agora chama isso de **qualidade estimada** em vez de sugerir que seja Wi-Fi ou dados móveis.
+- **Robustez:** versão centralizada corrigida para `2.85.0`.
+
 ## Como usar e manter
 - **Ao terminar qualquer trabalho**, acrescente o que mudou em **"Não lançado"** (em português simples: o que mudou e, se não for óbvio, **por quê**).
 - Ao trocar a versão (`python3 tools/bump-versao.py X.Y.Z`), a ferramenta **move** o conteúdo de "Não lançado" para a versão nova, com a data de hoje. Se "Não lançado" estiver vazio, ela deixa um lembrete `(descreva o que mudou nesta versão)` — e o `npm run verificar` **reprova** enquanto o lembrete estiver aí.
