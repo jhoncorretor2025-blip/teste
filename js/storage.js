@@ -166,6 +166,33 @@ export function loadTotalPlaytime() {
   return Number(localStorage.getItem(PLAYTIME_KEY)) || 0;
 }
 
+// Configurações da Minhoca Caçadora — ficam salvas neste navegador.
+// Mantém o código com valores padrão, mas permite personalizar a dificuldade sem editar arquivos.
+const HUNTER_SETTINGS_KEY = 'snakeArenaHunterSettings';
+
+export function loadHunterSettings(defaults) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(HUNTER_SETTINGS_KEY));
+    if (!saved || typeof saved !== 'object') return JSON.parse(JSON.stringify(defaults));
+    return {
+      ...JSON.parse(JSON.stringify(defaults)),
+      ...saved,
+      milestones: Array.isArray(saved.milestones)
+        ? saved.milestones.slice(0, 2).map((m, i) => ({
+            ...(defaults.milestones[i] || {}),
+            ...(m || {}),
+          }))
+        : JSON.parse(JSON.stringify(defaults.milestones)),
+    };
+  } catch {
+    return JSON.parse(JSON.stringify(defaults));
+  }
+}
+
+export function saveHunterSettings(settings) {
+  try { localStorage.setItem(HUNTER_SETTINGS_KEY, JSON.stringify(settings)); } catch {}
+}
+
 // Formata milissegundos num texto amigável tipo "2h 15min" ou "38min"
 export function formatPlaytime(ms) {
   const totalMinutes = Math.floor(ms / 60000);
