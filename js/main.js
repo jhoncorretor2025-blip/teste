@@ -23,6 +23,7 @@ import * as net from './net.js';
 const readyStatus = { 0: true };
 let onlineLobbyPlayers = [];
 let onlineLobbyConfig = null;
+const disconnectedOnline = {};
 function updateReadyDisplay() {
   const box = $('readyStatusDisplay');
   if (!box) return;
@@ -84,11 +85,18 @@ net.setHandlers({
     }
   },
   onPeerLeft: (slot) => {
-    state.count = Math.min(6, 1 + net.connectedCount());
-    state.teamPrefs.length = Math.min(state.teamPrefs.length, state.count);
-    $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s).`;
+    const wasPlaying = net.isHost() && state.running && slot > 0 && slot < state.count;
+    if (wasPlaying) {
+      state.types[slot] = 'cpu';
+      disconnectedOnline[slot] = { name: state.names[slot] || `Jogador ${slot + 1}`, at: Date.now() };
+      $('roomStatus').textContent = `⚠️ ${disconnectedOnline[slot].name} caiu. A CPU assumiu temporariamente o controle.`;
+      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '⚠️ CPU assumiu temporariamente', color: '#ffd24d', until: Date.now() + 2200 };
+    } else {
+      state.count = Math.min(6, 1 + net.connectedCount());
+      state.teamPrefs.length = Math.min(state.teamPrefs.length, state.count);
+      makePlayers();
+    }
     updateOnlineLobbyUI();
-    makePlayers();
     if (net.connectedCount() === 0) $('startFromHostPanel').classList.remove('waitingPulse');
     delete readyStatus[slot];
     updateReadyDisplay();
@@ -144,6 +152,12 @@ net.setHandlers({
   // Aplica de verdade a direção/turbo que o amigo manda — sem isso a minhoca dele
   // nunca virava, só seguia reto na direção que nasceu (bug relatado)
   onInput: (slot, msg) => {
+    if (disconnectedOnline[slot]) {
+      delete disconnectedOnline[slot];
+      state.types[slot] = 'human';
+      $('roomStatus').textContent = `🔄 ${state.names[slot] || `Jogador ${slot + 1}`} voltou! Controle devolvido.`;
+      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '🔄 Jogador voltou!', color: '#67ef8a', until: Date.now() + 1800 };
+    }
     if (msg.type === 'dir') setDir(slot, msg.dir);
     else if (msg.type === 'boost') tryBoost(slot);
     else if (msg.type === 'reaction') {
@@ -326,13 +340,16 @@ function getOnlineLobbyConfig() {
 function broadcastOnlineLobby() {
   if (!net.isOnline() || !net.isHost()) return;
   const players = net.getConnectedPeers().map((p) => ({
-    slot: p.slot,
-    host: !!p.host,
+    slot: p.slot, host: !!p.host,
     name: state.names[p.slot] || (p.host ? 'Anfitrião' : `Jogador ${p.slot + 1}`),
     team: state.teamMode ? state.teams[p.slot] : null,
     ready: p.host ? true : !!readyStatus[p.slot],
-    ping: Number.isFinite(p.ping) ? Math.round(p.ping) : null,
+    ping: Number.isFinite(p.ping) ? Math.round(p.ping) : null, disconnected: false,
   }));
+  Object.entries(disconnectedOnline).forEach(([slot, info]) => {
+    const s = Number(slot);
+    if (!players.some(p => p.slot === s)) players.push({ slot:s, host:false, name:info.name, team:state.teamMode?state.teams[s]:null, ready:false, ping:null, disconnected:true });
+  });
   const config = getOnlineLobbyConfig();
   onlineLobbyPlayers = players;
   onlineLobbyConfig = config;
@@ -375,6 +392,23 @@ function renderOnlineLobby() {
   if (cfgBox) cfgBox.textContent = configText ? `⚙️ Configuração da sala: ${configText}` : '';
   const summary = $('onlineLobbySummary');
   if (summary) summary.textContent = `👥 ${count}/6 jogadores • ✅ ${ready}/${count} prontos`;
+  const lobbyStatus = $('onlineLobbyStatus');
+  if (lobbyStatus) {
+    const disconnected = players.filter(p => p.disconnected).length;
+    lobbyStatus.textContent = disconnected ? `⚠️ ${disconnected} jogador(es) desconectado(s). A CPU protege a partida e o slot fica reservado.` : ready === count ? '🟢 Todos os jogadores estão prontos.' : `🟡 ${count - ready} jogador(es) ainda não confirmaram.`;
+  }
+  const clientBox = $('onlineClientLobby'), clientPlayers = $('onlineClientLobbyPlayers'), clientCfg = $('onlineClientLobbyConfig'), clientStatus = $('onlineClientLobbyStatus');
+  if (clientBox && clientPlayers) {
+    clientBox.classList.toggle('hidden', !net.isOnline() || net.isHost() || !players.length);
+    clientPlayers.innerHTML = players.map(p => {
+      const team = p.team == null ? '' : ` <span class="onlineLobbyTeam">${teamNames[p.team] || `Time ${p.team + 1}`}</span>`;
+      const status = p.disconnected ? '<span class="onlineLobbyDisconnected">⚠️ CPU</span>' : p.ready ? '<span class="onlineLobbyReady">✅ Pronto</span>' : '<span class="onlineLobbyWaiting">⏳ Aguardando</span>';
+      const ping = p.disconnected ? '🔄 Reconectando...' : p.host ? '👑 Host' : '📶';
+      return `<div class="onlineLobbyPlayer"><div class="onlineLobbyAvatar">${p.host?'👑':p.disconnected?'🤖':'🐍'}</div><div class="onlineLobbyPlayerMain"><b>${escapeChatText(p.name||'Jogador')}</b><span>P${p.slot+1}${team}</span></div><div class="onlineLobbyPlayerMeta">${status}<small>${ping}</small></div></div>`;
+    }).join('');
+    if(clientCfg) clientCfg.textContent=configText?`⚙️ ${configText}`:'';
+    if(clientStatus) clientStatus.textContent=`${players.filter(p=>!p.disconnected).length}/${count} conectados • ${ready}/${count} prontos`;
+  }
 }
 
   const active = net.isOnline();
@@ -716,7 +750,13 @@ document.addEventListener('onlineMatchResult', (e) => {
   // ambos só quando é online de verdade, já que contra CPU não é bem um "confronto"
   if (net.isOnline() && state.count === 2) {
     const opponentSlot = net.mySlot === 0 ? 1 : 0;
-    recordMatchResult(state.names[opponentSlot], champion === net.mySlot);
+    const opponentName = state.names[opponentSlot];
+    recordMatchResult(opponentName, champion === net.mySlot, {
+      score: scores[net.mySlot] || 0,
+      food: foodsEaten[net.mySlot] || 0,
+      eliminations: eliminations[net.mySlot] || 0,
+    });
+    showMatchHistory(opponentName);
   }
   if (net.isOnline()) {
     sessionWins[champion] = (sessionWins[champion] || 0) + 1;
@@ -1921,7 +1961,11 @@ function showMatchHistory(partnerName) {
   const history = loadMatchHistory(partnerName);
   const total = history.wins + history.losses;
   if (total === 0) { box.classList.add('hidden'); return; }
-  box.textContent = `📜 Você já jogou ${total}x com ${partnerName}: ${history.wins} vitória${history.wins === 1 ? '' : 's'}, ${history.losses} derrota${history.losses === 1 ? '' : 's'}`;
+  const winRate = total ? Math.round((history.wins / total) * 100) : 0;
+  const avgScore = total ? Math.round((history.totalScore || 0) / total) : 0;
+  box.innerHTML = `📜 <b>${total} confrontos</b> com ${escapeChatText(partnerName)}<br>` +
+    `🏆 ${history.wins} vitória${history.wins === 1 ? '' : 's'} • 💀 ${history.losses} derrota${history.losses === 1 ? '' : 's'} • 📊 ${winRate}% de vitórias<br>` +
+    `⭐ Média: ${avgScore} pontos • 🍎 ${history.totalFood || 0} comidas • ☠️ ${history.totalEliminations || 0} eliminações`;
   box.classList.remove('hidden');
 }
 
