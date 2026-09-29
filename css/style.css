@@ -1691,17 +1691,60 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
 
 
 /* v2.84.0 — ajustes de navegação e leitura da tela inicial. */
-.menuHero .row { align-items:stretch; }
-.menuHero .heroPlay, .menuHero .btn.alt { min-height:50px; }
-@media(max-width:600px) {
-  .menuHero .row { display:grid; grid-template-columns:1.35fr 1fr; }
-  .menuHero .row > .heroPlay, .menuHero .row > .btn.alt { width:100%; min-width:0; }
-  .tabBar { position:sticky; top:0; z-index:4; padding:5px 2px; margin-left:-2px; margin-right:-2px; background:#0b1220ee; -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); border-radius:12px; }
-  .tabBtn { min-height:42px; padding:9px 11px; }
+.menuHero .row {
+  align-items:stretch
 }
+
+.menuHero .heroPlay,
+.menuHero .btn.alt {
+  min-height:50px
+}
+
+@media(max-width:600px) {
+  .menuHero .row {
+    display:grid;
+    grid-template-columns:1.35fr 1fr
+  }
+
+  .menuHero .row > .heroPlay,
+  .menuHero .row > .btn.alt {
+    width:100%;
+    min-width:0
+  }
+
+  .tabBar {
+    position:sticky;
+    top:0;
+    z-index:4;
+    padding:5px 2px;
+    margin-left:-2px;
+    margin-right:-2px;
+    background:#0b1220ee;
+    -webkit-backdrop-filter:blur(8px);
+    backdrop-filter:blur(8px);
+    border-radius:12px
+  }
+
+  .tabBtn {
+    min-height:42px;
+    padding:9px 11px
+  }
+}
+
 @media(min-width:901px) {
-  .menuHero { padding:18px 16px; }
-  .menuHero .row { justify-content:center; }
-  .menuHero .row > .heroPlay { flex:1 1 520px; }
-  .menuHero .row > .btn.alt { flex:0 1 220px; }
+  .menuHero {
+    padding:18px 16px
+  }
+
+  .menuHero .row {
+    justify-content:center
+  }
+
+  .menuHero .row > .heroPlay {
+    flex:1 1 520px
+  }
+
+  .menuHero .row > .btn.alt {
+    flex:0 1 220px
+  }
 }
