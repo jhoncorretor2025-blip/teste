@@ -70,6 +70,7 @@ net.setHandlers({
   onPeerJoined: () => {
     state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s). Pode clicar em "Jogar" quando quiser!`;
+    updateOnlineLobbyUI();
     makePlayers();
     $('startFromHostPanel').classList.add('waitingPulse'); // chama atenção: tem gente esperando
     updateReadyDisplay();
@@ -83,6 +84,7 @@ net.setHandlers({
     state.count = Math.min(6, 1 + net.connectedCount());
     state.teamPrefs.length = Math.min(state.teamPrefs.length, state.count);
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s).`;
+    updateOnlineLobbyUI();
     makePlayers();
     if (net.connectedCount() === 0) $('startFromHostPanel').classList.remove('waitingPulse');
     delete readyStatus[slot];
@@ -185,6 +187,14 @@ net.setHandlers({
   },
 });
 
+document.querySelectorAll('.onlinePreset').forEach((btn) => {
+  btn.addEventListener('click', () => applyOnlinePreset(btn.dataset.onlinePreset));
+});
+$('onlineDiagBtn').addEventListener('click', runOnlineDiagnostics);
+$('leaveOnlineBtn').addEventListener('click', leaveOnlineLobby);
+setInterval(updateOnlineLobbyUI, 1000);
+updateOnlineLobbyUI();
+
 $('hostBtn').addEventListener('click', () => {
   if (!navigator.onLine) {
     $('roomStatus').textContent = '📡 Sem conexão com a internet — o multiplayer online precisa de internet pra funcionar. O modo local continua funcionando normalmente!';
@@ -204,6 +214,7 @@ $('hostBtn').addEventListener('click', () => {
       $('hostPanel').classList.remove('hidden');
       $('roomCode').textContent = roomId;
       $('roomStatus').textContent = '👥 0 amigo(s) conectado(s). Compartilha o link e espera a galera entrar!';
+      updateOnlineLobbyUI();
       $('count').disabled = true;
       state.count = 1;
       makePlayers();
@@ -244,6 +255,104 @@ $('copyRoomCode').addEventListener('click', async () => {
 // já que muita gente cola o link inteiro em vez de só o código — não devia dar erro por isso.
 // Monta o link de convite já com as configurações da sala embutidas — permite mostrar
 // uma prévia pra quem recebe o link, ANTES de conectar de verdade (melhoria #9)
+function applyOnlinePreset(name) {
+  const presets = {
+    casual: { format: 'ffa', mode: 'classic', speed: 'normal', map: 'medium', diff: 'normal', noWalls: false },
+    teams: { format: 'teams', mode: 'classic', speed: 'normal', map: 'medium', diff: 'normal', noWalls: false, mine: 2, other: 2 },
+    chaos: { format: 'teams', mode: 'turbo', speed: 'fast', map: 'large', diff: 'hardmid', noWalls: false, mine: 3, other: 3 },
+    training: { format: 'ffa', mode: 'classic', speed: 'slow', map: 'small', diff: 'easy', noWalls: true },
+  };
+  const p = presets[name];
+  if (!p) return;
+  $('onlineFormat').value = p.format;
+  $('onlineFormat').dispatchEvent(new window.Event('change'));
+  $('mode').value = p.mode;
+  $('mode').dispatchEvent(new window.Event('change'));
+  $('speedSelect').value = p.speed;
+  $('speedSelect').dispatchEvent(new window.Event('change'));
+  $('mapSize').value = p.map;
+  $('mapSize').dispatchEvent(new window.Event('change'));
+  $('difficulty').value = p.diff;
+  $('difficulty').dispatchEvent(new window.Event('change'));
+  $('noWalls').checked = p.noWalls;
+  $('noWalls').dispatchEvent(new window.Event('change'));
+  if (p.mine) $('teamSizeMine').value = String(p.mine);
+  if (p.other) $('teamSizeOther').value = String(p.other);
+  if (p.mine || p.other) syncTeamCapacity();
+  updateRoomSettingsPreview();
+  const labels = { casual: '🎯 1×1 Casual', teams: '🤝 Times 2×2', chaos: '🔥 Caos 3×3', training: '🎓 Treino' };
+  $('roomLobbyHint').textContent = `✅ ${labels[name]} aplicado. Agora crie a sala e envie o convite.`;
+  announce(`${labels[name]} aplicado.`);
+}
+
+function updateOnlineLobbyUI() {
+  const active = net.isOnline();
+  $('leaveOnlineBtn')?.classList.toggle('hidden', !active);
+  const host = net.isHost();
+  const capacity = $('teamMode').checked
+    ? Math.max(2, state.teamSizeMine + state.teamSizeOther)
+    : 6;
+  if (host) {
+    const humans = Math.min(capacity, 1 + net.connectedCount());
+    const pct = Math.max(0, Math.min(100, humans / capacity * 100));
+    $('roomCapacityText').textContent = `${humans} / ${capacity}`;
+    $('roomCapacityFill').style.width = `${pct}%`;
+    $('roomLobbyHint').textContent = humans >= capacity
+      ? '🟢 Sala cheia. Todos os jogadores já podem começar!'
+      : `🟢 Aguardando ${capacity - humans} vaga(s). Você já pode começar quando quiser.`;
+  }
+}
+
+function runOnlineDiagnostics() {
+  const box = $('onlineDiagDisplay');
+  if (!box) return;
+  const online = navigator.onLine;
+  const peerJs = typeof window.Peer === 'function';
+  const webRtc = typeof window.RTCPeerConnection === 'function';
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const quality = conn?.effectiveType ? String(conn.effectiveType).toUpperCase() : 'não disponível';
+  let latency = null;
+  if (net.isHost()) {
+    const values = Object.values(net.pingStats).filter(v => Number.isFinite(v));
+    if (values.length) latency = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+  } else if (net.isOnline() && Number.isFinite(net.hostLatency)) {
+    latency = Math.round(net.hostLatency);
+  }
+  const rows = [
+    [online, 'Internet detectada pelo navegador'],
+    [peerJs, 'PeerJS carregado'],
+    [webRtc, 'WebRTC/DataChannel disponível'],
+    [net.isOnline(), 'Sessão online ativa'],
+  ];
+  const status = rows.map(([ok, label]) => `<span class="diagItem">${ok ? '🟢' : '🔴'} ${label}</span>`).join('');
+  const ping = latency == null ? '📶 Ping da sala: aguardando conexão' : `📶 Ping médio: <b>${latency} ms</b>`;
+  box.innerHTML = `${status}<span class="diagItem">📡 Qualidade estimada: <b>${quality}</b></span><span class="diagItem">${ping}</span><small>ℹ️ O teste de internet é apenas uma indicação; a conexão real entre jogadores depende da rede e do WebRTC.</small>`;
+  box.classList.remove('hidden');
+}
+
+function leaveOnlineLobby() {
+  if (!net.isOnline()) return;
+  if (state.running && !confirm('Sair da sala online? A partida atual será encerrada.')) return;
+  state.running = false;
+  clearInterval(state.timer);
+  net.disconnect();
+  sessionWins = {};
+  updateSessionScoreDisplay();
+  releaseWakeLock();
+  $('hostPanel').classList.add('hidden');
+  $('roomCode').textContent = '...';
+  $('roomStatus').textContent = '';
+  $('joinStatus').textContent = '';
+  $('hostBtn').disabled = false;
+  $('joinBtn').disabled = false;
+  $('startFromHostPanel').classList.remove('waitingPulse');
+  $('leaveOnlineBtn').classList.add('hidden');
+  $('roomLobbyHint').textContent = '🟢 Sala fechada neste aparelho. Você pode criar outra.';
+  switchScreen('game', 'menu');
+  document.querySelector('.siteHeader').classList.remove('hidden');
+  render();
+}
+
 function buildRoomLink() {
   const params = new URLSearchParams({
     room: $('roomCode').textContent,
@@ -339,6 +448,7 @@ $('joinBtn').addEventListener('click', () => {
   net.joinRoom(code, state.names[0],
     (slot, time) => {
       $('joinStatus').textContent = '';
+      updateOnlineLobbyUI();
       $('joinBtn').textContent = originalJoinText;
       document.querySelector('.siteHeader').classList.add('hidden');
       saveLastOnlineRoom(code, null);
