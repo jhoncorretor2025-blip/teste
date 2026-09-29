@@ -5,6 +5,11 @@ Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por
 ## 🔴 Bug em aberto: multiplayer real no celular
 Com o anfitrião no PC e o amigo no celular, o celular não recebe os dados do jogo (embora o ping funcione e o anfitrião veja a minhoca do amigo se mexer). Sintoma, o que já foi tentado e o próximo passo mais útil (print do painel 🩺 **do anfitrião**) estão no fim de `docs/ARMADILHAS.md`. **Nunca foi conseguido esse print.**
 
+## 🟢 Correções e melhorias aplicadas na 2.88.0
+- **Navegação:** menu reorganizado em quatro áreas e Progresso unificado.
+- **Configurações:** opções avançadas da partida escondidas até o usuário pedir e busca rápida adicionada.
+- **Responsividade:** navegação mobile com barra inferior e navegação desktop preservada no topo.
+
 ## 🟢 Correções aplicadas na 2.87.0
 - **Slots do multiplayer:** além de manter o slot preso à conexão, a criação de uma nova conexão agora procura o menor slot realmente livre. Isso evita colisão quando, por exemplo, o slot 1 sai e o slot 2 continua.
 - **Aba Online:** adicionados presets de partida, diagnóstico rápido, ocupação da sala e saída controlada da sala.
