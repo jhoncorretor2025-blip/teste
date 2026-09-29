@@ -4,6 +4,13 @@ Multiplayer **ponto a ponto** com PeerJS 1.5.4 (WebRTC). O projeto não tem serv
 
 Papéis: **anfitrião** (slot 0; roda o jogo) e **clientes** (slots 1, 2, …; só mandam entradas e desenham).
 
+## Configuração estável da sala
+Além do `state` frequente, o host envia `roomConfig` ao cliente sempre que a entrada é
+finalizada (entrada nova ou reconexão). O pacote contém `colors, names, heads, patterns,
+palettes, trailColors, mapW, mapH, theme, teamMode, teams, count`. O cliente aplica esses
+dados por `onRoomConfig`. Isso torna a sincronização idempotente e corrige o caso de
+entrada tardia que perdeu o pacote raro inicial.
+
 ## Mensagens
 Todas têm `type`. O lado que recebe trata em `net.js` (`configurarHostConnHandlers` no cliente; `conn.on('data')` no anfitrião).
 
