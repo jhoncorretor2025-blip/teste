@@ -25,8 +25,6 @@ export const ACHIEVEMENTS = [
 
 // --- Minhoca Caçadora: aparece quando o líder come muita comida, persegue ele
 // por um tempo, é invencível (mata quem tocar, mas ninguém consegue matá-la) ---
-export const HUNTER_MILESTONES = HUNTER_DEFAULTS.milestones;
-
 // --- Configuração da Minhoca Caçadora ---
 // Os valores abaixo são os mesmos comportamentos que já existiam no código,
 // agora expostos na interface. O usuário pode ajustar sem editar JavaScript.
@@ -44,6 +42,9 @@ export const HUNTER_DEFAULTS = {
   bodyLength: 50,
   growthPerVictim: 8,
 };
+
+// Compatibilidade: partes antigas do jogo ainda importam esta constante.
+export const HUNTER_MILESTONES = HUNTER_DEFAULTS.milestones;
 
 // --- Zoom da câmera (quanto do mapa aparece na tela de cada vez) ---
 export const ZOOM_LEVELS = [
