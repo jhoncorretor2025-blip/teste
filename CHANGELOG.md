@@ -22,6 +22,13 @@ Este arquivo é a **memória do projeto**: qualquer IA (ou pessoa) lê aqui o qu
 ## Origem
 O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HTML, ganhou uma segunda cobrinha, modos, mapas, CPU, turbo e virou o **Snake Arena**. Em **31/08/2026** o código foi separado em módulos (v2.4.0) e o multiplayer online entrou logo depois (v2.5.0).
 
+## [2.90.0] — 2026-09-29
+- **Online — lobby visual:** lista em tempo real com jogadores, slot, anfitrião, pronto e ping.
+- **Online — times:** o lobby mostra visualmente o time de cada jogador.
+- **Online — configuração:** quem está na sala enxerga a configuração atual enquanto espera.
+- **Robustez:** a visualização usa os slots reais das conexões.
+- **Versão:** 2.90.0 e cache do Service Worker sincronizado.
+
 ## [Não lançado]
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 - **Padrão para qualquer IA:** `AGENTS.md` (porta de entrada) e `CLAUDE.md`, `README.md`, guias em `docs/` (arquitetura, protocolo online, armadilhas, padrão para outros sites), mapa do código **gerado**, ferramentas em `tools/` (verificar, trocar versão, gerar mapa, publicar num commit só) e testes em `tests/` (agora dentro do repositório; antes só existiam na máquina de quem trabalhava). Publicado no commit `19d62ba`.
