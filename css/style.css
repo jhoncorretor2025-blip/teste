@@ -2184,3 +2184,6 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
 .onlineLobbyPlayerMain span,.onlineLobbyTeam,.onlineLobbyPlayerMeta small{font-size:.68rem;color:#9db0cf}.onlineLobbyPlayerMeta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap}
 .onlineLobbyReady{color:#76e39a;font-size:.68rem}.onlineLobbyWaiting{color:#ffd27a;font-size:.68rem}.onlineLobbyConfig{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);color:#b9cbea;font-size:.7rem;line-height:1.35}.onlineLobbyEmpty{color:#91a2bd;font-size:.76rem;text-align:center;padding:9px 4px}
 @media(max-width:700px){.onlineLobbyCard{padding:8px}.onlineLobbyPlayer{grid-template-columns:30px minmax(0,1fr) auto;padding:6px}.onlineLobbyAvatar{width:27px;height:27px}}
+
+/* v2.91.0 — resultado online */
+#endText{white-space:pre-line;line-height:1.55}
