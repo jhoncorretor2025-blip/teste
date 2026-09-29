@@ -35,6 +35,9 @@ r.check('partida rodando no anfitrião: 2 minhocas, em Times', hs.running && hs.
 r.check('placar do anfitrião mostra os times somados', /teamTotal/.test($(host, 'scores').innerHTML));
 ativar(A); await esperar(50);
 r.check('o amigo RECEBE os dados do jogo', as.receivedFirstState === true && as.debugStatesReceived > 5, `pacotes=${as.debugStatesReceived}`);
+// A configuração da sala é enviada separadamente ao entrar/reconectar; o cliente deve
+// terminar a partida com o mesmo mapa/tema/time do anfitrião, sem depender do primeiro state.
+r.check('amigo recebe a configuração estável da sala', as.mapW === hs.mapW && as.mapH === hs.mapH && as.theme === hs.theme && as.teamMode === hs.teamMode);
 r.check('e o painel 🩺 SUMIU sozinho quando os dados chegaram', $(A, 'diagPanel').classList.contains('hidden'));
 r.check('o amigo sabe que é partida de times', as.teamMode === true && JSON.stringify(as.teams.slice(0, 2)) === '[0,1]');
 r.fim(host.__erros, A.__erros);
