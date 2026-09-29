@@ -1445,7 +1445,7 @@ function updateHunterSettingsSummary() {
     s.textContent = h.enabled === false ? '🔴 Desativada' : (state.hunterActive ? '☠️ Ativa agora' : '🟢 Ativa');
     s.className = 'hunterStatusBadge ' + (h.enabled === false ? 'off' : state.hunterActive ? 'live' : '');
   }
-  if (summary) summary.textContent = `1ª: ${h.milestones?.[0]?.foodThreshold ?? 100} alimentos / ${h.milestones?.[0]?.durationSec ?? 35}s • 2ª: ${h.milestones?.[1]?.foodThreshold ?? 150} alimentos / ${h.milestones?.[1]?.durationSec ?? 50}s`;
+  if (summary) { const restante = state.hunterActive ? ` • ⏱️ Agora: ${Math.max(0, Math.ceil((state.hunterEndsAt - Date.now()) / 1000))}s restantes` : ''; summary.textContent = `1ª: ${h.milestones?.[0]?.foodThreshold ?? 100} alimentos / ${h.milestones?.[0]?.durationSec ?? 35}s • 2ª: ${h.milestones?.[1]?.foodThreshold ?? 150} alimentos / ${h.milestones?.[1]?.durationSec ?? 50}s${restante}`; }
   if (behavior) behavior.textContent = `🎯 Persegue o líder • 💨 Rajada por ${h.burstDurationSec ?? 2.5}s a cada ${h.burstIntervalSec ?? 8}s • 🧠 Antecipação: ${h.predictionSteps ?? 3} casas • 🐍 Tamanho: ${h.bodyLength ?? 50}`;
 }
 
