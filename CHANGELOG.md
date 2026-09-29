@@ -20,6 +20,13 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 - **CSS legível:** o `css/style.css` estava minificado (56 linhas, uma com 13.642 caracteres). Passou a ter uma declaração por linha (1.690 linhas), com **conteúdo idêntico** (conferido sem espaços, antes e depois, e pelas regras que o jsdom interpreta). Nova ferramenta `tools/formatar-css.py`; o verificador reprova linhas gigantes.
 - Novos testes: `tests/bump-versao-e-changelog.mjs`, `tests/formatar-css.mjs`, e casos novos em `tests/verificador-pega-erros.mjs` (o verificador é testado estragando o projeto de propósito).
 
+## [2.84.0] — 2026-09-29
+- **Interface:** a tela inicial passa a exibir **Mioquinha** como nome do jogo, sem alterar o nome técnico do projeto.
+- **Interface:** "Atualizar jogo" ficou mais claro como "Verificar atualização".
+- **Correção:** removido o botão "Continuar partida anterior" duplicado no HTML, que tinha o mesmo id.
+- **Celular:** destaque maior para Jogar e abas mais fáceis de tocar e navegar.
+- **Visual:** ajustes pontuais na tela inicial, preservando a estrutura e os recursos existentes.
+
 ## [2.83.1] — 2026-09-28
 - **Corrigido:** o corpo inicial da Minhoca Caçadora (50 partes) "dava a volta" pelo mapa quando ela nascia perto da borda de baixo, e a cauda reaparecia no topo, teletransportada (podia até matar alguém "do nada" lá em cima). Agora o corpo vai sempre para o lado do mapa com mais espaço (`montarCorpoDaCacadora`, função pura).
 - Teste que cobre **todas** as posições de nascimento dos 3 tamanhos de mapa; a versão antiga falhava em 49 posições por mapa.
