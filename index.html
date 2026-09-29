@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v2.87.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.86.0">
+<title>🐍 Mioquinha v2.88.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.88.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -57,7 +57,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v2.87.0</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v2.88.0</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
   </header>
@@ -75,14 +75,15 @@
         
         <button id="quickRepeatBtn" class="btn alt hidden" type="button" style="margin-top:8px;width:100%"></button>
       </div>
-      <div class="tabBar" role="tablist">
-        <button class="tabBtn active" data-tab="jogar" type="button" role="tab" aria-selected="true">🎮 Jogar</button>
-        <button class="tabBtn" data-tab="personalizar" type="button" role="tab" aria-selected="false">🏷️ Personalizar</button>
-        <button class="tabBtn" data-tab="online" type="button" role="tab" aria-selected="false">🌐 Online</button>
-        <button class="tabBtn" data-tab="ranking" type="button" role="tab" aria-selected="false">🏆 Ranking</button>
-        <button class="tabBtn" data-tab="conquistas" type="button" role="tab" aria-selected="false">🏅 Conquistas</button>
+      <div class="tabBar" role="tablist" aria-label="Navegação principal">
+        <button class="tabBtn active" data-tab="jogar" type="button" role="tab" aria-selected="true">🏠 <span>Jogar</span></button>
+        <button class="tabBtn" data-tab="online" type="button" role="tab" aria-selected="false">🌐 <span>Online</span></button>
+        <button class="tabBtn" data-tab="progresso" type="button" role="tab" aria-selected="false">📊 <span>Progresso</span></button>
+        <button class="tabBtn" data-tab="personalizar" type="button" role="tab" aria-selected="false">⚙️ <span>Config.</span></button>
       </div>
       <div class="tabPanel" data-panel="jogar">
+        <button id="gameSettingsToggle" class="settingsLauncher" type="button" aria-expanded="false">⚙️ Configurar partida <span>▾</span></button>
+        <div id="gameAdvancedSettings" class="gameAdvancedSettings hidden">
         <div class="grid">
           <section class="card">
           <h2>👥 Jogadores</h2>
@@ -155,6 +156,7 @@
           <div class="tip">⚡ Dica: guarde o turbo pra pegar a ⭐ estrela antes de alguém, ou pra cortar na frente de um adversário — ele custa 1 comidinha, então use com estratégia!</div>
         </section>
         </div>
+        </div>
         <div class="quickRules">
         <span>🍎 Normal = 1</span>
         <span>⭐ Estrela = 5</span>
@@ -165,13 +167,25 @@
       </div>
       <div class="tabPanel hidden" data-panel="personalizar">
         <section class="card">
-          <h2>🏷️ Personalização</h2>
+          <h2>⚙️ Personalização</h2>
+          <div class="settingsCategoryGrid">
+            <button type="button" class="settingsJump" data-settings-jump="profile">👤 Perfil</button>
+            <button type="button" class="settingsJump" data-settings-jump="controls">🎮 Controles</button>
+            <button type="button" class="settingsJump" data-settings-jump="sound">🔊 Som</button>
+            <button type="button" class="settingsJump" data-settings-jump="appearance">🎨 Aparência</button>
+          </div>
+          <div class="settingsSearchWrap">
+            <input id="settingsSearch" class="input" type="search" placeholder="🔎 Buscar configuração..." aria-label="Buscar configuração">
+          </div>
           <p class="cardDesc">Escolha o nome e o que será mostrado na arena.</p>
+          <div id="settingsSectionProfile" class="settingsSectionAnchor"></div>
           <input id="myName" class="input" value="Jhon" maxlength="14" placeholder="Nome do jogador" aria-label="Nome do jogador">
           <label class="check"><input id="showMe" type="checkbox" checked> Mostrar meu nome</label>
           <label class="check"><input id="showOthers" type="checkbox" checked> Mostrar nomes dos outros</label>
           <label class="check"><input id="vibrationOn" type="checkbox" checked> 📳 Vibração</label>
+          <div id="settingsSectionSound" class="settingsSectionAnchor"></div>
           <button id="silentModeBtn" class="refresh" type="button" style="margin-top:6px">🔇📳 Modo Silencioso (só vibração, sem som)</button>
+          <div id="settingsSectionControls" class="settingsSectionAnchor"></div>
           <select id="touchControl" class="select" aria-label="Tipo de controle no celular" style="margin-top:8px">
             <option value="joystick">🕹️ Controle: Joystick (bolinha)</option>
             <option value="dpad">⬆️ Controle: Setas (botões)</option>
@@ -180,6 +194,7 @@
           <label class="check" style="margin-top:8px;display:block">📏 Tamanho dos controles: <input id="controlSize" type="range" min="70" max="150" value="100" style="width:100%;margin-top:4px"></label>
           <label class="check"><input id="controlsSwapped" type="checkbox"> ↔️ Inverter lado dos controles (canhoto)</label>
           <label class="check"><input id="tapVibration" type="checkbox" checked> 👆 Vibrar ao tocar nos botões</label>
+          <div id="settingsSectionAppearance" class="settingsSectionAnchor"></div>
           <label class="check"><input id="bigTextMode" type="checkbox"> 🔠 Modo texto grande (mais simples)</label>
           <label class="check"><input id="lightMode" type="checkbox"> ☀️ Modo claro (interface clara)</label>
           <label class="check"><input id="amoledMode" type="checkbox"> ⚫ Modo AMOLED puro (preto de verdade, economiza bateria)</label>
@@ -294,28 +309,53 @@
         </div>
         <div id="joinStatus" class="muted" style="margin-top:6px"></div>
         <button id="lastRoomBtn" class="refresh hidden" type="button" style="margin-top:6px"></button>
-        <div id="matchHistoryDisplay" class="tip hidden" style="margin-top:6px"></div>
       </section>
       </div>
-      <div class="tabPanel hidden" data-panel="ranking">
-        <section class="card" style="margin-top:14px">
-        <h2>🏆 Ranking neste aparelho</h2>
-        <p class="cardDesc">Comparação de recordes de quem já jogou aqui — passa o celular e compara!</p>
-        <div id="leaderboardList" class="muted"></div>
-        <button id="leaderboardToggle" class="refresh" type="button" style="margin-top:8px">Ver ranking completo</button>
-        <div id="gamesPlayedBadge" class="muted" style="margin-top:8px"></div>
-        <div id="sessionStatsDisplay" class="muted" style="margin-top:4px"></div>
-        <div id="bestByModeDisplay" class="tip" style="margin-top:8px"></div>
-        <button id="copyStatsBtn" class="refresh" type="button" style="margin-top:8px">📋 Copiar minhas estatísticas</button>
-      </section>
-      </div>
-      <div class="tabPanel hidden" data-panel="conquistas">
-        <section class="card" style="margin-top:14px">
-        <h2>🏅 Galeria de Conquistas</h2>
-        <p class="cardDesc" id="achievementsProgress"></p>
-        <div id="achievementsGrid" class="achievementsGrid"></div>
-      </section>
-      </div>
+      <div class="tabPanel hidden" data-panel="progresso">
+        <section class="card progressCard" style="margin-top:14px">
+          <div class="progressHero">
+            <div>
+              <h2 style="margin-bottom:3px">📊 Meu progresso</h2>
+              <p class="cardDesc" style="margin-bottom:0">Recordes, partidas, conquistas e histórico em um só lugar.</p>
+            </div>
+            <div id="progressRecordMini" class="progressRecordMini">🏅 0</div>
+          </div>
+          <div class="progressNav" role="tablist" aria-label="Seções do progresso">
+            <button type="button" class="progressNavBtn active" data-progress-section="stats">📈 Resumo</button>
+            <button type="button" class="progressNavBtn" data-progress-section="ranking">🏆 Ranking</button>
+            <button type="button" class="progressNavBtn" data-progress-section="achievements">🏅 Conquistas</button>
+            <button type="button" class="progressNavBtn" data-progress-section="history">⚔️ Histórico</button>
+          </div>
+
+          <div class="progressSection" data-progress-panel="stats">
+            <div class="progressStatGrid">
+              <div class="progressStat"><span>🏅 Recorde</span><b id="progressBestValue">0</b></div>
+              <div class="progressStat"><span>🎮 Partidas</span><b id="progressGamesValue">0</b></div>
+              <div class="progressStat"><span>🔥 Sessão</span><b id="progressSessionValue">0</b></div>
+            </div>
+            <div id="bestByModeDisplay" class="tip" style="margin-top:8px"></div>
+            <div id="gamesPlayedBadge" class="muted" style="margin-top:8px"></div>
+            <div id="sessionStatsDisplay" class="muted" style="margin-top:4px"></div>
+            <button id="copyStatsBtn" class="refresh" type="button" style="margin-top:8px;width:100%">📋 Copiar minhas estatísticas</button>
+          </div>
+
+          <div class="progressSection hidden" data-progress-panel="ranking">
+            <p class="cardDesc">Recordes de quem já jogou neste aparelho.</p>
+            <div id="leaderboardList" class="muted"></div>
+            <button id="leaderboardToggle" class="refresh" type="button" style="margin-top:8px">Ver ranking completo</button>
+          </div>
+
+          <div class="progressSection hidden" data-progress-panel="achievements">
+            <p class="cardDesc" id="achievementsProgress"></p>
+            <div id="achievementsGrid" class="achievementsGrid"></div>
+          </div>
+
+          <div class="progressSection hidden" data-progress-panel="history">
+            <div id="matchHistoryDisplay" class="tip hidden"></div>
+            <p class="muted">O histórico de confrontos online aparece aqui quando houver partidas registradas.</p>
+          </div>
+        </section>
+      </div>      </div>
     </section>
     <section id="game" class="gameBox hidden" aria-label="Arena do jogo">
       <div class="top">
@@ -399,6 +439,6 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.86.0"></script>
+<script type="module" src="js/main.js?v=2.88.0"></script>
 </body>
 </html>
