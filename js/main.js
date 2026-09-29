@@ -100,6 +100,10 @@ net.setHandlers({
     onlineLobbyConfig = config || null;
     renderOnlineLobby();
   },
+  onMatchResult: (result) => {
+    if (!result) return;
+    document.dispatchEvent(new CustomEvent('onlineMatchResult', { detail: result }));
+  },
   onStateUpdate: (msg) => {
     applyRemoteState(msg);
     capturePartnerNameOnce(msg.names?.[0]);
@@ -162,6 +166,7 @@ net.setHandlers({
     // chegar. Sem isso, se o primeiro pacote de estado demorasse ou se perdesse, a pessoa
     // ficava presa atrás de uma tela quase preta pra sempre, mesmo o jogo já tendo começado.
     $('clientReadyOverlay').classList.add('hidden');
+    $('overlay').classList.add('hidden');
     if (!state.debugCountdownRecebidoAt) state.debugCountdownRecebidoAt = Date.now();
     $('countdownOverlay').classList.remove('hidden');
     $('countdownText').textContent = n > 0 ? String(n) : 'VAI! 🚀';
@@ -693,14 +698,18 @@ let achievementHideTimer = null;
 
 // Fim do Modo Torneio: mostra o campeão e o placar de cada rodada, reaproveitando o
 // overlay que já existia na tela (endTitle/endText/continueBtn) sem uso nenhum até agora
-document.addEventListener('tournamentOver', (e) => {
-  const { champion, wins } = e.detail;
-  $('endTitle').textContent = '🏆 Torneio Finalizado!';
-  const placar = wins.map((w, i) => `${i === champion ? '👑 ' : ''}${label(i)}: ${w} rodada${w === 1 ? '' : 's'}`).join(' • ');
+document.addEventListener('onlineMatchResult', (e) => {
+  const { champion, wins, scores = [], foodsEaten = [], eliminations = [], teams = [], teamMode = false, names = [] } = e.detail;
+  $('endTitle').textContent = '🏁 Resultado da partida!';
+  const ranking = names.map((name, i) => ({ i, name: name || label(i), score: scores[i] || 0, food: foodsEaten[i] || 0, elim: eliminations[i] || 0, wins: wins[i] || 0 }))
+    .sort((a, b) => (b.wins - a.wins) || (b.score - a.score) || (b.food - a.food));
+  const championName = names[champion] || label(champion);
+  const placar = wins.map((w, i) => `${i === champion ? '👑 ' : ''}${names[i] || label(i)}: ${w} rodada${w === 1 ? '' : 's'}`).join(' • ');
+  const destaque = ranking.map((p, pos) => `${pos + 1}º ${p.name}: 🏆 ${p.wins} • 🍎 ${p.food} • ☠️ ${p.elim} • ⭐ ${p.score}`).join('\n');
   // Vibração de "vitória" — animada e crescente, bem diferente da de derrota, só pra
   // quem realmente venceu (nos outros dispositivos, seus jogadores não são o campeão)
   if (champion === net.mySlot) vibrate([40, 30, 40, 30, 40, 30, 200]);
-  $('endText').textContent = `${label(champion)} venceu o torneio! ${placar}`;
+  $('endText').textContent = `${championName} venceu o torneio!\n\n${destaque}\n\n${placar}`;
   $('overlay').classList.remove('hidden');
 
   // Histórico de confrontos (só faz sentido claro no 1x1) e placar acumulado da sessão —
@@ -714,14 +723,22 @@ document.addEventListener('tournamentOver', (e) => {
     updateSessionScoreDisplay();
   }
 
-  // Só o anfitrião pode reiniciar — e só faz sentido mostrar esse botão se ainda tiver
-  // gente conectada na sala (não desconecta ninguém, só começa um torneio novo na hora)
+  // A revanche usa a mesma sala: o anfitrião dispara uma nova partida e os clientes
+  // recebem a contagem regressiva automaticamente, sem novo código ou convite.
   const showPlayAgain = net.isOnline() && net.isHost();
   $('playAgainSameRoomBtn').classList.toggle('hidden', !showPlayAgain);
+  $('playAgainSameRoomBtn').textContent = '🔁 Jogar novamente com essa galera';
   $('playAgainSameRoomBtn').onclick = () => {
     $('overlay').classList.add('hidden');
     startOnlineHostGame();
   };
+  if (net.isOnline() && !net.isHost()) {
+    $('playAgainSameRoomBtn').classList.remove('hidden');
+    $('playAgainSameRoomBtn').textContent = '⏳ Aguardando o anfitrião iniciar a revanche...';
+    $('playAgainSameRoomBtn').disabled = true;
+  } else {
+    $('playAgainSameRoomBtn').disabled = false;
+  }
 
   $('continueBtn').onclick = () => {
     $('overlay').classList.add('hidden');
