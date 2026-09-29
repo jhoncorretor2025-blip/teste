@@ -1289,6 +1289,54 @@ async function toggleCompactMode(requestFullscreenToo) {
   return on;
 }
 
+
+const mobileGameMoreBtn = $('mobileGameMoreBtn');
+const mobileGameMenu = $('mobileGameMenu');
+
+function closeMobileGameMenu() {
+  if (!mobileGameMenu || !mobileGameMoreBtn) return;
+  mobileGameMenu.classList.add('hidden');
+  mobileGameMoreBtn.setAttribute('aria-expanded', 'false');
+}
+
+function runMobileGameAction(action) {
+  const targetMap = {
+    ctrlDown: 'ctrlSizeDownBtn',
+    ctrlUp: 'ctrlSizeUpBtn',
+    touch: 'touchControlToggle',
+    zoom: 'zoomToggle',
+    mute: 'mute',
+    music: 'musicBtn',
+    share: 'shareScore',
+    screenshot: 'screenshotBtn',
+    diag: 'diagToggleBtn',
+    focus: 'focusModeBtn',
+    pip: 'pipBtn',
+  };
+  const id = targetMap[action];
+  if (!id) return;
+  $(id)?.click();
+  // Keep the menu open only for diagnostic panels; every other action is a quick command.
+  if (action !== 'diag') closeMobileGameMenu();
+}
+
+mobileGameMoreBtn?.addEventListener('click', (event) => {
+  event.stopPropagation();
+  const open = mobileGameMenu?.classList.toggle('hidden') === false;
+  mobileGameMoreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+
+mobileGameMenu?.addEventListener('click', (event) => {
+  const item = event.target.closest('[data-game-action]');
+  if (!item) return;
+  runMobileGameAction(item.dataset.gameAction);
+});
+
+document.addEventListener('click', (event) => {
+  if (!mobileGameMenu || !mobileGameMoreBtn) return;
+  if (!mobileGameMenu.contains(event.target) && event.target !== mobileGameMoreBtn) closeMobileGameMenu();
+});
+
 $('compactBtn').addEventListener('click', () => toggleCompactMode(true));
 
 document.addEventListener('fullscreenchange', () => {
