@@ -48,6 +48,13 @@ export function isOnline() { return role !== 'local'; }
 export function isHost() { return role === 'host'; }
 export function connectedCount() { return conns.length; }
 
+export function getConnectedPeers() {
+  return [
+    { slot: 0, host: true, ping: 0 },
+    ...conns.map(c => ({ slot: c.__slot, host: false, ping: Number.isFinite(pingStats[c.__slot]) ? pingStats[c.__slot] : null }))
+  ];
+}
+
 function getPeerCtor() {
   if (typeof window.Peer !== 'function') {
     throw new Error('Biblioteca de rede (PeerJS) ainda não carregou. Tenta de novo em alguns segundos.');
@@ -277,6 +284,9 @@ function configurarHostConnHandlers() {
       handlers.onChat && handlers.onChat(msg.text, msg.from);
     } else if (msg.type === 'peerlist') {
       knownPeers = msg.peers;
+      handlers.onPeerList && handlers.onPeerList(msg.peers);
+    } else if (msg.type === 'lobby') {
+      handlers.onLobby && handlers.onLobby(msg.players || [], msg.config || null);
     } else if (msg.type === 'full') {
       // sala já tava cheia (3 jogadores) — não dá pra entrar
       onFailCb && onFailCb(new Error('full'));
