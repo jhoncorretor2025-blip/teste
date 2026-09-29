@@ -5,6 +5,10 @@ Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por
 ## 🔴 Bug em aberto: multiplayer real no celular
 Com o anfitrião no PC e o amigo no celular, o celular não recebe os dados do jogo (embora o ping funcione e o anfitrião veja a minhoca do amigo se mexer). Sintoma, o que já foi tentado e o próximo passo mais útil (print do painel 🩺 **do anfitrião**) estão no fim de `docs/ARMADILHAS.md`. **Nunca foi conseguido esse print.**
 
+## 🟢 Correções e melhorias aplicadas na 2.89.0
+- **Mobile:** opções secundárias da partida foram agrupadas em um menu de três pontos, reduzindo poluição visual e melhorando uso com uma mão.
+- **Mobile:** cabeçalho inicial ficou mais compacto sem esconder ações essenciais.
+
 ## 🟢 Correções e melhorias aplicadas na 2.88.0
 - **Navegação:** menu reorganizado em quatro áreas e Progresso unificado.
 - **Configurações:** opções avançadas da partida escondidas até o usuário pedir e busca rápida adicionada.
