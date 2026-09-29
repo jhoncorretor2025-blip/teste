@@ -27,6 +27,11 @@ Com o anfitrião no PC e o amigo no celular, o celular não recebe os dados do j
 - **Pronto:** anfitrião contado como pronto.
 - **Slots:** visualização usa o slot real da conexão.
 
+## 🟢 Melhorias aplicadas na 2.91.0
+- **Resultado online:** placar detalhado sincronizado pelo anfitrião.
+- **Revanche:** nova partida na mesma sala, sem recriar convite.
+- **Clientes:** recebem a revanche pela contagem regressiva e não precisam sair/reentrar.
+
 ## 🟠 Pontos frágeis conhecidos (ainda não corrigidos)
 - **Configuração estável — corrigida na 2.85.0.** Nomes, cores, tamanho do mapa, tema e times agora são enviados em `roomConfig` sempre que uma entrada é finalizada, inclusive em reconexões. O bug de estado que não chega ao celular continua em investigação.
 - **Texto de qualidade da conexão — corrigido na 2.85.0.** Quando só existe `effectiveType`, a interface agora mostra "Qualidade estimada", sem chamar isso de tipo de rede.
