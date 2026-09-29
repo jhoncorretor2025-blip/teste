@@ -1,5 +1,11 @@
 # Histórico do que já foi feito (CHANGELOG)
 
+## [2.92.0] — 2026-09-29
+- **Online — abandono protegido:** jogador que cai durante a partida não desloca os slots; uma CPU assume temporariamente e o retorno devolve o controle.
+- **Online — confronto detalhado:** histórico 1×1 acumula partidas, vitórias, derrotas, taxa de vitórias, média de pontos, comidas e eliminações.
+- **Online — lobby completo:** anfitrião e clientes visualizam jogadores, prontidão, times, conexão e configuração da sala.
+- **Versão:** 2.92.0.
+
 Este arquivo é a **memória do projeto**: qualquer IA (ou pessoa) lê aqui o que já foi feito antes de mexer, e registra o que fez depois. Mais recente primeiro.
 
 ## [2.85.0] — 2026-09-29
