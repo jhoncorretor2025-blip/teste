@@ -278,12 +278,17 @@ export function loadMatchHistory(partnerName) {
   } catch { return { wins: 0, losses: 0 }; }
 }
 
-export function recordMatchResult(partnerName, won) {
+export function recordMatchResult(partnerName, won, stats = {}) {
   if (!partnerName) return;
   try {
     const all = JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY)) || {};
-    const entry = all[partnerName] || { wins: 0, losses: 0 };
+    const entry = { wins:0, losses:0, games:0, totalScore:0, bestScore:0, totalFood:0, totalEliminations:0, ...(all[partnerName] || {}) };
     if (won) entry.wins++; else entry.losses++;
+    entry.games++;
+    entry.totalScore += Number(stats.score) || 0;
+    entry.bestScore = Math.max(entry.bestScore || 0, Number(stats.score) || 0);
+    entry.totalFood += Number(stats.food) || 0;
+    entry.totalEliminations += Number(stats.eliminations) || 0;
     all[partnerName] = entry;
     localStorage.setItem(MATCH_HISTORY_KEY, JSON.stringify(all));
   } catch {}
