@@ -63,7 +63,9 @@ function migratedRoomId(roomId) {
 // próprio anfitrião no slot 0) — os clientes guardam isso pra saber quem assume se o
 // anfitrião cair
 function broadcastPeerList() {
-  const list = [{ slot: 0, id: peer.id }, ...conns.map((c, idx) => ({ slot: idx + 1, id: c.peer }))];
+  // O slot pertence à conexão, não à posição dela no array. Se o jogador 1 sair,
+  // o jogador 2 continua sendo o slot 2 — nunca podemos transformar isso em slot 1.
+  const list = [{ slot: 0, id: peer.id }, ...conns.map(c => ({ slot: c.__slot, id: c.peer }))];
   broadcastRaw({ type: 'peerlist', peers: list });
 }
 
@@ -106,6 +108,7 @@ export function hostRoom(onReady, onFail, forcedId) {
       conn.on('open', () => { conn.send({ type: 'full' }); conn.close(); });
       return;
     }
+    conn.__slot = slot;
     pendingConns.push(conn);
 
     // Segurança de compatibilidade: se a pessoa que tentou entrar estiver com uma versão
@@ -170,6 +173,9 @@ export function approveJoinRequest(request) {
 // o anfitrião decide o time (se for partida em Times) ANTES de responder, pra a pessoa já
 // saber em qual time caiu logo na resposta de boas-vindas.
 function finalizeJoin(conn, slot, teamPref) {
+  // Guarda o slot também na conexão para que a lista de pares e a migração continuem
+  // estáveis mesmo quando alguém sai do meio da sala.
+  conn.__slot = slot;
   const team = handlers.onAssignTeam ? handlers.onAssignTeam(slot, teamPref) : undefined;
   try { conn.send({ type: 'welcome', slot, team }); } catch {}
   // O pacote de configuração é separado do estado frequente: pequeno, explícito e
