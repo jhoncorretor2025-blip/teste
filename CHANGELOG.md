@@ -1,3 +1,7 @@
+## 2.94.3 — Versão visível no carregamento
+- A tela inicial agora mostra explicitamente a versão do jogo antes do carregamento começar.
+- Versão 2.94.3 usada como marcador visual para confirmar que o arquivo novo chegou ao aparelho.
+
 ## 2.94.2 — Carregamento visível
 - Nova tela de inicialização com progresso visual: 0% → 10% → 20% → 30% → 45% → 50% → 70% → 90% → 100%.
 - O carregador agora identifica quando o JavaScript principal ou o módulo online demora/trava.
