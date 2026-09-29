@@ -1,3 +1,8 @@
+## 2.94.1 — Correção de inicialização
+- Corrigida a ordem de declaração da configuração da Minhoca Inimiga.
+- O erro de inicialização fazia o JavaScript parar antes de esconder a tela de abertura, deixando o celular preso no splash da Mioquinha.
+- Atualizados os identificadores de versão/cache para 2.94.1.
+
 # Histórico do que já foi feito (CHANGELOG)
 
 ## [2.94.0] — 2026-09-29
