@@ -5,6 +5,9 @@ Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por
 ## 🔴 Bug em aberto: multiplayer real no celular
 Com o anfitrião no PC e o amigo no celular, o celular não recebe os dados do jogo (embora o ping funcione e o anfitrião veja a minhoca do amigo se mexer). Sintoma, o que já foi tentado e o próximo passo mais útil (print do painel 🩺 **do anfitrião**) estão no fim de `docs/ARMADILHAS.md`. **Nunca foi conseguido esse print.**
 
+## 🟢 Correção aplicada na 2.86.0
+- **Slots do multiplayer:** corrigido o risco de os slots mudarem quando alguém sai da sala. O slot agora fica associado à própria conexão.
+
 ## 🟠 Pontos frágeis conhecidos (ainda não corrigidos)
 - **Configuração estável — corrigida na 2.85.0.** Nomes, cores, tamanho do mapa, tema e times agora são enviados em `roomConfig` sempre que uma entrada é finalizada, inclusive em reconexões. O bug de estado que não chega ao celular continua em investigação.
 - **Texto de qualidade da conexão — corrigido na 2.85.0.** Quando só existe `effectiveType`, a interface agora mostra "Qualidade estimada", sem chamar isso de tipo de rede.
