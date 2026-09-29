@@ -6,8 +6,8 @@ Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por
 Com o anfitrião no PC e o amigo no celular, o celular não recebe os dados do jogo (embora o ping funcione e o anfitrião veja a minhoca do amigo se mexer). Sintoma, o que já foi tentado e o próximo passo mais útil (print do painel 🩺 **do anfitrião**) estão no fim de `docs/ARMADILHAS.md`. **Nunca foi conseguido esse print.**
 
 ## 🟠 Pontos frágeis conhecidos (ainda não corrigidos)
-- **O pacote "raro" nunca é reenviado.** Nomes, cores, tamanho do mapa, tema e times são mandados uma vez, quando a partida começa. Quem entra ou reconecta depois fica sem eles. Correção natural: reenviar ao cliente que entra/reconecta e/ou de tempos em tempos. Pode ter relação com o bug acima. Detalhes em `docs/PROTOCOLO-ONLINE.md`.
-- **O texto "📡 Conexão: 4g"** (aba Online) vem de `effectiveType`, que é uma **classificação de velocidade**, não o tipo de rede — já induziu a erro uma vez. Trocar por algo que não sugira "dados móveis".
+- **Configuração estável — corrigida na 2.85.0.** Nomes, cores, tamanho do mapa, tema e times agora são enviados em `roomConfig` sempre que uma entrada é finalizada, inclusive em reconexões. O bug de estado que não chega ao celular continua em investigação.
+- **Texto de qualidade da conexão — corrigido na 2.85.0.** Quando só existe `effectiveType`, a interface agora mostra "Qualidade estimada", sem chamar isso de tipo de rede.
 
 ## 🟡 Testes que existiam e foram perdidos (recriar em `tests/`)
 Quando o ambiente de trabalho foi reiniciado, estes testes sumiram (só existiam lá). A funcionalidade continua no jogo, mas **sem teste**. Cada linha diz o que o teste verificava:
