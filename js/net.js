@@ -59,6 +59,20 @@ function migratedRoomId(roomId) {
   return roomId + '-mig';
 }
 
+function nextFreeSlot() {
+  // Não usa conns.length: se o slot 1 sair enquanto o slot 2 continua,
+  // o próximo jogador deve ocupar o 1, nunca colidir com o 2.
+  const used = new Set(
+    [...conns, ...pendingConns]
+      .map(c => c.__slot)
+      .filter(s => Number.isInteger(s))
+  );
+  for (let slot = 1; slot < maxPlayers; slot++) {
+    if (!used.has(slot)) return slot;
+  }
+  return null;
+}
+
 // Host: manda pra todo mundo conectado a lista de quem tá na sala agora (incluindo o
 // próprio anfitrião no slot 0) — os clientes guardam isso pra saber quem assume se o
 // anfitrião cair
@@ -102,8 +116,8 @@ export function hostRoom(onReady, onFail, forcedId) {
   pendingConns = []; // reseta a fila de pedidos toda vez que uma nova sala é criada
 
   peer.on('connection', conn => {
-    const slot = conns.length + pendingConns.length + 1; // reserva o próximo slot livre
-    if (slot >= maxPlayers) {
+    const slot = nextFreeSlot(); // reserva o menor slot realmente livre
+    if (slot == null) {
       // Sala já está na capacidade — avisa quem tentou entrar antes de fechar a conexão
       conn.on('open', () => { conn.send({ type: 'full' }); conn.close(); });
       return;
