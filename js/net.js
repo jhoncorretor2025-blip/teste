@@ -287,6 +287,9 @@ function configurarHostConnHandlers() {
       handlers.onPeerList && handlers.onPeerList(msg.peers);
     } else if (msg.type === 'lobby') {
       handlers.onLobby && handlers.onLobby(msg.players || [], msg.config || null);
+    } else if (msg.type === 'onlineMatchResult') {
+      handlers.onMatchResult && handlers.onMatchResult(msg.result || null);
+    }
     } else if (msg.type === 'full') {
       // sala já tava cheia (3 jogadores) — não dá pra entrar
       onFailCb && onFailCb(new Error('full'));
