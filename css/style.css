@@ -1488,6 +1488,17 @@ h1 {
   animation:splashPulse 1.4s ease-in-out infinite
 }
 
+.appSplashVersion {
+  color:#8fa8d4;
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:1.8px;
+  margin-top:-7px;
+  opacity:.95;
+}
+.appSplashVersion b {
+  color:#67ef8a;
+}
 .appSplashTitle {
   color:#fff;
   font-size:1.3rem;
