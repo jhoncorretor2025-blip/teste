@@ -2175,3 +2175,12 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     display:flex;
   }
 }
+
+/* v2.90.0 — lobby online */
+.onlineLobbyCard{margin-top:9px;padding:10px;border:1px solid rgba(120,170,230,.22);border-radius:12px;background:rgba(8,18,34,.58)}
+.onlineLobbyHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.onlineLobbySummary{font-size:.76rem;color:#b9cbea}.onlineLobbyPlayers{display:grid;gap:6px}
+.onlineLobbyPlayer{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.055)}
+.onlineLobbyAvatar{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:rgba(75,140,220,.14)}.onlineLobbyPlayerMain{min-width:0;display:flex;flex-direction:column;gap:2px}.onlineLobbyPlayerMain b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.onlineLobbyPlayerMain span,.onlineLobbyTeam,.onlineLobbyPlayerMeta small{font-size:.68rem;color:#9db0cf}.onlineLobbyPlayerMeta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap}
+.onlineLobbyReady{color:#76e39a;font-size:.68rem}.onlineLobbyWaiting{color:#ffd27a;font-size:.68rem}.onlineLobbyConfig{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);color:#b9cbea;font-size:.7rem;line-height:1.35}.onlineLobbyEmpty{color:#91a2bd;font-size:.76rem;text-align:center;padding:9px 4px}
+@media(max-width:700px){.onlineLobbyCard{padding:8px}.onlineLobbyPlayer{grid-template-columns:30px minmax(0,1fr) auto;padding:6px}.onlineLobbyAvatar{width:27px;height:27px}}
