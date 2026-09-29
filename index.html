@@ -173,6 +173,7 @@
             <button type="button" class="settingsJump" data-settings-jump="controls">🎮 Controles</button>
             <button type="button" class="settingsJump" data-settings-jump="sound">🔊 Som</button>
             <button type="button" class="settingsJump" data-settings-jump="appearance">🎨 Aparência</button>
+            <button type="button" class="settingsJump" data-settings-jump="hunter">💀 Minhoca Inimiga</button>
           </div>
           <div class="settingsSearchWrap">
             <input id="settingsSearch" class="input" type="search" placeholder="🔎 Buscar configuração..." aria-label="Buscar configuração">
@@ -214,6 +215,74 @@
               <button type="button" class="bindShortcut" data-action="compact" id="shortcutCompact">⛶ Maximizar: <span></span></button>
             </div>
           </div>
+          <div id="settingsSectionHunter" class="settingsSectionAnchor"></div>
+          <section class="hunterSettingsBox" id="hunterSettingsBox">
+            <div class="hunterSettingsHeader">
+              <div>
+                <h3>💀 Minhoca Inimiga</h3>
+                <p>Controle quando ela aparece, quanto tempo fica e como persegue.</p>
+              </div>
+              <span id="hunterSettingsStatus" class="hunterStatusBadge">🟢 Ativa</span>
+            </div>
+            <label class="check"><input id="hunterEnabled" type="checkbox" checked> ☠️ Ativar Minhoca Inimiga</label>
+
+            <div class="hunterConfigGrid">
+              <div>
+                <label class="fieldLabel">🥇 1ª aparição — comida do líder</label>
+                <input id="hunterThreshold1" class="input" type="number" min="10" max="999" step="5" value="100">
+              </div>
+              <div>
+                <label class="fieldLabel">⏱️ Duração da 1ª aparição</label>
+                <input id="hunterDuration1" class="input" type="number" min="5" max="300" step="5" value="35">
+              </div>
+              <div>
+                <label class="fieldLabel">🥈 2ª aparição — comida do líder</label>
+                <input id="hunterThreshold2" class="input" type="number" min="20" max="999" step="5" value="150">
+              </div>
+              <div>
+                <label class="fieldLabel">⏱️ Duração da 2ª aparição</label>
+                <input id="hunterDuration2" class="input" type="number" min="5" max="300" step="5" value="50">
+              </div>
+              <div>
+                <label class="fieldLabel">💨 Duração da rajada</label>
+                <input id="hunterBurstDuration" class="input" type="number" min="0.5" max="20" step="0.5" value="2.5">
+              </div>
+              <div>
+                <label class="fieldLabel">🔄 Intervalo entre rajadas</label>
+                <input id="hunterBurstInterval" class="input" type="number" min="1" max="60" step="1" value="8">
+              </div>
+              <div>
+                <label class="fieldLabel">🎯 Distância para distrair</label>
+                <input id="hunterDistractionRadius" class="input" type="number" min="1" max="20" step="1" value="6">
+              </div>
+              <div>
+                <label class="fieldLabel">🧠 Antecipação da perseguição</label>
+                <input id="hunterPrediction" class="input" type="number" min="0" max="10" step="1" value="3">
+              </div>
+              <div>
+                <label class="fieldLabel">💥 Crescimento por vítima</label>
+                <input id="hunterGrowth" class="input" type="number" min="0" max="30" step="1" value="8">
+              </div>
+              <div>
+                <label class="fieldLabel">🐍 Tamanho inicial</label>
+                <input id="hunterBodyLength" class="input" type="number" min="10" max="120" step="5" value="50">
+              </div>
+            </div>
+
+            <div class="hunterLiveInfo" id="hunterLiveInfo">
+              <b>📊 Como está configurada</b>
+              <span id="hunterLiveSummary">1ª: 100 alimentos / 35s • 2ª: 150 alimentos / 50s</span>
+              <span id="hunterLiveBehavior">🎯 Persegue o líder • 💨 Rajada a cada 8s • 🧠 Antecipação: 3 casas</span>
+            </div>
+
+            <div class="hunterPresetRow">
+              <button type="button" class="btn alt hunterPreset" data-hunter-preset="normal">🙂 Normal</button>
+              <button type="button" class="btn alt hunterPreset" data-hunter-preset="hard">😈 Difícil</button>
+              <button type="button" class="btn alt hunterPreset" data-hunter-preset="chaos">☠️ Caos</button>
+              <button type="button" class="btn alt hunterPreset" data-hunter-preset="reset">♻️ Padrão</button>
+            </div>
+            <div class="tip">💡 As configurações ficam salvas neste aparelho. Os valores atuais do jogo continuam sendo o padrão.</div>
+          </section>
           <button id="resetSettings" class="btn alt" type="button" style="margin-top:10px;width:100%">♻️ Resetar configurações</button>
           <button id="installHelpBtn" class="refresh" type="button" style="margin-top:8px;width:100%">📲 Como instalar como app</button>
           <div id="versionFooter" class="muted" style="margin-top:10px;text-align:center;font-size:.68rem"></div>
