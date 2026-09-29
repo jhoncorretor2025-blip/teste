@@ -2027,3 +2027,151 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     align-items:flex-start;
   }
 }
+
+
+/* v2.89.0 — mobile-first controls without changing desktop */
+.mobileGameMoreBtn,
+.mobileGameMenu {
+  display:none;
+}
+@media(max-width:700px) {
+  /* Keep the desktop information architecture, but remove non-essential chrome on phones. */
+  .siteHeader .sub,
+  .siteHeader .refreshBig {
+    display:none;
+  }
+  .siteHeader {
+    margin-bottom:4px;
+  }
+  .menuHero {
+    padding-top:2px;
+  }
+  .menuHero .row {
+    gap:6px;
+  }
+  .menuHero #shareHero {
+    max-width:110px;
+    flex:0 0 110px;
+  }
+  .menuHero #startHero {
+    flex:1 1 auto;
+  }
+
+  /* Game: one compact action button replaces the wall of tiny icons. */
+  .desktopGameTool {
+    display:none !important;
+  }
+  .mobileGameMoreBtn {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:44px;
+    height:44px;
+    min-height:44px;
+    border-radius:12px;
+    font-size:1.45rem;
+    background:#1b2c49;
+    border-color:#5273a4;
+    position:relative;
+    z-index:42;
+  }
+  .mobileGameMoreBtn[aria-expanded="true"] {
+    background:#2b4168;
+    border-color:#78a5df;
+  }
+  .iconRow {
+    position:relative;
+    width:100%;
+    justify-content:flex-end;
+  }
+  .mobileGameMenu {
+    position:absolute;
+    right:0;
+    top:48px;
+    z-index:50;
+    display:block;
+    width:min(94vw,360px);
+    padding:10px;
+    border:1px solid #496589;
+    border-radius:16px;
+    background:rgba(8,18,32,.98);
+    box-shadow:0 18px 45px #000b;
+    -webkit-backdrop-filter:blur(14px);
+    backdrop-filter:blur(14px);
+  }
+  .mobileGameMenu.hidden {
+    display:none !important;
+  }
+  .mobileGameMenuTitle {
+    font-weight:900;
+    color:#fff;
+    padding:2px 4px 8px;
+    font-size:.86rem;
+  }
+  .mobileGameMenuGrid {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+  }
+  .mobileGameMenuItem {
+    min-height:62px;
+    border:1px solid #30476d;
+    border-radius:11px;
+    background:#101f37;
+    color:#e8f0ff;
+    font:800 .7rem system-ui;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    padding:6px 3px;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .mobileGameMenuItem:active {
+    transform:scale(.97);
+    background:#1b3154;
+  }
+  .mobileGameMenuItem span {
+    white-space:nowrap;
+  }
+  .gameMainActions {
+    display:grid !important;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:6px;
+  }
+  .gameMainActions > * {
+    min-height:44px !important;
+    flex:auto !important;
+    font-size:.74rem;
+    padding:8px 4px;
+  }
+  .gameBox .top {
+    gap:5px;
+  }
+  .gameBox .status {
+    font-size:.73rem;
+  }
+}
+@media(max-width:420px) {
+  .mobileGameMenu {
+    width:min(94vw,330px);
+  }
+  .mobileGameMenuGrid {
+    grid-template-columns:repeat(3,1fr);
+  }
+  .mobileGameMenuItem {
+    min-height:58px;
+    font-size:.66rem;
+  }
+  .menuHero #shareHero {
+    max-width:none;
+    flex:1 1 0;
+  }
+}
+@media(min-width:701px) {
+  .desktopGameTool {
+    display:flex;
+  }
+}
