@@ -448,9 +448,18 @@ function endTournamentRound() {
     state.running = false;
     clearSavedGame();
     render();
-    document.dispatchEvent(new CustomEvent('tournamentOver', {
-      detail: { champion, wins: [...state.tournamentWins].slice(0, state.count) },
-    }));
+    const result = {
+      champion,
+      wins: [...state.tournamentWins].slice(0, state.count),
+      scores: [...state.scores].slice(0, state.count),
+      foodsEaten: [...state.foodsEaten].slice(0, state.count),
+      eliminations: [...state.eliminations].slice(0, state.count),
+      teams: [...state.teams].slice(0, state.count),
+      teamMode: !!state.teamMode,
+      names: [...state.names].slice(0, state.count),
+    };
+    if (isHost()) broadcastRaw({ type: 'onlineMatchResult', result });
+    document.dispatchEvent(new CustomEvent('tournamentOver', { detail: result }));
     return;
   }
 
