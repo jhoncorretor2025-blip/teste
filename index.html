@@ -12,9 +12,14 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
-<div id="appSplash" class="appSplash">
+<div id="appSplash" class="appSplash" aria-live="polite">
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
+  <div class="bootProgressWrap" aria-label="Carregando jogo">
+    <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
+    <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
+  </div>
+  <div id="bootProgressDetail" class="bootProgressDetail">Preparando o jogo</div>
 </div>
 <div class="app">
   <div id="updateBanner" class="updateBanner hidden">
@@ -532,6 +537,62 @@
     </section>
   </main>
 </div>
-<script type="module" src="js/main.js?v=2.92.0"></script>
+<script>
+(function () {
+  const VERSION = '2.94.1';
+  const splash = document.getElementById('appSplash');
+  const bar = document.getElementById('bootProgressBar');
+  const pct = document.getElementById('bootProgressPercent');
+  const status = document.getElementById('bootProgressStatus');
+  const detail = document.getElementById('bootProgressDetail');
+  let last = 0;
+  function progress(value, message, extra) {
+    last = Math.max(last, Math.min(100, value));
+    if (bar) bar.style.width = last + '%';
+    if (pct) pct.textContent = last + '%';
+    if (status) status.textContent = message;
+    if (detail && extra) detail.textContent = extra;
+  }
+  function finish() {
+    progress(100, 'Pronto! 🚀', 'Mioquinha carregada');
+    setTimeout(() => {
+      if (!splash) return;
+      splash.classList.add('fadeOut');
+      setTimeout(() => splash.remove(), 450);
+    }, 180);
+  }
+  function fail(err) {
+    progress(100, '⚠️ Não foi possível carregar', 'O jogo encontrou um erro ao iniciar.');
+    if (splash) {
+      const box = document.createElement('div');
+      box.className = 'bootErrorBox';
+      const msg = String(err && (err.message || err) || 'Erro desconhecido').slice(0, 240);
+      box.innerHTML = '<b>O carregamento parou aqui.</b><br><small>' +
+        msg.replace(/[<>&"]/g, s => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[s])) +
+        '</small><br><button type="button" id="bootRetryBtn">🔄 Tentar novamente</button>';
+      splash.appendChild(box);
+      document.getElementById('bootRetryBtn')?.addEventListener('click', () => location.reload());
+    }
+  }
+  progress(10, 'Abrindo...', 'Preparando a interface');
+  requestAnimationFrame(() => progress(30, 'Carregando...', 'Carregando o código do jogo'));
+  const timer = setTimeout(() => {
+    if (last < 100) fail(new Error('O código do jogo demorou mais de 12 segundos para responder.'));
+  }, 12000);
+  import('./js/main.js?v=' + VERSION + '&cb=' + Date.now())
+    .then(() => {
+      clearTimeout(timer);
+      progress(70, 'Montando...', 'Configurando controles, menus e jogo');
+      requestAnimationFrame(() => {
+        progress(90, 'Finalizando...', 'Quase pronto');
+        setTimeout(finish, 220);
+      });
+    })
+    .catch((err) => {
+      clearTimeout(timer);
+      fail(err);
+    });
+})();
+</script>
 </body>
 </html>
