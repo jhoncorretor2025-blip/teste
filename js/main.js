@@ -2,7 +2,7 @@
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
 import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
-import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS } from './config.js';
+import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS, HUNTER_DEFAULTS } from './config.js';
 import { planTeams } from './teams.js';
 import { loadTeamPrefs, saveTeamPrefs } from './storage.js';
 import { state } from './state.js';
@@ -11,7 +11,7 @@ import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryB
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, saveShortcuts, loadShortcuts } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -1389,6 +1389,91 @@ function persistProfile() {
   saveProfile({ name: state.names[0], color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], palette: state.palettes[0], touchControl: state.touchControl, trailColor: state.trailColors[0], nameColor: state.nameColor });
 }
 
+// --- Configuração da Minhoca Inimiga ---
+// Os valores vêm do código como padrão, mas agora podem ser alterados pela interface.
+// Tudo fica salvo no aparelho e volta ao abrir o jogo.
+function applyHunterSettingsToUI() {
+  const h = state.hunterConfig || HUNTER_DEFAULTS;
+  $('hunterEnabled').checked = h.enabled !== false;
+  $('hunterThreshold1').value = h.milestones?.[0]?.foodThreshold ?? 100;
+  $('hunterDuration1').value = h.milestones?.[0]?.durationSec ?? 35;
+  $('hunterThreshold2').value = h.milestones?.[1]?.foodThreshold ?? 150;
+  $('hunterDuration2').value = h.milestones?.[1]?.durationSec ?? 50;
+  $('hunterBurstDuration').value = h.burstDurationSec ?? 2.5;
+  $('hunterBurstInterval').value = h.burstIntervalSec ?? 8;
+  $('hunterDistractionRadius').value = h.distractionRadius ?? 6;
+  $('hunterPrediction').value = h.predictionSteps ?? 3;
+  $('hunterGrowth').value = h.growthPerVictim ?? 8;
+  $('hunterBodyLength').value = h.bodyLength ?? 50;
+  updateHunterSettingsSummary();
+}
+
+function readHunterSettingsFromUI() {
+  const num = (id, fallback) => {
+    const n = Number($(id)?.value);
+    return Number.isFinite(n) ? n : fallback;
+  };
+  return {
+    enabled: !!$('hunterEnabled')?.checked,
+    milestones: [
+      { foodThreshold: Math.max(10, num('hunterThreshold1', 100)), durationSec: Math.max(5, num('hunterDuration1', 35)) },
+      { foodThreshold: Math.max(20, num('hunterThreshold2', 150)), durationSec: Math.max(5, num('hunterDuration2', 50)) },
+    ],
+    burstDurationSec: Math.max(0.5, num('hunterBurstDuration', 2.5)),
+    burstIntervalSec: Math.max(1, num('hunterBurstInterval', 8)),
+    distractionRadius: Math.max(1, num('hunterDistractionRadius', 6)),
+    distractionDurationSec: state.hunterConfig?.distractionDurationSec ?? 3,
+    predictionSteps: Math.max(0, num('hunterPrediction', 3)),
+    growthPerVictim: Math.max(0, num('hunterGrowth', 8)),
+    bodyLength: Math.max(10, num('hunterBodyLength', 50)),
+  };
+}
+
+function saveHunterSettingsFromUI() {
+  state.hunterConfig = readHunterSettingsFromUI();
+  saveHunterSettings(state.hunterConfig);
+  updateHunterSettingsSummary();
+  updateRoomSettingsPreview();
+}
+
+function updateHunterSettingsSummary() {
+  const h = state.hunterConfig || HUNTER_DEFAULTS;
+  const s = $('hunterSettingsStatus');
+  const summary = $('hunterLiveSummary');
+  const behavior = $('hunterLiveBehavior');
+  if (s) {
+    s.textContent = h.enabled === false ? '🔴 Desativada' : (state.hunterActive ? '☠️ Ativa agora' : '🟢 Ativa');
+    s.className = 'hunterStatusBadge ' + (h.enabled === false ? 'off' : state.hunterActive ? 'live' : '');
+  }
+  if (summary) summary.textContent = `1ª: ${h.milestones?.[0]?.foodThreshold ?? 100} alimentos / ${h.milestones?.[0]?.durationSec ?? 35}s • 2ª: ${h.milestones?.[1]?.foodThreshold ?? 150} alimentos / ${h.milestones?.[1]?.durationSec ?? 50}s`;
+  if (behavior) behavior.textContent = `🎯 Persegue o líder • 💨 Rajada por ${h.burstDurationSec ?? 2.5}s a cada ${h.burstIntervalSec ?? 8}s • 🧠 Antecipação: ${h.predictionSteps ?? 3} casas • 🐍 Tamanho: ${h.bodyLength ?? 50}`;
+}
+
+const hunterFieldIds = ['hunterEnabled','hunterThreshold1','hunterDuration1','hunterThreshold2','hunterDuration2','hunterBurstDuration','hunterBurstInterval','hunterDistractionRadius','hunterPrediction','hunterGrowth','hunterBodyLength'];
+hunterFieldIds.forEach((id) => {
+  const el = $(id);
+  el?.addEventListener(el.type === 'checkbox' ? 'change' : 'input', saveHunterSettingsFromUI);
+});
+
+const HUNTER_PRESETS = {
+  normal: { enabled:true, milestones:[{foodThreshold:100,durationSec:35},{foodThreshold:150,durationSec:50}], burstDurationSec:2.5, burstIntervalSec:8, distractionRadius:6, predictionSteps:3, growthPerVictim:8, bodyLength:50 },
+  hard: { enabled:true, milestones:[{foodThreshold:75,durationSec:45},{foodThreshold:125,durationSec:60}], burstDurationSec:3, burstIntervalSec:7, distractionRadius:8, predictionSteps:4, growthPerVictim:10, bodyLength:55 },
+  chaos: { enabled:true, milestones:[{foodThreshold:50,durationSec:60},{foodThreshold:90,durationSec:90}], burstDurationSec:5, burstIntervalSec:5, distractionRadius:10, predictionSteps:6, growthPerVictim:14, bodyLength:65 },
+  reset: JSON.parse(JSON.stringify(HUNTER_DEFAULTS)),
+};
+document.querySelectorAll('.hunterPreset').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const preset = HUNTER_PRESETS[btn.dataset.hunterPreset];
+    if (!preset) return;
+    state.hunterConfig = JSON.parse(JSON.stringify(preset));
+    saveHunterSettings(state.hunterConfig);
+    applyHunterSettingsToUI();
+    vibrate(15);
+  });
+});
+
+setInterval(updateHunterSettingsSummary, 700);
+
 // Botão de música ambiente (melhoria #13)
 $('musicBtn').addEventListener('click', () => {
   unlockAudio();
@@ -1578,6 +1663,7 @@ if (typeof savedVolumes.sfx === 'number') { $('sfxVolume').value = Math.round(sa
 if (typeof savedVolumes.music === 'number') { $('musicVolume').value = Math.round(savedVolumes.music * 100); setMusicVolume(savedVolumes.music); }
 
 // Nome/cor/cabeça que a pessoa escolheu da última vez (melhoria #18)
+state.hunterConfig = loadHunterSettings(HUNTER_DEFAULTS);
 const profile = loadProfile();
 if (profile.name) { state.names[0] = profile.name; $('myName').value = profile.name; }
 if (profile.color) state.colors[0] = profile.color;
@@ -1607,6 +1693,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 setupTutorial();
+applyHunterSettingsToUI();
 makePlayers();
 $('leaderboardToggle').addEventListener('click', toggleLeaderboard);
 render();
