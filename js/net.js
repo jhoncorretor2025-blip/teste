@@ -31,6 +31,10 @@ let hostConn = null;  // cliente: a conexão com o anfitrião
 
 let handlers = {};
 
+// Configuração estável da sala: é pequena e pode ser reenviada sempre que alguém
+// entra ou reconecta. Isso evita que um cliente tardio fique sem nome, cor, mapa,
+// tema ou times só porque perdeu o pacote raro enviado no início da partida.
+
 let originalRoomId = null; // guarda o código ORIGINAL da sala, pra calcular o ID de migração
 let knownPeers = [];       // [{slot, id}] — quem tá na sala, pra saber quem vira o próximo anfitrião
 let deliberateDisconnect = false; // true quando a própria pessoa clicou em sair (não tenta migrar)
@@ -168,6 +172,14 @@ export function approveJoinRequest(request) {
 function finalizeJoin(conn, slot, teamPref) {
   const team = handlers.onAssignTeam ? handlers.onAssignTeam(slot, teamPref) : undefined;
   try { conn.send({ type: 'welcome', slot, team }); } catch {}
+  // O pacote de configuração é separado do estado frequente: pequeno, explícito e
+  // seguro para reenviar. Também corrige entrada tardia e reconexão após uma queda.
+  if (handlers.getRoomConfig) {
+    try {
+      const config = handlers.getRoomConfig(slot);
+      if (config) conn.send({ type: 'roomConfig', ...config });
+    } catch {}
+  }
   broadcastPeerList();
   handlers.onPeerJoined && handlers.onPeerJoined(slot);
 }
@@ -231,6 +243,8 @@ function configurarHostConnHandlers() {
     if (msg.type === 'welcome') {
       mySlot = msg.slot;
       onJoinedCb && onJoinedCb(msg.slot, msg.team);
+    } else if (msg.type === 'roomConfig') {
+      handlers.onRoomConfig && handlers.onRoomConfig(msg);
     } else if (msg.type === 'rejected') {
       onFailCb && onFailCb(new Error('rejected'));
     } else if (msg.type === 'state') {
