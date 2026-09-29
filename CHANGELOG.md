@@ -1,5 +1,16 @@
 # Histórico do que já foi feito (CHANGELOG)
 
+## [2.94.0] — 2026-09-29
+- **Nova central da Minhoca Inimiga:** criada uma seção própria em Configurações.
+- **Timer de aparição:** permite definir quantos alimentos o líder precisa comer e por quantos segundos a inimiga permanece.
+- **2 aparições configuráveis:** primeira e segunda aparição agora têm limite e duração independentes.
+- **Comportamento configurável:** rajada, intervalo entre rajadas, distância de distração, antecipação da perseguição, crescimento por vítima e tamanho inicial.
+- **Status em tempo real:** o painel informa se a inimiga está ativa/desativada e resume os parâmetros atuais.
+- **Presets:** Normal, Difícil, Caos e Padrão.
+- **Persistência:** as configurações ficam salvas no navegador e sobrevivem ao fechamento/reabertura do jogo.
+- **Compatibilidade:** os valores padrão preservam o comportamento que já existia antes da nova aba.
+- **Versão:** 2.94.0.
+
 ## [2.93.0] — 2026-09-29
 - **Mapas/biomas:** adicionada uma camada real de decoração fixa no mundo, separada das partículas animadas.
 - **Campo de Girassóis:** agora mostra girassóis desenhados no próprio Canvas, com caule, folhas, pétalas e centro.
