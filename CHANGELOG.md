@@ -8,6 +8,10 @@ Este arquivo é a **memória do projeto**: qualquer IA (ou pessoa) lê aqui o qu
 - **Conexão:** quando o navegador só informa `effectiveType`, a interface agora chama isso de **qualidade estimada** em vez de sugerir que seja Wi-Fi ou dados móveis.
 - **Robustez:** versão centralizada corrigida para `2.85.0`.
 
+## [2.86.0] — 2026-09-29
+- **Multiplayer:** corrigido um erro de slot após saída de jogador. Os jogadores restantes agora mantêm seus slots originais; isso evita troca de controle/placar e reduz risco de problemas na migração do anfitrião.
+- **Robustez:** a conexão guarda explicitamente seu slot para não depender da posição no array de conexões.
+
 ## Como usar e manter
 - **Ao terminar qualquer trabalho**, acrescente o que mudou em **"Não lançado"** (em português simples: o que mudou e, se não for óbvio, **por quê**).
 - Ao trocar a versão (`python3 tools/bump-versao.py X.Y.Z`), a ferramenta **move** o conteúdo de "Não lançado" para a versão nova, com a data de hoje. Se "Não lançado" estiver vazio, ela deixa um lembrete `(descreva o que mudou nesta versão)` — e o `npm run verificar` **reprova** enquanto o lembrete estiver aí.
