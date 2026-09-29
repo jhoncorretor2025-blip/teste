@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.89.0';
+export const VERSION = '2.93.0';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -43,15 +43,15 @@ export const ZOOM_LEVELS = [
 // (grid), a comidinha (food), uma cor de destaque (accent) e o tipo de decoração animada
 // que flutua no fundo (deco) — assim trocar de tema muda o MAPA todo, não só a comidinha.
 export const BOARD_THEMES = [
-  { value: 'space',     name: '🌌 Espacial',            bg: '#050911', bg2: '#0e1c38', grid: '#16233d', food: '🍎', accent: '#ffffff', deco: 'stars' },
+  { value: 'space',     name: '🌌 Espacial',            bg: '#07152b', bg2: '#173d72', grid: '#24508a', food: '🍎', accent: '#ffffff', deco: 'stars' },
   { value: 'deep',      name: '🌊 Azul Profundo',       bg: '#04304f', bg2: '#095985', grid: '#0f5378', food: '🍇', accent: '#a8ecff', deco: 'bubbles' },
   { value: 'desert',    name: '🏜️ Deserto',             bg: '#40230f', bg2: '#79491e', grid: '#6b3f1e', food: '🌵', accent: '#f2d58f', deco: 'sand' },
   { value: 'ice',       name: '❄️ Gelo',                bg: '#173f55', bg2: '#275971', grid: '#3a6d87', food: '🐟', accent: '#ffffff', deco: 'snow' },
   { value: 'forest',    name: '🌲 Floresta',            bg: '#0a2a17', bg2: '#17572d', grid: '#1c4a2c', food: '🍄', accent: '#9be37f', deco: 'spores' },
   { value: 'night',     name: '🟣 Roxo Noite',          bg: '#241040', bg2: '#47217f', grid: '#3a2266', food: '🍒', accent: '#e0bcff', deco: 'sparkles' },
   { value: 'void',      name: '⚫ Vazio',               bg: '#000000', bg2: '#0c0c0c', grid: '#1a1a1a', food: '🍎', accent: '#ffffff', deco: 'none' },
-  { value: 'sunflower', name: '🌻 Campo de Girassóis',  bg: '#3a3a08', bg2: '#5a560d', grid: '#5c5a12', food: '🌻', accent: '#ffd24d', deco: 'petals' },
-  { value: 'garden',    name: '🌸 Jardim de Flores',    bg: '#1f3418', bg2: '#395d2a', grid: '#33552a', food: '🌸', accent: '#ff9ecb', deco: 'petals' },
+  { value: 'sunflower', name: '🌻 Campo de Girassóis',  bg: '#35551f', bg2: '#6e8d32', grid: '#58742c', food: '🌻', accent: '#ffd24d', deco: 'petals' },
+  { value: 'garden',    name: '🌸 Jardim de Flores',    bg: '#294b22', bg2: '#56833b', grid: '#477034', food: '🌸', accent: '#ff9ecb', deco: 'petals' },
 ];
 
 // --- Tamanho do mapa escolhível no menu ---
