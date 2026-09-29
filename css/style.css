@@ -2191,3 +2191,103 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
 
 /* v2.92.0 — abandono protegido + lobby completo + confronto detalhado */
 .onlineLobbyStatus{margin-top:7px;padding:7px 8px;border-radius:9px;background:rgba(103,239,138,.07);border:1px solid rgba(103,239,138,.18);color:#bde9c9;font-size:.7rem;line-height:1.35}.onlineLobbyDisconnected{color:#ff9f6e;font-size:.68rem}#onlineClientLobby{margin-top:9px}@media(max-width:700px){.onlineLobbyStatus{font-size:.68rem}}
+
+
+/* v2.94.0 — painel da Minhoca Inimiga */
+.hunterSettingsBox {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #6d2d42;
+  border-radius: 14px;
+  background: linear-gradient(155deg,#241321,#101726);
+  box-shadow: 0 8px 24px #0004;
+}
+.hunterSettingsHeader {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.hunterSettingsHeader h3 {
+  margin:0;
+  font-size:1rem;
+  color:#fff;
+}
+.hunterSettingsHeader p {
+  margin:3px 0 0;
+  color:#aebbd0;
+  font-size:.72rem;
+  line-height:1.35;
+}
+.hunterStatusBadge {
+  white-space:nowrap;
+  padding:5px 8px;
+  border-radius:999px;
+  background:#12331f;
+  border:1px solid #2d8a52;
+  color:#8df2ad;
+  font-size:.68rem;
+  font-weight:900;
+}
+.hunterStatusBadge.off {
+  background:#381521;
+  border-color:#8b334e;
+  color:#ff9ab2;
+}
+.hunterStatusBadge.live {
+  background:#401522;
+  border-color:#ff5577;
+  color:#ff9aaa;
+  box-shadow:0 0 12px #ff557733;
+}
+.hunterConfigGrid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:9px;
+}
+.fieldLabel {
+  display:block;
+  margin-bottom:4px;
+  color:#cbd7ea;
+  font-size:.7rem;
+  font-weight:800;
+}
+.hunterConfigGrid .input {
+  margin:0;
+}
+.hunterLiveInfo {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  margin-top:10px;
+  padding:9px;
+  border-radius:10px;
+  background:#080f1c;
+  border:1px solid #293a58;
+  color:#c9d6e9;
+  font-size:.72rem;
+  line-height:1.35;
+}
+.hunterLiveInfo b {
+  color:#fff;
+}
+.hunterPresetRow {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin-top:9px;
+}
+.hunterPreset {
+  min-width:0;
+  padding:7px 5px;
+  font-size:.7rem;
+}
+@media(max-width:600px) {
+  .hunterConfigGrid {
+    grid-template-columns:1fr;
+  }
+  .hunterPresetRow {
+    grid-template-columns:repeat(2,1fr);
+  }
+}
