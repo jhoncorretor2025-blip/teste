@@ -1748,3 +1748,104 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     flex:0 1 220px
   }
 }
+
+
+/* v2.87.0 — nova central de ferramentas da aba Online */
+.onlineTools {
+  margin:8px 0 10px;
+  padding:10px 11px;
+  border:1px solid #30476d;
+  border-radius:12px;
+  background:linear-gradient(160deg,#111f38,#0c1628);
+}
+.onlineToolsTitle {
+  font-weight:900;
+  color:#fff;
+  font-size:.9rem;
+}
+.onlineToolsSub {
+  color:#91a3c0;
+  font-size:.72rem;
+  margin-top:2px;
+}
+.onlinePresetGrid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin-top:8px;
+}
+.onlinePreset {
+  width:100%;
+  min-height:38px;
+  padding:7px 6px;
+  font-size:.74rem;
+}
+.onlineDiag {
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:7px;
+  padding:7px 8px;
+  border-radius:9px;
+  background:#08111f;
+  border:1px solid #273956;
+  color:#cbd7ea;
+  font-size:.72rem;
+}
+.onlineDiag .diagItem {
+  padding:3px 6px;
+  border-radius:7px;
+  background:#ffffff08;
+}
+.onlineDiag small {
+  width:100%;
+  color:#8194b2;
+  line-height:1.35;
+}
+.lobbyCapacity {
+  margin-top:7px;
+  padding:7px 8px;
+  border-radius:9px;
+  background:#0a1424;
+  border:1px solid #293b5b;
+}
+.lobbyCapacityTop {
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  font-size:.74rem;
+  color:#b9c7dc;
+}
+.lobbyCapacityTop b {
+  color:#fff;
+}
+.lobbyCapacityTrack {
+  height:7px;
+  margin-top:5px;
+  border-radius:99px;
+  overflow:hidden;
+  background:#ffffff12;
+}
+.lobbyCapacityFill {
+  height:100%;
+  border-radius:99px;
+  background:linear-gradient(90deg,#4dd97a,#ffd24d);
+  transition:width .25s ease;
+}
+.lobbyHint {
+  margin-top:5px;
+  font-size:.72rem;
+}
+@media(max-width:700px) {
+  .onlinePresetGrid {
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+@media(max-width:420px) {
+  .onlineToolsSub {
+    font-size:.69rem;
+  }
+  .onlinePreset {
+    font-size:.69rem;
+  }
+}
