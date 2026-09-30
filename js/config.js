@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.96.0';
+export const VERSION = '2.97.0';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -188,6 +188,16 @@ export const HEAD_SHAPES = [
   { name: '🐻 Ursinho', value: 'bear' },
   { name: '🌻 Girassol', value: 'sunflower' },
   { name: '🌹 Rosa', value: 'rose' },
+  { name: '🦊 Raposinha', value: 'fox' },
+  { name: '🦈 Tubarão', value: 'shark' },
+  { name: '🐝 Abelinha', value: 'bee' },
+  { name: '🦄 Unicórnio', value: 'unicorn' },
+  { name: '🐵 Macaquinho', value: 'monkey' },
+  { name: '🦁 Leãozinho', value: 'lion' },
+  { name: '👽 Alienígena', value: 'alien' },
+  { name: '🏴‍☠️ Pirata', value: 'pirata' },
+  { name: '🤖 Robô', value: 'robot' },
+  { name: '💀 Caveira', value: 'skull' },
 ];
 
 // --- Padrão de pele do corpo (parte da personalização/"skin") ---
