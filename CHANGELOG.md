@@ -1,3 +1,9 @@
+## [3.4.0] — 2026-09-30
+- **Reconexão:** queda temporária dá até 8 segundos para reconectar antes de a CPU assumir.
+- **Anfitrião:** após migração, o novo host retoma a sala automaticamente.
+- **Placar online:** painel com posição, pontuação, comidas, eliminações, conexão e ping.
+- **Resultado online:** ranking detalhado com medalhas, campeão, identificação de você e resumo geral da partida.
+
 ## [3.3.5] — 2026-09-30
 - **50 comidas:** ao atingir 50 comidas, cada Mioquinha recebe uma Minhoca Inimiga exclusiva por 20 segundos.
 - **Multiplayer:** várias inimigas podem ficar ativas ao mesmo tempo, uma para cada jogador que atingir a marca de 50.
