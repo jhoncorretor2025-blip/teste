@@ -273,9 +273,9 @@ let gravacaoPendente = null;
 function loadAchievementProgress() {
   if (progressoCache) return progressoCache;
   try {
-    progressoCache = { totalFoods: 0, totalStars: 0, totalMissions: 0, themesUsed: [], headsUsed: [], ...JSON.parse(localStorage.getItem(PROGRESS_KEY)) };
+    progressoCache = { totalFoods: 0, totalStars: 0, totalMissions: 0, onlineGames: 0, themesUsed: [], headsUsed: [], ...JSON.parse(localStorage.getItem(PROGRESS_KEY)) };
   } catch {
-    progressoCache = { totalFoods: 0, totalStars: 0, totalMissions: 0, themesUsed: [], headsUsed: [] };
+    progressoCache = { totalFoods: 0, totalStars: 0, totalMissions: 0, onlineGames: 0, themesUsed: [], headsUsed: [] };
   }
   return progressoCache;
 }
