@@ -16,6 +16,9 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 _(nada por enquanto)_
 
+## [3.2.1] — 2026-09-30
+- **Correção urgente:** o visual da v3.2.0 não carregava a Mioquinha porque a nova função `drawEnergyTrail` ficou dentro de `drawHead`. A função foi movida para o escopo correto, permitindo que o renderizador execute normalmente.
+
 ## [3.2.0] — 2026-09-30
 - **Visual do jogo:** iluminação ambiental animada, profundidade e vinheta suave nos temas.
 - **Minhocas:** rastro de energia, animação contínua da cabeça, reflexos e coroa do líder.
