@@ -238,6 +238,7 @@ export function startGame() {
   const totalGames = incrementGamesPlayed();
   updateGamesPlayedBadge(totalGames);
   if (totalGames >= 5) announceAchievement(unlockAchievement('games_5'));
+  if (totalGames >= 10) announceAchievement(unlockAchievement('games_10'));
   updateSessionStatsDisplay(incrementSessionGames());
   updateStreakAndLastPlayed();
   clearSavedGame();
@@ -402,6 +403,7 @@ function stepMovement(indices) {
         trackEliminationForMission(die[i]);
         if (die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('eliminator'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 5) announceAchievement(unlockAchievement('eliminator_5'));
+        if (die[i] === mySlot && state.eliminations[die[i]] >= 10) announceAchievement(unlockAchievement('eliminator_10'));
       }
       kill(i);
       return;
@@ -452,12 +454,17 @@ function stepMovement(indices) {
           if (state.secondPlaceBonusCollected >= 5) announceAchievement(unlockAchievement('second_bonus_5'));
         }
         if (combo >= 5) announceAchievement(unlockAchievement('combo_master'));
+        if (combo >= 10) announceAchievement(unlockAchievement('combo_10'));
         if (state.foodsEaten[i] >= 10) announceAchievement(unlockAchievement('food_10'));
+        if (state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('food_25'));
         if (state.scores[i] >= 25) announceAchievement(unlockAchievement('score_25'));
+        if (state.scores[i] >= 50) announceAchievement(unlockAchievement('score_50'));
         if (state.scores[i] >= 100) announceAchievement(unlockAchievement('century'));
         if (state.scores[i] >= 250) announceAchievement(unlockAchievement('score_250'));
+        if (state.scores[i] >= 350) announceAchievement(unlockAchievement('score_350'));
         if (state.scores[i] >= 500) announceAchievement(unlockAchievement('score_500'));
         if (state.scores[i] >= 1000) announceAchievement(unlockAchievement('score_1000'));
+        if (state.scores[i] >= 1500) announceAchievement(unlockAchievement('score_1500'));
       }
     }
     if (state.grow[i] > 0) state.grow[i]--;
@@ -492,6 +499,7 @@ function endTournamentRound() {
     if (state.tournamentRoundScore[i] > state.tournamentRoundScore[winner]) winner = i;
   }
   state.tournamentWins[winner] = (state.tournamentWins[winner] || 0) + 1;
+  if (winner === mySlot && state.tournamentWins[winner] >= 3) announceAchievement(unlockAchievement('tournament_3wins'));
   const roundJustEnded = state.tournamentRound;
 
   if (roundJustEnded >= TOURNAMENT_ROUNDS) {
@@ -859,9 +867,13 @@ function tick() {
     const survivedMs = Date.now() - state.spawnedAt[mySlot];
     if (survivedMs >= 30000) announceAchievement(unlockAchievement('survive_30'));
     if (survivedMs >= 120000) announceAchievement(unlockAchievement('survivor'));
+    if (survivedMs >= 300000) announceAchievement(unlockAchievement('survive_5m'));
     if (mySnake.length >= 15) announceAchievement(unlockAchievement('length_15'));
+    if (mySnake.length >= 20) announceAchievement(unlockAchievement('length_20'));
     if (mySnake.length >= 25) announceAchievement(unlockAchievement('length_25'));
+    if (mySnake.length >= 35) announceAchievement(unlockAchievement('length_35'));
     if (mySnake.length >= 50) announceAchievement(unlockAchievement('length_50'));
+    if (mySnake.length >= 75) announceAchievement(unlockAchievement('length_75'));
   }
   updateHunter();
   updateSecondPlaceBonusFood();
