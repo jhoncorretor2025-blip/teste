@@ -1527,7 +1527,7 @@ export function draw() {
     if (!s || !s.length) continue; // proteção: marcada como viva mas sem dados ainda (ex: acabou de entrar) — não trava o resto do desenho
     const boosting = state.boosting[i];
 
-    drawEnergyTrail(s, i, boosting);
+    if (typeof drawEnergyTrail === 'function') drawEnergyTrail(s, i, boosting);
 
     ctx.save();
     // Rastro neon: um brilho na cor da minhoca, mais forte pertinho da cabeça e
