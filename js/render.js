@@ -221,7 +221,7 @@ function drawThemeBackdrop(theme) {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
   }
-  drawThemeAtmosphere(theme);
+  if (typeof drawThemeAtmosphere === 'function') drawThemeAtmosphere(theme);
   if (theme.deco === 'stars') drawStars();
   else if (theme.deco && theme.deco !== 'none') drawThemeDeco(theme);
 }
@@ -1438,7 +1438,7 @@ export function draw() {
     canvas._lastMapH = state.mapH;
   }
   updateCamera();
-  rastrearMortesVisuais();
+  if (typeof rastrearMortesVisuais === 'function') rastrearMortesVisuais();
 
   ctx.save();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1597,11 +1597,11 @@ export function draw() {
     }
   }
 
-  drawDeathEffects();
-  drawLeaderCrown();
+  if (typeof drawDeathEffects === 'function') drawDeathEffects();
+  if (typeof drawLeaderCrown === 'function') drawLeaderCrown();
   drawHunter();
 
-  drawEnhancedParticles();
+  if (typeof drawEnhancedParticles === 'function') drawEnhancedParticles();
 
   // Texto flutuante de comemoração (marco de crescimento)
   if (state.toast && Date.now() < state.toast.until) {
