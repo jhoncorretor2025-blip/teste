@@ -1233,10 +1233,32 @@ h1 {
   transition:opacity .35s ease,transform .35s ease
 }
 
+.achievementPopup::before {
+  content:'';
+  position:absolute;
+  width:220px;
+  height:220px;
+  left:50%;
+  top:50%;
+  border:1px solid #ffd24d44;
+  border-radius:50%;
+  transform:translate(-50%,-50%) scale(.3);
+  opacity:0;
+}
+
 .achievementPopup.show {
   opacity:1;
-  transform:translate(-50%,-50%) scale(1)
+  transform:translate(-50%,-50%) scale(1);
 }
+
+.achievementPopup.show::before {
+  animation:achievementRing 1.4s ease-out forwards;
+}
+
+.achievementPopup.show .achievementEmoji {
+  animation:achievementPop .85s cubic-bezier(.17,.84,.34,1) both,achievementBounce 1.3s ease-in-out .85s infinite;
+}
+
 
 .achievementEmoji {
   font-size:3.2rem;
@@ -1413,6 +1435,10 @@ h1 {
 }
 
 .appSplash {
+  background:
+    radial-gradient(circle at 50% 42%,#203966 0,#0a1426 36%,#030711 78%),
+    linear-gradient(180deg,#08101e,#030711);
+
   .bootProgressWrap {
     width:min(78vw,360px);
     margin-top:4px;
@@ -1478,6 +1504,23 @@ h1 {
     color:#07101d;
     font-weight:800;
   }
+.appSplash::before {
+  content:'';
+  position:absolute;
+  width:min(72vw,520px);
+  height:min(72vw,520px);
+  border-radius:50%;
+  background:radial-gradient(circle,#67ef8a22 0,#67ef8a08 38%,transparent 72%);
+  filter:blur(4px);
+  animation:splashGlow 2.8s ease-in-out infinite;
+  pointer-events:none;
+}
+
+.appSplash > * {
+  position:relative;
+  z-index:1;
+}
+
   position:fixed;
   inset:0;
   z-index:9999;
@@ -1511,10 +1554,18 @@ h1 {
 
 .appSplashTitle {
   color:#fff;
-  font-size:1.3rem;
+  font-size:1.45rem;
   font-weight:900;
   font-family:"Courier New",ui-monospace,monospace;
-  letter-spacing:1px
+  letter-spacing:2px;
+  text-shadow:0 0 18px #67ef8a44
+}
+
+.appSplashTagline {
+  color:#9fb2d2;
+  font-size:.78rem;
+  margin-top:-7px;
+  letter-spacing:.7px
 }
 
 .appSplash.fadeOut {
@@ -1529,6 +1580,27 @@ h1 {
   50% {
     transform:scale(1.06)
   }
+}
+
+@keyframes achievementPop {
+  0% { transform:scale(.55) rotate(-8deg); opacity:0; }
+  60% { transform:scale(1.18) rotate(3deg); opacity:1; }
+  100% { transform:scale(1) rotate(0); opacity:1; }
+}
+
+@keyframes achievementRing {
+  0% { transform:translate(-50%,-50%) scale(.2); opacity:.75; }
+  100% { transform:translate(-50%,-50%) scale(2.2); opacity:0; }
+}
+
+@keyframes splashFloat {
+  0%,100% { transform:translateY(0) scale(1); }
+  50% { transform:translateY(-6px) scale(1.025); }
+}
+
+@keyframes splashGlow {
+  0%,100% { transform:scale(.92); opacity:.65; }
+  50% { transform:scale(1.06); opacity:1; }
 }
 
 .spinner {
@@ -2553,4 +2625,36 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   .hunterPresetRow {
     grid-template-columns:repeat(2,1fr);
   }
+}
+
+/* v3.2.0 — acabamento visual */
+.achievementCard {
+  position:relative;
+  overflow:hidden;
+}
+
+.achievementCard::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent 32%,#ffffff08 50%,transparent 68%);
+  transform:translateX(-130%);
+  transition:transform .65s ease;
+  pointer-events:none;
+}
+
+.achievementCard:hover::after {
+  transform:translateX(130%);
+}
+
+.arena {
+  box-shadow:inset 0 0 0 1px #ffffff10,0 14px 40px #0008;
+}
+
+.heroPlay {
+  box-shadow:0 0 0 1px #ffffff22 inset,0 8px 24px #0006,0 0 24px #67ef8a22;
+}
+
+.heroPlay:hover {
+  box-shadow:0 0 0 1px #ffffff30 inset,0 10px 28px #0007,0 0 32px #67ef8a44;
 }

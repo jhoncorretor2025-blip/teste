@@ -16,6 +16,16 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 _(nada por enquanto)_
 
+## [3.2.0] — 2026-09-30
+- **Visual do jogo:** iluminação ambiental animada, profundidade e vinheta suave nos temas.
+- **Minhocas:** rastro de energia, animação contínua da cabeça, reflexos e coroa do líder.
+- **Comidas:** movimento, rotação, pulso e destaque das comidas especiais.
+- **Mortes/partículas:** impacto visual ampliado e partículas variadas.
+- **Minimapa:** varredura de radar animada.
+- **Conquistas:** popup com entrada mais forte e anel luminoso.
+- **Tela inicial:** splash com identidade visual e iluminação melhoradas.
+- **Menu:** microinterações visuais nos cards e botão principal.
+
 ## [2.94.9] — 2026-09-30
 - **Correção urgente:** criar uma sala no celular, trocar de app (por exemplo, pra mandar o link pelo WhatsApp) e voltar fazia a sala inteira sumir, como se o navegador tivesse recarregado do zero — precisando criar tudo de novo. Causa: os dois mecanismos de atualização automática (o do `version.txt` e o do Service Worker) só se seguravam contra recarregar durante uma PARTIDA rodando (`state.running`), mas não durante a ESPERA na sala (depois de criar, antes de apertar "Jogar") — que é exatamente quando a pessoa sai pra mandar o link. Se o jogo detectasse uma versão nova publicada nesse meio tempo, recarregava a página sem aviso, apagando a sala. Agora os dois também respeitam `net.isOnline()` (hospedando OU já numa sala, mesmo sem a partida ter começado); a atualização fica represada até a pessoa sair da sala de verdade (não se perde, só espera). Detalhes em `docs/ARMADILHAS.md` (caso 30).
 
