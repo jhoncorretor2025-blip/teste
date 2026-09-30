@@ -1,3 +1,8 @@
+## [3.3.5] — 2026-09-30
+- **50 comidas:** ao atingir 50 comidas, cada Mioquinha recebe uma Minhoca Inimiga exclusiva por 20 segundos.
+- **Multiplayer:** várias inimigas podem ficar ativas ao mesmo tempo, uma para cada jogador que atingir a marca de 50.
+- **Turbo:** quando o turbo está disponível e não está sendo usado, a Mioquinha do jogador pisca com o aviso `⚡ TURBO`.
+
 ## [3.3.4] — 2026-09-30
 - **Correção definitiva de carregamento:** criada uma cadeia nova `main_stable_334.js → loop_stable_334.js → render_stable_334.js` para impedir que módulos gráficos antigos em cache continuem sendo executados.
 - **Placar:** `rankOrder` passa a ser definido localmente dentro de `renderScores()`, inclusive quando existe apenas um jogador.
