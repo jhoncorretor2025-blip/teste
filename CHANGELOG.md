@@ -1,3 +1,9 @@
+## [3.6.1] — 2026-09-30
+- **Celular:** layout do jogo online reorganizado para evitar estouro lateral e elementos espremidos.
+- **Visitante:** removido o placar duplicado no rodapé e reorganizados placar, reações, chat e botões.
+- **Arena:** controles touch permanecem dentro da área da arena e os cards de jogadores respeitam a largura do celular.
+- **Cache:** CSS e versão atualizados para garantir que o celular baixe a correção nova.
+
 ## [3.6.0] — 2026-09-30
 - **Salas por código:** o anfitrião pode criar uma sala usando um código numérico de 4 dígitos.
 - **PIN:** a sala pode exigir um PIN numérico de 4 dígitos antes de liberar a entrada.
