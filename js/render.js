@@ -1343,17 +1343,19 @@ export function renderScores() {
   const teamBadge = ['🔵', '🔴'];
 
   // Descobre quem tá na frente (só faz sentido com mais de 1 jogador, e com pontuação > 0)
-  let leaderIdx = -1;
-  if (state.count > 1) {
-    let maxScore = 0;
-    const rankOrder = Array.from({ length: state.count }, (_, i) => i).sort((a, b) => {
+  // Ordem visual do ranking fica sempre disponível, inclusive quando há só 1 jogador.
+  // O desempate usa comida consumida e, por último, a ordem original dos slots.
+  const rankOrder = Array.from({ length: state.count }, (_, i) => i).sort((a, b) => {
     const scoreDiff = (state.scores[b] || 0) - (state.scores[a] || 0);
     if (scoreDiff !== 0) return scoreDiff;
     const foodDiff = (state.foodsEaten[b] || 0) - (state.foodsEaten[a] || 0);
     return foodDiff !== 0 ? foodDiff : a - b;
   });
 
-  for (let i = 0; i < state.count; i++) {
+  let leaderIdx = -1;
+  if (state.count > 1) {
+    let maxScore = 0;
+    for (let i = 0; i < state.count; i++) {
       if ((state.scores[i] || 0) > maxScore) { maxScore = state.scores[i]; leaderIdx = i; }
     }
   }
