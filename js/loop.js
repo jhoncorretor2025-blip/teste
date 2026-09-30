@@ -189,6 +189,7 @@ const SAVE_FIELDS = [
   'snakes', 'alive', 'dirs', 'nextDirs', 'foods', 'scores', 'foodsEaten', 'grow',
   'respawnAt', 'milestones', 'eliminations', 'boosting', 'boostUsedCount', 'mission',
   'hunterActive', 'hunterSnake', 'hunterDir', 'hunterEndsAt', 'hunterMilestoneIndex',
+  'secondPlaceBonusTarget', 'secondPlaceBonusRemaining',
 ];
 
 function snapshotGameState() {
@@ -576,7 +577,8 @@ function clearSecondPlaceBonusFoods() {
 // Executado pelo anfitrião. O bônus fica preso ao jogador que realmente está em 2º lugar.
 // Quando uma das 5 comidas é comida, no próximo tick nasce a próxima, novamente perto dele.
 function updateSecondPlaceBonusFood() {
-  if (!isHost()) return;
+  // No jogo local o aparelho é a autoridade; no online apenas o anfitrião pode criar a comida.
+  if (isOnline() && !isHost()) return;
 
   const { secondIdx, secondFood } = findFoodSecondPlace();
 
