@@ -36,6 +36,10 @@ _(nada por enquanto)_
 - **Tela inicial:** splash com identidade visual e iluminação melhoradas.
 - **Menu:** microinterações visuais nos cards e botão principal.
 
+## [3.3.1] — 2026-09-30
+- **Correção do placar:** a ordem visual do ranking foi movida para o escopo correto de `renderScores()`, evitando o erro `rankOrder is not defined` e permitindo que a partida seja desenhada normalmente.
+- **Cache:** `render.js` passou a ser carregado como v3.3.1 para impedir reutilização do módulo gráfico anterior.
+
 ## [3.3.0] — 2026-09-30
 - **Skins:** 10 estilos de corpo, com 6 estilos temáticos novos: Neon, Fogo, Gelo, Galáxia, Elétrico e Veneno.
 - **Rastros:** cada estilo tem uma assinatura visual própria; o turbo ganha partículas adicionais.
