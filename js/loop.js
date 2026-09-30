@@ -95,8 +95,8 @@ export function reset() {
   state.hunterActive = false;
   state.hunterSnake = [];
   state.hunterMilestoneIndex = 0;
-  state.streakBonusActive = false;
-  state.streakBonusNextAt = 0;
+  state.secondPlaceBonusTarget = -1;
+  state.secondPlaceBonusRemaining = 0;
   state.hunterBurstUntil = 0;
   state.hunterNextBurstAt = 0;
   state.hunterDistractedUntil = 0;
@@ -366,7 +366,8 @@ function stepMovement(indices) {
     }
     const h = heads[i];
     state.snakes[i].unshift(h);
-    const f = state.foods.find(q => q.x === h.x && q.y === h.y);
+    const candidato = state.foods.find(q => q.x === h.x && q.y === h.y);
+    const f = candidato && (candidato.kind !== 'secondPlace' || candidato.target === i) ? candidato : null;
     if (f) {
       // Combo de velocidade: comer rápido e seguido dá pontos extras, que vão subindo
       const eatNow = Date.now();
@@ -496,44 +497,97 @@ function findFoodLeader() {
   return { leaderIdx, leaderFood };
 }
 
-// Comida de sequência vencedora — só faz sentido comparar com o "segundo lugar" se
-// tiver mais de um jogador na partida. Acha o líder e a maior pontuação entre TODOS OS
-// OUTROS jogadores, pra saber a vantagem de verdade (não só o valor absoluto do líder).
-const VANTAGEM_MINIMA_SEQUENCIA = 25;
-const INTERVALO_COMIDA_SEQUENCIA_MS = 15000;
-function ativarComidaSequenciaSeMerecer() {
-  if (state.count < 2) return;
-  const { leaderIdx, leaderFood } = findFoodLeader();
-  if (leaderIdx === -1) return;
-  let segundoLugar = -1;
+// Bônus do 2º lugar:
+// quando o segundo colocado já comeu MAIS DE 25 comidas, ele recebe uma sequência de
+// 5 comidas especiais valendo 10 pontos cada. Só uma aparece por vez e cada uma nasce
+// perto da minhoca que está em 2º lugar naquele momento.
+const SEGUNDO_LUGAR_MIN_COMIDAS = 25;
+const SEGUNDO_LUGAR_TOTAL_BONUS = 5;
+const SEGUNDO_LUGAR_RAIO_COMIDA = 7;
+
+function findFoodSecondPlace() {
+  const ranking = [];
   for (let i = 0; i < state.count; i++) {
-    if (i !== leaderIdx && state.alive[i] && state.foodsEaten[i] > segundoLugar) segundoLugar = state.foodsEaten[i];
+    if (!state.alive[i]) continue;
+    ranking.push({ i, food: state.foodsEaten[i] || 0 });
   }
-  if (segundoLugar === -1) return; // não tem mais ninguém vivo pra comparar
-  if (leaderFood - segundoLugar >= VANTAGEM_MINIMA_SEQUENCIA) {
-    state.streakBonusActive = true;
-    state.streakBonusNextAt = Date.now() + INTERVALO_COMIDA_SEQUENCIA_MS;
-  }
+  ranking.sort((x, y) => y.food - x.food);
+  const second = ranking[1];
+  return {
+    leaderIdx: ranking[0]?.i ?? -1,
+    leaderFood: ranking[0]?.food ?? -1,
+    secondIdx: second?.i ?? -1,
+    secondFood: second?.food ?? -1,
+  };
 }
 
-// Chamado a cada instante — enquanto a sequência vencedora estiver ativa, solta uma
-// comidinha especial (valendo 10, bem mais que o normal) a cada 15 segundos. Se a
-// vantagem cair abaixo do mínimo no meio do caminho, desliga sozinho.
-function updateStreakBonusFood() {
-  if (!state.streakBonusActive) return;
-  const { leaderIdx, leaderFood } = findFoodLeader();
-  let segundoLugar = -1;
-  for (let i = 0; i < state.count; i++) {
-    if (i !== leaderIdx && state.alive[i] && state.foodsEaten[i] > segundoLugar) segundoLugar = state.foodsEaten[i];
+function findFoodNearPlayer(i, radius = SEGUNDO_LUGAR_RAIO_COMIDA) {
+  const head = state.snakes[i]?.[0];
+  if (!head) return freeCell();
+
+  // Primeiro tenta posições próximas da cabeça. Assim o bônus realmente fica "perto dela".
+  for (let n = 0; n < 250; n++) {
+    const dx = Math.floor(Math.random() * (radius * 2 + 1)) - radius;
+    const dy = Math.floor(Math.random() * (radius * 2 + 1)) - radius;
+    if (Math.abs(dx) + Math.abs(dy) > radius) continue;
+    const x = head.x + dx, y = head.y + dy;
+    if (wall(x, y) || occupied(x, y)) continue;
+    return { x, y };
   }
-  if (leaderIdx === -1 || segundoLugar === -1 || leaderFood - segundoLugar < VANTAGEM_MINIMA_SEQUENCIA) {
-    state.streakBonusActive = false; // perdeu a vantagem — a recompensa extra some
+  return freeCell();
+}
+
+function clearSecondPlaceBonusFoods() {
+  state.foods = state.foods.filter((f) => f.kind !== 'secondPlace');
+}
+
+// Executado pelo anfitrião. O bônus fica preso ao jogador que realmente está em 2º lugar.
+// Quando uma das 5 comidas é comida, no próximo tick nasce a próxima, novamente perto dele.
+function updateSecondPlaceBonusFood() {
+  if (!isHost()) return;
+
+  const { secondIdx, secondFood } = findFoodSecondPlace();
+
+  if (secondIdx === -1 || secondFood <= SEGUNDO_LUGAR_MIN_COMIDAS) {
+    if (state.secondPlaceBonusTarget !== -1) clearSecondPlaceBonusFoods();
+    state.secondPlaceBonusTarget = -1;
+    state.secondPlaceBonusRemaining = 0;
     return;
   }
-  if (Date.now() >= state.streakBonusNextAt) {
-    const p = freeCell();
-    state.foods.push({ x: p.x, y: p.y, kind: 'streak', value: 10 });
-    state.streakBonusNextAt = Date.now() + INTERVALO_COMIDA_SEQUENCIA_MS;
+
+  // Mudou quem está em 2º: encerra a sequência antiga e começa uma nova para o novo 2º.
+  if (state.secondPlaceBonusTarget !== secondIdx) {
+    clearSecondPlaceBonusFoods();
+    state.secondPlaceBonusTarget = secondIdx;
+    state.secondPlaceBonusRemaining = SEGUNDO_LUGAR_TOTAL_BONUS;
+  }
+
+  if (state.secondPlaceBonusRemaining <= 0) return;
+
+  const jaExiste = state.foods.some(
+    (f) => f.kind === 'secondPlace' && f.target === secondIdx
+  );
+  if (jaExiste) return;
+
+  const p = findFoodNearPlayer(secondIdx);
+  state.foods.push({
+    x: p.x,
+    y: p.y,
+    kind: 'secondPlace',
+    value: 10,
+    target: secondIdx,
+  });
+  state.secondPlaceBonusRemaining--;
+
+  const h = state.snakes[secondIdx]?.[0];
+  if (h) {
+    state.toast = {
+      x: h.x,
+      y: h.y,
+      text: '💎 Bônus do 2º lugar! +10',
+      color: '#63e6ff',
+      until: Date.now() + 1800,
+    };
   }
 }
 
@@ -571,12 +625,42 @@ export function montarCorpoDaCacadora(p, mapW, mapH, tamanho = 50) {
   return corpo;
 }
 
+const SAFE_HUNTER_DISTANCE = 7;
+
+function findSafeHunterSpawn(bodyLength) {
+  let best = null;
+  let bestDistance = -1;
+
+  // A cabeça e, principalmente, o corpo inteiro precisam nascer afastados das cobrinhas.
+  // Testamos muitas posições e guardamos também a melhor encontrada como fallback.
+  for (let n = 0; n < 300; n++) {
+    const p = {
+      x: Math.floor(Math.random() * state.mapW),
+      y: Math.floor(Math.random() * state.mapH),
+    };
+    const body = montarCorpoDaCacadora(p, state.mapW, state.mapH, bodyLength);
+    let minDistance = Infinity;
+    for (const seg of body) {
+      minDistance = Math.min(minDistance, minDistanceToSnakes(seg.x, seg.y));
+    }
+    if (minDistance > bestDistance) best = { p, body, distance: minDistance };
+    if (minDistance >= SAFE_HUNTER_DISTANCE) return { p, body };
+  }
+
+  return best ? { p: best.p, body: best.body } : {
+    p: freeCell(),
+    body: montarCorpoDaCacadora({ x: 2, y: 2 }, state.mapW, state.mapH, bodyLength),
+  };
+}
+
 function spawnHunter(durationSec) {
-  const p = freeCell();
+  const hunterCfg = state.hunterConfig || {};
+  const bodyLength = hunterCfg.bodyLength || 50;
+  const spawn = findSafeHunterSpawn(bodyLength);
+  const p = spawn.p;
   state.hunterVictims = new Set();
   // A Minhoca Caçadora nasce bem grande (50 partes) — bem mais ameaçadora de se ver chegando
-  const hunterCfg = state.hunterConfig || {};
-  const corpo = montarCorpoDaCacadora(p, state.mapW, state.mapH, hunterCfg.bodyLength || 50);
+  const corpo = spawn.body;
   state.hunterSnake = corpo;
   state.hunterDir = { x: 1, y: 0 };
   state.hunterActive = true;
@@ -604,11 +688,6 @@ export function updateHunter() {
     if (!state.hunterVictims.has(mySlot)) announceAchievement(unlockAchievement('hunter_escape'));
     state.hunterSnake = [];
     state.hunterCloseToAnyone = false;
-    // Depois que a Minhoca Caçadora vai embora, confere se o líder abriu uma vantagem
-    // grande (25+ comidinhas) sobre o segundo colocado — se sim, liga a "comida de
-    // sequência vencedora": uma comidinha especial valendo 10 pontos, aparecendo a
-    // cada 15 segundos, como recompensa extra por ter sobrevivido e continuar na frente
-    ativarComidaSequenciaSeMerecer();
     return;
   }
 
@@ -723,7 +802,7 @@ function tick() {
     announceAchievement(unlockAchievement('survivor'));
   }
   updateHunter();
-  updateStreakBonusFood();
+  updateSecondPlaceBonusFood();
   checkFoodConsolidation();
   const estrelaNascida = updateFoodConsolidation();
   if (estrelaNascida) {
