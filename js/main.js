@@ -12,7 +12,7 @@ import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryB
 import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -53,6 +53,40 @@ function updateSessionScoreDisplay() {
   const parts = Object.entries(sessionWins).map(([slot, w]) => `${label(Number(slot))}: ${w} vitória${w === 1 ? '' : 's'}`);
   box.textContent = `📊 Nessa sala hoje: ${parts.join(' • ')}`;
   box.classList.remove('hidden');
+}
+
+// Conquistas exclusivas do multiplayer: os clientes não simulam o jogo, então
+// acompanham os estados enviados pelo anfitrião para desbloquear objetivos online.
+let onlineAchievementStartAt = 0;
+let onlineLastFoods = 0;
+function checkOnlineAchievementsFromState() {
+  if (!net.isOnline() || !state.running) return;
+  const totalPlayers = state.count || 0;
+  if (totalPlayers >= 3) unlockOnline('online_trio');
+  if (totalPlayers >= 6) unlockOnline('online_full_room');
+  if (state.teamMode) unlockOnline('online_team');
+
+  const myFood = state.foodsEaten[net.mySlot] || 0;
+  const myScore = state.scores[net.mySlot] || 0;
+  const myElims = state.eliminations[net.mySlot] || 0;
+  if (myFood > 0) unlockOnline('online_first_food');
+  if (myFood >= 25) unlockOnline('online_food_25');
+  if (myScore >= 100) unlockOnline('online_score_100');
+  if (myScore >= 500) unlockOnline('online_score_500');
+  if (myElims >= 1) unlockOnline('online_kill_1');
+  if (myElims >= 3) unlockOnline('online_kill_3');
+
+  // Só conta tempo a partir do começo desta partida online.
+  if (!onlineAchievementStartAt) onlineAchievementStartAt = Date.now();
+  if (state.alive[net.mySlot] && Date.now() - onlineAchievementStartAt >= 120000) {
+    unlockOnline('online_survive_2m');
+  }
+
+  onlineLastFoods = Math.max(onlineLastFoods, myFood);
+}
+function unlockOnline(id) {
+  const a = unlockAchievement(id);
+  if (a) document.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: a }));
 }
 
 net.setHandlers({
@@ -116,6 +150,7 @@ net.setHandlers({
   onStateUpdate: (msg) => {
     applyRemoteState(msg);
     capturePartnerNameOnce(msg.names?.[0]);
+    checkOnlineAchievementsFromState();
   },
   // A configuração estável da sala agora pode chegar a qualquer momento: entrada tardia,
   // reconexão ou após uma troca de anfitrião. Ela não depende do primeiro pacote de estado.
@@ -780,6 +815,15 @@ document.addEventListener('onlineMatchResult', (e) => {
   if (net.isOnline()) {
     sessionWins[champion] = (sessionWins[champion] || 0) + 1;
     updateSessionScoreDisplay();
+
+    const my = net.mySlot;
+    if ((foodsEaten[my] || 0) > 0) unlockOnline('online_first_food');
+    if ((foodsEaten[my] || 0) >= 25) unlockOnline('online_food_25');
+    if ((scores[my] || 0) >= 100) unlockOnline('online_score_100');
+    if ((scores[my] || 0) >= 500) unlockOnline('online_score_500');
+    if ((eliminations[my] || 0) >= 1) unlockOnline('online_kill_1');
+    if ((eliminations[my] || 0) >= 3) unlockOnline('online_kill_3');
+    if (champion === my) unlockOnline('online_champion');
   }
 
   // A revanche usa a mesma sala: o anfitrião dispara uma nova partida e os clientes
