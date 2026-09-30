@@ -2,25 +2,47 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.95.0';
+export const VERSION = '2.96.0';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
 // as outras são checadas dentro de UMA partida só (em loop.js/mission.js).
 export const ACHIEVEMENTS = [
-  { id: 'first_game', name: 'Primeira Partida', desc: 'Jogue sua primeira partida', icon: '🎮' },
-  { id: 'appetite', name: 'Bom Apetite', desc: 'Coma 50 comidinhas no total (todas as partidas)', icon: '🍎', cumulative: 'totalFoods', target: 50 },
-  { id: 'star_hunter', name: 'Caçador de Estrelas', desc: 'Pegue 10 estrelas no total (todas as partidas)', icon: '⭐', cumulative: 'totalStars', target: 10 },
-  { id: 'combo_master', name: 'Combo Mestre', desc: 'Faça um combo de velocidade x5 numa partida', icon: '🔥' },
-  { id: 'survivor', name: 'Sobrevivente', desc: 'Sobreviva 2 minutos numa partida sem morrer', icon: '🛡️' },
-  { id: 'eliminator', name: 'Eliminador', desc: 'Elimine 3 adversários numa partida só', icon: '⚔️' },
-  { id: 'tournament_champion', name: 'Campeão de Torneio', desc: 'Vença um Modo Torneio', icon: '🏆' },
-  { id: 'hunter_escape', name: 'Escapou da Caçadora', desc: 'Sobreviva a uma aparição inteira da Minhoca Caçadora', icon: '💀' },
-  { id: 'chameleon', name: 'Camaleão', desc: 'Jogue em todos os temas de tabuleiro pelo menos uma vez', icon: '🌈', cumulative: 'themesUsed', target: 'ALL_THEMES' },
-  { id: 'collector', name: 'Colecionador', desc: 'Experimente todos os formatos de cabeça', icon: '🐍', cumulative: 'headsUsed', target: 'ALL_HEADS' },
-  { id: 'social', name: 'Sociável', desc: 'Jogue uma partida online com um amigo', icon: '👥' },
-  { id: 'mission_master', name: 'Missão Cumprida', desc: 'Complete 10 missões no total (todas as partidas)', icon: '🎯', cumulative: 'totalMissions', target: 10 },
-  { id: 'century', name: 'Century', desc: 'Faça 100 pontos numa única partida', icon: '💯' },
+  // 🟢 Iniciante
+  { id: 'first_game', name: 'Primeira Partida', desc: 'Jogue sua primeira partida', icon: '🎮', category: 'iniciante' },
+  { id: 'first_food', name: 'Primeira Mordida', desc: 'Coma sua primeira comidinha', icon: '🍎', category: 'iniciante' },
+  { id: 'score_25', name: 'Começo Forte', desc: 'Faça 25 pontos numa partida', icon: '⭐', category: 'iniciante' },
+  { id: 'food_10', name: 'Bom Apetite', desc: 'Coma 10 pontos de comida numa partida', icon: '🥕', category: 'iniciante' },
+  { id: 'boost_first', name: 'Primeiro Turbo', desc: 'Use o turbo pela primeira vez', icon: '⚡', category: 'iniciante' },
+  { id: 'survive_30', name: 'Aguentou Firme', desc: 'Sobreviva 30 segundos sem morrer', icon: '🛡️', category: 'iniciante' },
+  { id: 'first_star', name: 'Estrela Cadente', desc: 'Pegue sua primeira estrela', icon: '🌟', category: 'iniciante' },
+  { id: 'games_5', name: 'Frequentador', desc: 'Jogue 5 partidas no total', icon: '🎮', category: 'iniciante' },
+  { id: 'no_walls', name: 'Sem Limites', desc: 'Jogue uma partida sem paredes', icon: '🌀', category: 'iniciante' },
+  { id: 'length_15', name: 'Crescendo', desc: 'Chegue a 15 segmentos numa partida', icon: '🐛', category: 'iniciante' },
+
+  // 🟡 Intermediário
+  { id: 'appetite', name: 'Grande Apetite', desc: 'Coma 50 pontos de comida no total', icon: '🍎', cumulative: 'totalFoods', target: 50, category: 'intermediario' },
+  { id: 'combo_master', name: 'Combo Mestre', desc: 'Faça um combo de velocidade x5 numa partida', icon: '🔥', category: 'intermediario' },
+  { id: 'survivor', name: 'Sobrevivente', desc: 'Sobreviva 2 minutos numa partida sem morrer', icon: '🛡️', category: 'intermediario' },
+  { id: 'eliminator', name: 'Eliminador', desc: 'Elimine 3 adversários numa partida só', icon: '⚔️', category: 'intermediario' },
+  { id: 'tournament_champion', name: 'Campeão de Torneio', desc: 'Vença um Modo Torneio', icon: '🏆', category: 'intermediario' },
+  { id: 'hunter_escape', name: 'Escapou da Caçadora', desc: 'Sobreviva a uma aparição inteira da Minhoca Caçadora', icon: '💀', category: 'intermediario' },
+  { id: 'century', name: 'Century', desc: 'Faça 100 pontos numa única partida', icon: '💯', category: 'intermediario' },
+  { id: 'score_250', name: 'Pontuador', desc: 'Faça 250 pontos numa partida', icon: '💎', category: 'intermediario' },
+  { id: 'length_25', name: 'Minhoca Robusta', desc: 'Chegue a 25 segmentos numa partida', icon: '🐍', category: 'intermediario' },
+  { id: 'boost_10', name: 'Turbo Frequente', desc: 'Use o turbo 10 vezes numa partida', icon: '⚡', category: 'intermediario' },
+
+  // 🔴 Avançado
+  { id: 'star_hunter', name: 'Caçador de Estrelas', desc: 'Pegue 10 estrelas no total', icon: '⭐', cumulative: 'totalStars', target: 10, category: 'avancado' },
+  { id: 'chameleon', name: 'Camaleão', desc: 'Jogue em todos os temas de tabuleiro', icon: '🌈', cumulative: 'themesUsed', target: 'ALL_THEMES', category: 'avancado' },
+  { id: 'collector', name: 'Colecionador', desc: 'Experimente todos os formatos de cabeça', icon: '🐍', cumulative: 'headsUsed', target: 'ALL_HEADS', category: 'avancado' },
+  { id: 'social', name: 'Sociável', desc: 'Jogue uma partida online com um amigo', icon: '👥', category: 'avancado' },
+  { id: 'mission_master', name: 'Missão Cumprida', desc: 'Complete 10 missões no total', icon: '🎯', cumulative: 'totalMissions', target: 10, category: 'avancado' },
+  { id: 'score_500', name: 'Imparável', desc: 'Faça 500 pontos numa partida', icon: '🚀', category: 'avancado' },
+  { id: 'score_1000', name: 'Lenda da Arena', desc: 'Alcance 1.000 pontos numa partida', icon: '👑', category: 'avancado' },
+  { id: 'length_50', name: 'Gigante', desc: 'Chegue a 50 segmentos numa partida', icon: '🐉', category: 'avancado' },
+  { id: 'eliminator_5', name: 'Caçador de Inimigos', desc: 'Elimine 5 adversários numa partida', icon: '☠️', category: 'avancado' },
+  { id: 'second_bonus_5', name: 'Virada Especial', desc: 'Pegue as 5 comidinhas especiais do 2º lugar', icon: '💎', category: 'avancado' },
 ];
 
 // --- Minhoca Caçadora: aparece quando o líder come muita comida, persegue ele
