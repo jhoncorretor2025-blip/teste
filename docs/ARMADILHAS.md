@@ -93,6 +93,11 @@ Um SEGUNDO erro, de outro tipo: `switchToTab()` (chamada assim que a página abr
 
 **Lição para qualquer IA que abrir este projeto:** rodar `npm run verificar` (ou melhor, `npm test`, que também **executa** o jogo) antes de considerar qualquer tarefa terminada não é opcional. As checagens 5 e 13 pegam os dois erros mais comuns (sintaxe quebrada e função-fantasma) na hora, sem precisar nem abrir o navegador.
 
+**29. Regra de CSS antiga sobrando de um design anterior, conflitando com a nova (v2.94.8).**
+A barra de navegação do celular ficava esticada pra tela inteira em pé (cobrindo o conteúdo — inclusive fazendo "Jogar" parecer não funcionar). Causa: uma regra `@media(max-width:600px) { .tabBar { position:sticky; top:0 } }` de um design de navegação ANTIGO nunca foi removida quando um design NOVO chegou (`@media(max-width:700px) { .tabBar { position:fixed; bottom:8px } }`). Como as duas media queries valem ao mesmo tempo pra qualquer celular comum (600px está DENTRO de 700px), o navegador aplicava as duas — e um elemento `position:fixed` com `top` E `bottom` definidos ao mesmo tempo (sem altura fixa) se estica pra preencher a distância entre os dois. → Prevenção: `tests/nav-mobile-sem-conflito.mjs` confere que nenhuma regra de celular do `.tabBar` define `top`, e que existe exatamente uma regra `position:fixed` com `bottom`.
+**Lição geral:** ao REDESENHAR algo responsivo, procure (e apague) TODAS as regras antigas daquele seletor nas media queries relacionadas — não só adicione a nova por cima. `grep -n "\.seletor" css/style.css` antes de mexer mostra todas de uma vez.
+**Limite do meu ambiente:** o `jsdom` (a ferramenta de teste) não resolve `@media` de verdade contra um tamanho de tela (sem motor de layout completo) — por isso esse teste lê o CSS como texto, em vez de simular o navegador calculando o resultado final. Funciona bem pra esse tipo de conflito, mas não substitui testar num celular de verdade.
+
 ---
 
 # Problema em aberto: multiplayer real no celular

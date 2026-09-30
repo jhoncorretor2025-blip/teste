@@ -1787,22 +1787,12 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     width:100%;
     min-width:0
   }
-  .tabBar {
-    position:sticky;
-    top:0;
-    z-index:4;
-    padding:5px 2px;
-    margin-left:-2px;
-    margin-right:-2px;
-    background:#0b1220ee;
-    -webkit-backdrop-filter:blur(8px);
-    backdrop-filter:blur(8px);
-    border-radius:12px
-  }
-  .tabBtn {
-    min-height:42px;
-    padding:9px 11px
-  }
+  /* .tabBar e .tabBtn NÃO são redefinidas aqui de propósito (correção de bug real): essa
+     regra antiga (position:sticky; top:0) sobrava de um design de navegação anterior, e
+     como celular normal também bate no @media(max-width:700px) mais abaixo (que define
+     position:fixed; bottom:8px pra virar a barrinha fixa embaixo), os dois "top" e
+     "bottom" se somavam ao mesmo tempo — esticando a barra pra ocupar a tela inteira em
+     pé, ao invés de ficar compacta embaixo. A definição de verdade agora é só a de lá. */
 }
 
 @media(min-width:901px) {
