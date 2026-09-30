@@ -2,76 +2,77 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '3.4.0';
+export const VERSION = '3.4.1';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
 // as outras são checadas dentro de UMA partida só (em loop.js/mission.js).
 export const ACHIEVEMENTS = [
-  // 🟢 Iniciante — 14
+  // 🟢 Iniciante — do mais fácil ao mais difícil
   { id: 'first_game', name: 'Primeira Partida', desc: 'Jogue sua primeira partida', icon: '🎮', category: 'iniciante' },
   { id: 'first_food', name: 'Primeira Mordida', desc: 'Coma sua primeira comidinha', icon: '🍎', category: 'iniciante' },
+  { id: 'boost_first', name: 'Primeiro Turbo', desc: 'Use o turbo pela primeira vez', icon: '⚡', category: 'iniciante' },
   { id: 'score_25', name: 'Começo Forte', desc: 'Faça 25 pontos numa partida', icon: '⭐', category: 'iniciante' },
   { id: 'food_10', name: 'Bom Apetite', desc: 'Coma 10 pontos de comida numa partida', icon: '🥕', category: 'iniciante' },
-  { id: 'boost_first', name: 'Primeiro Turbo', desc: 'Use o turbo pela primeira vez', icon: '⚡', category: 'iniciante' },
   { id: 'survive_30', name: 'Aguentou Firme', desc: 'Sobreviva 30 segundos sem morrer', icon: '🛡️', category: 'iniciante' },
+  { id: 'length_15', name: 'Crescendo', desc: 'Chegue a 15 segmentos numa partida', icon: '🐛', category: 'iniciante' },
   { id: 'first_star', name: 'Estrela Cadente', desc: 'Pegue sua primeira estrela', icon: '🌟', category: 'iniciante' },
+  { id: 'score_50', name: 'Meio Centenar', desc: 'Faça 50 pontos numa partida', icon: '🏅', category: 'iniciante' },
   { id: 'games_5', name: 'Frequentador', desc: 'Jogue 5 partidas no total', icon: '🎮', category: 'iniciante' },
   { id: 'no_walls', name: 'Sem Limites', desc: 'Jogue uma partida sem paredes', icon: '🌀', category: 'iniciante' },
-  { id: 'length_15', name: 'Crescendo', desc: 'Chegue a 15 segmentos numa partida', icon: '🐛', category: 'iniciante' },
-  { id: 'score_50', name: 'Meio Centenar', desc: 'Faça 50 pontos numa partida', icon: '🏅', category: 'iniciante' },
+  { id: 'length_20', name: 'Minhoca Crescida', desc: 'Chegue a 20 segmentos numa partida', icon: '🪱', category: 'iniciante' },
   { id: 'food_25', name: 'Fome de Vitória', desc: 'Coma 25 pontos de comida numa partida', icon: '🍏', category: 'iniciante' },
   { id: 'games_10', name: 'Ritmo de Jogo', desc: 'Jogue 10 partidas no total', icon: '🎯', category: 'iniciante' },
-  { id: 'length_20', name: 'Minhoca Crescida', desc: 'Chegue a 20 segmentos numa partida', icon: '🪱', category: 'iniciante' },
 
-  // 🟡 Intermediário — 14
+  // 🟡 Intermediário — do mais fácil ao mais difícil
   { id: 'appetite', name: 'Grande Apetite', desc: 'Coma 50 pontos de comida no total', icon: '🍎', cumulative: 'totalFoods', target: 50, category: 'intermediario' },
   { id: 'combo_master', name: 'Combo Mestre', desc: 'Faça um combo de velocidade x5 numa partida', icon: '🔥', category: 'intermediario' },
-  { id: 'survivor', name: 'Sobrevivente', desc: 'Sobreviva 2 minutos numa partida sem morrer', icon: '🛡️', category: 'intermediario' },
-  { id: 'eliminator', name: 'Eliminador', desc: 'Elimine 3 adversários numa partida só', icon: '⚔️', category: 'intermediario' },
-  { id: 'tournament_champion', name: 'Campeão de Torneio', desc: 'Vença um Modo Torneio', icon: '🏆', category: 'intermediario' },
-  { id: 'hunter_escape', name: 'Escapou da Caçadora', desc: 'Sobreviva a uma aparição inteira da Minhoca Caçadora', icon: '💀', category: 'intermediario' },
   { id: 'century', name: 'Century', desc: 'Faça 100 pontos numa única partida', icon: '💯', category: 'intermediario' },
-  { id: 'score_250', name: 'Pontuador', desc: 'Faça 250 pontos numa partida', icon: '💎', category: 'intermediario' },
   { id: 'length_25', name: 'Minhoca Robusta', desc: 'Chegue a 25 segmentos numa partida', icon: '🐍', category: 'intermediario' },
   { id: 'boost_10', name: 'Turbo Frequente', desc: 'Use o turbo 10 vezes numa partida', icon: '⚡', category: 'intermediario' },
+  { id: 'survivor', name: 'Sobrevivente', desc: 'Sobreviva 2 minutos numa partida sem morrer', icon: '🛡️', category: 'intermediario' },
+  { id: 'score_250', name: 'Pontuador', desc: 'Faça 250 pontos numa partida', icon: '💎', category: 'intermediario' },
   { id: 'combo_10', name: 'Combo Explosivo', desc: 'Faça um combo de velocidade x10', icon: '💥', category: 'intermediario' },
-  { id: 'survive_5m', name: 'Resistência', desc: 'Sobreviva 5 minutos sem morrer', icon: '⏱️', category: 'intermediario' },
-  { id: 'score_350', name: 'Alta Pontuação', desc: 'Faça 350 pontos numa partida', icon: '🚀', category: 'intermediario' },
   { id: 'length_35', name: 'Gigante em Formação', desc: 'Chegue a 35 segmentos numa partida', icon: '🐉', category: 'intermediario' },
+  { id: 'score_350', name: 'Alta Pontuação', desc: 'Faça 350 pontos numa partida', icon: '🚀', category: 'intermediario' },
+  { id: 'survive_5m', name: 'Resistência', desc: 'Sobreviva 5 minutos sem morrer', icon: '⏱️', category: 'intermediario' },
+  { id: 'hunter_escape', name: 'Escapou da Caçadora', desc: 'Sobreviva a uma aparição inteira da Minhoca Caçadora', icon: '💀', category: 'intermediario' },
+  { id: 'eliminator', name: 'Eliminador', desc: 'Elimine 3 adversários numa partida só', icon: '⚔️', category: 'intermediario' },
+  { id: 'tournament_champion', name: 'Campeão de Torneio', desc: 'Vença um Modo Torneio', icon: '🏆', category: 'intermediario' },
 
-  // 🔴 Avançado — 14
-  { id: 'star_hunter', name: 'Caçador de Estrelas', desc: 'Pegue 10 estrelas no total', icon: '⭐', cumulative: 'totalStars', target: 10, category: 'avancado' },
-  { id: 'chameleon', name: 'Camaleão', desc: 'Jogue em todos os temas de tabuleiro', icon: '🌈', cumulative: 'themesUsed', target: 'ALL_THEMES', category: 'avancado' },
-  { id: 'collector', name: 'Colecionador', desc: 'Experimente todos os formatos de cabeça', icon: '🐍', cumulative: 'headsUsed', target: 'ALL_HEADS', category: 'avancado' },
+  // 🔴 Avançado — do mais fácil ao mais difícil
   { id: 'social', name: 'Sociável', desc: 'Jogue uma partida online com um amigo', icon: '👥', category: 'avancado' },
+  { id: 'collector', name: 'Colecionador', desc: 'Experimente todos os formatos de cabeça', icon: '🐍', cumulative: 'headsUsed', target: 'ALL_HEADS', category: 'avancado' },
+  { id: 'chameleon', name: 'Camaleão', desc: 'Jogue em todos os temas de tabuleiro', icon: '🌈', cumulative: 'themesUsed', target: 'ALL_THEMES', category: 'avancado' },
+  { id: 'star_hunter', name: 'Caçador de Estrelas', desc: 'Pegue 10 estrelas no total', icon: '⭐', cumulative: 'totalStars', target: 10, category: 'avancado' },
   { id: 'mission_master', name: 'Missão Cumprida', desc: 'Complete 10 missões no total', icon: '🎯', cumulative: 'totalMissions', target: 10, category: 'avancado' },
   { id: 'score_500', name: 'Imparável', desc: 'Faça 500 pontos numa partida', icon: '🚀', category: 'avancado' },
-  { id: 'score_1000', name: 'Lenda da Arena', desc: 'Alcance 1.000 pontos numa partida', icon: '👑', category: 'avancado' },
   { id: 'length_50', name: 'Gigante', desc: 'Chegue a 50 segmentos numa partida', icon: '🐉', category: 'avancado' },
   { id: 'eliminator_5', name: 'Caçador de Inimigos', desc: 'Elimine 5 adversários numa partida', icon: '☠️', category: 'avancado' },
   { id: 'second_bonus_5', name: 'Virada Especial', desc: 'Pegue as 5 comidinhas especiais do 2º lugar', icon: '💎', category: 'avancado' },
-  { id: 'score_1500', name: 'Mestre da Arena', desc: 'Alcance 1.500 pontos numa partida', icon: '🏆', category: 'avancado' },
+  { id: 'tournament_3wins', name: 'Tricampeão', desc: 'Vença 3 rodadas no total de um torneio', icon: '👑', category: 'avancado' },
+  { id: 'score_1000', name: 'Lenda da Arena', desc: 'Alcance 1.000 pontos numa partida', icon: '👑', category: 'avancado' },
   { id: 'length_75', name: 'Colosso', desc: 'Chegue a 75 segmentos numa partida', icon: '🦖', category: 'avancado' },
   { id: 'eliminator_10', name: 'Destruidor', desc: 'Elimine 10 adversários numa partida', icon: '💀', category: 'avancado' },
-  { id: 'tournament_3wins', name: 'Tricampeão', desc: 'Vença 3 rodadas no total de um torneio', icon: '👑', category: 'avancado' },
+  { id: 'score_1500', name: 'Mestre da Arena', desc: 'Alcance 1.500 pontos numa partida', icon: '🏆', category: 'avancado' },
 
-  // 🌐 Online — 14
+  // 🌐 Online — do mais fácil ao mais difícil
   { id: 'online_first', name: 'Primeira Conexão', desc: 'Jogue sua primeira partida online', icon: '🌐', category: 'online' },
+  { id: 'online_first_food', name: 'Primeira Mordida Online', desc: 'Coma sua primeira comidinha em uma partida online', icon: '🍎', category: 'online' },
   { id: 'online_trio', name: 'Trio Online', desc: 'Jogue uma partida online com 3 ou mais jogadores', icon: '👥', category: 'online' },
-  { id: 'online_full_room', name: 'Sala Completa', desc: 'Jogue uma partida online com 6 jogadores', icon: '🏟️', category: 'online' },
   { id: 'online_team', name: 'Time Unido', desc: 'Jogue uma partida online no modo Times', icon: '🤝', category: 'online' },
   { id: 'online_3_games', name: 'Conexão Frequente', desc: 'Jogue 3 partidas online', icon: '🔗', cumulative: 'onlineGames', target: 3, category: 'online' },
-  { id: 'online_10_games', name: 'Veterano Online', desc: 'Jogue 10 partidas online', icon: '🛰️', cumulative: 'onlineGames', target: 10, category: 'online' },
-  { id: 'online_first_food', name: 'Primeira Mordida Online', desc: 'Coma sua primeira comidinha em uma partida online', icon: '🍎', category: 'online' },
   { id: 'online_food_25', name: 'Banquete Online', desc: 'Coma 25 pontos de comida em uma partida online', icon: '🍽️', category: 'online' },
+  { id: 'online_10_games', name: 'Veterano Online', desc: 'Jogue 10 partidas online', icon: '🛰️', cumulative: 'onlineGames', target: 10, category: 'online' },
   { id: 'online_score_100', name: 'Centena Online', desc: 'Faça 100 pontos em uma partida online', icon: '💯', category: 'online' },
-  { id: 'online_score_500', name: 'Mestre Online', desc: 'Faça 500 pontos em uma partida online', icon: '🚀', category: 'online' },
   { id: 'online_kill_1', name: 'Primeiro Abate Online', desc: 'Elimine um adversário em uma partida online', icon: '⚔️', category: 'online' },
-  { id: 'online_kill_3', name: 'Caçador Online', desc: 'Elimine 3 adversários em uma partida online', icon: '☠️', category: 'online' },
   { id: 'online_survive_2m', name: 'Sobrevivente Online', desc: 'Sobreviva 2 minutos em uma partida online', icon: '🛡️', category: 'online' },
+  { id: 'online_full_room', name: 'Sala Completa', desc: 'Jogue uma partida online com 6 jogadores', icon: '🏟️', category: 'online' },
+  { id: 'online_kill_3', name: 'Caçador Online', desc: 'Elimine 3 adversários em uma partida online', icon: '☠️', category: 'online' },
+  { id: 'online_score_500', name: 'Mestre Online', desc: 'Faça 500 pontos em uma partida online', icon: '🚀', category: 'online' },
   { id: 'online_champion', name: 'Campeão Online', desc: 'Vença um torneio online', icon: '👑', category: 'online' },
 ];
+
 
 // --- Minhoca Caçadora: aparece quando o líder come muita comida, persegue ele
 // por um tempo, é invencível (mata quem tocar, mas ninguém consegue matá-la) ---
