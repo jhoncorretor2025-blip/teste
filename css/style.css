@@ -2708,3 +2708,135 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   border-color:#67ef8a;
   box-shadow:0 0 0 2px #67ef8a20;
 }
+
+/* v3.4.0 — melhorias de experiência online */
+.onlineMatchStats {
+  margin:0 0 8px;
+  padding:9px;
+  border:1px solid #38527d;
+  border-radius:14px;
+  background:linear-gradient(135deg,#101d35,#0a1324);
+  box-shadow:inset 0 0 0 1px #ffffff08,0 8px 25px #0005;
+}
+
+.onlineStatsTitle {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:7px;
+  font-weight:900;
+}
+
+.onlineStatsTitle span {
+  color:#91a7cc;
+  font-size:.68rem;
+  font-weight:700;
+}
+
+.onlineStatsGrid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+}
+
+.onlineStatsGrid div {
+  min-width:0;
+  padding:7px 6px;
+  border-radius:10px;
+  background:#ffffff05;
+  border:1px solid #ffffff0b;
+}
+
+.onlineStatsGrid span,
+.onlineResultSummary span {
+  display:block;
+  color:#8ea0bf;
+  font-size:.58rem;
+}
+
+.onlineStatsGrid b {
+  display:block;
+  margin-top:2px;
+  color:#fff;
+  font-size:.78rem;
+}
+
+.onlineResultStats {
+  width:100%;
+  margin-top:10px;
+}
+
+.onlineResultSummary {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+  margin-bottom:8px;
+}
+
+.onlineResultSummary div {
+  padding:7px 5px;
+  border-radius:10px;
+  background:#ffffff08;
+  border:1px solid #ffffff0d;
+}
+
+.onlineResultSummary b {
+  display:block;
+  margin-top:2px;
+  font-size:.82rem;
+}
+
+.onlineResultRanking {
+  display:grid;
+  gap:6px;
+}
+
+.onlineResultRow {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px;
+  border-radius:10px;
+  background:#ffffff06;
+  border:1px solid #ffffff0c;
+  text-align:left;
+}
+
+.onlineResultRow.you {
+  border-color:#67ef8a66;
+  box-shadow:0 0 0 1px #67ef8a18 inset;
+}
+
+.onlineResultRow.champion {
+  border-color:#ffd24d88;
+}
+
+.onlineResultPlace {
+  min-width:27px;
+  text-align:center;
+  font-size:1rem;
+}
+
+.onlineResultPlayer {
+  min-width:0;
+}
+
+.onlineResultPlayer b,
+.onlineResultPlayer small {
+  display:block;
+}
+
+.onlineResultPlayer b {
+  font-size:.74rem;
+}
+
+.onlineResultPlayer small {
+  margin-top:2px;
+  color:#91a0bc;
+  font-size:.61rem;
+}
+
+@media (max-width:700px) {
+  .onlineStatsGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .onlineResultSummary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
