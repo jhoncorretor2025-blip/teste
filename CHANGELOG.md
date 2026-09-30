@@ -1,3 +1,7 @@
+## [3.3.4] — 2026-09-30
+- **Correção definitiva de carregamento:** criada uma cadeia nova `main_stable_334.js → loop_stable_334.js → render_stable_334.js` para impedir que módulos gráficos antigos em cache continuem sendo executados.
+- **Placar:** `rankOrder` passa a ser definido localmente dentro de `renderScores()`, inclusive quando existe apenas um jogador.
+
 # Histórico do que já foi feito (CHANGELOG)
 
 Este arquivo é a **memória do projeto**: qualquer IA (ou pessoa) lê aqui o que já foi feito antes de mexer, e registra o que fez depois. Mais recente primeiro.
