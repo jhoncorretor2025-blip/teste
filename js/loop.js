@@ -64,10 +64,42 @@ function computeStartPoint(i, total, w, h) {
   return { x, y, dx: dir.dx, dy: dir.dy };
 }
 
+function findSafePlayerSpawn(prefX, prefY, dx, dy) {
+  let best = null, bestDistance = -1;
+
+  for (let n = 0; n < 250; n++) {
+    const x = n === 0 ? prefX : Math.floor(Math.random() * state.mapW);
+    const y = n === 0 ? prefY : Math.floor(Math.random() * state.mapH);
+    const body = [
+      { x, y },
+      { x: x - dx, y: y - dy },
+      { x: x - 2 * dx, y: y - 2 * dy },
+    ];
+
+    if (body.some((p) => wall(p.x, p.y))) continue;
+
+    let minDistance = Infinity;
+    for (const seg of body) {
+      minDistance = Math.min(minDistance, minDistanceToSnakes(seg.x, seg.y));
+    }
+
+    if (minDistance > bestDistance && body.every((p) => !occupied(p.x, p.y))) {
+      bestDistance = minDistance;
+      best = { x, y };
+    }
+
+    if (minDistance >= SAFE_SPAWN_DISTANCE && body.every((p) => !occupied(p.x, p.y))) {
+      return { x, y };
+    }
+  }
+
+  return best || findSafeSpawn(prefX, prefY);
+}
+
 export function spawn(i) {
   const w = state.mapW, h = state.mapH;
   const s = computeStartPoint(i, Math.max(state.count, i + 1), w, h);
-  const p = findSafeSpawn(s.x, s.y);
+  const p = findSafePlayerSpawn(s.x, s.y, s.dx, s.dy);
   state.snakes[i] = [{ x: p.x, y: p.y }, { x: p.x - s.dx, y: p.y - s.dy }, { x: p.x - 2 * s.dx, y: p.y - 2 * s.dy }];
   state.dirs[i] = { x: s.dx, y: s.dy };
   state.nextDirs[i] = { x: s.dx, y: s.dy };
