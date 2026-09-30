@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.97.0';
+export const VERSION = '2.98.0';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -178,26 +178,29 @@ export const SNAKE_COLORS = [
 
 // --- Formatos de cabeça escolhíveis ---
 export const HEAD_SHAPES = [
-  { name: '⚪ Arredondada', value: 'round' },
-  { name: '⬛ Quadrada', value: 'square' },
-  { name: '🔷 Diamante', value: 'diamond' },
-  { name: '🦉 Coruja', value: 'owl' },
-  { name: '🐱 Gatinho', value: 'cat' },
-  { name: '🐰 Coelhinho', value: 'bunny' },
-  { name: '🐲 Dragãozinho', value: 'dragon' },
-  { name: '🐻 Ursinho', value: 'bear' },
-  { name: '🌻 Girassol', value: 'sunflower' },
-  { name: '🌹 Rosa', value: 'rose' },
-  { name: '🦊 Raposinha', value: 'fox' },
-  { name: '🦈 Tubarão', value: 'shark' },
-  { name: '🐝 Abelinha', value: 'bee' },
-  { name: '🦄 Unicórnio', value: 'unicorn' },
-  { name: '🐵 Macaquinho', value: 'monkey' },
-  { name: '🦁 Leãozinho', value: 'lion' },
-  { name: '👽 Alienígena', value: 'alien' },
-  { name: '🏴‍☠️ Pirata', value: 'pirata' },
-  { name: '🤖 Robô', value: 'robot' },
-  { name: '💀 Caveira', value: 'skull' },
+  { name: '⚪ Arredondada', value: 'round', category: 'classic' },
+  { name: '⬛ Quadrada', value: 'square', category: 'classic' },
+  { name: '🔷 Diamante', value: 'diamond', category: 'classic' },
+
+  { name: '🦉 Coruja', value: 'owl', category: 'animals' },
+  { name: '🐱 Gatinho', value: 'cat', category: 'animals' },
+  { name: '🐰 Coelhinho', value: 'bunny', category: 'animals' },
+  { name: '🐲 Dragãozinho', value: 'dragon', category: 'animals' },
+  { name: '🐻 Ursinho', value: 'bear', category: 'animals' },
+  { name: '🦊 Raposinha', value: 'fox', category: 'animals' },
+  { name: '🦈 Tubarão', value: 'shark', category: 'animals' },
+  { name: '🐝 Abelinha', value: 'bee', category: 'animals' },
+  { name: '🐵 Macaquinho', value: 'monkey', category: 'animals' },
+  { name: '🦁 Leãozinho', value: 'lion', category: 'animals' },
+
+  { name: '🦄 Unicórnio', value: 'unicorn', category: 'fantasy' },
+  { name: '👽 Alienígena', value: 'alien', category: 'fantasy' },
+
+  { name: '🌻 Girassol', value: 'sunflower', category: 'special' },
+  { name: '🌹 Rosa', value: 'rose', category: 'special' },
+  { name: '🏴‍☠️ Pirata', value: 'pirata', category: 'special' },
+  { name: '🤖 Robô', value: 'robot', category: 'special' },
+  { name: '💀 Caveira', value: 'skull', category: 'special' },
 ];
 
 // --- Padrão de pele do corpo (parte da personalização/"skin") ---
