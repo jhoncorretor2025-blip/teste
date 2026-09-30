@@ -1,25 +1,50 @@
-## 2.94.4
+# Histórico do que já foi feito (CHANGELOG)
+
+Este arquivo é a **memória do projeto**: qualquer IA (ou pessoa) lê aqui o que já foi feito antes de mexer, e registra o que fez depois. Mais recente primeiro.
+
+## Como usar e manter
+- **Ao terminar qualquer trabalho**, acrescente o que mudou em **"Não lançado"** (em português simples: o que mudou e, se não for óbvio, **por quê**).
+- Ao trocar a versão (`python3 tools/bump-versao.py X.Y.Z`), a ferramenta **move** o conteúdo de "Não lançado" para a versão nova, com a data de hoje. Se "Não lançado" estiver vazio, ela deixa um lembrete `(descreva o que mudou nesta versão)` — e o `npm run verificar` **reprova** enquanto o lembrete estiver aí.
+- Decisões e seus motivos: `docs/DECISOES.md`. O que falta fazer: `docs/PENDENCIAS.md`. Erros que já custaram caro: `docs/ARMADILHAS.md`.
+- As versões antigas (até a 2.70) foram reconstruídas do histórico do Git: as mensagens de commit da época são curtas, então trazem o título e a data, não o detalhe. Para ver commit a commit: `git log`. Atenção: nas versões antigas cada arquivo enviado virou um commit com a mesma mensagem, por isso o Git mostra centenas de commits repetidos.
+- As datas são as do primeiro commit de cada versão.
+
+## Origem
+O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HTML, ganhou uma segunda cobrinha, modos, mapas, CPU, turbo e virou o **Snake Arena**. Em **31/08/2026** o código foi separado em módulos (v2.4.0) e o multiplayer online entrou logo depois (v2.5.0).
+
+## [Não lançado]
+*(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
+_(nada por enquanto)_
+
+## [2.94.6] — 2026-09-30
+- **Correção urgente:** o jogo travava sempre na telinha de carregamento, com "Tentar novamente" repetindo o mesmo erro. Duas funções eram chamadas sem existir de verdade no momento certo: `updateOnlineLobbyUI()` (nunca tinha sido definida — virou um apelido de `renderOnlineLobby()`) e `TAB_ALIASES` (usada 250 linhas antes de ser declarada — movida pra cima). Detalhes técnicos em `docs/ARMADILHAS.md` (casos 26-27).
+- **Novo, no verificador (checagem 13):** reprova qualquer chamada a uma função que não existe em lugar nenhum do projeto — é exatamente o tipo de erro que causou a trava acima. Rodar `npm run verificar` antes de publicar agora pega isso na hora.
+- **CHANGELOG reorganizado:** outra IA tinha inserido pedaços em pontos soltos do arquivo (cabeçalhos duplicados, dois formatos de título, "Não lançado" no meio do arquivo). Reconstruído do zero preservando todo o conteúdo, ordenado e sem duplicação; acrescentada a versão 2.94.5, que estava sem registro.
+- CSS reformatado de novo (`tools/formatar-css.py`) depois que a outra IA acrescentou bastante CSS novo sem seguir o padrão de uma declaração por linha; `docs/MAPA-DO-CODIGO.md` regenerado (tinha ficado desatualizado com os módulos/funções novos).
+
+## [2.94.5] — 2026-09-29
+- **Correção:** sobrava uma chave `}` de fechamento em `js/net.js` (no tratamento de mensagens de rede), quebrando a sintaxe do arquivo inteiro. Era um erro de sintaxe de verdade — o tipo que `node --input-type=module --check` pega na hora.
+
+## [2.94.4] — 2026-09-29
 - Correção e republicação do inicializador para forçar uma versão nova do carregador.
 - Versão incrementada para evitar que navegadores mantenham o pacote antigo em cache.
 - Mantida a captura de erro do carregamento para mostrar o erro real caso algum módulo falhe.
 
-## 2.94.3 — Versão visível no carregamento
+## [2.94.3] — 2026-09-29
 - A tela inicial agora mostra explicitamente a versão do jogo antes do carregamento começar.
 - Versão 2.94.3 usada como marcador visual para confirmar que o arquivo novo chegou ao aparelho.
 
-## 2.94.2 — Carregamento visível
+## [2.94.2] — 2026-09-29
 - Nova tela de inicialização com progresso visual: 0% → 10% → 20% → 30% → 45% → 50% → 70% → 90% → 100%.
 - O carregador agora identifica quando o JavaScript principal ou o módulo online demora/trava.
 - O erro fica visível na própria tela, com opção de tentar novamente, em vez de deixar o usuário preso na tela da cobra.
 - PeerJS passou a ser carregado pelo inicializador para que a espera também seja visível.
 - Cache e versão atualizados para 2.94.2.
 
-## 2.94.1 — Correção de inicialização
+## [2.94.1] — 2026-09-29
 - Corrigida a ordem de declaração da configuração da Minhoca Inimiga.
 - O erro de inicialização fazia o JavaScript parar antes de esconder a tela de abertura, deixando o celular preso no splash da Mioquinha.
 - Atualizados os identificadores de versão/cache para 2.94.1.
-
-# Histórico do que já foi feito (CHANGELOG)
 
 ## [2.94.0] — 2026-09-29
 - **Nova central da Minhoca Inimiga:** criada uma seção própria em Configurações.
@@ -47,35 +72,7 @@
 - **Online — confronto detalhado:** histórico 1×1 acumula partidas, vitórias, derrotas, taxa de vitórias, média de pontos, comidas e eliminações.
 - **Online — lobby completo:** anfitrião e clientes visualizam jogadores, prontidão, times, conexão e configuração da sala.
 - **Versão:** 2.92.0.
-
 Este arquivo é a **memória do projeto**: qualquer IA (ou pessoa) lê aqui o que já foi feito antes de mexer, e registra o que fez depois. Mais recente primeiro.
-
-## [2.85.0] — 2026-09-29
-- **Online:** a configuração estável da sala (nomes, cores, cabeças, skins, mapa, tema e times) agora é reenviada ao entrar e reconectar, evitando cliente tardio sem essas informações.
-- **Online:** a configuração ficou separada do pacote frequente de estado, reduzindo a dependência do primeiro pacote raro.
-- **Conexão:** quando o navegador só informa `effectiveType`, a interface agora chama isso de **qualidade estimada** em vez de sugerir que seja Wi-Fi ou dados móveis.
-- **Robustez:** versão centralizada corrigida para `2.85.0`.
-
-## [2.86.0] — 2026-09-29
-- **Multiplayer:** corrigido um erro de slot após saída de jogador. Os jogadores restantes agora mantêm seus slots originais; isso evita troca de controle/placar e reduz risco de problemas na migração do anfitrião.
-- **Robustez:** a conexão guarda explicitamente seu slot para não depender da posição no array de conexões.
-
-## Como usar e manter
-- **Ao terminar qualquer trabalho**, acrescente o que mudou em **"Não lançado"** (em português simples: o que mudou e, se não for óbvio, **por quê**).
-- Ao trocar a versão (`python3 tools/bump-versao.py X.Y.Z`), a ferramenta **move** o conteúdo de "Não lançado" para a versão nova, com a data de hoje. Se "Não lançado" estiver vazio, ela deixa um lembrete `(descreva o que mudou nesta versão)` — e o `npm run verificar` **reprova** enquanto o lembrete estiver aí.
-- Decisões e seus motivos: `docs/DECISOES.md`. O que falta fazer: `docs/PENDENCIAS.md`. Erros que já custaram caro: `docs/ARMADILHAS.md`.
-- As versões antigas (até a 2.70) foram reconstruídas do histórico do Git: as mensagens de commit da época são curtas, então trazem o título e a data, não o detalhe. Para ver commit a commit: `git log`. Atenção: nas versões antigas cada arquivo enviado virou um commit com a mesma mensagem, por isso o Git mostra centenas de commits repetidos.
-- As datas são as do primeiro commit de cada versão.
-
-## Origem
-O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HTML, ganhou uma segunda cobrinha, modos, mapas, CPU, turbo e virou o **Snake Arena**. Em **31/08/2026** o código foi separado em módulos (v2.4.0) e o multiplayer online entrou logo depois (v2.5.0).
-
-## [2.90.0] — 2026-09-29
-- **Online — lobby visual:** lista em tempo real com jogadores, slot, anfitrião, pronto e ping.
-- **Online — times:** o lobby mostra visualmente o time de cada jogador.
-- **Online — configuração:** quem está na sala enxerga a configuração atual enquanto espera.
-- **Robustez:** a visualização usa os slots reais das conexões.
-- **Versão:** 2.90.0 e cache do Service Worker sincronizado.
 
 ## [2.91.0] — 2026-09-29
 - **Online — resultado detalhado:** ao finalizar um torneio, o resultado agora mostra colocação, rodadas vencidas, comidas, eliminações e pontuação de cada jogador.
@@ -84,13 +81,22 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 - **Online — clientes:** quem não é anfitrião vê que a revanche está aguardando o anfitrião e entra automaticamente na nova contagem regressiva.
 - **Versão:** atualizada para 2.91.0.
 
-## [Não lançado]
-*(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
-- **Padrão para qualquer IA:** `AGENTS.md` (porta de entrada) e `CLAUDE.md`, `README.md`, guias em `docs/` (arquitetura, protocolo online, armadilhas, padrão para outros sites), mapa do código **gerado**, ferramentas em `tools/` (verificar, trocar versão, gerar mapa, publicar num commit só) e testes em `tests/` (agora dentro do repositório; antes só existiam na máquina de quem trabalhava). Publicado no commit `19d62ba`.
-- Removidos `js/hunter.js` (versão antiga e **morta** da caçadora, ninguém importava) e `css/teste.html` (arquivo vazio).
-- **Memória do projeto (saber o que já foi feito):** este `CHANGELOG.md` (111 versões reconstruídas do histórico real do Git, de 30/08/2026 até hoje), `docs/DECISOES.md` (por que é assim) e `docs/PENDENCIAS.md` (o que falta, ideias não feitas e testes perdidos que precisam ser recriados). O `bump-versao.py` passou a mover o "Não lançado" para a versão nova, e o verificador (agora com 12 checagens) reprova se a versão atual não tiver entrada.
-- **CSS legível:** o `css/style.css` estava minificado (56 linhas, uma com 13.642 caracteres). Passou a ter uma declaração por linha (1.690 linhas), com **conteúdo idêntico** (conferido sem espaços, antes e depois, e pelas regras que o jsdom interpreta). Nova ferramenta `tools/formatar-css.py`; o verificador reprova linhas gigantes.
-- Novos testes: `tests/bump-versao-e-changelog.mjs`, `tests/formatar-css.mjs`, e casos novos em `tests/verificador-pega-erros.mjs` (o verificador é testado estragando o projeto de propósito).
+## [2.90.0] — 2026-09-29
+- **Online — lobby visual:** lista em tempo real com jogadores, slot, anfitrião, pronto e ping.
+- **Online — times:** o lobby mostra visualmente o time de cada jogador.
+- **Online — configuração:** quem está na sala enxerga a configuração atual enquanto espera.
+- **Robustez:** a visualização usa os slots reais das conexões.
+- **Versão:** 2.90.0 e cache do Service Worker sincronizado.
+
+## [2.86.0] — 2026-09-29
+- **Multiplayer:** corrigido um erro de slot após saída de jogador. Os jogadores restantes agora mantêm seus slots originais; isso evita troca de controle/placar e reduz risco de problemas na migração do anfitrião.
+- **Robustez:** a conexão guarda explicitamente seu slot para não depender da posição no array de conexões.
+
+## [2.85.0] — 2026-09-29
+- **Online:** a configuração estável da sala (nomes, cores, cabeças, skins, mapa, tema e times) agora é reenviada ao entrar e reconectar, evitando cliente tardio sem essas informações.
+- **Online:** a configuração ficou separada do pacote frequente de estado, reduzindo a dependência do primeiro pacote raro.
+- **Conexão:** quando o navegador só informa `effectiveType`, a interface agora chama isso de **qualidade estimada** em vez de sugerir que seja Wi-Fi ou dados móveis.
+- **Robustez:** versão centralizada corrigida para `2.85.0`.
 
 ## [2.84.0] — 2026-09-29
 - **Interface:** a tela inicial passa a exibir **Mioquinha** como nome do jogo, sem alterar o nome técnico do projeto.
@@ -415,9 +421,6 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 ## [1.16.0] — 2026-08-30
 - Correção: food spawning and 5-point star
 - Criar backup separado do Snake Arena
-
-## [1.15] — 2026-08-30
-- Add visual feedback and power-ups
 
 ## [1.14.0] — 2026-08-30
 - Add automatic Snake Arena patch workflow

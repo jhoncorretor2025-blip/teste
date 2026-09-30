@@ -3,7 +3,7 @@
 Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por que** é assim), este arquivo diz **o que falta**. Terminou algo daqui? **Apague o item** e registre no `CHANGELOG.md`. Achou algo novo? **Acrescente aqui**, com o que já foi tentado.
 
 ## 🔴 Bug em aberto: multiplayer real no celular
-Com o anfitrião no PC e o amigo no celular, o celular não recebe os dados do jogo (embora o ping funcione e o anfitrião veja a minhoca do amigo se mexer). Sintoma, o que já foi tentado e o próximo passo mais útil (print do painel 🩺 **do anfitrião**) estão no fim de `docs/ARMADILHAS.md`. **Nunca foi conseguido esse print.**
+Com o anfitrião no PC e o amigo no celular, o celular não recebe os dados do jogo (embora o ping funcione e o anfitrião veja a minhoca do amigo se mexer). Sintoma, o que já foi tentado e o próximo passo mais útil (print do painel 🩺 **do anfitrião**) estão no fim de `docs/ARMADILHAS.md`. **Nunca foi conseguido esse print.** **Atualização:** entre a v2.84.0 e a v2.94.5 (outra IA), o multiplayer online passou por um rework grande — reenvio da configuração estável pra quem entra tarde (v2.85.0), slots fixos ao sair jogador (v2.86.0), lobby visual completo (v2.90.0/2.92.0). Nada disso foi testado em **aparelho real**; pode (ou não) ter mexido nesse bug. Vale re-testar do zero antes de investigar mais.
 
 ## 🟢 Correções e melhorias aplicadas na 2.89.0
 - **Mobile:** opções secundárias da partida foram agrupadas em um menu de três pontos, reduzindo poluição visual e melhorando uso com uma mão.

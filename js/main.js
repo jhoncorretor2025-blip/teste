@@ -1,3 +1,4 @@
+// Antes de editar: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar.
 // Ponto de entrada do jogo: liga os botões da tela e dá o "start" inicial.
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
@@ -357,6 +358,15 @@ function broadcastOnlineLobby() {
   net.broadcastRaw({ type: 'lobby', players, config });
 }
 
+// Correção: essa função era chamada em 6 lugares (ao entrar/sair da sala, a cada 1s, ao
+// hospedar/entrar) mas nunca tinha sido definida — o jogo quebrava assim que abria
+// ("ReferenceError: updateOnlineLobbyUI is not defined"), travando todo mundo na telinha
+// de carregamento com "Tentar novamente" (que só repetia o mesmo erro). renderOnlineLobby()
+// já atualiza TUDO que existe na tela do lobby, então isso vira um apelido pra ela.
+function updateOnlineLobbyUI() {
+  renderOnlineLobby();
+}
+
 function renderOnlineLobby() {
   const box = $('onlineLobbyPlayers');
   if (!box) return;
@@ -609,6 +619,16 @@ const roomFromUrl = new URLSearchParams(location.search).get('room');
 if (new URLSearchParams(location.search).get('diag') === '1') {
   $('diagPanel').classList.remove('hidden');
 }
+
+// Correção: essa constante era declarada lá embaixo (perto de activateProgressSection),
+// mas switchToTab() já era chamada aqui em cima, assim que a página abre (pra ler ?tab= da
+// URL) — e switchToTab() usa TAB_ALIASES. Com "const", isso é um erro garantido toda vez
+// ("Cannot access before initialization"), travando o carregamento. Motivo: quem é
+// declarado com const/let só existe de verdade a partir da linha onde é declarado, mesmo
+// que a função que o usa já exista antes (funções são content içadas; const/let não).
+// Navegação principal: quatro áreas simples. Os nomes antigos "ranking" e "conquistas"
+// continuam aceitos em links antigos e atalhos, mas agora apontam para Progresso.
+const TAB_ALIASES = { ranking: 'progresso', conquistas: 'progresso' };
 
 // Atalhos de app (melhoria #2) — segurar o ícone no Android oferece "Jogar Rápido" e
 // "Ver Conquistas", que chegam aqui como parâmetros na URL
@@ -907,9 +927,6 @@ function updateTopRecordDisplay() {
   $('progressSessionValue')?.replaceChildren(document.createTextNode(String(loadSessionGamesToday() || 0)));
 }
 
-// Navegação principal: quatro áreas simples. Os nomes antigos "ranking" e "conquistas"
-// continuam aceitos em links antigos e atalhos, mas agora apontam para Progresso.
-const TAB_ALIASES = { ranking: 'progresso', conquistas: 'progresso' };
 function activateProgressSection(section = 'stats') {
   const valid = ['stats', 'ranking', 'achievements', 'history'];
   const target = valid.includes(section) ? section : 'stats';

@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Snake Arena — jogo da minhoquinha (site estático, sem build). Veja AGENTS.md.",
   "scripts": {
+    "pretest": "python3 tools/verificar-projeto.py",
     "verificar": "python3 tools/verificar-projeto.py",
     "mapa": "python3 tools/gerar-mapa.py",
     "test": "node tests/rodar-tudo.mjs"

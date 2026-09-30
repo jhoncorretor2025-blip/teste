@@ -104,8 +104,16 @@ export function ativar(w) {
   globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 16);
 }
 
-// importarDe(pasta)('js/main.js') → módulo daquela pasta (cada pasta = uma cópia isolada do jogo)
-export const importarDe = (pasta) => (arquivo) => import(pathToFileURL(path.join(pasta, arquivo)).href);
+// importarDe(pasta)('js/main.js') → módulo daquela pasta (cada pasta = uma cópia isolada do jogo).
+// Aceita uma "?query" no final (ex: 'js/main.js?tentativa2') pra forçar reimportar o mesmo
+// arquivo várias vezes sem cache do Node — mas a query precisa ser separada ANTES de virar
+// URL de arquivo, senão o "?" é tratado como parte do nome (pathToFileURL escaparia
+// virando "%3F", procurando um arquivo que não existe).
+export const importarDe = (pasta) => (arquivo) => {
+  const [caminho, query] = arquivo.split('?');
+  const url = pathToFileURL(path.join(pasta, caminho)).href;
+  return import(query ? `${url}?${query}` : url);
+};
 
 // Cópia isolada do projeto (pra um SEGUNDO participante: o amigo). Vai pra uma pasta temporária.
 export function copiarProjeto() {

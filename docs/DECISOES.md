@@ -49,6 +49,11 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 - **Por quê:** o dono pediu para definir quantas minhocas de cada lado e deixar quem entra escolher. **Cuidado:** as escolhas (tamanhos e "com/contra") ficam salvas no aparelho, mas o **formato** Times × Todos contra Todos **não** — ele também liga o modo Times do jogo local, e abrir o jogo já em Times seria uma surpresa (v2.83.0).
 - Cada time usa uma cor só e ganha uma forma na cabeça (▲ Azul, ■ Vermelho) para não depender só de cor.
 
+## Ferramentas
+**15. O verificador ganhou uma checagem de "função-fantasma" (chamada, mas nunca definida em lugar nenhum) — v2.94.6.**
+- **Por quê:** foi exatamente esse tipo de erro (`updateOnlineLobbyUI is not defined`) que travou o jogo na tela de carregamento depois de 129 commits de outra IA sem passar pelo verificador. Detalhes técnicos e limitações em `docs/ARMADILHAS.md` (casos 26-27).
+- **Cuidado:** é uma checagem heurística (não é um parser de JavaScript de verdade) — ela remove strings/comentários/regex antes de procurar, mas **não entende ordem de execução**. Ela pega "nunca existe", não pega "existe, mas tarde demais" (erro de `const`/`let` usado cedo demais). Pra esse segundo tipo, o que continua protegendo é rodar o jogo de verdade nos testes (`npm test`).
+
 ## Visual
 **14. Cada tema visual tem o seu fundo: cor, brilho central, decoração animada e comidinha (v2.82.0).**
 - **Por quê:** antes só a cor de fundo e a das linhas mudavam, e escuras e parecidas; as estrelinhas eram sempre iguais. **Regra:** o fundo mais claro de cada tema (`bg2`) precisa ter contraste ≥ 2,6 com **todas** as cores de minhoca (a roxa quase sumia). O verificador confere que `BOARD_THEMES` e o `<select id="boardTheme">` têm os mesmos temas.

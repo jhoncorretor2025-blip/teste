@@ -1413,63 +1413,71 @@ h1 {
 }
 
 .appSplash {
-.bootProgressWrap {
-  width:min(78vw,360px);
-  margin-top:4px;
-  text-align:center;
-}
-.bootProgressTrack {
-  height:8px;
-  border-radius:999px;
-  background:#ffffff18;
-  border:1px solid #ffffff20;
-  overflow:hidden;
-  box-shadow:inset 0 1px 3px #0008;
-}
-.bootProgressBar {
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,#43e37a,#7dffad);
-  box-shadow:0 0 14px #67ef8a88;
-  transition:width .35s ease;
-}
-.bootProgressRow {
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  margin-top:8px;
-  color:#fff;
-  font-size:.86rem;
-}
-.bootProgressRow b { min-width:42px; text-align:left; }
-.bootProgressStatus { color:#a9bce0; }
-.bootProgressDetail {
-  color:#7f91b3;
-  font-size:.72rem;
-  text-align:center;
-  max-width:340px;
-}
-.bootErrorBox {
-  width:min(82vw,390px);
-  margin-top:14px;
-  padding:12px 14px;
-  border:1px solid #ff557766;
-  border-radius:12px;
-  background:#5a1f2a99;
-  color:#fff;
-  text-align:center;
-  line-height:1.45;
-}
-.bootErrorBox small { color:#ffd6de; word-break:break-word; }
-.bootErrorBox button {
-  margin-top:10px;
-  padding:9px 14px;
-  border:0;
-  border-radius:9px;
-  background:#67ef8a;
-  color:#07101d;
-  font-weight:800;
-}
+  .bootProgressWrap {
+    width:min(78vw,360px);
+    margin-top:4px;
+    text-align:center;
+  }
+  .bootProgressTrack {
+    height:8px;
+    border-radius:999px;
+    background:#ffffff18;
+    border:1px solid #ffffff20;
+    overflow:hidden;
+    box-shadow:inset 0 1px 3px #0008;
+  }
+  .bootProgressBar {
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#43e37a,#7dffad);
+    box-shadow:0 0 14px #67ef8a88;
+    transition:width .35s ease;
+  }
+  .bootProgressRow {
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:8px;
+    color:#fff;
+    font-size:.86rem;
+  }
+  .bootProgressRow b {
+    min-width:42px;
+    text-align:left;
+  }
+  .bootProgressStatus {
+    color:#a9bce0;
+  }
+  .bootProgressDetail {
+    color:#7f91b3;
+    font-size:.72rem;
+    text-align:center;
+    max-width:340px;
+  }
+  .bootErrorBox {
+    width:min(82vw,390px);
+    margin-top:14px;
+    padding:12px 14px;
+    border:1px solid #ff557766;
+    border-radius:12px;
+    background:#5a1f2a99;
+    color:#fff;
+    text-align:center;
+    line-height:1.45;
+  }
+  .bootErrorBox small {
+    color:#ffd6de;
+    word-break:break-word;
+  }
+  .bootErrorBox button {
+    margin-top:10px;
+    padding:9px 14px;
+    border:0;
+    border-radius:9px;
+    background:#67ef8a;
+    color:#07101d;
+    font-weight:800;
+  }
   position:fixed;
   inset:0;
   z-index:9999;
@@ -1496,9 +1504,11 @@ h1 {
   margin-top:-7px;
   opacity:.95;
 }
+
 .appSplashVersion b {
   color:#67ef8a;
 }
+
 .appSplashTitle {
   color:#fff;
   font-size:1.3rem;
@@ -1757,7 +1767,6 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   transition:background .4s ease,border-color .4s ease,color .4s ease
 }
 
-
 /* v2.84.0 — ajustes de navegação e leitura da tela inicial. */
 .menuHero .row {
   align-items:stretch
@@ -1773,13 +1782,11 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     display:grid;
     grid-template-columns:1.35fr 1fr
   }
-
   .menuHero .row > .heroPlay,
   .menuHero .row > .btn.alt {
     width:100%;
     min-width:0
   }
-
   .tabBar {
     position:sticky;
     top:0;
@@ -1792,7 +1799,6 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     backdrop-filter:blur(8px);
     border-radius:12px
   }
-
   .tabBtn {
     min-height:42px;
     padding:9px 11px
@@ -1803,20 +1809,16 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   .menuHero {
     padding:18px 16px
   }
-
   .menuHero .row {
     justify-content:center
   }
-
   .menuHero .row > .heroPlay {
     flex:1 1 520px
   }
-
   .menuHero .row > .btn.alt {
     flex:0 1 220px
   }
 }
-
 
 /* v2.87.0 — nova central de ferramentas da aba Online */
 .onlineTools {
@@ -1826,28 +1828,33 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   border-radius:12px;
   background:linear-gradient(160deg,#111f38,#0c1628);
 }
+
 .onlineToolsTitle {
   font-weight:900;
   color:#fff;
   font-size:.9rem;
 }
+
 .onlineToolsSub {
   color:#91a3c0;
   font-size:.72rem;
   margin-top:2px;
 }
+
 .onlinePresetGrid {
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:6px;
   margin-top:8px;
 }
+
 .onlinePreset {
   width:100%;
   min-height:38px;
   padding:7px 6px;
   font-size:.74rem;
 }
+
 .onlineDiag {
   display:flex;
   flex-wrap:wrap;
@@ -1860,16 +1867,19 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   color:#cbd7ea;
   font-size:.72rem;
 }
+
 .onlineDiag .diagItem {
   padding:3px 6px;
   border-radius:7px;
   background:#ffffff08;
 }
+
 .onlineDiag small {
   width:100%;
   color:#8194b2;
   line-height:1.35;
 }
+
 .lobbyCapacity {
   margin-top:7px;
   padding:7px 8px;
@@ -1877,6 +1887,7 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   background:#0a1424;
   border:1px solid #293b5b;
 }
+
 .lobbyCapacityTop {
   display:flex;
   justify-content:space-between;
@@ -1884,9 +1895,11 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   font-size:.74rem;
   color:#b9c7dc;
 }
+
 .lobbyCapacityTop b {
   color:#fff;
 }
+
 .lobbyCapacityTrack {
   height:7px;
   margin-top:5px;
@@ -1894,21 +1907,25 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   overflow:hidden;
   background:#ffffff12;
 }
+
 .lobbyCapacityFill {
   height:100%;
   border-radius:99px;
   background:linear-gradient(90deg,#4dd97a,#ffd24d);
   transition:width .25s ease;
 }
+
 .lobbyHint {
   margin-top:5px;
   font-size:.72rem;
 }
+
 @media(max-width:700px) {
   .onlinePresetGrid {
     grid-template-columns:repeat(2,1fr);
   }
 }
+
 @media(max-width:420px) {
   .onlineToolsSub {
     font-size:.69rem;
@@ -1917,7 +1934,6 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     font-size:.69rem;
   }
 }
-
 
 /* v2.88.0 — navegação reorganizada: Jogar / Online / Progresso / Config. */
 .settingsLauncher {
@@ -1935,20 +1951,24 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   align-items:center;
   justify-content:space-between;
 }
+
 .settingsLauncher:hover,
 .settingsLauncher.open {
   background:#172b49;
   border-color:#5d80b4;
 }
+
 .gameAdvancedSettings {
   animation:fadeIn .18s ease;
 }
+
 .progressHero {
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:12px;
 }
+
 .progressRecordMini {
   min-width:76px;
   padding:10px;
@@ -1959,12 +1979,14 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   color:#ffd85c;
   font-weight:900;
 }
+
 .progressNav {
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:6px;
   margin:12px 0 10px;
 }
+
 .progressNavBtn {
   border:1px solid #30476d;
   border-radius:9px;
@@ -1975,16 +1997,19 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   font-weight:800;
   cursor:pointer;
 }
+
 .progressNavBtn.active {
   background:#1d3355;
   color:#fff;
   border-color:#5e82b8;
 }
+
 .progressStatGrid {
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:7px;
 }
+
 .progressStat {
   padding:11px 8px;
   border-radius:11px;
@@ -1994,20 +2019,24 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   flex-direction:column;
   gap:3px;
 }
+
 .progressStat span {
   color:#8fa2c0;
   font-size:.72rem;
 }
+
 .progressStat b {
   color:#fff;
   font-size:1.15rem;
 }
+
 .settingsCategoryGrid {
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:6px;
   margin:8px 0;
 }
+
 .settingsJump {
   border:1px solid #30476d;
   border-radius:9px;
@@ -2018,22 +2047,28 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   font-weight:800;
   cursor:pointer;
 }
+
 .settingsJump:hover {
   background:#172b49;
 }
+
 .settingsSearchWrap {
   margin:8px 0 10px;
 }
+
 .settingsSearchWrap .input {
   width:100%;
 }
+
 .searchDimmed {
   opacity:.35 !important;
 }
+
 .settingsSectionAnchor {
   scroll-margin-top:80px;
   height:0;
 }
+
 @media(min-width:701px) {
   .tabBar {
     position:sticky;
@@ -2041,6 +2076,7 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     z-index:20;
   }
 }
+
 @media(max-width:700px) {
   body {
     padding-bottom:72px;
@@ -2087,6 +2123,7 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     grid-template-columns:repeat(2,1fr);
   }
 }
+
 @media(max-width:420px) {
   .progressStatGrid {
     grid-template-columns:1fr;
@@ -2096,12 +2133,12 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   }
 }
 
-
 /* v2.89.0 — mobile-first controls without changing desktop */
 .mobileGameMoreBtn,
 .mobileGameMenu {
   display:none;
 }
+
 @media(max-width:700px) {
   /* Keep the desktop information architecture, but remove non-essential chrome on phones. */
   .siteHeader .sub,
@@ -2124,7 +2161,6 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   .menuHero #startHero {
     flex:1 1 auto;
   }
-
   /* Game: one compact action button replaces the wall of tiny icons. */
   .desktopGameTool {
     display:none !important;
@@ -2222,6 +2258,7 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     font-size:.73rem;
   }
 }
+
 @media(max-width:420px) {
   .mobileGameMenu {
     width:min(94vw,330px);
@@ -2238,6 +2275,7 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     flex:1 1 0;
   }
 }
+
 @media(min-width:701px) {
   .desktopGameTool {
     display:flex;
@@ -2245,21 +2283,150 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
 }
 
 /* v2.90.0 — lobby online */
-.onlineLobbyCard{margin-top:9px;padding:10px;border:1px solid rgba(120,170,230,.22);border-radius:12px;background:rgba(8,18,34,.58)}
-.onlineLobbyHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.onlineLobbySummary{font-size:.76rem;color:#b9cbea}.onlineLobbyPlayers{display:grid;gap:6px}
-.onlineLobbyPlayer{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.055)}
-.onlineLobbyAvatar{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:rgba(75,140,220,.14)}.onlineLobbyPlayerMain{min-width:0;display:flex;flex-direction:column;gap:2px}.onlineLobbyPlayerMain b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.onlineLobbyPlayerMain span,.onlineLobbyTeam,.onlineLobbyPlayerMeta small{font-size:.68rem;color:#9db0cf}.onlineLobbyPlayerMeta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap}
-.onlineLobbyReady{color:#76e39a;font-size:.68rem}.onlineLobbyWaiting{color:#ffd27a;font-size:.68rem}.onlineLobbyConfig{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);color:#b9cbea;font-size:.7rem;line-height:1.35}.onlineLobbyEmpty{color:#91a2bd;font-size:.76rem;text-align:center;padding:9px 4px}
-@media(max-width:700px){.onlineLobbyCard{padding:8px}.onlineLobbyPlayer{grid-template-columns:30px minmax(0,1fr) auto;padding:6px}.onlineLobbyAvatar{width:27px;height:27px}}
+.onlineLobbyCard {
+  margin-top:9px;
+  padding:10px;
+  border:1px solid rgba(120,170,230,.22);
+  border-radius:12px;
+  background:rgba(8,18,34,.58)
+}
+
+.onlineLobbyHeader {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:8px
+}
+
+.onlineLobbySummary {
+  font-size:.76rem;
+  color:#b9cbea
+}
+
+.onlineLobbyPlayers {
+  display:grid;
+  gap:6px
+}
+
+.onlineLobbyPlayer {
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:7px 8px;
+  border-radius:9px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.055)
+}
+
+.onlineLobbyAvatar {
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:rgba(75,140,220,.14)
+}
+
+.onlineLobbyPlayerMain {
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px
+}
+
+.onlineLobbyPlayerMain b {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+
+.onlineLobbyPlayerMain span,.onlineLobbyTeam,.onlineLobbyPlayerMeta small {
+  font-size:.68rem;
+  color:#9db0cf
+}
+
+.onlineLobbyPlayerMeta {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:2px;
+  white-space:nowrap
+}
+
+.onlineLobbyReady {
+  color:#76e39a;
+  font-size:.68rem
+}
+
+.onlineLobbyWaiting {
+  color:#ffd27a;
+  font-size:.68rem
+}
+
+.onlineLobbyConfig {
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px solid rgba(255,255,255,.08);
+  color:#b9cbea;
+  font-size:.7rem;
+  line-height:1.35
+}
+
+.onlineLobbyEmpty {
+  color:#91a2bd;
+  font-size:.76rem;
+  text-align:center;
+  padding:9px 4px
+}
+
+@media(max-width:700px) {
+  .onlineLobbyCard {
+    padding:8px
+  }
+  .onlineLobbyPlayer {
+    grid-template-columns:30px minmax(0,1fr) auto;
+    padding:6px
+  }
+  .onlineLobbyAvatar {
+    width:27px;
+    height:27px
+  }
+}
 
 /* v2.91.0 — resultado online */
-#endText{white-space:pre-line;line-height:1.55}
-
+#endText {
+  white-space:pre-line;
+  line-height:1.55
+}
 
 /* v2.92.0 — abandono protegido + lobby completo + confronto detalhado */
-.onlineLobbyStatus{margin-top:7px;padding:7px 8px;border-radius:9px;background:rgba(103,239,138,.07);border:1px solid rgba(103,239,138,.18);color:#bde9c9;font-size:.7rem;line-height:1.35}.onlineLobbyDisconnected{color:#ff9f6e;font-size:.68rem}#onlineClientLobby{margin-top:9px}@media(max-width:700px){.onlineLobbyStatus{font-size:.68rem}}
+.onlineLobbyStatus {
+  margin-top:7px;
+  padding:7px 8px;
+  border-radius:9px;
+  background:rgba(103,239,138,.07);
+  border:1px solid rgba(103,239,138,.18);
+  color:#bde9c9;
+  font-size:.7rem;
+  line-height:1.35
+}
 
+.onlineLobbyDisconnected {
+  color:#ff9f6e;
+  font-size:.68rem
+}
+
+#onlineClientLobby {
+  margin-top:9px
+}
+
+@media(max-width:700px) {
+  .onlineLobbyStatus {
+    font-size:.68rem
+  }
+}
 
 /* v2.94.0 — painel da Minhoca Inimiga */
 .hunterSettingsBox {
@@ -2270,23 +2437,27 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   background: linear-gradient(155deg,#241321,#101726);
   box-shadow: 0 8px 24px #0004;
 }
+
 .hunterSettingsHeader {
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap:10px;
 }
+
 .hunterSettingsHeader h3 {
   margin:0;
   font-size:1rem;
   color:#fff;
 }
+
 .hunterSettingsHeader p {
   margin:3px 0 0;
   color:#aebbd0;
   font-size:.72rem;
   line-height:1.35;
 }
+
 .hunterStatusBadge {
   white-space:nowrap;
   padding:5px 8px;
@@ -2297,23 +2468,27 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   font-size:.68rem;
   font-weight:900;
 }
+
 .hunterStatusBadge.off {
   background:#381521;
   border-color:#8b334e;
   color:#ff9ab2;
 }
+
 .hunterStatusBadge.live {
   background:#401522;
   border-color:#ff5577;
   color:#ff9aaa;
   box-shadow:0 0 12px #ff557733;
 }
+
 .hunterConfigGrid {
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:8px;
   margin-top:9px;
 }
+
 .fieldLabel {
   display:block;
   margin-bottom:4px;
@@ -2321,9 +2496,11 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   font-size:.7rem;
   font-weight:800;
 }
+
 .hunterConfigGrid .input {
   margin:0;
 }
+
 .hunterLiveInfo {
   display:flex;
   flex-direction:column;
@@ -2337,20 +2514,24 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   font-size:.72rem;
   line-height:1.35;
 }
+
 .hunterLiveInfo b {
   color:#fff;
 }
+
 .hunterPresetRow {
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:6px;
   margin-top:9px;
 }
+
 .hunterPreset {
   min-width:0;
   padding:7px 5px;
   font-size:.7rem;
 }
+
 @media(max-width:600px) {
   .hunterConfigGrid {
     grid-template-columns:1fr;

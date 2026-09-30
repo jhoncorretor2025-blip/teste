@@ -1,10 +1,11 @@
 <!doctype html>
+<!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v2.94.5</title>
-<link rel="stylesheet" href="css/style.css?v=2.94.5">
+<title>🐍 Mioquinha v2.94.6</title>
+<link rel="stylesheet" href="css/style.css?v=2.94.6">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -15,7 +16,7 @@
 <div id="appSplash" class="appSplash" aria-live="polite">
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
-  <div class="appSplashVersion">VERSÃO <b>2.94.5</b></div>
+  <div class="appSplashVersion">VERSÃO <b>2.94.6</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -63,7 +64,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v2.94.5</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v2.94.6</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
   </header>
@@ -568,10 +569,8 @@
       const box = document.createElement('div');
       box.className = 'bootErrorBox';
       const msg = String(err && (err.message || err) || 'Erro desconhecido').slice(0, 240);
-      const stack = String(err && err.stack || '').slice(0, 900);
-      const details = [msg, stack && stack !== msg ? stack : ''].filter(Boolean).join('\n');
-      box.innerHTML = '<b>O carregamento parou aqui.</b><br><small style="white-space:pre-wrap;display:block;text-align:left;max-height:180px;overflow:auto">' +
-        details.replace(/[<>&"]/g, s => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[s])) +
+      box.innerHTML = '<b>O carregamento parou aqui.</b><br><small>' +
+        msg.replace(/[<>&"]/g, s => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[s])) +
         '</small><br><button type="button" id="bootRetryBtn">🔄 Tentar novamente</button>';
       splash.appendChild(box);
       document.getElementById('bootRetryBtn')?.addEventListener('click', () => location.reload());

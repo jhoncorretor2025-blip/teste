@@ -80,6 +80,19 @@ Nas versões antigas, cada arquivo enviado virou um commit com a mesma mensagem:
 **25. A próxima IA não sabe o que já foi feito nem por quê, e refaz ou desfaz.**
 → Registro obrigatório: `CHANGELOG.md` (feito), `docs/DECISOES.md` (por quê) e `docs/PENDENCIAS.md` (falta). O `bump-versao.py` e o verificador cobram o CHANGELOG.
 
+## Caso de estudo: o jogo travava sempre na telinha de carregamento (v2.84.0 → v2.94.5)
+Depois de 129 commits de outra IA (ChatGPT, sem passar pelo `AGENTS.md`/verificador deste projeto), o jogo passou a travar **sempre** na tela de abertura ("Mioquinha vX — carregando..."), mostrando "🔄 Tentar novamente" — e tentar de novo dava o **mesmo** erro, sempre.
+
+**26. Função chamada, mas nunca definida em lugar nenhum.**
+`main.js` chamava `updateOnlineLobbyUI()` em 6 lugares (inclusive uma vez **direto no carregamento**, fora de qualquer função) — mas essa função nunca tinha sido escrita. `ReferenceError: updateOnlineLobbyUI is not defined`, na hora, sempre. → Corrigida virando um apelido de `renderOnlineLobby()` (que já fazia tudo que o nome sugeria). **Prevenção: checagem 13 do verificador** (`tools/verificar-projeto.py`) — escaneia todo `js/*.js` e reprova qualquer `nome(...)` chamado que não seja `function`, const, let ou var, `import` nem built-in do navegador. Rodar `npm run verificar` (ou `npm test`) antes de publicar teria pego isso na hora.
+
+**27. `const`/`let` usado antes de existir de verdade ("temporal dead zone").**
+Um SEGUNDO erro, de outro tipo: `switchToTab()` (chamada assim que a página abre, pra ler `?tab=` da URL) usava `TAB_ALIASES` — só que essa constante era declarada **250 linhas depois** no arquivo. Diferente de `function`, que é toda "içada" (existe inteira desde o topo do arquivo), `const`/`let` só passam a existir de verdade na linha onde aparecem; usar antes disso é sempre erro, mesmo a função que usa já estando disponível. → Movida a declaração pra antes do primeiro uso. **Isso NÃO é pego pela checagem 13** (o nome *existe* no arquivo, só que tarde demais) nem por `node --check` (não é erro de sintaxe, só aparece **rodando** o código) — por isso testes que executam o jogo de verdade (`tests/online-basico.mjs`, que chama `switchToTab` logo na inicialização) continuam sendo a rede de segurança para esse tipo de bug. Regra prática: toda `const`/`let` usada por uma função que roda na inicialização do arquivo deve ficar declarada **antes** dessa chamada, não faz diferença ficar "perto do assunto" lá embaixo.
+
+**28. Um erro de sintaxe comum também rolou no meio do caminho** — uma chave `}` sobrando em `net.js` (v2.94.5). Esse tipo `node --input-type=module --check` (checagem 5) pega imediatamente; foi corrigido antes de chegar até nós.
+
+**Lição para qualquer IA que abrir este projeto:** rodar `npm run verificar` (ou melhor, `npm test`, que também **executa** o jogo) antes de considerar qualquer tarefa terminada não é opcional. As checagens 5 e 13 pegam os dois erros mais comuns (sintaxe quebrada e função-fantasma) na hora, sem precisar nem abrir o navegador.
+
 ---
 
 # Problema em aberto: multiplayer real no celular

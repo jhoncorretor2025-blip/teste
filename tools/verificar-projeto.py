@@ -144,6 +144,111 @@ print('12) CSS legível (sem linhas gigantes)')
 ruins_css = [(k + 1, len(l)) for k, l in enumerate(ler('css/style.css').split('\n')) if len(l) > 400 and 'data:' not in l]
 ok('nenhuma linha do CSS passa de 400 caracteres') if not ruins_css else falha(f'{len(ruins_css)} linha(s) gigante(s) em css/style.css: {ruins_css[:4]}', 'Rode `python3 tools/formatar-css.py css/style.css` — editar no meio de uma linha enorme é o jeito mais fácil de quebrar o visual.')
 
+print('13) Nenhuma chamada a função que não existe em lugar nenhum (bug real já visto: função chamada mas nunca definida, quebrando o carregamento)')
+import re, sys
+from pathlib import Path
+GLOBAIS_CONHECIDOS = {
+ 'Array','Object','Math','JSON','Promise','Date','Number','String','Boolean','Map','Set','WeakMap','WeakSet',
+ 'RegExp','Error','TypeError','RangeError','Symbol','Proxy','Reflect','ArrayBuffer','Uint8Array','Int32Array',
+ 'Float32Array','parseInt','parseFloat','isNaN','isFinite','encodeURIComponent','decodeURIComponent','encodeURI','decodeURI',
+ 'setTimeout','setInterval','clearTimeout','clearInterval','requestAnimationFrame','cancelAnimationFrame','queueMicrotask',
+ 'fetch','alert','confirm','prompt','structuredClone','btoa','atob',
+ 'document','window','navigator','location','history','localStorage','sessionStorage','console','globalThis','self',
+ 'CustomEvent','Event','EventTarget','URL','URLSearchParams','Blob','File','FileReader','Image','Audio','AudioContext',
+ 'webkitAudioContext','Notification','ServiceWorkerRegistration','MutationObserver','ResizeObserver','IntersectionObserver',
+ 'Peer','requestIdleCallback','performance','crypto','indexedDB','caches',
+ 'if','for','while','switch','catch','function','return','typeof','instanceof','new','delete','void','in','of','do','else',
+ 'async','await','yield','static','super','this','true','false','null','undefined','case',
+}
+# depois de um desses (ignorando espaço), uma "/" começa uma expressão regular; depois de
+# qualquer outra coisa (nome, número, ")", "]"), "/" é divisão — igual o navegador decide
+ANTES_DE_REGEX = re.compile(r'(^|[(,=:;!&|?{}\[]|\breturn\b|\btypeof\b|\bcase\b)\s*$')
+
+def remover_texto_e_comentarios(codigo):
+    saida = []
+    i, n = 0, len(codigo)
+    while i < n:
+        c = codigo[i]
+        if codigo[i:i+2] == '//':
+            fim = codigo.find('\n', i); fim = n if fim < 0 else fim
+            saida.append(' ' * (fim - i)); i = fim
+        elif codigo[i:i+2] == '/*':
+            fim = codigo.find('*/', i + 2); fim = n if fim < 0 else fim + 2
+            saida.append(re.sub(r'[^\n]', ' ', codigo[i:fim])); i = fim
+        elif c == '/' and ANTES_DE_REGEX.search(''.join(saida[-12:])):
+            # expressão regular /.../flags — o conteúdo não é string nem código, pula igual comentário
+            j = i + 1; dentro_colchete = False
+            while j < n:
+                if codigo[j] == '\\': j += 2; continue
+                if codigo[j] == '[': dentro_colchete = True
+                elif codigo[j] == ']': dentro_colchete = False
+                elif codigo[j] == '/' and not dentro_colchete: j += 1; break
+                elif codigo[j] == '\n': break  # regex não atravessa linha; então não era regex — desiste
+                j += 1
+            while j < n and codigo[j].isalpha(): j += 1  # flags (g, i, m...)
+            saida.append(re.sub(r'[^\n]', ' ', codigo[i:j])); i = j
+        elif c in '\'"':
+            j = i + 1
+            while j < n and codigo[j] != c:
+                j += 2 if codigo[j] == '\\' else 1
+            j = min(j + 1, n)
+            saida.append(re.sub(r'[^\n]', ' ', codigo[i:j])); i = j
+        elif c == '`':
+            j = i + 1; texto = ['`']
+            while j < n and codigo[j] != '`':
+                if codigo[j] == '\\': texto.append('  '); j += 2
+                elif codigo[j:j+2] == '${':
+                    k = j + 2; prof = 1
+                    while k < n and prof:
+                        prof += {'{': 1, '}': -1}.get(codigo[k], 0); k += 1
+                    texto.append('${' + codigo[j+2:k-1] + '}'); j = k
+                else:
+                    texto.append('\n' if codigo[j] == '\n' else ' '); j += 1
+            texto.append('`' if j < n else ''); j = min(j + 1, n)
+            saida.append(''.join(texto)); i = j
+        else:
+            saida.append(c); i += 1
+    return ''.join(saida)
+
+def coletar_definidos(codigo_limpo):
+    definidos = set(GLOBAIS_CONHECIDOS)
+    definidos |= set(re.findall(r'\bfunction\*?\s+([A-Za-z_$][\w$]*)', codigo_limpo))
+    definidos |= set(re.findall(r'\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=', codigo_limpo))
+    definidos |= set(re.findall(r'\bclass\s+([A-Za-z_$][\w$]*)', codigo_limpo))
+    for grupo in re.findall(r'\bimport\s*\{([^}]*)\}', codigo_limpo):
+        for parte in grupo.split(','):
+            nome = parte.split(' as ')[-1].strip()
+            if nome: definidos.add(nome)
+    definidos |= set(re.findall(r'\bimport\s+([A-Za-z_$][\w$]*)\s+from', codigo_limpo))
+    for lista in re.findall(r'\(([^()]*)\)\s*(?:=>|\{)', codigo_limpo):
+        definidos |= set(re.findall(r'[A-Za-z_$][\w$]*', lista))
+    definidos |= set(re.findall(r'[{,]\s*([A-Za-z_$][\w$]*)\s*[,}:]', codigo_limpo))
+    return definidos
+
+def coletar_chamados(codigo_limpo):
+    chamadas = {}
+    for m in re.finditer(r'(?<![.\w$])([A-Za-z_$][\w$]*)\s*\(', codigo_limpo):
+        nome = m.group(1)
+        antes = codigo_limpo[:m.start()]
+        if re.search(r'\.\s*$', antes): continue                       # .metodo(
+        depois = codigo_limpo[m.end():].lstrip()
+        if re.match(r'^\)?\s*\{', depois) and not re.search(r'=\s*$|:\s*$|return\s*$', antes):
+            continue  # forma curta de método em objeto: nome() { ... } (não é chamada)
+        linha = antes.count('\n') + 1
+        chamadas.setdefault(nome, linha)
+    return chamadas
+
+
+limpos_13 = {a.name: remover_texto_e_comentarios(a.read_text(encoding='utf-8')) for a in JS.glob('*.js')}
+definidos_13 = set()
+for _t in limpos_13.values(): definidos_13 |= coletar_definidos(_t)
+fantasmas_13 = []
+for _arq, _t in limpos_13.items():
+    for _nome, _linha in coletar_chamados(_t).items():
+        if _nome not in definidos_13: fantasmas_13.append(f'{_arq}:{_linha} chama `{_nome}(...)`, nunca definida em nenhum js/*.js')
+ok('nenhuma função-fantasma encontrada') if not fantasmas_13 else falha('; '.join(fantasmas_13),
+    'Essa função é chamada mas não existe em NENHUM arquivo (nem local, nem importada). Foi assim que a v2.94.x travou toda vez na tela de carregamento: chamava updateOnlineLobbyUI() sem nunca defini-la. Defina a função, ou corrija o nome se foi só erro de digitação/renomeação.')
+
 print()
 if falhas:
     print(f'❌ {len(falhas)} problema(s). Corrija antes de publicar.'); sys.exit(1)

@@ -1,5 +1,8 @@
 # AGENTS.md — leia isto primeiro (vale para qualquer IA ou pessoa)
 
+> ⚠️ **Antes de dizer que terminou qualquer tarefa aqui, rode `npm test` (que já roda o verificador sozinho) e veja "✅ Projeto OK" e "✅ Todos os X arquivos de teste passaram". Sem exceção — nem para "só uma linha".**
+> Já aconteceu de outra IA fazer 129 commits sem isso e o jogo ficar **travado pra sempre** na tela de abertura, dando erro toda vez que a pessoa tentava de novo (duas funções eram chamadas sem existir de verdade no momento certo — caso completo em `docs/ARMADILHAS.md`, casos 26-27). `npm test` roda o jogo de verdade e pegaria isso na hora.
+
 ## O que é este projeto
 **Snake Arena** (o "jogo da minhoquinha"): jogo de minhocas para navegador, de 1 a 6 jogadores — no mesmo aparelho ou **online** entre aparelhos —, com CPUs, modos de jogo, missões, conquistas, times e uma Minhoca Caçadora.
 
@@ -12,7 +15,7 @@
 1. Leia este arquivo, o **topo do `CHANGELOG.md`** (o que já foi feito) e `docs/PENDENCIAS.md` (o que falta). Depois o `docs/MAPA-DO-CODIGO.md` (mapa **gerado** do código, sempre em dia).
 2. Ache o lugar certo na tabela **"Onde mexer"** abaixo. Algo parece estranho? Leia `docs/DECISOES.md` antes de mudar (pode ser de propósito) e `docs/ARMADILHAS.md` se for mexer em rede, cache ou versão.
 3. Faça a mudança pequena e clara.
-4. Rode `npm run verificar` e `npm test` (faça `npm install` uma vez antes).
+4. Rode `npm test` (já dispara o verificador sozinho antes) — faça `npm install` uma vez antes. **Isso não é opcional, nem para mudança pequena.**
 5. **Registre o que fez** (veja "Registrar o que você fez", abaixo).
 6. Publique com `tools/publicar.py` — **um commit só** (veja "Publicar").
 
