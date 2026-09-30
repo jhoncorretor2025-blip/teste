@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '3.0.3';
+export const VERSION = '3.1.0';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -55,6 +55,22 @@ export const ACHIEVEMENTS = [
   { id: 'length_75', name: 'Colosso', desc: 'Chegue a 75 segmentos numa partida', icon: '🦖', category: 'avancado' },
   { id: 'eliminator_10', name: 'Destruidor', desc: 'Elimine 10 adversários numa partida', icon: '💀', category: 'avancado' },
   { id: 'tournament_3wins', name: 'Tricampeão', desc: 'Vença 3 rodadas no total de um torneio', icon: '👑', category: 'avancado' },
+
+  // 🌐 Online — 14
+  { id: 'online_first', name: 'Primeira Conexão', desc: 'Jogue sua primeira partida online', icon: '🌐', category: 'online' },
+  { id: 'online_trio', name: 'Trio Online', desc: 'Jogue uma partida online com 3 ou mais jogadores', icon: '👥', category: 'online' },
+  { id: 'online_full_room', name: 'Sala Completa', desc: 'Jogue uma partida online com 6 jogadores', icon: '🏟️', category: 'online' },
+  { id: 'online_team', name: 'Time Unido', desc: 'Jogue uma partida online no modo Times', icon: '🤝', category: 'online' },
+  { id: 'online_3_games', name: 'Conexão Frequente', desc: 'Jogue 3 partidas online', icon: '🔗', cumulative: 'onlineGames', target: 3, category: 'online' },
+  { id: 'online_10_games', name: 'Veterano Online', desc: 'Jogue 10 partidas online', icon: '🛰️', cumulative: 'onlineGames', target: 10, category: 'online' },
+  { id: 'online_first_food', name: 'Primeira Mordida Online', desc: 'Coma sua primeira comidinha em uma partida online', icon: '🍎', category: 'online' },
+  { id: 'online_food_25', name: 'Banquete Online', desc: 'Coma 25 pontos de comida em uma partida online', icon: '🍽️', category: 'online' },
+  { id: 'online_score_100', name: 'Centena Online', desc: 'Faça 100 pontos em uma partida online', icon: '💯', category: 'online' },
+  { id: 'online_score_500', name: 'Mestre Online', desc: 'Faça 500 pontos em uma partida online', icon: '🚀', category: 'online' },
+  { id: 'online_kill_1', name: 'Primeiro Abate Online', desc: 'Elimine um adversário em uma partida online', icon: '⚔️', category: 'online' },
+  { id: 'online_kill_3', name: 'Caçador Online', desc: 'Elimine 3 adversários em uma partida online', icon: '☠️', category: 'online' },
+  { id: 'online_survive_2m', name: 'Sobrevivente Online', desc: 'Sobreviva 2 minutos em uma partida online', icon: '🛡️', category: 'online' },
+  { id: 'online_champion', name: 'Campeão Online', desc: 'Vença um torneio online', icon: '👑', category: 'online' },
 ];
 
 // --- Minhoca Caçadora: aparece quando o líder come muita comida, persegue ele
