@@ -922,8 +922,8 @@ function drawMinimap() {
   // Comidinhas e estrelas no minimapa — bem maiores e com contorno branco, pra dar
   // pra ver de relance mesmo numa tela pequena de celular
   for (const f of state.foods) {
-    const r = f.kind === 'bonus' || f.kind === 'streak' ? 3.2 : 2.2;
-    ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : f.kind === 'streak' ? '#c084fc' : f.kind === 'drop' ? (state.colors[f.owner] || '#ff4f7a') : '#ff4f7a';
+    const r = f.kind === 'bonus' || f.kind === 'secondPlace' ? 3.2 : 2.2;
+    ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : f.kind === 'secondPlace' ? '#63e6ff' : f.kind === 'drop' ? (state.colors[f.owner] || '#ff4f7a') : '#ff4f7a';
     ctx.beginPath();
     ctx.arc(mx + f.x * scale, my + f.y * scale, r, 0, Math.PI * 2);
     ctx.fill();
@@ -1185,13 +1185,12 @@ export function draw() {
       ctx.shadowBlur = 12 + Math.sin(t) * 7;
       ctx.shadowColor = '#ffd24d';
       ctx.fillText('⭐', x, y);
-    } else if (f.kind === 'streak') {
-      // Comida de sequência vencedora — uma coroa roxa brilhante, bem diferente de tudo
-      // o resto, pra deixar claro que é uma recompensa especial rara
-      ctx.font = `${cell * 1.25}px sans-serif`;
-      ctx.shadowBlur = 14 + Math.sin(t * 1.3) * 8;
-      ctx.shadowColor = '#c084fc';
-      ctx.fillText('👑', x, y);
+    } else if (f.kind === 'secondPlace') {
+      // Bônus exclusivo do 2º lugar: cristal azul brilhante, valendo 10.
+      ctx.font = `${cell * 1.28}px sans-serif`;
+      ctx.shadowBlur = 16 + Math.sin(t * 1.4) * 9;
+      ctx.shadowColor = '#63e6ff';
+      ctx.fillText('💎', x, y);
     } else {
       ctx.font = `${cell}px sans-serif`;
       ctx.shadowBlur = 8;
