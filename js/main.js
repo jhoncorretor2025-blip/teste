@@ -2173,13 +2173,29 @@ function renderAchievementsGallery() {
   if (!grid) return;
   const unlocked = loadUnlockedAchievements();
   $('achievementsProgress').textContent = `${unlocked.length} de ${ACHIEVEMENTS.length} conquistas desbloqueadas`;
-  grid.innerHTML = ACHIEVEMENTS.map((a) => {
-    const isUnlocked = unlocked.includes(a.id);
-    return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}">
-      <span class="aIcon">${isUnlocked ? a.icon : '❓'}</span>
-      <span class="aName">${isUnlocked ? a.name : '???'}</span>
-      <span class="aDesc">${isUnlocked ? a.desc : 'Ainda não desbloqueada'}</span>
-    </div>`;
+
+  const groups = [
+    { key: 'iniciante', title: '🟢 Iniciante', subtitle: 'Primeiros objetivos para pegar o jeito' },
+    { key: 'intermediario', title: '🟡 Intermediário', subtitle: 'Desafios que exigem mais consistência' },
+    { key: 'avancado', title: '🔴 Avançado', subtitle: 'Conquistas para dominar a arena' },
+  ];
+
+  grid.innerHTML = groups.map((group) => {
+    const items = ACHIEVEMENTS.filter((a) => a.category === group.key);
+    return `
+      <div style="grid-column:1/-1;margin-top:10px">
+        <div style="font-size:1rem;font-weight:800;margin-bottom:2px">${group.title}</div>
+        <div class="muted" style="margin-bottom:7px">${group.subtitle}</div>
+      </div>
+      ${items.map((a) => {
+        const isUnlocked = unlocked.includes(a.id);
+        return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}">
+          <span class="aIcon">${isUnlocked ? a.icon : '❓'}</span>
+          <span class="aName">${isUnlocked ? a.name : '???'}</span>
+          <span class="aDesc">${isUnlocked ? a.desc : 'Ainda não desbloqueada'}</span>
+        </div>`;
+      }).join('')}
+    `;
   }).join('');
 }
 renderAchievementsGallery();
