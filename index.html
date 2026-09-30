@@ -540,7 +540,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '2.94.5';
+  const VERSION = '2.94.6';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');
@@ -568,8 +568,10 @@
       const box = document.createElement('div');
       box.className = 'bootErrorBox';
       const msg = String(err && (err.message || err) || 'Erro desconhecido').slice(0, 240);
-      box.innerHTML = '<b>O carregamento parou aqui.</b><br><small>' +
-        msg.replace(/[<>&"]/g, s => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[s])) +
+      const stack = String(err && err.stack || '').slice(0, 900);
+      const details = [msg, stack && stack !== msg ? stack : ''].filter(Boolean).join('\n');
+      box.innerHTML = '<b>O carregamento parou aqui.</b><br><small style="white-space:pre-wrap;display:block;text-align:left;max-height:180px;overflow:auto">' +
+        details.replace(/[<>&"]/g, s => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[s])) +
         '</small><br><button type="button" id="bootRetryBtn">🔄 Tentar novamente</button>';
       splash.appendChild(box);
       document.getElementById('bootRetryBtn')?.addEventListener('click', () => location.reload());
