@@ -1,3 +1,9 @@
+## [3.6.0] — 2026-09-30
+- **Salas por código:** o anfitrião pode criar uma sala usando um código numérico de 4 dígitos.
+- **PIN:** a sala pode exigir um PIN numérico de 4 dígitos antes de liberar a entrada.
+- **Entrada sem link:** quem estiver no site pode digitar código + PIN e entrar diretamente.
+- **Compatibilidade:** o link de convite continua disponível como alternativa.
+
 ## [3.5.1] — 2026-09-30
 - **Correção gráfica:** ativadas as chamadas da iluminação dinâmica e dos efeitos especiais de comidas que já faziam parte do renderizador, mas não estavam sendo executadas.
 - **Estabilidade:** nova cadeia gráfica para garantir que a atualização seja carregada sem depender de módulos antigos em cache.
