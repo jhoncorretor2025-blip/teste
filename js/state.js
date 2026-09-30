@@ -75,6 +75,7 @@ export const state = {
   diagManual: false, // a pessoa abriu o painel 🩺 de propósito — aí ele NÃO some sozinho
   secondPlaceBonusTarget: -1, // jogador atualmente em 2º lugar que pode receber a sequência de bônus
   secondPlaceBonusRemaining: 0, // quantas comidas especiais de 10 ainda podem nascer para esse 2º lugar
+  secondPlaceBonusCollected: 0, // quantas das comidas especiais o jogador já coletou nesta partida
   hunterBurstUntil: 0, // até quando a rajada de velocidade atual dura (0 = sem rajada agora)
   hunterNextBurstAt: 0, // quando a próxima rajada de velocidade pode começar
   hunterDistractedUntil: 0, // até quando ela tá "distraída" perseguindo outro alvo (não o líder)
