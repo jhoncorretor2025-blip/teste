@@ -247,7 +247,14 @@ export function startGame() {
   if (state.noWalls) announceAchievement(unlockAchievement('no_walls'));
   announceAchievements(trackCumulativeProgress('themesUsed', state.theme));
   announceAchievements(trackCumulativeProgress('headsUsed', state.heads[0]));
-  if (isOnline()) announceAchievement(unlockAchievement('social'));
+  if (isOnline()) {
+    announceAchievement(unlockAchievement('social'));
+    announceAchievement(unlockAchievement('online_first'));
+    announceAchievements(trackCumulativeProgress('onlineGames', 1));
+    if (state.count >= 3) announceAchievement(unlockAchievement('online_trio'));
+    if (state.count >= 6) announceAchievement(unlockAchievement('online_full_room'));
+    if (state.teamMode) announceAchievement(unlockAchievement('online_team'));
+  }
 
   reset();
   // Aviso do tamanho do mapa logo que a partida começa — trocar de mapa quase não muda o que
@@ -402,6 +409,8 @@ function stepMovement(indices) {
         state.eliminations[die[i]] = (state.eliminations[die[i]] || 0) + 1;
         trackEliminationForMission(die[i]);
         if (die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('eliminator'));
+        if (isOnline() && die[i] === mySlot && state.eliminations[die[i]] >= 1) announceAchievement(unlockAchievement('online_kill_1'));
+        if (isOnline() && die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('online_kill_3'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 5) announceAchievement(unlockAchievement('eliminator_5'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 10) announceAchievement(unlockAchievement('eliminator_10'));
       }
@@ -455,14 +464,18 @@ function stepMovement(indices) {
         }
         if (combo >= 5) announceAchievement(unlockAchievement('combo_master'));
         if (combo >= 10) announceAchievement(unlockAchievement('combo_10'));
+        if (isOnline()) announceAchievement(unlockAchievement('online_first_food'));
         if (state.foodsEaten[i] >= 10) announceAchievement(unlockAchievement('food_10'));
+        if (isOnline() && state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('online_food_25'));
         if (state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('food_25'));
         if (state.scores[i] >= 25) announceAchievement(unlockAchievement('score_25'));
         if (state.scores[i] >= 50) announceAchievement(unlockAchievement('score_50'));
         if (state.scores[i] >= 100) announceAchievement(unlockAchievement('century'));
+        if (isOnline() && state.scores[i] >= 100) announceAchievement(unlockAchievement('online_score_100'));
         if (state.scores[i] >= 250) announceAchievement(unlockAchievement('score_250'));
         if (state.scores[i] >= 350) announceAchievement(unlockAchievement('score_350'));
         if (state.scores[i] >= 500) announceAchievement(unlockAchievement('score_500'));
+        if (isOnline() && state.scores[i] >= 500) announceAchievement(unlockAchievement('online_score_500'));
         if (state.scores[i] >= 1000) announceAchievement(unlockAchievement('score_1000'));
         if (state.scores[i] >= 1500) announceAchievement(unlockAchievement('score_1500'));
       }
@@ -509,6 +522,9 @@ function endTournamentRound() {
     }
     state.tournamentChampion = champion;
     if (champion === mySlot) announceAchievement(unlockAchievement('tournament_champion'));
+    if (isOnline() && champion === mySlot) {
+      announceAchievement(unlockAchievement('online_champion'));
+    }
     state.running = false;
     clearSavedGame();
     render();
@@ -867,6 +883,7 @@ function tick() {
     const survivedMs = Date.now() - state.spawnedAt[mySlot];
     if (survivedMs >= 30000) announceAchievement(unlockAchievement('survive_30'));
     if (survivedMs >= 120000) announceAchievement(unlockAchievement('survivor'));
+    if (isOnline() && survivedMs >= 120000) announceAchievement(unlockAchievement('online_survive_2m'));
     if (survivedMs >= 300000) announceAchievement(unlockAchievement('survive_5m'));
     if (mySnake.length >= 15) announceAchievement(unlockAchievement('length_15'));
     if (mySnake.length >= 20) announceAchievement(unlockAchievement('length_20'));
@@ -1004,6 +1021,8 @@ export function startClientGame() {
   $('clientReadyBtn').disabled = false;
   updateSessionStatsDisplay(incrementSessionGames());
   announceAchievement(unlockAchievement('social'));
+  announceAchievement(unlockAchievement('online_first'));
+  announceAchievements(trackCumulativeProgress('onlineGames', 1));
   render();
   // Rede de segurança final: se por QUALQUER motivo nem a contagem regressiva nem o
   // primeiro pacote de estado chegarem (problema de rede raro, mas real), a pessoa NUNCA
