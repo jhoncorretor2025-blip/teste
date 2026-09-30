@@ -2129,10 +2129,11 @@ function renderAchievementsGallery() {
       </div>
       ${items.map((a) => {
         const isUnlocked = unlocked.includes(a.id);
-        return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}">
-          <span class="aIcon">${isUnlocked ? a.icon : '❓'}</span>
-          <span class="aName">${isUnlocked ? a.name : '???'}</span>
-          <span class="aDesc">${isUnlocked ? a.desc : 'Ainda não desbloqueada'}</span>
+        return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}" title="${a.desc}">
+          <span class="aIcon">${a.icon}</span>
+          <span class="aName">${a.name}</span>
+          <span class="aDesc">${a.desc}</span>
+          <span class="aStatus">${isUnlocked ? '✅ Desbloqueada' : '🔒 Bloqueada'}</span>
         </div>`;
       }).join('')}
     `;
