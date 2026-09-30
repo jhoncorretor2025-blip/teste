@@ -1,3 +1,9 @@
+## [3.6.2] — 2026-09-30
+- **Celular:** a câmera agora se adapta à proporção da tela em retrato e paisagem, eliminando as grandes faixas vazias dentro da arena.
+- **Celular:** os botões de Pausar/Reiniciar/Menu ficam em uma única linha e a interface da partida fica mais compacta.
+- **Paisagem:** a arena aproveita praticamente toda a altura disponível, principalmente no modo compacto/tela cheia.
+- **PC:** o comportamento da câmera e o layout de desktop permanecem como antes.
+
 ## [3.6.1] — 2026-09-30
 - **Celular:** layout do jogo online reorganizado para evitar estouro lateral e elementos espremidos.
 - **Visitante:** removido o placar duplicado no rodapé e reorganizados placar, reações, chat e botões.

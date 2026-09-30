@@ -3362,3 +3362,58 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     font-size:.54rem;
   }
 }
+/* 📱 Mobile: use the arena as the primary surface.
+   The PC layout stays untouched; these rules only apply to coarse-pointer mobile screens. */
+@media screen and (max-width:1000px) and (pointer:coarse) {
+  #game .gameMainActions {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:5px
+  }
+
+  #game .gameMainActions > .btn {
+    min-width:0;
+    min-height:40px;
+    padding:7px 5px;
+    font-size:.82rem
+  }
+
+  #game .status,#game .mission {
+    padding:6px 8px;
+    margin-top:6px;
+    font-size:.74rem
+  }
+
+  #game .arena {
+    margin-top:6px
+  }
+
+  #game .scoresBottom,#game > .sub {
+    display:none
+  }
+}
+
+@media screen and (max-width:1000px) and (pointer:coarse) and (orientation:portrait) {
+  #game .arena {
+    min-height:0;
+    height:clamp(460px,78vh,720px);
+    height:clamp(460px,78dvh,720px);
+    max-height:none;
+    aspect-ratio:auto
+  }
+}
+
+@media screen and (max-width:1000px) and (pointer:coarse) and (orientation:landscape) {
+  #game .arena {
+    min-height:0;
+    height:96vh;
+    height:calc(100dvh - 8px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    max-height:none;
+    aspect-ratio:auto
+  }
+
+  #game.compact .arena {
+    height:96vh;
+    height:calc(100dvh - 8px - env(safe-area-inset-top) - env(safe-area-inset-bottom))
+  }
+}
