@@ -426,6 +426,38 @@ function drawBiomeDecorations(theme) {
   ctx.restore();
 }
 
+function drawThemeReaction(theme) {
+  const head = state.snakes[mySlot]?.[0];
+  if (!head || !state.alive[mySlot]) return;
+  const x = sx(head.x) + cell / 2, y = sy(head.y) + cell / 2;
+  const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 500);
+  const accent = theme.accent || '#ffffff';
+
+  ctx.save();
+  ctx.globalAlpha = 0.11 + pulse * 0.07;
+  ctx.strokeStyle = accent;
+  ctx.shadowColor = accent;
+  ctx.shadowBlur = cell * 0.42;
+  ctx.lineWidth = Math.max(1, cell * 0.04);
+
+  if (['deep','ocean','swamp','ice','glacier'].includes(theme.value)) {
+    ctx.beginPath(); ctx.arc(x, y, cell * (0.75 + pulse * 0.16), 0, Math.PI * 2); ctx.stroke();
+  } else if (['cyber','city','space','aurora'].includes(theme.value)) {
+    ctx.beginPath(); ctx.arc(x, y, cell * (0.64 + pulse * 0.11), 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha *= 0.45;
+    ctx.beginPath(); ctx.arc(x, y, cell * 0.42, 0, Math.PI * 2); ctx.stroke();
+  } else if (['desert','canyon','sunset','volcano'].includes(theme.value)) {
+    ctx.beginPath(); ctx.ellipse(x, y + cell * 0.08, cell * (0.72 + pulse * 0.08), cell * 0.25, 0, 0, Math.PI * 2); ctx.stroke();
+  } else {
+    for (let n = 0; n < 3; n++) {
+      const ang = Date.now() / 1200 + n * 2.1;
+      const rr = cell * (0.70 + n * 0.11);
+      ctx.beginPath(); ctx.arc(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr, cell * 0.045, 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
 function drawThemeDeco(theme) {
   const t = Date.now() / 1000;
   const spanX = state.mapW * 1.6, spanY = state.mapH * 1.6;
@@ -537,33 +569,60 @@ function drawStars() {
 // Trilha de energia suave usando a cor de rastro já escolhida pelo jogador.
 function drawEnergyTrail(snake, playerIndex, boosting) {
   if (!snake || snake.length < 2) return;
+  const pattern = state.patterns[playerIndex] || 'solid';
   const trailColor = (state.trailColors[playerIndex] && state.trailColors[playerIndex] !== 'auto')
     ? state.trailColors[playerIndex] : state.colors[playerIndex];
-  const reach = Math.min(snake.length, boosting ? 16 : 10);
+  const reach = Math.min(snake.length, boosting ? 18 : 11);
+  const now = Date.now();
+
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.globalAlpha = boosting ? 0.34 : 0.15;
+  ctx.globalAlpha = boosting ? 0.38 : (pattern === 'neon' ? 0.20 : 0.14);
   ctx.strokeStyle = trailColor || '#ffffff';
   ctx.shadowColor = trailColor || '#ffffff';
-  ctx.shadowBlur = boosting ? cell * 1.05 : cell * 0.45;
-  ctx.lineWidth = boosting ? cell * 0.22 : cell * 0.10;
-  ctx.beginPath();
-  for (let k = reach - 1; k >= 0; k--) {
-    const p = snake[k];
-    const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
-    if (k === reach - 1) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-  if (boosting) {
-    ctx.globalAlpha = 0.65;
-    ctx.fillStyle = '#ffffff';
-    for (let k = 1; k < reach; k += 3) {
+  ctx.shadowBlur = boosting ? cell * 1.1 : cell * 0.45;
+  ctx.lineWidth = boosting ? cell * 0.23 : cell * 0.10;
+
+  if (pattern === 'electric') {
+    ctx.beginPath();
+    for (let k = reach - 1; k >= 0; k--) {
       const p = snake[k];
-      const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 90 + k * 1.7 + playerIndex);
-      ctx.beginPath();
-      ctx.arc(sx(p.x) + cell / 2, sy(p.y) + cell / 2, Math.max(1, cell * (0.035 + pulse * 0.025)), 0, Math.PI * 2);
-      ctx.fill();
+      const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
+      const off = (k % 2 ? -1 : 1) * cell * 0.06;
+      if (k === reach - 1) ctx.moveTo(x + off, y - off); else ctx.lineTo(x + off, y - off);
+    }
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    for (let k = reach - 1; k >= 0; k--) {
+      const p = snake[k];
+      const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
+      if (k === reach - 1) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  if (boosting || ['fire','ice','galaxy','venom'].includes(pattern)) {
+    ctx.globalAlpha = boosting ? 0.75 : 0.55;
+    ctx.fillStyle = trailColor || '#ffffff';
+    const step = pattern === 'galaxy' || pattern === 'ice' ? 2 : 3;
+    for (let k = 1; k < reach; k += step) {
+      const p = snake[k];
+      const px = sx(p.x) + cell / 2, py = sy(p.y) + cell / 2;
+      const pulse = 0.55 + 0.45 * Math.sin(now / 100 + k * 1.6 + playerIndex);
+      ctx.save();
+      ctx.translate(px, py);
+      if (pattern === 'galaxy' || pattern === 'ice') {
+        const s = cell * (0.04 + pulse * 0.035);
+        ctx.rotate(Math.PI / 4);
+        ctx.fillRect(-s / 2, -s / 2, s, s);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, Math.max(1, cell * (0.03 + pulse * 0.025)), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
     }
   }
   ctx.restore();
@@ -838,7 +897,6 @@ function drawBodySegment(x, y, color, pattern, k, palette) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.22;
   const cx = sx(x) + pad, cy = sy(y) + pad;
 
-  // Sombrinha sutil embaixo, pra dar uma sensação de profundidade (bem barata de desenhar)
   ctx.fillStyle = 'rgba(0,0,0,0.22)';
   ctx.beginPath();
   ctx.roundRect(cx + size * 0.06, cy + size * 0.12, size, size, r);
@@ -847,13 +905,23 @@ function drawBodySegment(x, y, color, pattern, k, palette) {
   let fillColor = color;
   if (pattern === 'tricolor') {
     const preset = TRICOLOR_PALETTES.find(p => p.value === palette);
-    if (preset && preset.colors) {
-      fillColor = preset.colors[k % 3];
-    } else {
+    if (preset && preset.colors) fillColor = preset.colors[k % 3];
+    else {
       const variant = k % 3;
       fillColor = variant === 1 ? shadeColor(color, 55) : variant === 2 ? shadeColor(color, -55) : color;
     }
+  } else if (pattern === 'fire') {
+    fillColor = k % 3 === 0 ? '#ff5533' : k % 3 === 1 ? '#ff9f43' : '#ffd34d';
+  } else if (pattern === 'ice') {
+    fillColor = k % 2 ? '#8ee9ff' : '#d9fbff';
+  } else if (pattern === 'galaxy') {
+    fillColor = k % 3 === 0 ? '#7047c6' : k % 3 === 1 ? '#2b3d91' : '#a07ce9';
+  } else if (pattern === 'electric') {
+    fillColor = k % 2 ? '#51e6ff' : '#b7f8ff';
+  } else if (pattern === 'venom') {
+    fillColor = k % 2 ? '#72c94b' : '#3f8f3b';
   }
+
   ctx.fillStyle = fillColor;
   ctx.beginPath();
   ctx.roundRect(cx, cy, size, size, r);
@@ -861,14 +929,52 @@ function drawBodySegment(x, y, color, pattern, k, palette) {
 
   if (pattern === 'stripes' && k % 2 === 1) {
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.beginPath();
-    ctx.roundRect(cx, cy, size, size, r);
-    ctx.fill();
+    ctx.beginPath(); ctx.roundRect(cx, cy, size, size, r); ctx.fill();
   } else if (pattern === 'dots') {
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath(); ctx.arc(sx(x) + cell / 2, sy(y) + cell / 2, cell * 0.13, 0, Math.PI * 2); ctx.fill();
+  } else if (pattern === 'neon') {
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = cell * 0.65;
+    ctx.strokeStyle = '#ffffff55';
+    ctx.lineWidth = Math.max(1, cell * 0.035);
+    ctx.stroke();
+    ctx.restore();
+  } else if (pattern === 'fire') {
+    ctx.fillStyle = k % 2 ? '#ffe26b' : '#ff6a2a';
+    ctx.globalAlpha = 0.72;
+    ctx.beginPath(); ctx.arc(sx(x) + cell * 0.5, sy(y) + cell * 0.38, cell * 0.10, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+  } else if (pattern === 'ice') {
+    ctx.fillStyle = '#ffffffaa';
     ctx.beginPath();
-    ctx.arc(sx(x) + cell / 2, sy(y) + cell / 2, cell * 0.13, 0, Math.PI * 2);
+    ctx.moveTo(cx + size * 0.18, cy + size * 0.28);
+    ctx.lineTo(cx + size * 0.46, cy + size * 0.10);
+    ctx.lineTo(cx + size * 0.35, cy + size * 0.34);
+    ctx.closePath(); ctx.fill();
+  } else if (pattern === 'galaxy') {
+    ctx.fillStyle = '#ffffffcc';
+    const star = size * 0.08;
+    ctx.fillRect(cx + size * (0.20 + (k % 3) * 0.24), cy + size * 0.28, star, star);
+    ctx.fillRect(cx + size * (0.42 + (k % 2) * 0.20), cy + size * 0.64, star, star);
+  } else if (pattern === 'electric') {
+    ctx.strokeStyle = '#ffffffdd';
+    ctx.lineWidth = Math.max(1, cell * 0.035);
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.18, cy + size * 0.58);
+    ctx.lineTo(cx + size * 0.40, cy + size * 0.35);
+    ctx.lineTo(cx + size * 0.56, cy + size * 0.62);
+    ctx.lineTo(cx + size * 0.78, cy + size * 0.36);
+    ctx.stroke();
+  } else if (pattern === 'venom') {
+    ctx.fillStyle = '#c7ff5a';
+    ctx.globalAlpha = 0.75;
+    ctx.beginPath();
+    ctx.arc(cx + size * 0.28, cy + size * 0.70, cell * 0.055, 0, Math.PI * 2);
+    ctx.arc(cx + size * 0.72, cy + size * 0.70, cell * 0.055, 0, Math.PI * 2);
     ctx.fill();
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -1240,7 +1346,14 @@ export function renderScores() {
   let leaderIdx = -1;
   if (state.count > 1) {
     let maxScore = 0;
-    for (let i = 0; i < state.count; i++) {
+    const rankOrder = Array.from({ length: state.count }, (_, i) => i).sort((a, b) => {
+    const scoreDiff = (state.scores[b] || 0) - (state.scores[a] || 0);
+    if (scoreDiff !== 0) return scoreDiff;
+    const foodDiff = (state.foodsEaten[b] || 0) - (state.foodsEaten[a] || 0);
+    return foodDiff !== 0 ? foodDiff : a - b;
+  });
+
+  for (let i = 0; i < state.count; i++) {
       if ((state.scores[i] || 0) > maxScore) { maxScore = state.scores[i]; leaderIdx = i; }
     }
   }
@@ -1275,8 +1388,11 @@ export function renderScores() {
     const sinalBadge = sinalIndicador(i);
     // Ícone Humano/CPU — ajuda a saber de relance quem é controlado por gente de verdade
     const typeIcon = state.types[i] === 'cpu' ? '🤖' : '🧑';
+    const rank = rankOrder.indexOf(i) + 1;
+    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    const rankClass = ` rank-${Math.min(rank, 3)}`;
     const nameStyle = (i === 0 && state.nameColor && state.nameColor !== 'auto') ? ` style="color:${state.nameColor}"` : '';
-    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} ${typeIcon} <b${nameStyle}>${label(i)}</b>${youBadge}${sinalBadge}${leader}${recordBadge}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
+    h += `<div class="score${leaderClass}${rankClass}" data-rank="${rank}" style="border-color:${state.colors[i]}"><span class="rankBadge">${rankIcon}</span> ${ICONS[i]} ${typeIcon} <b${nameStyle}>${label(i)}</b>${youBadge}${sinalBadge}${leader}${recordBadge}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
   }
   // Placar somado dos times: quem está ganhando de relance (o de cima, em dourado)
   if (state.teamMode && state.count > 1) {
@@ -1447,6 +1563,7 @@ export function draw() {
   const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
   drawThemeBackdrop(theme);
   drawBiomeDecorations(theme);
+  if (typeof drawThemeReaction === 'function') drawThemeReaction(theme);
 
   ctx.strokeStyle = theme.grid;
   const gxStart = Math.floor(camX), gxEnd = Math.ceil(camX + viewW);
@@ -1515,10 +1632,30 @@ export function draw() {
       ctx.font = `${cell * 0.32}px sans-serif`; ctx.fillText('✦', cell * 0.62, -cell * 0.48);
     } else {
       const pulse = 0.96 + Math.sin(Date.now() / 280 + f.x) * 0.05;
-      ctx.scale(pulse, pulse);
+      const rarity = f.rarity || 'normal';
+      const style = {
+        normal: { color: '#ff4f7a', scale: 1, ring: null },
+        rare: { color: '#63b3ff', scale: 1.04, ring: '#63b3ff' },
+        epic: { color: '#b57bff', scale: 1.09, ring: '#b57bff' },
+        legendary: { color: '#ffd24d', scale: 1.15, ring: '#ffd24d' },
+      }[rarity] || { color: '#ff4f7a', scale: 1, ring: null };
+      ctx.scale(pulse * style.scale, pulse * style.scale);
       ctx.font = `${cell}px sans-serif`;
-      ctx.shadowBlur = 9; ctx.shadowColor = f.kind === 'drop' ? (state.colors[f.owner] || '#fff') : '#ff4f7a';
+      ctx.shadowBlur = rarity === 'normal' ? 9 : rarity === 'rare' ? 13 : rarity === 'epic' ? 17 : 22;
+      ctx.shadowColor = f.kind === 'drop' ? (state.colors[f.owner] || style.color) : style.color;
       ctx.fillText(theme.food, 0, 0);
+      if (style.ring) {
+        ctx.globalAlpha = 0.46 + Math.sin(Date.now() / 180) * 0.16;
+        ctx.strokeStyle = style.ring;
+        ctx.lineWidth = Math.max(1, cell * 0.045);
+        ctx.beginPath(); ctx.arc(0, 0, cell * 0.57, 0, Math.PI * 2); ctx.stroke();
+      }
+      if (rarity === 'epic' || rarity === 'legendary') {
+        ctx.globalAlpha = rarity === 'legendary' ? 0.92 : 0.66;
+        ctx.fillStyle = style.color;
+        ctx.font = `${cell * 0.27}px sans-serif`;
+        ctx.fillText(rarity === 'legendary' ? '✦' : '◆', cell * 0.56, -cell * 0.48);
+      }
     }
     ctx.restore();
   }
