@@ -2984,3 +2984,96 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   filter:drop-shadow(0 0 14px #ffd24d66);
 }
 
+
+/* v3.6.0 — salas por código + PIN */
+.onlineRoomAccess,
+.onlineRoomJoin {
+  margin-top:9px;
+  padding:10px;
+  border:1px solid #38527d;
+  border-radius:14px;
+  background:linear-gradient(135deg,#0c172a,#091221);
+  box-shadow:inset 0 0 0 1px #ffffff07;
+}
+
+.onlineRoomJoin {
+  margin-top:9px;
+}
+
+.onlineRoomAccessTitle {
+  font-weight:900;
+  margin-bottom:8px;
+}
+
+.onlineRoomAccessGrid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+
+.onlineRoomAccessGrid label {
+  display:block;
+}
+
+.onlineRoomAccessGrid label > span {
+  display:block;
+  margin-bottom:4px;
+  color:#9db0d0;
+  font-size:.67rem;
+  font-weight:800;
+}
+
+.roomNumberInput {
+  text-align:center;
+  font-weight:900;
+  letter-spacing:4px;
+  font-family:"Courier New",ui-monospace,monospace;
+}
+
+.onlineRoomAccess small,
+.onlineRoomJoin small {
+  display:block;
+  margin-top:7px;
+  color:#91a3c0;
+  font-size:.63rem;
+}
+
+.roomCredentialDisplay {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+}
+
+.roomCredentialDisplay > div {
+  padding:8px;
+  border-radius:10px;
+  background:#ffffff08;
+  border:1px solid #ffffff0d;
+}
+
+.roomCredentialDisplay b {
+  display:block;
+  margin-top:2px;
+  font-family:"Courier New",ui-monospace,monospace;
+  letter-spacing:3px;
+  color:#fff;
+  font-size:1rem;
+}
+
+.roomCredentialHint {
+  margin:7px 0;
+  color:#9eb0ca;
+  font-size:.64rem;
+}
+
+.onlineJoinButton {
+  width:100%;
+  margin-top:9px;
+}
+
+@media (max-width:700px) {
+  .onlineRoomAccessGrid,
+  .roomCredentialDisplay {
+    grid-template-columns:1fr;
+  }
+}
