@@ -36,6 +36,9 @@ _(nada por enquanto)_
 - **Tela inicial:** splash com identidade visual e iluminação melhoradas.
 - **Menu:** microinterações visuais nos cards e botão principal.
 
+## [3.3.2] — 2026-09-30
+- **Correção de carregamento do renderizador:** `main.js` e `loop.js` agora importam exatamente o mesmo `render.js?v=3.3.2`, evitando que o loop do jogo carregue uma cópia antiga do módulo e gere `rankOrder is not defined`.
+
 ## [3.3.1] — 2026-09-30
 - **Correção do placar:** a ordem visual do ranking foi movida para o escopo correto de `renderScores()`, evitando o erro `rankOrder is not defined` e permitindo que a partida seja desenhada normalmente.
 - **Cache:** `render.js` passou a ser carregado como v3.3.1 para impedir reutilização do módulo gráfico anterior.
