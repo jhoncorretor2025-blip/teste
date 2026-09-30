@@ -587,7 +587,6 @@ function drawHead(x, y, shape, color) {
         ctx.fill();
       }
     }
-  }
   } else if (shape === 'fox') {
     // Orelhas pontudas + focinho
     ctx.beginPath();
