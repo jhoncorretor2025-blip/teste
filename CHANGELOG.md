@@ -16,6 +16,10 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 _(nada por enquanto)_
 
+## [3.2.3] — 2026-09-30
+- **Correção defensiva de renderização:** os efeitos gráficos novos agora são opcionais quando uma cópia antiga do módulo está presa em cache, evitando que um único efeito impeça a Mioquinha de ser desenhada.
+- **Cache:** nova identificação `render.js?v=3.2.3` para forçar a carga do módulo gráfico atualizado.
+
 ## [3.2.2] — 2026-09-30
 - **Correção de cache:** o `main.js` agora carrega o `render.js` com versão própria, evitando que o navegador reutilize um módulo gráfico antigo e provoque o erro `drawEnergyTrail is not defined`.
 
