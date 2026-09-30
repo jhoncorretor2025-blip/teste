@@ -1719,32 +1719,11 @@ updateTopRecordDisplay();
 updateRoomSettingsPreview();
 maybeShowTutorial();
 
-// Deixa o jogo instalável como app e funcionando offline
+// Service Worker desativado temporariamente para eliminar o ciclo de recarregamento.
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then((reg) => {
-    // Confere se já tem uma versão nova esperando (ex: a pessoa abriu o jogo de novo
-    // depois de eu ter publicado uma atualização)
-    if (reg.waiting) showUpdateBanner(reg);
-
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      if (!newWorker) return;
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          showUpdateBanner(reg);
-        }
-      });
-    });
-
-    // Checagem ativa: por padrão, o navegador só verifica se tem versão nova de vez em
-    // quando (às vezes só uma vez por dia) — isso fazia a pessoa continuar numa versão
-    // velha por bastante tempo mesmo com internet boa. Agora checa na hora, e de novo
-    // toda vez que a pessoa volta pra aba (ex: saiu pro WhatsApp e voltou).
-    reg.update().catch(() => {});
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') reg.update().catch(() => {});
-    });
-  }).catch(() => {});
+  navigator.serviceWorker.getRegistrations()
+    .then((regs) => Promise.all(regs.map((reg) => reg.unregister())))
+    .catch(() => {});
 }
 
 // Checagem de versão à parte, direta da internet (segurança extra) — em vez de
@@ -1755,53 +1734,14 @@ if ('serviceWorker' in navigator) {
 // etc.). Se a versão aí for diferente da que está rodando agora, força uma atualização
 // completa sozinho, sem precisar de nenhuma ação da pessoa.
 async function checarVersaoDeVerdade() {
-  try {
-    const resp = await fetch(`./version.txt?nocache=${Date.now()}-${Math.random()}`, { cache: 'no-store' });
-    if (!resp.ok) return;
-    const versaoNoServidor = (await resp.text()).trim();
-    // Correção de bug real: antes só checava "!state.running" (partida rodando), mas
-    // isso deixava passar o momento mais comum de todos — CRIAR a sala e ficar esperando
-    // o amigo entrar ("1/6 jogadores"), já que o jogo em si ainda não começou. Quem saía
-    // pro WhatsApp mandar o link e voltava tinha a sala inteira apagada sem aviso, tendo
-    // que criar tudo de novo. Agora também protege enquanto estiver online de qualquer
-    // jeito (hospedando, esperando, ou já jogando).
-    if (versaoNoServidor && versaoNoServidor !== VERSION && !state.running && !net.isOnline()) {
-      announce(`🔄 Versão nova encontrada (${versaoNoServidor}) — atualizando sozinho...`);
-      if ('caches' in window) {
-        const nomes = await caches.keys();
-        await Promise.all(nomes.map((n) => caches.delete(n)));
-      }
-      if (navigator.serviceWorker) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map((r) => r.unregister()));
-      }
-      setTimeout(() => location.reload(), 800);
-    }
-  } catch {} // sem internet ou o arquivo não existe — não faz nada, sem problema
+  // Não faz reload automático. A versão é verificada apenas para informação.
+  return false;
 }
-checarVersaoDeVerdade();
-setInterval(checarVersaoDeVerdade, 60000); // confere de novo a cada minuto, caso publique algo novo enquanto a pessoa já está com o jogo aberto
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') checarVersaoDeVerdade();
-});
 
 let pendingUpdateReg = null;
 function showUpdateBanner(reg) {
-  // Se tiver uma partida rolando OU a pessoa estiver online de qualquer jeito (criou uma
-  // sala e tá esperando o amigo entrar, por exemplo), não interrompe na hora — espera ela
-  // voltar pro menu local. Sem isso, sair pro WhatsApp mandar o link da sala e voltar
-  // apagava a sala inteira sem aviso nenhum.
-  if (state.running || net.isOnline()) {
-    pendingUpdateReg = reg;
-    return;
-  }
-  // Fora de partida (no menu), aplica sozinho — sem precisar de clique. Só avisa rapidinho
-  // o que tá acontecendo, pra não parecer que a página travou/recarregou do nada.
-  announce('🔄 Atualizando o jogo pra versão mais nova...');
-  setTimeout(() => {
-    if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-    location.reload();
-  }, 600);
+  pendingUpdateReg = reg || null;
+  announce('🔄 Atualização disponível. Ela não será aplicada automaticamente.');
 }
 
 // No celular, ativa o modo maximizado (⛶) sozinho na primeira partida — a maioria nem
