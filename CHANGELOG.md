@@ -1,3 +1,6 @@
+## [3.4.1] — 2026-09-30
+- **Conquistas:** as 56 conquistas foram reorganizadas dentro de cada categoria em ordem progressiva, do objetivo mais fácil ao mais difícil, mantendo todas as conquistas existentes.
+
 ## [3.4.0] — 2026-09-30
 - **Reconexão:** queda temporária dá até 8 segundos para reconectar antes de a CPU assumir.
 - **Anfitrião:** após migração, o novo host retoma a sala automaticamente.
