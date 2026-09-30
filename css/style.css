@@ -1222,12 +1222,15 @@ h1 {
   left:50%;
   transform:translate(-50%,-50%) scale(0.7);
   z-index:1000;
-  background:linear-gradient(160deg,#2a2050,#1a1030);
-  border:2px solid #ffd24d;
+  /* A conquista continua visível, mas deixa o jogo aparecer por trás. */
+  background:linear-gradient(160deg,rgba(42,32,80,.78),rgba(26,16,48,.72));
+  border:2px solid rgba(255,210,77,.82);
   border-radius:20px;
   padding:26px 32px;
   text-align:center;
-  box-shadow:0 20px 60px #000a,0 0 40px #ffd24d55;
+  box-shadow:0 20px 60px rgba(0,0,0,.42),0 0 40px rgba(255,210,77,.28);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
   opacity:0;
   pointer-events:none;
   transition:opacity .35s ease,transform .35s ease
