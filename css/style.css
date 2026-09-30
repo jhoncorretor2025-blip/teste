@@ -1716,14 +1716,38 @@ h1 {
 }
 
 .achievementCard.locked {
-  opacity:.45;
-  filter:grayscale(1)
+  opacity:.5;
+  filter:grayscale(1);
+  background:#ffffff05;
+  border-color:#ffffff16
+}
+
+.achievementCard.locked .aIcon,
+.achievementCard.locked .aName {
+  color:#aeb7c6
+}
+
+.achievementCard.locked .aDesc {
+  color:#9aa5b7
 }
 
 .achievementCard .aIcon {
   font-size:1.8rem;
   display:block;
-  margin-bottom:4px
+  margin-bottom:4px;
+  filter:none
+}
+
+.achievementCard .aStatus {
+  display:block;
+  margin-top:6px;
+  font-size:.6rem;
+  font-weight:700;
+  color:#8893a6
+}
+
+.achievementCard.unlocked .aStatus {
+  color:#a8e6b5
 }
 
 .achievementCard .aName {
