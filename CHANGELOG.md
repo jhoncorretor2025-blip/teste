@@ -1,3 +1,15 @@
+## [3.5.0] — 2026-09-30
+- **Iluminação:** luzes ambientais dinâmicas para dar profundidade aos mapas.
+- **Minhoca:** corpo com volume, reflexos e contorno 3D.
+- **Turbo:** efeito de velocidade com riscos luminosos e partículas.
+- **Comidas:** efeitos próprios de brilho, pulso e partículas para itens de maior raridade.
+- **Eliminações:** impacto com anel, explosão e fragmentos luminosos.
+- **Mapas:** camada visual adicional específica por família de tema.
+- **Líder:** coroa, halo, partículas e identificação "LÍDER".
+- **Caçadora:** mira visual sobre o líder e integração com o efeito de perigo já existente.
+- **Conquistas:** acabamento visual adicional nos cards/popup.
+- **Partículas:** limite inteligente e núcleo luminoso para manter o jogo fluido.
+
 ## [3.4.4] — 2026-09-30
 - **Splash/topo:** corrigido o carregamento da tela inicial para ela permanecer como camada fixa sobre a página, eliminando a faixa branca que aparecia no topo depois do carregamento.
 - **Tema:** o splash agora mantém fundo escuro mesmo quando o navegador ou o modo claro estiver ativo.
