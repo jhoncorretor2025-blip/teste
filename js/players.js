@@ -27,7 +27,12 @@ export function makePlayers() {
     const items = HEAD_SHAPES.filter(h => (h.category || 'classic') === category);
     return `<optgroup label="${headCategoryLabels[category]}">${items.map(h => `<option value="${h.value}">${h.name}</option>`).join('')}</optgroup>`;
   }).join('');
-  const patternOptions = SKIN_PATTERNS.map(p => `<option value="${p.value}">${p.name}</option>`).join('');
+  const patternCategoryLabels = { classic: '🎨 Clássicas', themed: '✨ Temáticas' };
+  const patternCategories = ['classic', 'themed'];
+  const patternOptions = patternCategories.map(category => {
+    const items = SKIN_PATTERNS.filter(p => (p.category || 'classic') === category);
+    return `<optgroup label="${patternCategoryLabels[category]}">${items.map(p => `<option value="${p.value}">${p.name}</option>`).join('')}</optgroup>`;
+  }).join('');
   const paletteOptions = TRICOLOR_PALETTES.map(p => `<option value="${p.value}">${p.name}</option>`).join('');
   const teamOptions = TEAMS.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
   const teamMode = $('teamMode').checked;
