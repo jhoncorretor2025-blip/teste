@@ -3077,3 +3077,288 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     grid-template-columns:1fr;
   }
 }
+
+/* v3.6.1 — mobile online layout */
+@media (max-width:700px) {
+  html, body {
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden !important;
+  }
+
+  .app, .gameBox, .gameBox * {
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
+  /* No visitante, o placar principal fica dentro da largura disponível.
+     O placar duplicado do rodapé não precisa aparecer no celular. */
+  .gameBox {
+    width:100%;
+    min-width:0;
+    overflow:visible;
+  }
+
+  .gameBox .top {
+    width:100%;
+    min-width:0;
+    position:static;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:7px;
+    margin:0 0 7px;
+    padding:0;
+    background:transparent;
+    border-radius:0;
+  }
+
+  .gameBox .top > .onlineMatchStats {
+    width:100%;
+    min-width:0;
+    order:1;
+    margin:0;
+  }
+
+  .gameBox .top > .scores {
+    width:100%;
+    min-width:0;
+    order:2;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px;
+    overflow:visible !important;
+  }
+
+  .gameBox .top > .scores .score {
+    width:100%;
+    min-width:0;
+    max-width:none;
+    flex:none;
+    white-space:normal;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:.64rem;
+    line-height:1.25;
+    padding:6px;
+  }
+
+  .gameBox .top > .iconRow {
+    width:100%;
+    min-width:0;
+    order:3;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    position:relative;
+  }
+
+  .gameBox .top > .reactionRow {
+    width:100%;
+    min-width:0;
+    order:4;
+    display:flex;
+  }
+
+  .gameBox .top > .reactionRow .reactionBtn {
+    min-width:0;
+    flex:1 1 0;
+  }
+
+  .gameBox .top > .chatBox {
+    width:100%;
+    min-width:0;
+    order:5;
+  }
+
+  .gameBox .top > .chatBox .chatInputRow {
+    min-width:0;
+  }
+
+  .gameBox .top > .chatBox .chatInput {
+    min-width:0;
+    width:100%;
+  }
+
+  .gameBox .top > .gameMainActions {
+    width:100%;
+    min-width:0;
+    order:6;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px;
+  }
+
+  .gameBox .top > .gameMainActions > * {
+    width:100%;
+    min-width:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  /* O mesmo ranking não precisa ser repetido embaixo no celular. */
+  #scoresBottom {
+    display:none !important;
+  }
+
+  .gameBox > .status,
+  .gameBox > .mission {
+    width:100%;
+    min-width:0;
+    overflow:hidden;
+  }
+
+  .gameBox > .status {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:4px 7px;
+    font-size:.68rem;
+  }
+
+  .gameBox > .mission {
+    font-size:.72rem;
+    line-height:1.3;
+  }
+
+  /* A arena ocupa a largura real do aparelho, sem causar rolagem lateral.
+     Os controles permanecem ancorados dentro dela. */
+  .gameBox .arena {
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    aspect-ratio:3/4;
+    min-height:0;
+    height:auto;
+    overflow:hidden;
+    margin-top:7px;
+  }
+
+  .gameBox .arena canvas {
+    width:100%;
+    height:100%;
+  }
+
+  .gameBox .touch {
+    width:100%;
+    max-width:100%;
+    height:100%;
+    inset:0;
+    overflow:hidden;
+  }
+
+  .gameBox .joystick {
+    left:10px;
+    bottom:10px;
+    width:106px;
+    height:106px;
+  }
+
+  .gameBox .stick {
+    left:31px;
+    top:31px;
+    width:44px;
+    height:44px;
+  }
+
+  .gameBox .boostTouch {
+    right:10px;
+    bottom:10px;
+    width:78px;
+    height:78px;
+    font-size:.74rem;
+  }
+
+  .gameBox .stickText {
+    left:118px;
+    bottom:42px;
+    max-width:92px;
+    font-size:.58rem;
+  }
+
+  /* O painel online fica compacto no visitante. */
+  .onlineMatchStats {
+    padding:7px;
+    border-radius:12px;
+  }
+
+  .onlineStatsTitle {
+    margin-bottom:5px;
+    font-size:.82rem;
+  }
+
+  .onlineStatsTitle span {
+    font-size:.58rem;
+  }
+
+  .onlineStatsGrid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:5px;
+  }
+
+  .onlineStatsGrid div {
+    padding:5px;
+    min-width:0;
+  }
+
+  .onlineStatsGrid span {
+    font-size:.54rem;
+  }
+
+  .onlineStatsGrid b {
+    font-size:.68rem;
+  }
+
+  /* No celular, nomes longos nunca estouram o card. */
+  .score b,
+  .onlineLobbyPlayerMain b {
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .onlineLobbyCard,
+  .onlineLobbyPlayers,
+  .onlineLobbyPlayer {
+    min-width:0;
+    max-width:100%;
+  }
+}
+
+@media (max-width:420px) {
+  .gameBox .top > .scores {
+    grid-template-columns:1fr;
+  }
+
+  .gameBox > .status {
+    grid-template-columns:1fr 1fr;
+  }
+
+  .gameBox .gameMainActions {
+    grid-template-columns:1fr 1fr 1fr;
+  }
+
+  .gameBox .joystick {
+    width:96px;
+    height:96px;
+  }
+
+  .gameBox .stick {
+    left:27px;
+    top:27px;
+    width:42px;
+    height:42px;
+  }
+
+  .gameBox .boostTouch {
+    width:72px;
+    height:72px;
+  }
+
+  .gameBox .stickText {
+    left:106px;
+    bottom:38px;
+    max-width:78px;
+    font-size:.54rem;
+  }
+}
