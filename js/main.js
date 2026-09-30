@@ -9,7 +9,7 @@ import { loadTeamPrefs, saveTeamPrefs } from './storage.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
-import { render } from './render.js?v=3.2.3';
+import { render } from './render.js?v=3.3.0';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
 import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
