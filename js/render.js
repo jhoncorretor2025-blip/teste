@@ -492,6 +492,12 @@ function drawHead(x, y, shape, color) {
     ctx.roundRect(cx, cy, size, size, r * 1.3);
   } else if (shape === 'bunny' || shape === 'dragon') {
     ctx.roundRect(cx, cy, size, size, r);
+  } else if (shape === 'fox' || shape === 'lion' || shape === 'monkey') {
+    ctx.roundRect(cx, cy, size, size, r * 1.15);
+  } else if (shape === 'shark' || shape === 'alien' || shape === 'robot' || shape === 'skull') {
+    ctx.roundRect(cx, cy, size, size, r * 0.9);
+  } else if (shape === 'bee' || shape === 'unicorn' || shape === 'pirata') {
+    ctx.roundRect(cx, cy, size, size, r * 1.1);
   } else {
     ctx.roundRect(cx, cy, size, size, r); // 'round' (padrão)
   }
@@ -581,6 +587,106 @@ function drawHead(x, y, shape, color) {
         ctx.fill();
       }
     }
+  }
+  } else if (shape === 'fox') {
+    // Orelhas pontudas + focinho
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.18, cy + size * 0.2);
+    ctx.lineTo(cx + size * 0.02, cy - size * 0.25);
+    ctx.lineTo(cx + size * 0.42, cy + size * 0.06);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.82, cy + size * 0.2);
+    ctx.lineTo(cx + size * 0.98, cy - size * 0.25);
+    ctx.lineTo(cx + size * 0.58, cy + size * 0.06);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#fff3e0';
+    ctx.beginPath();
+    ctx.ellipse(cx + size * 0.5, cy + size * 0.67, size * 0.28, size * 0.2, 0, 0, Math.PI * 2); ctx.fill();
+  } else if (shape === 'shark') {
+    // Barbatana dorsal e focinho
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.25, cy + size * 0.08);
+    ctx.lineTo(cx + size * 0.5, cy - size * 0.3);
+    ctx.lineTo(cx + size * 0.72, cy + size * 0.08);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.08, cy + size * 0.58);
+    ctx.lineTo(cx - size * 0.22, cy + size * 0.48);
+    ctx.lineTo(cx + size * 0.08, cy + size * 0.4);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(1, cell * 0.045);
+    ctx.beginPath();
+    ctx.arc(cx + size * 0.5, cy + size * 0.62, size * 0.22, 0.1, Math.PI - 0.1); ctx.stroke();
+  } else if (shape === 'bee') {
+    // Listras e anteninhas
+    ctx.strokeStyle = '#202020'; ctx.lineWidth = Math.max(1, cell * 0.1);
+    for (const yy of [0.32, 0.52, 0.72]) {
+      ctx.beginPath(); ctx.moveTo(cx + size * 0.1, cy + size * yy); ctx.lineTo(cx + size * 0.9, cy + size * yy); ctx.stroke();
+    }
+    ctx.lineWidth = Math.max(1, cell * 0.035);
+    ctx.beginPath(); ctx.moveTo(cx + size * 0.32, cy + size * 0.1); ctx.lineTo(cx + size * 0.15, cy - size * 0.2);
+    ctx.moveTo(cx + size * 0.68, cy + size * 0.1); ctx.lineTo(cx + size * 0.85, cy - size * 0.2); ctx.stroke();
+  } else if (shape === 'unicorn') {
+    // Chifre central e crina
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.5, cy - size * 0.36);
+    ctx.lineTo(cx + size * 0.4, cy + size * 0.08);
+    ctx.lineTo(cx + size * 0.62, cy + size * 0.08);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = Math.max(1, cell * 0.035);
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.18, cy + size * 0.16); ctx.quadraticCurveTo(cx + size * 0.06, cy + size * 0.45, cx + size * 0.2, cy + size * 0.86);
+    ctx.stroke();
+  } else if (shape === 'monkey') {
+    // Orelhas laterais e topete
+    ctx.beginPath(); ctx.arc(cx + size * 0.08, cy + size * 0.5, size * 0.19, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + size * 0.92, cy + size * 0.5, size * 0.19, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#c98b5b';
+    ctx.beginPath(); ctx.ellipse(cx + size * 0.5, cy + size * 0.65, size * 0.3, size * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+  } else if (shape === 'lion') {
+    // Juba em pequenos círculos
+    ctx.fillStyle = '#f0a33a';
+    for (let a = 0; a < 12; a++) {
+      const ang = a * Math.PI / 6, px = cx + size * 0.5 + Math.cos(ang) * size * 0.54, py = cy + size * 0.5 + Math.sin(ang) * size * 0.54;
+      ctx.beginPath(); ctx.arc(px, py, size * 0.16, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(cx + size * 0.5, cy + size * 0.5, size * 0.34, 0, Math.PI * 2); ctx.fill();
+  } else if (shape === 'alien') {
+    // Antenas e olhos grandes
+    ctx.strokeStyle = '#9cff57'; ctx.lineWidth = Math.max(1, cell * 0.045);
+    ctx.beginPath(); ctx.moveTo(cx + size * 0.32, cy + size * 0.12); ctx.lineTo(cx + size * 0.18, cy - size * 0.22);
+    ctx.moveTo(cx + size * 0.68, cy + size * 0.12); ctx.lineTo(cx + size * 0.82, cy - size * 0.22); ctx.stroke();
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.ellipse(cx + size * 0.33, cy + size * 0.48, size * 0.1, size * 0.18, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx + size * 0.67, cy + size * 0.48, size * 0.1, size * 0.18, 0, 0, Math.PI * 2); ctx.fill();
+  } else if (shape === 'pirata') {
+    // Chapéu e tapa-olho
+    ctx.fillStyle = '#161616';
+    ctx.beginPath();
+    ctx.roundRect(cx + size * 0.02, cy - size * 0.22, size * 0.96, size * 0.28, size * 0.08); ctx.fill();
+    ctx.fillRect(cx + size * 0.28, cy - size * 0.38, size * 0.44, size * 0.18);
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.roundRect(cx + size * 0.18, cy + size * 0.35, size * 0.64, size * 0.17, size * 0.06); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = `bold ${cell * 0.28}px sans-serif`; ctx.fillText('✕', cx + size * 0.54, cy + size * 0.45);
+  } else if (shape === 'robot') {
+    // Antena e detalhes quadrados
+    ctx.strokeStyle = '#d7e2ef'; ctx.lineWidth = Math.max(1, cell * 0.05);
+    ctx.beginPath(); ctx.moveTo(cx + size * 0.5, cy - size * 0.02); ctx.lineTo(cx + size * 0.5, cy - size * 0.32); ctx.stroke();
+    ctx.fillStyle = '#d7e2ef'; ctx.beginPath(); ctx.arc(cx + size * 0.5, cy - size * 0.35, size * 0.07, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(cx + size * 0.2, cy + size * 0.38, size * 0.16, size * 0.13);
+    ctx.fillRect(cx + size * 0.64, cy + size * 0.38, size * 0.16, size * 0.13);
+  } else if (shape === 'skull') {
+    // Olhos e nariz de caveira
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.ellipse(cx + size * 0.32, cy + size * 0.48, size * 0.11, size * 0.14, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx + size * 0.68, cy + size * 0.48, size * 0.11, size * 0.14, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx + size * 0.5, cy + size * 0.58); ctx.lineTo(cx + size * 0.44, cy + size * 0.72); ctx.lineTo(cx + size * 0.56, cy + size * 0.72); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#111'; ctx.lineWidth = Math.max(1, cell * 0.035);
+    ctx.beginPath(); ctx.moveTo(cx + size * 0.3, cy + size * 0.82); ctx.lineTo(cx + size * 0.7, cy + size * 0.82); ctx.stroke();
   }
 
   // Olhinhos em toda cabeça, com uma piscadinha de vez em quando — dá mais vida e é
