@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v2.98.0</title>
-<link rel="stylesheet" href="css/style.css?v=2.98.0">
+<title>🐍 Mioquinha v2.99.0</title>
+<link rel="stylesheet" href="css/style.css?v=2.99.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -16,7 +16,7 @@
 <div id="appSplash" class="appSplash" aria-live="polite">
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
-  <div class="appSplashVersion">VERSÃO <b>2.98.0</b></div>
+  <div class="appSplashVersion">VERSÃO <b>2.99.0</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -64,7 +64,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v2.98.0</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v2.99.0</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
   </header>
@@ -130,15 +130,37 @@
             <option value="far">🌍 Câmera Longe</option>
           </select>
           <select id="boardTheme" class="select" aria-label="Tema do tabuleiro" style="margin-top:8px">
-            <option value="space">🌌 Tema Espacial</option>
-            <option value="deep">🌊 Tema Azul Profundo</option>
-            <option value="desert">🏜️ Tema Deserto</option>
-            <option value="ice">❄️ Tema Gelo</option>
-            <option value="forest">🌲 Tema Floresta</option>
-            <option value="night">🟣 Tema Roxo Noite</option>
-            <option value="void">⚫ Tema Vazio</option>
-            <option value="sunflower">🌻 Tema Campo de Girassóis</option>
-            <option value="garden">🌸 Tema Jardim de Flores</option>
+            <optgroup label="🌌 Universo & Fantasia">
+              <option value="space">🌌 Tema Espacial</option>
+              <option value="night">🟣 Tema Roxo Noite</option>
+              <option value="void">⚫ Tema Vazio</option>
+              <option value="cyber">🤖 Tema Cyber Neon</option>
+              <option value="aurora">🌌 Tema Aurora Boreal</option>
+            </optgroup>
+            <optgroup label="🌿 Natureza">
+              <option value="forest">🌲 Tema Floresta</option>
+              <option value="garden">🌸 Tema Jardim de Flores</option>
+              <option value="sunflower">🌻 Tema Campo de Girassóis</option>
+              <option value="jungle">🌴 Tema Selva Tropical</option>
+              <option value="swamp">🐸 Tema Pântano</option>
+            </optgroup>
+            <optgroup label="🌊 Água & Gelo">
+              <option value="deep">🌊 Tema Azul Profundo</option>
+              <option value="ice">❄️ Tema Gelo</option>
+              <option value="ocean">🐠 Tema Oceano Tropical</option>
+              <option value="glacier">🧊 Tema Geleira</option>
+            </optgroup>
+            <optgroup label="🏜️ Aventura">
+              <option value="desert">🏜️ Tema Deserto</option>
+              <option value="volcano">🌋 Tema Vulcão</option>
+              <option value="canyon">🏞️ Tema Cânion</option>
+              <option value="sunset">🌅 Tema Pôr do Sol</option>
+            </optgroup>
+            <optgroup label="🎪 Divertidos & Especiais">
+              <option value="candy">🍭 Tema Mundo Doce</option>
+              <option value="city">🏙️ Tema Cidade Neon</option>
+              <option value="autumn">🍂 Tema Outono</option>
+            </optgroup>
           </select>
           <div id="themePreview" class="themePreview" aria-hidden="true"></div>
           <select id="difficulty" class="select" aria-label="Dificuldade da CPU" style="margin-top:8px">
@@ -541,7 +563,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '2.98.0';
+  const VERSION = '2.99.0';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');
