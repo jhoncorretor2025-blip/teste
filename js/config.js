@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '2.98.0';
+export const VERSION = '2.99.0';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -81,16 +81,38 @@ export const ZOOM_LEVELS = [
 // (grid), a comidinha (food), uma cor de destaque (accent) e o tipo de decoração animada
 // que flutua no fundo (deco) — assim trocar de tema muda o MAPA todo, não só a comidinha.
 export const BOARD_THEMES = [
-  { value: 'space',     name: '🌌 Espacial',            bg: '#07152b', bg2: '#173d72', grid: '#24508a', food: '🍎', accent: '#ffffff', deco: 'stars' },
-  { value: 'deep',      name: '🌊 Azul Profundo',       bg: '#04304f', bg2: '#095985', grid: '#0f5378', food: '🍇', accent: '#a8ecff', deco: 'bubbles' },
-  { value: 'desert',    name: '🏜️ Deserto',             bg: '#40230f', bg2: '#79491e', grid: '#6b3f1e', food: '🌵', accent: '#f2d58f', deco: 'sand' },
-  { value: 'ice',       name: '❄️ Gelo',                bg: '#173f55', bg2: '#275971', grid: '#3a6d87', food: '🐟', accent: '#ffffff', deco: 'snow' },
-  { value: 'forest',    name: '🌲 Floresta',            bg: '#0a2a17', bg2: '#17572d', grid: '#1c4a2c', food: '🍄', accent: '#9be37f', deco: 'spores' },
-  { value: 'night',     name: '🟣 Roxo Noite',          bg: '#241040', bg2: '#47217f', grid: '#3a2266', food: '🍒', accent: '#e0bcff', deco: 'sparkles' },
-  { value: 'void',      name: '⚫ Vazio',               bg: '#000000', bg2: '#0c0c0c', grid: '#1a1a1a', food: '🍎', accent: '#ffffff', deco: 'none' },
-  { value: 'sunflower', name: '🌻 Campo de Girassóis',  bg: '#35551f', bg2: '#6e8d32', grid: '#58742c', food: '🌻', accent: '#ffd24d', deco: 'petals' },
-  { value: 'garden',    name: '🌸 Jardim de Flores',    bg: '#294b22', bg2: '#56833b', grid: '#477034', food: '🌸', accent: '#ff9ecb', deco: 'petals' },
+  // 🌌 Universo & Fantasia
+  { value: 'space',    name: '🌌 Espacial',           bg: '#07152b', bg2: '#173d72', grid: '#24508a', food: '🍎', accent: '#ffffff', deco: 'stars', category: 'universe' },
+  { value: 'night',    name: '🟣 Roxo Noite',         bg: '#241040', bg2: '#47217f', grid: '#3a2266', food: '🍒', accent: '#e0bcff', deco: 'sparkles', category: 'universe' },
+  { value: 'void',     name: '⚫ Vazio',              bg: '#000000', bg2: '#0c0c0c', grid: '#1a1a1a', food: '🍎', accent: '#ffffff', deco: 'none', category: 'universe' },
+  { value: 'cyber',    name: '🤖 Cyber Neon',         bg: '#07121f', bg2: '#15354b', grid: '#18b9d8', food: '🔷', accent: '#8cf5ff', deco: 'stars', category: 'universe' },
+  { value: 'aurora',   name: '🌌 Aurora Boreal',      bg: '#071c27', bg2: '#153f3a', grid: '#2e8c79', food: '🫐', accent: '#b6ffe7', deco: 'sparkles', category: 'universe' },
+
+  // 🌿 Natureza
+  { value: 'forest',   name: '🌲 Floresta',           bg: '#0a2a17', bg2: '#17572d', grid: '#1c4a2c', food: '🍄', accent: '#9be37f', deco: 'spores', category: 'nature' },
+  { value: 'garden',   name: '🌸 Jardim de Flores',   bg: '#294b22', bg2: '#56833b', grid: '#477034', food: '🌸', accent: '#ff9ecb', deco: 'petals', category: 'nature' },
+  { value: 'sunflower',name: '🌻 Campo de Girassóis', bg: '#35551f', bg2: '#6e8d32', grid: '#58742c', food: '🌻', accent: '#ffd24d', deco: 'petals', category: 'nature' },
+  { value: 'jungle',   name: '🌴 Selva Tropical',     bg: '#082a24', bg2: '#17634a', grid: '#248060', food: '🍌', accent: '#caffb2', deco: 'spores', category: 'nature' },
+  { value: 'swamp',    name: '🐸 Pântano',            bg: '#172619', bg2: '#344e26', grid: '#536f34', food: '🫛', accent: '#d5f29b', deco: 'bubbles', category: 'nature' },
+
+  // 🌊 Água & Gelo
+  { value: 'deep',     name: '🌊 Azul Profundo',      bg: '#04304f', bg2: '#095985', grid: '#0f5378', food: '🍇', accent: '#a8ecff', deco: 'bubbles', category: 'water' },
+  { value: 'ice',      name: '❄️ Gelo',               bg: '#173f55', bg2: '#275971', grid: '#3a6d87', food: '🐟', accent: '#ffffff', deco: 'snow', category: 'water' },
+  { value: 'ocean',    name: '🐠 Oceano Tropical',     bg: '#06384a', bg2: '#087a78', grid: '#14a8a0', food: '🐠', accent: '#b8ffff', deco: 'bubbles', category: 'water' },
+  { value: 'glacier',  name: '🧊 Geleira',             bg: '#102d3c', bg2: '#3c7087', grid: '#71a9bf', food: '🧊', accent: '#eefcff', deco: 'snow', category: 'water' },
+
+  // 🏜️ Aventura
+  { value: 'desert',   name: '🏜️ Deserto',            bg: '#40230f', bg2: '#79491e', grid: '#6b3f1e', food: '🌵', accent: '#f2d58f', deco: 'sand', category: 'adventure' },
+  { value: 'volcano',  name: '🌋 Vulcão',              bg: '#250c0b', bg2: '#5a2114', grid: '#8a3a1f', food: '🔥', accent: '#ffd0a1', deco: 'sand', category: 'adventure' },
+  { value: 'canyon',   name: '🏞️ Cânion',              bg: '#2e1c16', bg2: '#67412d', grid: '#8b5a3c', food: '🪨', accent: '#ffe0bf', deco: 'sand', category: 'adventure' },
+  { value: 'sunset',   name: '🌅 Pôr do Sol',          bg: '#3a1625', bg2: '#74432a', grid: '#9b6641', food: '🍊', accent: '#ffe0a6', deco: 'sparkles', category: 'adventure' },
+
+  // 🎪 Divertidos & Especiais
+  { value: 'candy',    name: '🍭 Mundo Doce',           bg: '#351a35', bg2: '#6c3567', grid: '#9b5e9a', food: '🍬', accent: '#ffd8ff', deco: 'sparkles', category: 'fun' },
+  { value: 'city',     name: '🏙️ Cidade Neon',         bg: '#101523', bg2: '#252e55', grid: '#5966aa', food: '🍔', accent: '#e6ecff', deco: 'stars', category: 'fun' },
+  { value: 'autumn',   name: '🍂 Outono',               bg: '#321c12', bg2: '#6c3a20', grid: '#87502d', food: '🍂', accent: '#ffd8ad', deco: 'petals', category: 'fun' },
 ];
+
 
 // --- Tamanho do mapa escolhível no menu ---
 // "foods" é quantas maçãs normais ficam no tabuleiro ao mesmo tempo — mapas maiores
