@@ -16,6 +16,9 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 _(nada por enquanto)_
 
+## [2.94.7] — 2026-09-30
+- **Correção de desempenho:** comer comida causava uma "travadinha", ficando pior conforme a partida avançava. Causa: depois de passar de 100 pontos, TODA comidinha comida (a partida inteira) tentava desbloquear a conquista "century" de novo, lendo o `localStorage` do zero a cada vez — e o progresso cumulativo (comidas/estrelas) também lia e gravava no `localStorage` a cada comidinha comum. `localStorage` é síncrono (trava a thread principal até terminar). Agora os dois ficam em cache na memória, e a gravação de verdade é represada (no máximo uma vez a cada meio segundo, mesmo comendo várias seguidas rapidamente) — nada se perde, ainda grava na hora quando desbloqueia uma conquista nova e também ao pausar/trocar de aba. Medido: 40 comidinhas seguidas, que antes causavam 40 leituras + até 40 gravações reais no disco, agora causam 1 leitura (a primeira) e 1 gravação represada.
+
 ## [2.94.6] — 2026-09-30
 - **Correção urgente:** o jogo travava sempre na telinha de carregamento, com "Tentar novamente" repetindo o mesmo erro. Duas funções eram chamadas sem existir de verdade no momento certo: `updateOnlineLobbyUI()` (nunca tinha sido definida — virou um apelido de `renderOnlineLobby()`) e `TAB_ALIASES` (usada 250 linhas antes de ser declarada — movida pra cima). Detalhes técnicos em `docs/ARMADILHAS.md` (casos 26-27).
 - **Novo, no verificador (checagem 13):** reprova qualquer chamada a uma função que não existe em lugar nenhum do projeto — é exatamente o tipo de erro que causou a trava acima. Rodar `npm run verificar` antes de publicar agora pega isso na hora.

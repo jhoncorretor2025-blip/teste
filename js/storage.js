@@ -245,28 +245,67 @@ export function updateStreakAndLastPlayed() {
 const UNLOCKED_KEY = 'snakeArenaUnlockedAchievements';
 const PROGRESS_KEY = 'snakeArenaAchievementProgress';
 
+// Mesmo motivo do cache de progresso acima: algumas conquistas são checadas de novo a
+// CADA comidinha comida depois de já desbloqueadas (ex: "century", checada em toda
+// comidinha assim que a pontuação passa de 100) — sem cache, isso seria uma leitura de
+// localStorage por comidinha pelo resto da partida inteira, à toa, já que o resultado
+// nunca muda depois da primeira vez.
+let desbloqueadasCache = null;
+
 export function loadUnlockedAchievements() {
-  try { return JSON.parse(localStorage.getItem(UNLOCKED_KEY)) || []; } catch { return []; }
+  if (desbloqueadasCache) return desbloqueadasCache;
+  try { desbloqueadasCache = JSON.parse(localStorage.getItem(UNLOCKED_KEY)) || []; } catch { desbloqueadasCache = []; }
+  return desbloqueadasCache;
 }
 
+// Correção de desempenho: antes, CADA comidinha comida (mesmo as comuns) disparava uma
+// leitura + gravação de verdade no localStorage (JSON.parse/JSON.stringify a cada uma).
+// Isso é uma operação SÍNCRONA (trava a thread principal do navegador até terminar) — em
+// celulares mais fracos, dá pra sentir como uma "travadinha" bem na hora de comer, já que
+// é exatamente quando isso rodava. Agora: lê do localStorage só UMA vez (fica guardado em
+// memória depois), e a GRAVAÇÃO fica represada — no máximo uma vez a cada meio segundo —
+// mesmo comendo várias comidinhas seguidas rapidamente. Os números continuam certinhos na
+// hora (é a leitura de disco que é adiada, não a conta), e nada se perde: ainda grava na
+// hora quando uma conquista é desbloqueada, e também ao pausar/trocar de aba/fechar.
+let progressoCache = null;
+let gravacaoPendente = null;
+
 function loadAchievementProgress() {
+  if (progressoCache) return progressoCache;
   try {
-    return { totalFoods: 0, totalStars: 0, totalMissions: 0, themesUsed: [], headsUsed: [], ...JSON.parse(localStorage.getItem(PROGRESS_KEY)) };
+    progressoCache = { totalFoods: 0, totalStars: 0, totalMissions: 0, themesUsed: [], headsUsed: [], ...JSON.parse(localStorage.getItem(PROGRESS_KEY)) };
   } catch {
-    return { totalFoods: 0, totalStars: 0, totalMissions: 0, themesUsed: [], headsUsed: [] };
+    progressoCache = { totalFoods: 0, totalStars: 0, totalMissions: 0, themesUsed: [], headsUsed: [] };
   }
+  return progressoCache;
+}
+
+function gravarProgressoAgora() {
+  if (gravacaoPendente) { clearTimeout(gravacaoPendente); gravacaoPendente = null; }
+  if (!progressoCache) return;
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progressoCache)); } catch {}
 }
 
 function saveAchievementProgress(progress) {
-  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch {}
+  progressoCache = progress; // o valor em memória já fica certo na hora
+  if (gravacaoPendente) return; // já tem uma gravação agendada — essa chamada só atualiza o cache
+  gravacaoPendente = setTimeout(gravarProgressoAgora, 500);
+}
+
+// Se a pessoa trocar de aba, minimizar ou fechar o jogo, garante que o progresso mais
+// recente (mesmo que ainda represado) não se perde
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') gravarProgressoAgora(); });
+  window.addEventListener?.('pagehide', gravarProgressoAgora);
 }
 
 // Desbloqueia uma conquista (se ainda não tiver sido) e retorna os dados dela se for
 // a primeira vez — quem chamou usa isso pra mostrar um aviso festivo na tela
 export function unlockAchievement(id) {
   const unlocked = loadUnlockedAchievements();
-  if (unlocked.includes(id)) return null;
+  if (unlocked.includes(id)) return null; // já desbloqueada — some daqui sem tocar no localStorage
   unlocked.push(id);
+  desbloqueadasCache = unlocked; // atualiza o cache também, não só o localStorage
   try { localStorage.setItem(UNLOCKED_KEY, JSON.stringify(unlocked)); } catch {}
   return ACHIEVEMENTS.find((a) => a.id === id) || null;
 }
