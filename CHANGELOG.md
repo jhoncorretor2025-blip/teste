@@ -36,6 +36,13 @@ _(nada por enquanto)_
 - **Tela inicial:** splash com identidade visual e iluminação melhoradas.
 - **Menu:** microinterações visuais nos cards e botão principal.
 
+## [3.3.0] — 2026-09-30
+- **Skins:** 10 estilos de corpo, com 6 estilos temáticos novos: Neon, Fogo, Gelo, Galáxia, Elétrico e Veneno.
+- **Rastros:** cada estilo tem uma assinatura visual própria; o turbo ganha partículas adicionais.
+- **Comidas:** comidas normais, raras, épicas e lendárias passaram a ter distinção visual, sem alterar o valor dos pontos.
+- **Mapas:** a arena reage visualmente à posição da sua Mioquinha conforme o tema.
+- **HUD:** posições do ranking ganharam medalhas e destaque visual para o líder.
+
 ## [2.94.9] — 2026-09-30
 - **Correção urgente:** criar uma sala no celular, trocar de app (por exemplo, pra mandar o link pelo WhatsApp) e voltar fazia a sala inteira sumir, como se o navegador tivesse recarregado do zero — precisando criar tudo de novo. Causa: os dois mecanismos de atualização automática (o do `version.txt` e o do Service Worker) só se seguravam contra recarregar durante uma PARTIDA rodando (`state.running`), mas não durante a ESPERA na sala (depois de criar, antes de apertar "Jogar") — que é exatamente quando a pessoa sai pra mandar o link. Se o jogo detectasse uma versão nova publicada nesse meio tempo, recarregava a página sem aviso, apagando a sala. Agora os dois também respeitam `net.isOnline()` (hospedando OU já numa sala, mesmo sem a partida ter começado); a atualização fica represada até a pessoa sair da sala de verdade (não se perde, só espera). Detalhes em `docs/ARMADILHAS.md` (caso 30).
 
