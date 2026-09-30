@@ -947,6 +947,22 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
   document.querySelectorAll('.tabBtn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
   btn.classList.add('active');
   btn.setAttribute('aria-selected', 'true');
+
+  // Ao entrar na aba JOGAR, a configuração da partida fica aberta automaticamente.
+  // Assim a pessoa vê imediatamente quantidade de jogadores, controles, mapa, velocidade
+  // e demais opções, sem precisar descobrir o botão de configurações.
+  if (tab === 'jogar') {
+    const settingsBox = $('gameAdvancedSettings');
+    const settingsBtn = $('gameSettingsToggle');
+    if (settingsBox && settingsBtn) {
+      settingsBox.classList.remove('hidden');
+      settingsBtn.setAttribute('aria-expanded', 'true');
+      settingsBtn.classList.add('open');
+      const arrow = settingsBtn.querySelector('span');
+      if (arrow) arrow.textContent = '▴';
+    }
+  }
+
   const current = document.querySelector('.tabPanel:not(.hidden)');
   if (current) current.classList.add('tabFading');
   setTimeout(() => {
