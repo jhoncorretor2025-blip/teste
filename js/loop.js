@@ -129,6 +129,7 @@ export function reset() {
   state.hunterMilestoneIndex = 0;
   state.secondPlaceBonusTarget = -1;
   state.secondPlaceBonusRemaining = 0;
+  state.secondPlaceBonusCollected = 0;
   state.hunterBurstUntil = 0;
   state.hunterNextBurstAt = 0;
   state.hunterDistractedUntil = 0;
@@ -189,7 +190,7 @@ const SAVE_FIELDS = [
   'snakes', 'alive', 'dirs', 'nextDirs', 'foods', 'scores', 'foodsEaten', 'grow',
   'respawnAt', 'milestones', 'eliminations', 'boosting', 'boostUsedCount', 'mission',
   'hunterActive', 'hunterSnake', 'hunterDir', 'hunterEndsAt', 'hunterMilestoneIndex',
-  'secondPlaceBonusTarget', 'secondPlaceBonusRemaining',
+  'secondPlaceBonusTarget', 'secondPlaceBonusRemaining', 'secondPlaceBonusCollected',
 ];
 
 function snapshotGameState() {
@@ -234,12 +235,15 @@ export function resumeSavedGame(snap) {
 export function startGame() {
   syncSettings();
   setVibrationEnabled(state.vibrationOn);
-  updateGamesPlayedBadge(incrementGamesPlayed());
+  const totalGames = incrementGamesPlayed();
+  updateGamesPlayedBadge(totalGames);
+  if (totalGames >= 5) announceAchievement(unlockAchievement('games_5'));
   updateSessionStatsDisplay(incrementSessionGames());
   updateStreakAndLastPlayed();
   clearSavedGame();
 
   announceAchievement(unlockAchievement('first_game'));
+  if (state.noWalls) announceAchievement(unlockAchievement('no_walls'));
   announceAchievements(trackCumulativeProgress('themesUsed', state.theme));
   announceAchievements(trackCumulativeProgress('headsUsed', state.heads[0]));
   if (isOnline()) announceAchievement(unlockAchievement('social'));
@@ -324,6 +328,10 @@ export function tryBoost(i) {
 
   state.boosting[i] = true;
   state.boostUsedCount[i] = (state.boostUsedCount[i] || 0) + 1;
+  if (i === mySlot) {
+    if (state.boostUsedCount[i] >= 1) announceAchievement(unlockAchievement('boost_first'));
+    if (state.boostUsedCount[i] >= 10) announceAchievement(unlockAchievement('boost_10'));
+  }
   state.boostUntil[i] = now + BOOST_DURATION;
   state.boostReadyAt[i] = now + BOOST_COOLDOWN;
   state.boostReadySoundPlayed[i] = false;
@@ -393,6 +401,7 @@ function stepMovement(indices) {
         state.eliminations[die[i]] = (state.eliminations[die[i]] || 0) + 1;
         trackEliminationForMission(die[i]);
         if (die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('eliminator'));
+        if (die[i] === mySlot && state.eliminations[die[i]] >= 5) announceAchievement(unlockAchievement('eliminator_5'));
       }
       kill(i);
       return;
@@ -432,10 +441,23 @@ function stepMovement(indices) {
 
       // Conquistas — só rastreadas pra VOCÊ (mySlot), já que são do seu aparelho
       if (i === mySlot) {
+        announceAchievement(unlockAchievement('first_food'));
         announceAchievements(trackCumulativeProgress('totalFoods', f.value));
-        if (f.kind === 'bonus') announceAchievements(trackCumulativeProgress('totalStars', 1));
+        if (f.kind === 'bonus') {
+          announceAchievement(unlockAchievement('first_star'));
+          announceAchievements(trackCumulativeProgress('totalStars', 1));
+        }
+        if (f.kind === 'secondPlace') {
+          state.secondPlaceBonusCollected = (state.secondPlaceBonusCollected || 0) + 1;
+          if (state.secondPlaceBonusCollected >= 5) announceAchievement(unlockAchievement('second_bonus_5'));
+        }
         if (combo >= 5) announceAchievement(unlockAchievement('combo_master'));
+        if (state.foodsEaten[i] >= 10) announceAchievement(unlockAchievement('food_10'));
+        if (state.scores[i] >= 25) announceAchievement(unlockAchievement('score_25'));
         if (state.scores[i] >= 100) announceAchievement(unlockAchievement('century'));
+        if (state.scores[i] >= 250) announceAchievement(unlockAchievement('score_250'));
+        if (state.scores[i] >= 500) announceAchievement(unlockAchievement('score_500'));
+        if (state.scores[i] >= 1000) announceAchievement(unlockAchievement('score_1000'));
       }
     }
     if (state.grow[i] > 0) state.grow[i]--;
@@ -832,8 +854,14 @@ function tick() {
   if (state.mission?.type === 'survive') renderMission(); // atualiza a contagem regressiva na tela
 
   checkHunterSpawn();
-  if (state.alive[mySlot] && Date.now() - state.spawnedAt[mySlot] >= 120000) {
-    announceAchievement(unlockAchievement('survivor'));
+  if (state.alive[mySlot]) {
+    const mySnake = state.snakes[mySlot] || [];
+    const survivedMs = Date.now() - state.spawnedAt[mySlot];
+    if (survivedMs >= 30000) announceAchievement(unlockAchievement('survive_30'));
+    if (survivedMs >= 120000) announceAchievement(unlockAchievement('survivor'));
+    if (mySnake.length >= 15) announceAchievement(unlockAchievement('length_15'));
+    if (mySnake.length >= 25) announceAchievement(unlockAchievement('length_25'));
+    if (mySnake.length >= 50) announceAchievement(unlockAchievement('length_50'));
   }
   updateHunter();
   updateSecondPlaceBonusFood();
