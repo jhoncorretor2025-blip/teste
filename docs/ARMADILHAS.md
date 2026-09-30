@@ -98,6 +98,11 @@ A barra de navegação do celular ficava esticada pra tela inteira em pé (cobri
 **Lição geral:** ao REDESENHAR algo responsivo, procure (e apague) TODAS as regras antigas daquele seletor nas media queries relacionadas — não só adicione a nova por cima. `grep -n "\.seletor" css/style.css` antes de mexer mostra todas de uma vez.
 **Limite do meu ambiente:** o `jsdom` (a ferramenta de teste) não resolve `@media` de verdade contra um tamanho de tela (sem motor de layout completo) — por isso esse teste lê o CSS como texto, em vez de simular o navegador calculando o resultado final. Funciona bem pra esse tipo de conflito, mas não substitui testar num celular de verdade.
 
+**30. Auto-atualização só protegia "partida rodando", não "esperando na sala" (v2.94.9).**
+Criar sala, trocar de app pra mandar o link, voltar → sala apagada, como se tivesse recarregado do zero. Causa: as duas checagens de auto-atualização (`checarVersaoDeVerdade` e `showUpdateBanner`) só checavam `state.running` (true só durante o JOGO em si), não cobrindo o período de ESPERA na sala (depois de `hostRoom()`/`joinRoom()`, antes do jogo começar) — que é justamente quando dá mais vontade de sair pra mandar o link. → Trocado pra também checar `net.isOnline()` (true assim que entra ou cria uma sala, ANTES do jogo começar). A atualização não se perde: fica represada e é reaplicada quando a pessoa sai da sala (o botão "Voltar" já dispara isso).
+**Lição geral:** ao proteger algo contra interrupção automática ("não atualiza durante X"), pense em TODOS os momentos em que perder o estado seria ruim — não só o mais óbvio (partida rodando). Aqui "esperando alguém entrar" era tão importante de proteger quanto "jogando", mas foi esquecido na primeira versão da proteção.
+**Armadilha de teste:** meu primeiro teste pra isso "passava" mesmo sem a correção, porque nunca simulava de verdade o evento `visibilitychange` (só mudava uma variável e esperava, sem a checagem rodar de novo). Criei `simularTrocarDeAppEVoltar()` em `tests/_ambiente.mjs` (dispara hidden→visible de verdade) — e SÓ confiei no teste depois de ver ele FALHAR contra o código antigo.
+
 ---
 
 # Problema em aberto: multiplayer real no celular

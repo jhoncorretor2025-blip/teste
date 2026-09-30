@@ -905,6 +905,7 @@ $('back').addEventListener('click', () => {
   applyQuickRepeat();
   resetFavicon();
   if (pendingUpdateReg) { showUpdateBanner(pendingUpdateReg); pendingUpdateReg = null; }
+  checarVersaoDeVerdade(); // idem pro outro mecanismo de atualização: dá uma nova chance assim que sair da sala, sem precisar esperar o próximo minuto
   render();
 });
 
@@ -1758,7 +1759,13 @@ async function checarVersaoDeVerdade() {
     const resp = await fetch(`./version.txt?nocache=${Date.now()}-${Math.random()}`, { cache: 'no-store' });
     if (!resp.ok) return;
     const versaoNoServidor = (await resp.text()).trim();
-    if (versaoNoServidor && versaoNoServidor !== VERSION && !state.running) {
+    // Correção de bug real: antes só checava "!state.running" (partida rodando), mas
+    // isso deixava passar o momento mais comum de todos — CRIAR a sala e ficar esperando
+    // o amigo entrar ("1/6 jogadores"), já que o jogo em si ainda não começou. Quem saía
+    // pro WhatsApp mandar o link e voltava tinha a sala inteira apagada sem aviso, tendo
+    // que criar tudo de novo. Agora também protege enquanto estiver online de qualquer
+    // jeito (hospedando, esperando, ou já jogando).
+    if (versaoNoServidor && versaoNoServidor !== VERSION && !state.running && !net.isOnline()) {
       announce(`🔄 Versão nova encontrada (${versaoNoServidor}) — atualizando sozinho...`);
       if ('caches' in window) {
         const nomes = await caches.keys();
@@ -1780,9 +1787,11 @@ document.addEventListener('visibilitychange', () => {
 
 let pendingUpdateReg = null;
 function showUpdateBanner(reg) {
-  // Se tiver uma partida rolando, não interrompe na hora — espera a pessoa voltar pro
-  // menu (isso evita aquela tela aparecendo do nada no meio do jogo, atrapalhando)
-  if (state.running) {
+  // Se tiver uma partida rolando OU a pessoa estiver online de qualquer jeito (criou uma
+  // sala e tá esperando o amigo entrar, por exemplo), não interrompe na hora — espera ela
+  // voltar pro menu local. Sem isso, sair pro WhatsApp mandar o link da sala e voltar
+  // apagava a sala inteira sem aviso nenhum.
+  if (state.running || net.isOnline()) {
     pendingUpdateReg = reg;
     return;
   }

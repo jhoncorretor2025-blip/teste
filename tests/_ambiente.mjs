@@ -104,6 +104,18 @@ export function ativar(w) {
   globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 16);
 }
 
+// Simula trocar de app e voltar (ex: sair pro WhatsApp mandar um link, depois voltar pro
+// jogo) — muda document.visibilityState pra 'hidden' e de volta pra 'visible', disparando
+// o evento 'visibilitychange' de verdade nas duas vezes (é assim que o navegador avisa o
+// site dessas trocas; sem isso não dá pra testar nada que reaja a "a pessoa voltou pra aba").
+export function simularTrocarDeAppEVoltar(w) {
+  const definirEstado = (valor) => Object.defineProperty(w.document, 'visibilityState', { value: valor, configurable: true });
+  definirEstado('hidden');
+  w.document.dispatchEvent(new w.Event('visibilitychange'));
+  definirEstado('visible');
+  w.document.dispatchEvent(new w.Event('visibilitychange'));
+}
+
 // importarDe(pasta)('js/main.js') → módulo daquela pasta (cada pasta = uma cópia isolada do jogo).
 // Aceita uma "?query" no final (ex: 'js/main.js?tentativa2') pra forçar reimportar o mesmo
 // arquivo várias vezes sem cache do Node — mas a query precisa ser separada ANTES de virar
