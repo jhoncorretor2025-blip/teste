@@ -2658,3 +2658,53 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
 .heroPlay:hover {
   box-shadow:0 0 0 1px #ffffff30 inset,0 10px 28px #0007,0 0 32px #67ef8a44;
 }
+
+/* v3.3.0 — skins, raridade e HUD */
+.rankBadge {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:24px;
+  height:20px;
+  padding:0 5px;
+  margin-right:3px;
+  border-radius:8px;
+  background:#ffffff0b;
+  border:1px solid #ffffff16;
+  font-size:.72rem;
+  font-weight:900;
+}
+
+.score.rank-1 {
+  box-shadow:0 0 0 2px #ffd24d,0 0 18px #ffd24d55;
+  animation:leaderPulse .95s ease-in-out infinite;
+}
+
+.score.rank-2 .rankBadge { color:#d7e1ee; }
+.score.rank-3 .rankBadge { color:#d99a65; }
+
+@keyframes leaderPulse {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-1px); }
+}
+
+.foodLegend {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:5px;
+  font-size:.66rem;
+  color:#93a5c7;
+}
+
+.foodLegend span {
+  padding:3px 7px;
+  border-radius:999px;
+  background:#ffffff06;
+  border:1px solid #ffffff10;
+}
+
+.player .ppattern:focus {
+  border-color:#67ef8a;
+  box-shadow:0 0 0 2px #67ef8a20;
+}
