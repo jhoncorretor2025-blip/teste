@@ -1,3 +1,7 @@
+## [3.4.4] — 2026-09-30
+- **Splash/topo:** corrigido o carregamento da tela inicial para ela permanecer como camada fixa sobre a página, eliminando a faixa branca que aparecia no topo depois do carregamento.
+- **Tema:** o splash agora mantém fundo escuro mesmo quando o navegador ou o modo claro estiver ativo.
+
 ## [3.4.3] — 2026-09-30
 - **Conquistas:** cada card agora exibe um número pequeno de dificuldade de 1 a 14 dentro da categoria, seguindo a progressão do mais fácil ao mais difícil.
 - **Ordem visual:** a numeração permanece ligada à dificuldade mesmo quando as conquistas desbloqueadas aparecem antes das bloqueadas.
