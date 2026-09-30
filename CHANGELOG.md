@@ -1,3 +1,7 @@
+## [3.4.3] — 2026-09-30
+- **Conquistas:** cada card agora exibe um número pequeno de dificuldade de 1 a 14 dentro da categoria, seguindo a progressão do mais fácil ao mais difícil.
+- **Ordem visual:** a numeração permanece ligada à dificuldade mesmo quando as conquistas desbloqueadas aparecem antes das bloqueadas.
+
 ## [3.4.1] — 2026-09-30
 - **Conquistas:** as 56 conquistas foram reorganizadas dentro de cada categoria em ordem progressiva, do objetivo mais fácil ao mais difícil, mantendo todas as conquistas existentes.
 
