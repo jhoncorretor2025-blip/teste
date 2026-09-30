@@ -534,6 +534,40 @@ function drawStars() {
   ctx.restore();
 }
 
+// Trilha de energia suave usando a cor de rastro já escolhida pelo jogador.
+function drawEnergyTrail(snake, playerIndex, boosting) {
+  if (!snake || snake.length < 2) return;
+  const trailColor = (state.trailColors[playerIndex] && state.trailColors[playerIndex] !== 'auto')
+    ? state.trailColors[playerIndex] : state.colors[playerIndex];
+  const reach = Math.min(snake.length, boosting ? 16 : 10);
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.globalAlpha = boosting ? 0.34 : 0.15;
+  ctx.strokeStyle = trailColor || '#ffffff';
+  ctx.shadowColor = trailColor || '#ffffff';
+  ctx.shadowBlur = boosting ? cell * 1.05 : cell * 0.45;
+  ctx.lineWidth = boosting ? cell * 0.22 : cell * 0.10;
+  ctx.beginPath();
+  for (let k = reach - 1; k >= 0; k--) {
+    const p = snake[k];
+    const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
+    if (k === reach - 1) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  if (boosting) {
+    ctx.globalAlpha = 0.65;
+    ctx.fillStyle = '#ffffff';
+    for (let k = 1; k < reach; k += 3) {
+      const p = snake[k];
+      const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 90 + k * 1.7 + playerIndex);
+      ctx.beginPath();
+      ctx.arc(sx(p.x) + cell / 2, sy(p.y) + cell / 2, Math.max(1, cell * (0.035 + pulse * 0.025)), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
 // Desenha a cabeça da minhoca no formato escolhido pelo jogador
 function drawHead(x, y, shape, color) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.25;
@@ -756,41 +790,6 @@ function drawHead(x, y, shape, color) {
     ctx.strokeStyle = '#111'; ctx.lineWidth = Math.max(1, cell * 0.035);
     ctx.beginPath(); ctx.moveTo(cx + size * 0.3, cy + size * 0.82); ctx.lineTo(cx + size * 0.7, cy + size * 0.82); ctx.stroke();
   }
-
-// Trilha de energia suave usando a cor de rastro já escolhida pelo jogador.
-function drawEnergyTrail(snake, playerIndex, boosting) {
-  if (!snake || snake.length < 2) return;
-  const trailColor = (state.trailColors[playerIndex] && state.trailColors[playerIndex] !== 'auto')
-    ? state.trailColors[playerIndex] : state.colors[playerIndex];
-  const reach = Math.min(snake.length, boosting ? 16 : 10);
-  ctx.save();
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.globalAlpha = boosting ? 0.34 : 0.15;
-  ctx.strokeStyle = trailColor || '#ffffff';
-  ctx.shadowColor = trailColor || '#ffffff';
-  ctx.shadowBlur = boosting ? cell * 1.05 : cell * 0.45;
-  ctx.lineWidth = boosting ? cell * 0.22 : cell * 0.10;
-  ctx.beginPath();
-  for (let k = reach - 1; k >= 0; k--) {
-    const p = snake[k];
-    const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
-    if (k === reach - 1) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-  if (boosting) {
-    ctx.globalAlpha = 0.65;
-    ctx.fillStyle = '#ffffff';
-    for (let k = 1; k < reach; k += 3) {
-      const p = snake[k];
-      const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 90 + k * 1.7 + playerIndex);
-      ctx.beginPath();
-      ctx.arc(sx(p.x) + cell / 2, sy(p.y) + cell / 2, Math.max(1, cell * (0.035 + pulse * 0.025)), 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-  ctx.restore();
-}
 
   // Reflexo de luz para dar acabamento 3D.
   ctx.save();
