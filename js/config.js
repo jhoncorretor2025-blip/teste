@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '3.2.3';
+export const VERSION = '3.3.0';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -255,10 +255,16 @@ export const HEAD_SHAPES = [
 
 // --- Padrão de pele do corpo (parte da personalização/"skin") ---
 export const SKIN_PATTERNS = [
-  { name: '◼️ Lisa', value: 'solid' },
-  { name: '🟰 Listrada', value: 'stripes' },
-  { name: '⚬ Pontilhada', value: 'dots' },
-  { name: '🌈 Tricolor', value: 'tricolor' },
+  { name: '◼️ Lisa', value: 'solid', category: 'classic' },
+  { name: '🟰 Listrada', value: 'stripes', category: 'classic' },
+  { name: '⚬ Pontilhada', value: 'dots', category: 'classic' },
+  { name: '🌈 Tricolor', value: 'tricolor', category: 'classic' },
+  { name: '💚 Neon', value: 'neon', category: 'themed' },
+  { name: '🔥 Fogo', value: 'fire', category: 'themed' },
+  { name: '❄️ Gelo', value: 'ice', category: 'themed' },
+  { name: '🌌 Galáxia', value: 'galaxy', category: 'themed' },
+  { name: '⚡ Elétrico', value: 'electric', category: 'themed' },
+  { name: '☣️ Veneno', value: 'venom', category: 'themed' },
 ];
 
 // --- Marco de crescimento (melhoria #3) ---
