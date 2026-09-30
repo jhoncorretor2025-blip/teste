@@ -2178,6 +2178,7 @@ function renderAchievementsGallery() {
     { key: 'iniciante', title: '🟢 Iniciante', subtitle: 'Primeiros objetivos para pegar o jeito' },
     { key: 'intermediario', title: '🟡 Intermediário', subtitle: 'Desafios que exigem mais consistência' },
     { key: 'avancado', title: '🔴 Avançado', subtitle: 'Conquistas para dominar a arena' },
+    { key: 'online', title: '🌐 Online', subtitle: 'Desafios exclusivos para partidas multiplayer' },
   ];
 
   grid.innerHTML = groups.map((group) => {
