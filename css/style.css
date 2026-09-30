@@ -2948,3 +2948,39 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     #030711 !important;
   color:#fff !important;
 }
+
+/* v3.5.0 — acabamento gráfico */
+.achievementCard {
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.achievementCard.unlocked:hover {
+  transform:translateY(-3px);
+  box-shadow:0 10px 28px #0008,0 0 20px #67ef8a26;
+}
+
+.achievementCard.unlocked::after {
+  content:"";
+  position:absolute;
+  inset:-40%;
+  background:conic-gradient(from 0deg,transparent 0 72%,#67ef8a18 82%,transparent 92%);
+  animation:achievementSweep 4.5s linear infinite;
+  pointer-events:none;
+}
+
+.achievementCard.locked {
+  filter:saturate(.48);
+}
+
+@keyframes achievementSweep {
+  to { transform:rotate(360deg); }
+}
+
+.achievementPopup.show {
+  box-shadow:0 18px 55px #000b,0 0 35px #ffd24d33;
+}
+
+.achievementPopup.show .achievementEmoji {
+  filter:drop-shadow(0 0 14px #ffd24d66);
+}
+
