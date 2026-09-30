@@ -2875,3 +2875,76 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
   border-color:#ffffff12;
   color:#6f7f9b;
 }
+
+/* v3.4.4 — correção definitiva do splash de carregamento */
+#appSplash.appSplash {
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  min-height:100vh !important;
+  z-index:99999 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:14px !important;
+  margin:0 !important;
+  padding:20px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+  background:
+    radial-gradient(circle at 50% 42%,#203966 0,#0a1426 36%,#030711 78%),
+    #030711 !important;
+  color:#fff !important;
+  opacity:1;
+  pointer-events:auto;
+  transition:opacity .35s ease !important;
+}
+
+#appSplash.appSplash::before {
+  content:"" !important;
+  position:absolute !important;
+  width:min(72vw,520px) !important;
+  height:min(72vw,520px) !important;
+  left:50% !important;
+  top:50% !important;
+  transform:translate(-50%,-50%) !important;
+  border-radius:50% !important;
+  background:radial-gradient(circle,#67ef8a22 0,#67ef8a08 38%,transparent 72%) !important;
+  pointer-events:none !important;
+  z-index:0 !important;
+}
+
+#appSplash.appSplash > * {
+  position:relative !important;
+  z-index:1 !important;
+}
+
+#appSplash.appSplash img {
+  display:block !important;
+  width:88px !important;
+  height:88px !important;
+  object-fit:contain !important;
+  background:transparent !important;
+  border-radius:22px !important;
+  box-shadow:0 18px 50px #000b,0 0 0 1px #ffffff18 inset,0 0 34px #67ef8a22 !important;
+}
+
+#appSplash.appSplash .bootProgressWrap {
+  width:min(78vw,360px) !important;
+  margin:4px 0 0 !important;
+}
+
+#appSplash.appSplash.fadeOut {
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+
+.lightMode #appSplash.appSplash,
+.amoledMode #appSplash.appSplash {
+  background:
+    radial-gradient(circle at 50% 42%,#203966 0,#0a1426 36%,#030711 78%),
+    #030711 !important;
+  color:#fff !important;
+}
