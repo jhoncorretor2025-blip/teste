@@ -301,6 +301,7 @@ export function reset() {
   state.hunterActive = false;
   state.hunterSnake = [];
   state.hunterMilestoneIndex = 0;
+  state.hunterMoveTick = 0;
   state.secondPlaceBonusTarget = -1;
   state.secondPlaceBonusRemaining = 0;
   state.secondPlaceBonusCollected = 0;
@@ -851,6 +852,39 @@ function updateSecondPlaceBonusFood() {
 
 // Confere se é hora de fazer a Minhoca Caçadora aparecer — só uma checagem simples de
 // "o líder já comeu o suficiente pro próximo marco?"
+function hunterBehaviorForAppearance(appearance, cfg = {}) {
+  const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  const base = {
+    moveEveryTicks: 1,
+    burstEnabled: true,
+    burstSteps: 2,
+    burstDurationSec: Math.max(0.5, number(cfg.burstDurationSec, 1.5)),
+    burstIntervalSec: Math.max(1, number(cfg.burstIntervalSec, 12)),
+    distractionRadius: Math.max(1, number(cfg.distractionRadius, 4)),
+    predictionSteps: Math.max(0, number(cfg.predictionSteps, 1)),
+    growthPerVictim: Math.max(0, number(cfg.growthPerVictim, 2)),
+    bodyLength: Math.max(10, number(cfg.bodyLength, 35)),
+  };
+
+  if (cfg.progressiveDifficulty !== false && appearance <= 4) {
+    return {
+      ...base,
+      moveEveryTicks: 2,
+      burstEnabled: false,
+      burstSteps: 1,
+      burstDurationSec: 0,
+      burstIntervalSec: 999999,
+      distractionRadius: 1,
+      predictionSteps: 0,
+      growthPerVictim: 0,
+      bodyLength: Math.min(base.bodyLength, 25),
+    };
+  }
+  return base;
+}
+
+// Confere se é hora de fazer a Minhoca Caçadora aparecer — os cinco marcos padrão são
+// 100, 150, 200, 250 e 300 alimentos.
 function checkHunterSpawn() {
   if (state.hunterActive) return;
   if (state.hunterMilestoneIndex >= (state.hunterConfig?.milestones?.length || HUNTER_MILESTONES.length)) return;
@@ -859,7 +893,8 @@ function checkHunterSpawn() {
   const milestone = hunterCfg.milestones[state.hunterMilestoneIndex] || HUNTER_MILESTONES[state.hunterMilestoneIndex];
   const { leaderIdx, leaderFood } = findFoodLeader();
   if (leaderIdx === -1 || leaderFood < milestone.foodThreshold) return;
-  spawnHunter(milestone.durationSec);
+  const appearance = state.hunterMilestoneIndex + 1;
+  spawnHunter(milestone.durationSec, appearance);
   state.hunterMilestoneIndex++;
 }
 
@@ -911,9 +946,10 @@ function findSafeHunterSpawn(bodyLength) {
   };
 }
 
-function spawnHunter(durationSec) {
+function spawnHunter(durationSec, appearance = 1) {
   const hunterCfg = state.hunterConfig || {};
-  const bodyLength = hunterCfg.bodyLength || 50;
+  const behavior = hunterBehaviorForAppearance(appearance, hunterCfg);
+  const bodyLength = behavior.bodyLength;
   const spawn = findSafeHunterSpawn(bodyLength);
   const p = spawn.p;
   state.hunterVictims = new Set();
@@ -923,8 +959,9 @@ function spawnHunter(durationSec) {
   state.hunterDir = { x: 1, y: 0 };
   state.hunterActive = true;
   state.hunterEndsAt = Date.now() + durationSec * 1000;
+  state.hunterMoveTick = 0;
   state.hunterBurstUntil = 0;
-  state.hunterNextBurstAt = Date.now() + 5000; // primeira rajada só depois de uns 5s, dá tempo de reagir
+  state.hunterNextBurstAt = behavior.burstEnabled ? Date.now() + 5000 : 0; // quatro primeiras sem rajada
   state.hunterDistractedUntil = 0;
   state.hunterDistractedTarget = -1;
   state.hunterNearMiss = Array(6).fill(false);
@@ -950,6 +987,9 @@ export function updateHunter() {
   }
 
   const head = state.hunterSnake[0];
+  const appearance = Math.max(1, state.hunterMilestoneIndex);
+  const behavior = hunterBehaviorForAppearance(appearance, state.hunterConfig || {});
+  state.hunterMoveTick = (state.hunterMoveTick || 0) + 1;
 
   // Melhoria #8 — Distração: se alguém usar o turbo perto o suficiente da caçadora
   // (e não for ela quem já tá perseguindo), ela muda de alvo por alguns segundos —
@@ -958,7 +998,7 @@ export function updateHunter() {
     for (let i = 0; i < state.count; i++) {
       if (!state.alive[i] || !state.boosting[i]) continue;
       const h = state.snakes[i][0];
-      if (Math.abs(h.x - head.x) + Math.abs(h.y - head.y) <= (state.hunterConfig?.distractionRadius || RAIO_DISTRACAO)) {
+      if (Math.abs(h.x - head.x) + Math.abs(h.y - head.y) <= behavior.distractionRadius) {
         state.hunterDistractedTarget = i;
         state.hunterDistractedUntil = Date.now() + (state.hunterConfig?.distractionDurationSec || DURACAO_DISTRACAO_MS / 1000) * 1000;
         break;
@@ -978,20 +1018,27 @@ export function updateHunter() {
   if (alvoSnake) {
     const alvoHead = alvoSnake[0];
     const alvoDir = state.dirs[alvoIdx] || { x: 0, y: 0 };
-    const PASSOS_DE_PREVISAO = state.hunterConfig?.predictionSteps ?? 3;
+    const PASSOS_DE_PREVISAO = behavior.predictionSteps;
     target = { x: alvoHead.x + alvoDir.x * PASSOS_DE_PREVISAO, y: alvoHead.y + alvoDir.y * PASSOS_DE_PREVISAO };
   }
 
-  // Melhoria #4 — Rajada de velocidade: de vez em quando, anda 2 passos no lugar de 1
-  // por alguns segundos, deixando a perseguição mais imprevisível
-  if (!state.hunterBurstUntil && Date.now() >= state.hunterNextBurstAt) {
-    state.hunterBurstUntil = Date.now() + (state.hunterConfig?.burstDurationSec || DURACAO_RAJADA_MS / 1000) * 1000;
-  }
-  if (state.hunterBurstUntil && Date.now() >= state.hunterBurstUntil) {
+  // Melhoria #4 — Rajada: só entra no perfil médio a partir da 5ª aparição.
+  if (!behavior.burstEnabled) {
     state.hunterBurstUntil = 0;
-    state.hunterNextBurstAt = Date.now() + (state.hunterConfig?.burstIntervalSec || INTERVALO_ENTRE_RAJADAS_MS / 1000) * 1000;
+    state.hunterNextBurstAt = 0;
+  } else {
+    if (!state.hunterBurstUntil && Date.now() >= state.hunterNextBurstAt) {
+      state.hunterBurstUntil = Date.now() + behavior.burstDurationSec * 1000;
+    }
+    if (state.hunterBurstUntil && Date.now() >= state.hunterBurstUntil) {
+      state.hunterBurstUntil = 0;
+      state.hunterNextBurstAt = Date.now() + behavior.burstIntervalSec * 1000;
+    }
   }
-  const passosNesseInstante = state.hunterBurstUntil ? 2 : 1;
+
+  // Nas quatro primeiras aparições ela anda só a cada 2 ticks.
+  const deveMover = state.hunterMoveTick % behavior.moveEveryTicks === 0;
+  const passosNesseInstante = deveMover ? (state.hunterBurstUntil ? behavior.burstSteps : 1) : 0;
 
   for (let passo = 0; passo < passosNesseInstante; passo++) {
     const h = state.hunterSnake[0];
@@ -1011,7 +1058,7 @@ export function updateHunter() {
     if (tocou) {
       // Melhoria #7 — Cresce a cada vítima: fica maior (e mais ameaçadora) a cada
       // pessoa que ela pega durante a mesma aparição
-      for (let n = 0; n < (state.hunterConfig?.growthPerVictim || 8); n++) {
+      for (let n = 0; n < behavior.growthPerVictim; n++) {
         const ultimo = state.hunterSnake[state.hunterSnake.length - 1];
         state.hunterSnake.push({ ...ultimo });
       }

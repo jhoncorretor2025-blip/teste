@@ -93,6 +93,12 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 _(nada por enquanto)_
 
+## [3.6.9] — 2026-10-01
+- **Minhoca Caçadora:** agora existem 5 aparições padrão, aos 100, 150, 200, 250 e 300 alimentos.
+- **Primeiras 4 aparições:** ficam bem mais fáceis: a caçadora anda mais devagar, não usa rajada, não antecipa a direção e cresce menos.
+- **5ª aparição em diante:** passa para um comportamento médio, com velocidade normal, rajada moderada e pequena antecipação.
+- **Compatibilidade:** configurações padrão antigas salvas no navegador são migradas para a nova progressão; presets personalizados continuam respeitados.
+
 ## [3.6.8] — 2026-10-01
 - **5 melhorias simples**, sugeridas e aprovadas pelo dono:
   1. **Causa da morte**: em vez de só "Você morreu!", mostra "Bateu na parede", "Colidiu com [nome]" ou "A Minhoca Caçadora te pegou".

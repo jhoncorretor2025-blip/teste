@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '3.6.8';
+export const VERSION = '3.6.9';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -81,17 +81,21 @@ export const ACHIEVEMENTS = [
 // agora expostos na interface. O usuário pode ajustar sem editar JavaScript.
 export const HUNTER_DEFAULTS = {
   enabled: true,
+  progressiveDifficulty: true,
   milestones: [
-    { foodThreshold: 100, durationSec: 20 },
-    { foodThreshold: 150, durationSec: 25 },
+    { foodThreshold: 100, durationSec: 15 },
+    { foodThreshold: 150, durationSec: 15 },
+    { foodThreshold: 200, durationSec: 18 },
+    { foodThreshold: 250, durationSec: 18 },
+    { foodThreshold: 300, durationSec: 22 },
   ],
-  distractionRadius: 5,
+  distractionRadius: 4,
   distractionDurationSec: 2,
   burstDurationSec: 1.5,
   burstIntervalSec: 12,
-  predictionSteps: 2,
-  bodyLength: 40,
-  growthPerVictim: 4,
+  predictionSteps: 1,
+  bodyLength: 35,
+  growthPerVictim: 2,
 };
 
 // Compatibilidade: partes antigas do jogo ainda importam esta constante.

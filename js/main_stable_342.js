@@ -1575,15 +1575,15 @@ function applyHunterSettingsToUI() {
   const h = state.hunterConfig || HUNTER_DEFAULTS;
   $('hunterEnabled').checked = h.enabled !== false;
   $('hunterThreshold1').value = h.milestones?.[0]?.foodThreshold ?? 100;
-  $('hunterDuration1').value = h.milestones?.[0]?.durationSec ?? 35;
+  $('hunterDuration1').value = h.milestones?.[0]?.durationSec ?? 15;
   $('hunterThreshold2').value = h.milestones?.[1]?.foodThreshold ?? 150;
-  $('hunterDuration2').value = h.milestones?.[1]?.durationSec ?? 50;
-  $('hunterBurstDuration').value = h.burstDurationSec ?? 2.5;
-  $('hunterBurstInterval').value = h.burstIntervalSec ?? 8;
-  $('hunterDistractionRadius').value = h.distractionRadius ?? 6;
-  $('hunterPrediction').value = h.predictionSteps ?? 3;
-  $('hunterGrowth').value = h.growthPerVictim ?? 8;
-  $('hunterBodyLength').value = h.bodyLength ?? 50;
+  $('hunterDuration2').value = h.milestones?.[1]?.durationSec ?? 15;
+  $('hunterBurstDuration').value = h.burstDurationSec ?? 1.5;
+  $('hunterBurstInterval').value = h.burstIntervalSec ?? 12;
+  $('hunterDistractionRadius').value = h.distractionRadius ?? 4;
+  $('hunterPrediction').value = h.predictionSteps ?? 1;
+  $('hunterGrowth').value = h.growthPerVictim ?? 2;
+  $('hunterBodyLength').value = h.bodyLength ?? 35;
   updateHunterSettingsSummary();
 }
 
@@ -1594,17 +1594,19 @@ function readHunterSettingsFromUI() {
   };
   return {
     enabled: !!$('hunterEnabled')?.checked,
+    progressiveDifficulty: state.hunterConfig?.progressiveDifficulty !== false,
     milestones: [
-      { foodThreshold: Math.max(10, num('hunterThreshold1', 100)), durationSec: Math.max(5, num('hunterDuration1', 35)) },
-      { foodThreshold: Math.max(20, num('hunterThreshold2', 150)), durationSec: Math.max(5, num('hunterDuration2', 50)) },
+      { foodThreshold: Math.max(10, num('hunterThreshold1', 100)), durationSec: Math.max(5, num('hunterDuration1', 15)) },
+      { foodThreshold: Math.max(20, num('hunterThreshold2', 150)), durationSec: Math.max(5, num('hunterDuration2', 15)) },
+      ...(Array.isArray(state.hunterConfig?.milestones) ? state.hunterConfig.milestones.slice(2) : []),
     ],
-    burstDurationSec: Math.max(0.5, num('hunterBurstDuration', 2.5)),
-    burstIntervalSec: Math.max(1, num('hunterBurstInterval', 8)),
-    distractionRadius: Math.max(1, num('hunterDistractionRadius', 6)),
-    distractionDurationSec: state.hunterConfig?.distractionDurationSec ?? 3,
-    predictionSteps: Math.max(0, num('hunterPrediction', 3)),
-    growthPerVictim: Math.max(0, num('hunterGrowth', 8)),
-    bodyLength: Math.max(10, num('hunterBodyLength', 50)),
+    burstDurationSec: Math.max(0.5, num('hunterBurstDuration', 1.5)),
+    burstIntervalSec: Math.max(1, num('hunterBurstInterval', 12)),
+    distractionRadius: Math.max(1, num('hunterDistractionRadius', 4)),
+    distractionDurationSec: state.hunterConfig?.distractionDurationSec ?? 2,
+    predictionSteps: Math.max(0, num('hunterPrediction', 1)),
+    growthPerVictim: Math.max(0, num('hunterGrowth', 2)),
+    bodyLength: Math.max(10, num('hunterBodyLength', 35)),
   };
 }
 
@@ -1624,8 +1626,14 @@ function updateHunterSettingsSummary() {
     s.textContent = h.enabled === false ? '🔴 Desativada' : (state.hunterActive ? '☠️ Ativa agora' : '🟢 Ativa');
     s.className = 'hunterStatusBadge ' + (h.enabled === false ? 'off' : state.hunterActive ? 'live' : '');
   }
-  if (summary) { const restante = state.hunterActive ? ` • ⏱️ Agora: ${Math.max(0, Math.ceil((state.hunterEndsAt - Date.now()) / 1000))}s restantes` : ''; summary.textContent = `1ª: ${h.milestones?.[0]?.foodThreshold ?? 100} alimentos / ${h.milestones?.[0]?.durationSec ?? 35}s • 2ª: ${h.milestones?.[1]?.foodThreshold ?? 150} alimentos / ${h.milestones?.[1]?.durationSec ?? 50}s${restante}`; }
-  if (behavior) behavior.textContent = `🎯 Persegue o líder • 💨 Rajada por ${h.burstDurationSec ?? 2.5}s a cada ${h.burstIntervalSec ?? 8}s • 🧠 Antecipação: ${h.predictionSteps ?? 3} casas • 🐍 Tamanho: ${h.bodyLength ?? 50}`;
+  if (summary) {
+    const restante = state.hunterActive ? ` • ⏱️ Agora: ${Math.max(0, Math.ceil((state.hunterEndsAt - Date.now()) / 1000))}s restantes` : '';
+    const progressao = h.progressiveDifficulty !== false ? ' • 3ª/4ª: Fácil • 5ª: Médio' : '';
+    summary.textContent = `1ª: ${h.milestones?.[0]?.foodThreshold ?? 100} alimentos / ${h.milestones?.[0]?.durationSec ?? 15}s • 2ª: ${h.milestones?.[1]?.foodThreshold ?? 150} alimentos / ${h.milestones?.[1]?.durationSec ?? 15}s${progressao}${restante}`;
+  }
+  if (behavior) behavior.textContent = h.progressiveDifficulty !== false
+    ? `🎯 1ª–4ª: Fácil • 5ª+: Médio • 💨 Rajada média por ${h.burstDurationSec ?? 1.5}s a cada ${h.burstIntervalSec ?? 12}s • 🧠 Antecipação: ${h.predictionSteps ?? 1} casa(s) • 🐍 Tamanho: ${h.bodyLength ?? 35}`
+    : `🎯 Persegue o líder • 💨 Rajada por ${h.burstDurationSec ?? 1.5}s a cada ${h.burstIntervalSec ?? 12}s • 🧠 Antecipação: ${h.predictionSteps ?? 1} casas • 🐍 Tamanho: ${h.bodyLength ?? 35}`;
 }
 
 const hunterFieldIds = ['hunterEnabled','hunterThreshold1','hunterDuration1','hunterThreshold2','hunterDuration2','hunterBurstDuration','hunterBurstInterval','hunterDistractionRadius','hunterPrediction','hunterGrowth','hunterBodyLength'];
@@ -1635,9 +1643,9 @@ hunterFieldIds.forEach((id) => {
 });
 
 const HUNTER_PRESETS = {
-  normal: { enabled:true, milestones:[{foodThreshold:100,durationSec:35},{foodThreshold:150,durationSec:50}], burstDurationSec:2.5, burstIntervalSec:8, distractionRadius:6, predictionSteps:3, growthPerVictim:8, bodyLength:50 },
-  hard: { enabled:true, milestones:[{foodThreshold:75,durationSec:45},{foodThreshold:125,durationSec:60}], burstDurationSec:3, burstIntervalSec:7, distractionRadius:8, predictionSteps:4, growthPerVictim:10, bodyLength:55 },
-  chaos: { enabled:true, milestones:[{foodThreshold:50,durationSec:60},{foodThreshold:90,durationSec:90}], burstDurationSec:5, burstIntervalSec:5, distractionRadius:10, predictionSteps:6, growthPerVictim:14, bodyLength:65 },
+  normal: { ...JSON.parse(JSON.stringify(HUNTER_DEFAULTS)) },
+  hard: { enabled:true, progressiveDifficulty:false, milestones:[{foodThreshold:75,durationSec:45},{foodThreshold:125,durationSec:60}], burstDurationSec:3, burstIntervalSec:7, distractionRadius:8, predictionSteps:4, growthPerVictim:10, bodyLength:55 },
+  chaos: { enabled:true, progressiveDifficulty:false, milestones:[{foodThreshold:50,durationSec:60},{foodThreshold:90,durationSec:90}], burstDurationSec:5, burstIntervalSec:5, distractionRadius:10, predictionSteps:6, growthPerVictim:14, bodyLength:65 },
   reset: JSON.parse(JSON.stringify(HUNTER_DEFAULTS)),
 };
 document.querySelectorAll('.hunterPreset').forEach((btn) => {

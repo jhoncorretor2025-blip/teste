@@ -229,17 +229,30 @@ export function loadHunterSettings(defaults) {
       saved.burstIntervalSec === 8 &&
       saved.predictionSteps === 3 &&
       saved.growthPerVictim === 8;
-    if (eraPadraoAntigo) return JSON.parse(JSON.stringify(defaults));
+
+    const eraPadraoAtual =
+      saved.milestones?.[0]?.foodThreshold === 100 &&
+      saved.milestones?.[0]?.durationSec === 20 &&
+      saved.milestones?.[1]?.foodThreshold === 150 &&
+      saved.milestones?.[1]?.durationSec === 25 &&
+      saved.distractionRadius === 5 &&
+      saved.burstDurationSec === 1.5 &&
+      saved.burstIntervalSec === 12 &&
+      saved.predictionSteps === 2 &&
+      saved.bodyLength === 40 &&
+      saved.growthPerVictim === 4;
+
+    if (eraPadraoAntigo || eraPadraoAtual) return JSON.parse(JSON.stringify(defaults));
+
+    const savedMilestones = Array.isArray(saved.milestones) ? saved.milestones : [];
+    const milestones = saved.progressiveDifficulty === false
+      ? savedMilestones.map((m, i) => ({ ...(defaults.milestones[i] || {}), ...(m || {}) }))
+      : defaults.milestones.map((m, i) => ({ ...m, ...(savedMilestones[i] || {}) }));
 
     return {
       ...JSON.parse(JSON.stringify(defaults)),
       ...saved,
-      milestones: Array.isArray(saved.milestones)
-        ? saved.milestones.slice(0, 2).map((m, i) => ({
-            ...(defaults.milestones[i] || {}),
-            ...(m || {}),
-          }))
-        : JSON.parse(JSON.stringify(defaults.milestones)),
+      milestones,
     };
   } catch {
     return JSON.parse(JSON.stringify(defaults));
