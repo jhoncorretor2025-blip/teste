@@ -1,3 +1,6 @@
+## [3.6.3] — 2026-09-30
+- **Conquistas:** corrigida a numeração da galeria. Agora cada categoria fica realmente em ordem do mais fácil ao mais difícil, com números consecutivos (1, 2, 3, 4...) sem pular números quando algumas já foram desbloqueadas.
+
 ## [3.6.2] — 2026-09-30
 - **Celular:** a câmera agora se adapta à proporção da tela em retrato e paisagem, eliminando as grandes faixas vazias dentro da arena.
 - **Celular:** os botões de Pausar/Reiniciar/Menu ficam em uma única linha e a interface da partida fica mais compacta.
