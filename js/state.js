@@ -89,7 +89,7 @@ export const state = {
   debugStatesReceived: 0, // diagnóstico: quantos pacotes de estado o cliente já recebeu
   debugLastStateAt: 0, // diagnóstico: timestamp do último pacote de estado recebido
   debugCountdownRecebidoAt: 0, // diagnóstico: quando a contagem regressiva chegou (detecta "nunca recebeu nada depois disso")
-  deathMessage: null, // {text, until} — aviso grande de "Você morreu" pro jogador local
+  deathMessage: null, // {text, sub, until} — aviso grande de "Você morreu" pro jogador local; "sub" é uma segunda linha menor, usada pra "🎉 Novo recorde!" (melhoria #4)
   tournamentMode: false, // modo torneio: melhor de 3 rodadas
   tournamentRound: 0, // rodada atual (1, 2 ou 3)
   tournamentWins: [0, 0, 0, 0, 0, 0], // quantas rodadas cada jogador já venceu no torneio

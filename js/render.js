@@ -1877,6 +1877,14 @@ export function draw() {
     ctx.fillStyle = '#ff5577';
     ctx.strokeText(state.deathMessage.text, canvas.width / 2, canvas.height * 0.42);
     ctx.fillText(state.deathMessage.text, canvas.width / 2, canvas.height * 0.42);
+    if (state.deathMessage.sub) {
+      // Segunda linha, menor e dourada — "🎉 Novo recorde!" (melhoria #4)
+      ctx.font = `800 ${Math.round(Math.min(canvas.width, canvas.height) * 0.05)}px system-ui, sans-serif`;
+      ctx.lineWidth = 5;
+      ctx.fillStyle = '#ffd24d';
+      ctx.strokeText(state.deathMessage.sub, canvas.width / 2, canvas.height * 0.42 + Math.min(canvas.width, canvas.height) * 0.09);
+      ctx.fillText(state.deathMessage.sub, canvas.width / 2, canvas.height * 0.42 + Math.min(canvas.width, canvas.height) * 0.09);
+    }
     ctx.restore();
   }
 

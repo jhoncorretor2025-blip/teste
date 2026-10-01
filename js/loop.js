@@ -11,7 +11,7 @@ import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
-import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
+import { saveBest, loadBest, saveBestByMode, saveBestLength, addToLeaderboard, recordGameScore, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
@@ -348,12 +348,22 @@ export function tryBoost(i) {
   return true;
 }
 
-// Mata uma minhoca: derrama comida, faz explosão, som/vibração e guarda o recorde
-export function kill(i) {
+// Mata uma minhoca: derrama comida, faz explosão, som/vibração e guarda o recorde.
+// "causa" é só um texto curto (ex: "Bateu na parede") usado na mensagem de morte de quem
+// é você mesmo (mySlot) — melhoria #1: antes era sempre "Você morreu!", genérico demais.
+export function kill(i, causa) {
   trackDeathForMission(i);
   if (state.hunterActive) state.hunterVictims.add(i);
+  // Melhoria #4: compara ANTES de salvar, pra saber se essa partida é um recorde novo —
+  // só conta pra você mesmo (mySlot) e só quando faz pontos de verdade (score > 0), senão
+  // uma primeira partida com 0 pontos "bateria o recorde" de forma estranha
+  const bateuRecordePessoal = i === mySlot && state.scores[i] > 0 && state.scores[i] > loadBest();
+  // Melhoria #5: "melhor que X% das suas partidas" — só registra o histórico pra você mesmo,
+  // e só quando fez pontos de verdade (uma partida de 0 não entra na conta)
+  const resultadoHistorico = (i === mySlot && state.scores[i] > 0) ? recordGameScore(state.scores[i]) : null;
   saveBest(state.scores[i]);
   saveBestByMode(state.mode, state.tournamentMode, state.scores[i]);
+  saveBestLength(state.snakes[i]?.length || 0); // melhoria #2: recorde de maior cobra (tamanho, não pontuação)
   state.best = Math.max(state.best, state.scores[i]);
   if (state.types[i] === 'human') addToLeaderboard(state.names[i], state.scores[i]);
   dropFood(i);
@@ -372,7 +382,21 @@ export function kill(i) {
   sfx.death();
   vibrate([80, 40, 160]); // padrão de "derrota" — dois toques curtos e um mais longo
   if (i === mySlot) {
-    state.deathMessage = { text: '💀 Você morreu!', until: Date.now() + 1400 };
+    // A segunda linha prioriza "novo recorde" (mais raro e mais importante); sem isso,
+    // mostra o percentual — só quando há partidas anteriores suficientes (3+) pra fazer
+    // sentido, e só quando o resultado é POSITIVO (não faz sentido "melhor que 0%")
+    const mostraPercentual = !bateuRecordePessoal && resultadoHistorico && resultadoHistorico.partidasAnteriores >= 3 && resultadoHistorico.percentual > 0;
+    const sub = bateuRecordePessoal ? '🎉 Novo recorde!' : (mostraPercentual ? `📊 Melhor que ${resultadoHistorico.percentual}% das suas partidas` : null);
+    state.deathMessage = {
+      text: causa ? `💀 ${causa}` : '💀 Você morreu!',
+      sub, // melhoria #4/#5: segunda linha, menor
+      until: Date.now() + (sub ? 2400 : 1400), // fica mais tempo na tela pra dar tempo de ler/comemorar
+    };
+    if (bateuRecordePessoal) {
+      // Toca um pouquinho depois do som de morte, pra não se misturar com ele
+      setTimeout(() => sfx.newRecord(), 260);
+      setTimeout(() => vibrate([20, 40, 20, 40, 20, 40, 60]), 260);
+    }
   }
 }
 
@@ -414,7 +438,8 @@ function stepMovement(indices) {
         if (die[i] === mySlot && state.eliminations[die[i]] >= 5) announceAchievement(unlockAchievement('eliminator_5'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 10) announceAchievement(unlockAchievement('eliminator_10'));
       }
-      kill(i);
+      const causa = die[i] === -1 ? 'Bateu na parede' : `Colidiu com ${state.names[die[i]] || 'alguém'}`;
+      kill(i, causa);
       return;
     }
     const h = heads[i];
@@ -837,7 +862,7 @@ export function updateHunter() {
         const ultimo = state.hunterSnake[state.hunterSnake.length - 1];
         state.hunterSnake.push({ ...ultimo });
       }
-      kill(i);
+      kill(i, 'A Minhoca Caçadora te pegou');
     } else {
       // Melhoria #9 — Fuga por pouco: se chegou a ficar bem coladinho (1 célula) na
       // caçadora e escapou vivo, ganha uma pontuação bônus de "escapada por pouco"

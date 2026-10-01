@@ -69,6 +69,14 @@ export const sfx = {
     beep({ freq: 70, duration: 0.11, type: 'sine', volume: 0.32, slideTo: 45 });
     setTimeout(() => beep({ freq: 60, duration: 0.14, type: 'sine', volume: 0.26, slideTo: 40 }), 130);
   },
+  // Melhoria #4: fanfarra curta e animada, só quando a pessoa bate o PRÓPRIO recorde —
+  // 4 notinhas subindo rápido, bem diferente de "mission" (que é só uma notinha), pra dar
+  // uma sensação clara de "uau, novo recorde!" mesmo em cima do som de morte normal
+  newRecord: () => {
+    [523, 659, 784, 1046].forEach((freq, i) => {
+      setTimeout(() => beep({ freq, duration: 0.14, type: 'triangle', volume: 0.22 }), i * 90);
+    });
+  },
 };
 
 // Alguns navegadores só liberam áudio depois de um clique do usuário.

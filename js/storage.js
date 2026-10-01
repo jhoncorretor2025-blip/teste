@@ -28,6 +28,23 @@ export function saveBest(score) {
   return best;
 }
 
+// Recorde de MAIOR COBRA (tamanho, não pontuação) — melhoria #2. Mesmo padrão de loadBest/saveBest.
+const LENGTH_KEY = 'snakeArenaBestLength';
+
+export function loadBestLength() {
+  return Number(localStorage.getItem(LENGTH_KEY)) || 0;
+}
+
+// Salva o tamanho se ele for maior que o recorde atual. Devolve o recorde (novo ou o mesmo).
+export function saveBestLength(length) {
+  const best = loadBestLength();
+  if (length > best) {
+    localStorage.setItem(LENGTH_KEY, String(length));
+    return length;
+  }
+  return best;
+}
+
 // Recorde separado por modo (Clássico, Turbo Worms, Torneio) — melhoria #6
 const MODE_BEST_KEY = 'snakeArenaBestByMode';
 
@@ -108,6 +125,32 @@ export function addToLeaderboard(name, score) {
   const trimmed = board.slice(0, 20);
   localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(trimmed));
   return trimmed;
+}
+
+// Histórico de pontuações pra comparar "essa partida foi melhor que quantas das suas
+// anteriores" — melhoria #5. Diferente do placar de líderes (que só guarda o TOP 20), este
+// guarda as últimas 200 partidas na ORDEM que aconteceram, servindo só de base de comparação,
+// não de ranking. 200 é mais que suficiente pra um percentual estável, sem o localStorage
+// crescer sem limite.
+const GAME_HISTORY_KEY = 'snakeArenaScoreHistory';
+const GAME_HISTORY_MAX = 200;
+
+export function loadScoreHistory() {
+  try { return JSON.parse(localStorage.getItem(GAME_HISTORY_KEY)) || []; }
+  catch { return []; }
+}
+
+// Registra a pontuação da partida que acabou de terminar e devolve o percentual de
+// partidas ANTERIORES que ela supera (0 a 100). Chame só DEPOIS de decidir se quer saber o
+// percentual — ele é calculado com o histórico de ANTES de incluir essa partida.
+export function recordGameScore(score) {
+  const historico = loadScoreHistory();
+  const piores = historico.filter((s) => s < score).length;
+  const percentual = historico.length > 0 ? Math.round((piores / historico.length) * 100) : null;
+  historico.push(score);
+  const recortado = historico.length > GAME_HISTORY_MAX ? historico.slice(historico.length - GAME_HISTORY_MAX) : historico;
+  localStorage.setItem(GAME_HISTORY_KEY, JSON.stringify(recortado));
+  return { percentual, partidasAnteriores: historico.length - 1 };
 }
 
 // Reseta nome, cor, formato de cabeça, padrão de pele e som mudo pro padrão de fábrica — melhoria #13.

@@ -5,7 +5,7 @@
 import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
 import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS, HUNTER_DEFAULTS } from './config.js';
 import { planTeams } from './teams.js';
-import { loadTeamPrefs, saveTeamPrefs } from './storage.js';
+import { loadTeamPrefs, saveTeamPrefs , loadBestLength } from './storage.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
@@ -966,6 +966,7 @@ $('shareHero').addEventListener('click', shareLink);
 function updateTopRecordDisplay() {
   const best = state.best || 0;
   $('topRecordDisplay').innerHTML = `🏅 Seu recorde: <b>${best}</b> pontos`;
+  $('progressLengthValue')?.replaceChildren(document.createTextNode(String(loadBestLength())));
   $('progressRecordMini')?.replaceChildren(document.createTextNode(`🏅 ${best}`));
   $('progressBestValue')?.replaceChildren(document.createTextNode(String(best)));
   $('progressGamesValue')?.replaceChildren(document.createTextNode(String(loadGamesPlayed() || 0)));
@@ -1960,6 +1961,13 @@ $('installHelpBtn').addEventListener('click', () => {
   $('installHelpOverlay').classList.remove('hidden');
 });
 $('installHelpCloseBtn').addEventListener('click', () => $('installHelpOverlay').classList.add('hidden'));
+
+// Melhoria #3: tela "Sobre" simples — versão do jogo e um obrigado
+$('aboutBtn').addEventListener('click', () => {
+  $('aboutVersionLine').textContent = `Versão ${VERSION}`;
+  $('aboutOverlay').classList.remove('hidden');
+});
+$('aboutCloseBtn').addEventListener('click', () => $('aboutOverlay').classList.add('hidden'));
 
 // Print de tela de verdade — baixa a imagem exata do que tá na arena agora, diferente
 // do cartão de pontuação estilizado (que já existe no botão 📸)

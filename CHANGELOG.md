@@ -93,6 +93,14 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 _(nada por enquanto)_
 
+## [3.6.8] — 2026-10-01
+- **5 melhorias simples**, sugeridas e aprovadas pelo dono:
+  1. **Causa da morte**: em vez de só "Você morreu!", mostra "Bateu na parede", "Colidiu com [nome]" ou "A Minhoca Caçadora te pegou".
+  2. **Recorde de maior cobra**: guarda o maior tamanho (não pontuação) já alcançado numa partida, mostrado na aba Progresso.
+  3. **Tela "Sobre"**: novo botão na aba Config., mostra a versão do jogo e um obrigado.
+  4. **Som/vibração especial de novo recorde pessoal**: uma fanfarra de 4 notas + vibração distinta, e "🎉 Novo recorde!" aparece como segunda linha na mensagem de morte, tocando um pouco depois do som normal de morte pra não se misturar.
+  5. **"Melhor que X% das suas partidas"**: aparece na mensagem de morte (no lugar do "novo recorde", quando não é o caso) comparando com as últimas 200 partidas salvas — só quando há pelo menos 3 partidas anteriores e o resultado é positivo.
+
 ## [3.6.7] — 2026-10-01
 - **Visual:** melhorados 3 visuais de cabeça que ficavam genéricos demais no tamanho real do jogo: 🐲 Dragãozinho (tinha só 3 bolinhas quase invisíveis; ganhou 2 chifres grandes recurvados + focinho com narinas), 🦉 Coruja (ganhou um biquinho laranja) e 🐻 Ursinho (ganhou focinho claro + narizinho). As novas cabeças que o ChatGPT adicionou nesse mesmo dia (raposa, tubarão, abelha, macaco, leão, unicórnio, alienígena, pirata, robô, caveira) não foram mexidas.
 - Correção na própria ferramenta `tools/verificar-projeto.py`/`gerar-mapa.py`: o jeito de achar "quem importa quem" não reconhecia `import ... from './arquivo.js?v=X.Y.Z'` (com uma query de cache-busting), e por isso achava (errado) que `render.js` era código morto, sem ninguém importando. Corrigido — isso evita que uma IA futura apague `render.js` por engano, achando que não é usado.
