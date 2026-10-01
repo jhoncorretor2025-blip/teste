@@ -1119,6 +1119,8 @@ function drawHead(x, y, shape, color) {
 
   // Olhinhos em toda cabeça, com uma piscadinha de vez em quando — dá mais vida e é
   // barato de desenhar (só dois pontinhos ou dois tracinhos quando pisca)
+  if (shape === 'dragon') return;
+
   const eyeY = cy + size * 0.36;
   const eyeR = size * 0.09;
   const blinking = Math.sin(Date.now() / 480 + x * 7 + y * 3) > 0.985;
