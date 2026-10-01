@@ -55,9 +55,8 @@ function handleKey(e) {
   if (state.paused) return;
 
   if (isOnline() && !isHost()) {
-    // No online, o jogador local pode usar tanto Setas quanto WASD.
-    // Espaço continua sendo o turbo.
-    if (CK.arrows.includes(e.code) || CK.wasd.includes(e.code)) { e.preventDefault(); moveMine(KD[e.code]); }
+    // Cliente: sempre usa Setas pra mover e Espaço pro turbo, não importa o que escolheu no menu
+    if (CK.arrows.includes(e.code)) { e.preventDefault(); moveMine(KD[e.code]); }
     if (e.code === 'Space') { e.preventDefault(); boostMine(); }
     return;
   }
@@ -67,11 +66,7 @@ function handleKey(e) {
   for (let i = 0; i < state.count; i++) {
     if (state.types[i] !== 'human') continue;
     if (isOnline() && i !== mySlot) continue;
-    // O Jogador 1 sempre aceita Setas e WASD, independentemente da opção exibida no menu.
-    // Isso evita que a pessoa tenha que lembrar qual esquema foi selecionado.
-    const dir = (i === mySlot && (CK.arrows.includes(e.code) || CK.wasd.includes(e.code)))
-      ? KD[e.code]
-      : matchesDirKey(i, e.code);
+    const dir = matchesDirKey(i, e.code);
     if (dir) { e.preventDefault(); setDir(i, dir); }
     if (matchesBoostKey(i, e.code)) { e.preventDefault(); tryBoost(i); }
   }

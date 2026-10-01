@@ -24,18 +24,10 @@ export function freeCell() {
 }
 
 // Garante que sempre existam N maçãs normais e 1 estrela bônus no tabuleiro
-function sortearRaridadeVisual() {
-  const r = Math.random();
-  if (r < 0.01) return 'legendary';
-  if (r < 0.05) return 'epic';
-  if (r < 0.15) return 'rare';
-  return 'normal';
-}
-
 export function ensureFoods() {
   while (state.foods.filter(f => f.kind === 'normal').length < state.foodCount) {
     const p = freeCell();
-    state.foods.push({ x: p.x, y: p.y, kind: 'normal', value: 1, rarity: sortearRaridadeVisual() });
+    state.foods.push({ x: p.x, y: p.y, kind: 'normal', value: 1 });
   }
   if (!state.foods.some(f => f.kind === 'bonus')) {
     const p = freeCell();
@@ -81,14 +73,14 @@ export function updateFoodConsolidation() {
 export function dropFood(i) {
   for (let n = 0; n < state.foodsEaten[i]; n++) {
     const p = freeCell();
-    state.foods.push({ x: p.x, y: p.y, kind: 'drop', value: 1, owner: i, rarity: sortearRaridadeVisual() });
+    state.foods.push({ x: p.x, y: p.y, kind: 'drop', value: 1, owner: i });
   }
 }
 
 // Derrama exatamente 1 comida numa posição específica — usado como custo do turbo (melhoria #2)
 export function dropOne(x, y, owner) {
   const p = occupied(x, y) ? freeCell() : { x, y };
-  state.foods.push({ x: p.x, y: p.y, kind: 'drop', value: 1, owner, rarity: sortearRaridadeVisual() });
+  state.foods.push({ x: p.x, y: p.y, kind: 'drop', value: 1, owner });
 }
 
 // Cria partículas de explosão (usado ao nascer, comer e morrer)

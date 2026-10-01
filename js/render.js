@@ -49,37 +49,6 @@ function getZoomWindow() {
   return { w: z.w, h: z.h };
 }
 
-// Calcula a janela do mapa que cabe no canvas sem criar faixas vazias.
-export function getViewWindow(mapW, mapH, zoomW, zoomH, canvasWidth, canvasHeight, adaptToMobile = false) {
-  let w = Math.min(mapW, zoomW);
-  let h = Math.min(mapH, zoomH);
-  if (!adaptToMobile || canvasWidth <= 0 || canvasHeight <= 0) return { w, h };
-
-  const aspect = canvasWidth / canvasHeight;
-  if (!Number.isFinite(aspect) || aspect <= 0) return { w, h };
-
-  // No retrato, reduz a largura da janela; no paisagem, reduz a altura.
-  // Assim o mapa ocupa o canvas inteiro sem mudar a proporção das células.
-  if (aspect < w / h) {
-    w = Math.max(8, Math.round(h * aspect));
-  } else if (aspect > w / h) {
-    h = Math.max(8, Math.round(w / aspect));
-  }
-
-  w = Math.min(mapW, w);
-  h = Math.min(mapH, h);
-  return { w, h };
-}
-
-function isMobileTouchDevice() {
-  const ua = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
-  const touch = typeof navigator !== 'undefined' && (Number(navigator.maxTouchPoints) > 0 || 'ontouchstart' in window);
-  const shortSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
-  return /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(ua) && touch && (!shortSide || shortSide <= 1000);
-}
-
-const MOBILE_TOUCH_DEVICE = isMobileTouchDevice();
-
 function resizeCanvas() {
   const box = canvas.parentElement; // .arena
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -92,17 +61,8 @@ function resizeCanvas() {
   canvas.style.height = ch + 'px';
 
   const zoom = getZoomWindow();
-  const view = getViewWindow(
-    state.mapW,
-    state.mapH,
-    zoom.w,
-    zoom.h,
-    canvas.width,
-    canvas.height,
-    MOBILE_TOUCH_DEVICE,
-  );
-  viewW = view.w;
-  viewH = view.h;
+  viewW = Math.min(state.mapW, zoom.w);
+  viewH = Math.min(state.mapH, zoom.h);
   cell = Math.min(canvas.width / viewW, canvas.height / viewH);
   offX = (canvas.width - cell * viewW) / 2;
   offY = (canvas.height - cell * viewH) / 2;
@@ -181,74 +141,6 @@ const DECO = Array.from({ length: 90 }, () => ({
 }));
 const enrola = (v, span) => ((v % span) + span) % span;
 
-function drawThemeAtmosphere(theme) {
-  // Luz ambiental lenta e específica do tema; calculada no desenho para funcionar também online.
-  const t = Date.now() / 1000;
-  const w = canvas.width, h = canvas.height;
-  if (typeof ctx.createRadialGradient === 'function') {
-    ctx.save();
-    ctx.globalAlpha = 0.13;
-    for (let i = 0; i < 3; i++) {
-      const px = w * (0.18 + i * 0.34) + Math.sin(t * (0.18 + i * 0.04) + i * 2.1) * w * 0.10;
-      const py = h * (0.24 + (i % 2) * 0.44) + Math.cos(t * (0.15 + i * 0.03) + i) * h * 0.08;
-      const radius = Math.min(w, h) * (0.18 + i * 0.025);
-      const g = ctx.createRadialGradient(px, py, 0, px, py, radius);
-      g.addColorStop(0, theme.bg2 || theme.accent || '#ffffff');
-      g.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(px - radius, py - radius, radius * 2, radius * 2);
-    }
-    ctx.restore();
-  }
-  ctx.save();
-  ctx.lineWidth = Math.max(1, cell * 0.035);
-  const accent = theme.accent || '#ffffff';
-  if (theme.value === 'cyber' || theme.value === 'city') {
-    const scanY = (t * cell * 1.1) % (h + cell * 2) - cell;
-    ctx.globalAlpha = 0.11;
-    ctx.strokeStyle = accent;
-    ctx.beginPath(); ctx.moveTo(0, scanY); ctx.lineTo(w, scanY); ctx.stroke();
-  } else if (theme.value === 'aurora') {
-    ctx.globalAlpha = 0.12;
-    ctx.strokeStyle = accent;
-    ctx.beginPath();
-    ctx.moveTo(-w * 0.15, h * 0.58);
-    ctx.quadraticCurveTo(w * 0.28, h * 0.20 + Math.sin(t * 0.35) * h * 0.05, w * 0.62, h * 0.48);
-    ctx.quadraticCurveTo(w * 0.84, h * 0.70 + Math.cos(t * 0.28) * h * 0.04, w * 1.15, h * 0.32);
-    ctx.stroke();
-  } else if (theme.value === 'volcano') {
-    ctx.globalAlpha = 0.20;
-    ctx.fillStyle = '#ff9b4a';
-    for (let i = 0; i < 9; i++) {
-      const ex = ((i * 97 + t * (10 + i)) % (w + 60)) - 30;
-      const ey = h - ((i * 41 + t * (7 + i * 0.3)) % (h * 0.75));
-      ctx.beginPath();
-      ctx.arc(ex, ey, Math.max(1, cell * (0.035 + (i % 3) * 0.02)), 0, Math.PI * 2);
-      ctx.fill();
-    }
-  } else if (theme.value === 'ocean' || theme.value === 'deep' || theme.value === 'swamp') {
-    ctx.globalAlpha = 0.10;
-    ctx.strokeStyle = accent;
-    for (let i = 0; i < 5; i++) {
-      const bx = w * (0.12 + i * 0.20) + Math.sin(t * 0.25 + i) * cell * 2;
-      const by = h - ((t * cell * (0.18 + i * 0.03) + i * h * 0.16) % (h + cell * 4));
-      ctx.beginPath();
-      ctx.arc(bx, by, cell * (0.25 + (i % 2) * 0.12), 0, Math.PI * 2);
-      ctx.stroke();
-    }
-  }
-  ctx.restore();
-  if (typeof ctx.createRadialGradient === 'function') {
-    ctx.save();
-    const v = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.30, w / 2, h / 2, Math.hypot(w, h) * 0.65);
-    v.addColorStop(0, 'rgba(0,0,0,0)');
-    v.addColorStop(1, 'rgba(0,0,0,0.20)');
-    ctx.fillStyle = v;
-    ctx.fillRect(0, 0, w, h);
-    ctx.restore();
-  }
-}
-
 function drawThemeBackdrop(theme) {
   const w = canvas.width, h = canvas.height;
   ctx.fillStyle = theme.bg;
@@ -261,7 +153,6 @@ function drawThemeBackdrop(theme) {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
   }
-  if (typeof drawThemeAtmosphere === 'function') drawThemeAtmosphere(theme);
   if (theme.deco === 'stars') drawStars();
   else if (theme.deco && theme.deco !== 'none') drawThemeDeco(theme);
 }
@@ -466,38 +357,6 @@ function drawBiomeDecorations(theme) {
   ctx.restore();
 }
 
-function drawThemeReaction(theme) {
-  const head = state.snakes[mySlot]?.[0];
-  if (!head || !state.alive[mySlot]) return;
-  const x = sx(head.x) + cell / 2, y = sy(head.y) + cell / 2;
-  const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 500);
-  const accent = theme.accent || '#ffffff';
-
-  ctx.save();
-  ctx.globalAlpha = 0.11 + pulse * 0.07;
-  ctx.strokeStyle = accent;
-  ctx.shadowColor = accent;
-  ctx.shadowBlur = cell * 0.42;
-  ctx.lineWidth = Math.max(1, cell * 0.04);
-
-  if (['deep','ocean','swamp','ice','glacier'].includes(theme.value)) {
-    ctx.beginPath(); ctx.arc(x, y, cell * (0.75 + pulse * 0.16), 0, Math.PI * 2); ctx.stroke();
-  } else if (['cyber','city','space','aurora'].includes(theme.value)) {
-    ctx.beginPath(); ctx.arc(x, y, cell * (0.64 + pulse * 0.11), 0, Math.PI * 2); ctx.stroke();
-    ctx.globalAlpha *= 0.45;
-    ctx.beginPath(); ctx.arc(x, y, cell * 0.42, 0, Math.PI * 2); ctx.stroke();
-  } else if (['desert','canyon','sunset','volcano'].includes(theme.value)) {
-    ctx.beginPath(); ctx.ellipse(x, y + cell * 0.08, cell * (0.72 + pulse * 0.08), cell * 0.25, 0, 0, Math.PI * 2); ctx.stroke();
-  } else {
-    for (let n = 0; n < 3; n++) {
-      const ang = Date.now() / 1200 + n * 2.1;
-      const rr = cell * (0.70 + n * 0.11);
-      ctx.beginPath(); ctx.arc(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr, cell * 0.045, 0, Math.PI * 2); ctx.stroke();
-    }
-  }
-  ctx.restore();
-}
-
 function drawThemeDeco(theme) {
   const t = Date.now() / 1000;
   const spanX = state.mapW * 1.6, spanY = state.mapH * 1.6;
@@ -606,67 +465,6 @@ function drawStars() {
   ctx.restore();
 }
 
-// Trilha de energia suave usando a cor de rastro já escolhida pelo jogador.
-function drawEnergyTrail(snake, playerIndex, boosting) {
-  if (!snake || snake.length < 2) return;
-  const pattern = state.patterns[playerIndex] || 'solid';
-  const trailColor = (state.trailColors[playerIndex] && state.trailColors[playerIndex] !== 'auto')
-    ? state.trailColors[playerIndex] : state.colors[playerIndex];
-  const reach = Math.min(snake.length, boosting ? 18 : 11);
-  const now = Date.now();
-
-  ctx.save();
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.globalAlpha = boosting ? 0.38 : (pattern === 'neon' ? 0.20 : 0.14);
-  ctx.strokeStyle = trailColor || '#ffffff';
-  ctx.shadowColor = trailColor || '#ffffff';
-  ctx.shadowBlur = boosting ? cell * 1.1 : cell * 0.45;
-  ctx.lineWidth = boosting ? cell * 0.23 : cell * 0.10;
-
-  if (pattern === 'electric') {
-    ctx.beginPath();
-    for (let k = reach - 1; k >= 0; k--) {
-      const p = snake[k];
-      const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
-      const off = (k % 2 ? -1 : 1) * cell * 0.06;
-      if (k === reach - 1) ctx.moveTo(x + off, y - off); else ctx.lineTo(x + off, y - off);
-    }
-    ctx.stroke();
-  } else {
-    ctx.beginPath();
-    for (let k = reach - 1; k >= 0; k--) {
-      const p = snake[k];
-      const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
-      if (k === reach - 1) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-  }
-
-  if (boosting || ['fire','ice','galaxy','venom'].includes(pattern)) {
-    ctx.globalAlpha = boosting ? 0.75 : 0.55;
-    ctx.fillStyle = trailColor || '#ffffff';
-    const step = pattern === 'galaxy' || pattern === 'ice' ? 2 : 3;
-    for (let k = 1; k < reach; k += step) {
-      const p = snake[k];
-      const px = sx(p.x) + cell / 2, py = sy(p.y) + cell / 2;
-      const pulse = 0.55 + 0.45 * Math.sin(now / 100 + k * 1.6 + playerIndex);
-      ctx.save();
-      ctx.translate(px, py);
-      if (pattern === 'galaxy' || pattern === 'ice') {
-        const s = cell * (0.04 + pulse * 0.035);
-        ctx.rotate(Math.PI / 4);
-        ctx.fillRect(-s / 2, -s / 2, s, s);
-      } else {
-        ctx.beginPath();
-        ctx.arc(0, 0, Math.max(1, cell * (0.03 + pulse * 0.025)), 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-  }
-  ctx.restore();
-}
 // Desenha a cabeça da minhoca no formato escolhido pelo jogador
 function drawHead(x, y, shape, color) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.25;
@@ -694,12 +492,6 @@ function drawHead(x, y, shape, color) {
     ctx.roundRect(cx, cy, size, size, r * 1.3);
   } else if (shape === 'bunny' || shape === 'dragon') {
     ctx.roundRect(cx, cy, size, size, r);
-  } else if (shape === 'fox' || shape === 'lion' || shape === 'monkey') {
-    ctx.roundRect(cx, cy, size, size, r * 1.15);
-  } else if (shape === 'shark' || shape === 'alien' || shape === 'robot' || shape === 'skull') {
-    ctx.roundRect(cx, cy, size, size, r * 0.9);
-  } else if (shape === 'bee' || shape === 'unicorn' || shape === 'pirata') {
-    ctx.roundRect(cx, cy, size, size, r * 1.1);
   } else {
     ctx.roundRect(cx, cy, size, size, r); // 'round' (padrão)
   }
@@ -711,6 +503,15 @@ function drawHead(x, y, shape, color) {
     ctx.beginPath();
     ctx.moveTo(cx + size * 0.88, cy + size * 0.2); ctx.lineTo(cx + size * 1.12, cy - size * 0.25); ctx.lineTo(cx + size * 0.65, cy + size * 0.05);
     ctx.closePath(); ctx.fill();
+    // Bico pequeno e pontudo, cor laranja (as orelhinhas sozinhas pareciam "qualquer bicho
+    // de orelha pontuda" — o bico amarelo/laranja é o que grita "coruja" de verdade)
+    ctx.fillStyle = '#f0a830';
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.42, cy + size * 0.46);
+    ctx.lineTo(cx + size * 0.58, cy + size * 0.46);
+    ctx.lineTo(cx + size * 0.5, cy + size * 0.66);
+    ctx.closePath();
+    ctx.fill();
   } else if (shape === 'cat') {
     // orelhinhas triangulares e pontudas de gato
     ctx.beginPath();
@@ -737,16 +538,28 @@ function drawHead(x, y, shape, color) {
     ctx.ellipse(cx + size * 0.72, cy - size * 0.12, size * 0.11, size * 0.4, 0.12, 0, Math.PI * 2);
     ctx.fill();
   } else if (shape === 'dragon') {
-    // trinca de espinhos/chifrinhos no topo
-    for (let s = 0; s < 3; s++) {
-      const bx = cx + size * (0.22 + s * 0.28);
+    // Chifres grandes e recurvados pra trás (bem maiores que o design antigo, que eram só
+    // 3 bolinhas quase invisíveis no tamanho real do jogo — "não tinha cara de dragão")
+    for (const lado of [-1, 1]) {
+      const bx = cx + size * (0.5 + lado * 0.26); // base do chifre, afastada do centro
       ctx.beginPath();
-      ctx.moveTo(bx, cy);
-      ctx.lineTo(bx - size * 0.07, cy - size * 0.3);
-      ctx.lineTo(bx + size * 0.07, cy);
+      ctx.moveTo(bx - size * 0.1 * lado, cy + size * 0.08); // base, mais larga
+      ctx.quadraticCurveTo(bx + size * 0.14 * lado, cy - size * 0.3, bx + size * 0.05 * lado, cy - size * 0.52); // curva pra trás e sobe
+      ctx.lineTo(bx - size * 0.1 * lado, cy - size * 0.3); // volta formando a pontinha fina
       ctx.closePath();
       ctx.fill();
     }
+    // Focinho pontudo na frente (focinho de dragão é mais alongado que o das outras cabeças)
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.32, cy + size * 0.62);
+    ctx.lineTo(cx + size * 0.68, cy + size * 0.62);
+    ctx.lineTo(cx + size * 0.5, cy + size * 0.92);
+    ctx.closePath();
+    ctx.fill();
+    // Narinas pequenas (dois pontinhos escuros no focinho, dão o toque final de "cara de dragão")
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.beginPath(); ctx.arc(cx + size * 0.42, cy + size * 0.68, size * 0.035, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + size * 0.58, cy + size * 0.68, size * 0.035, 0, Math.PI * 2); ctx.fill();
   } else if (shape === 'bear') {
     // orelhinhas redondas de ursinho
     ctx.beginPath();
@@ -754,6 +567,16 @@ function drawHead(x, y, shape, color) {
     ctx.fill();
     ctx.beginPath();
     ctx.arc(cx + size * 0.86, cy + size * 0.06, size * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+    // Focinho claro + narizinho escuro embaixo (só as orelhas redondas pareciam "qualquer
+    // bicho de orelha redonda" — o focinho claro de ursinho de pelúcia é o toque que faltava)
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.ellipse(cx + size * 0.5, cy + size * 0.68, size * 0.22, size * 0.16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.beginPath();
+    ctx.ellipse(cx + size * 0.5, cy + size * 0.6, size * 0.07, size * 0.05, 0, 0, Math.PI * 2);
     ctx.fill();
   } else if (shape === 'sunflower') {
     // Pétalas amarelas ao redor, com um centro escuro — a base colorida já fica por
@@ -789,115 +612,7 @@ function drawHead(x, y, shape, color) {
         ctx.fill();
       }
     }
-  } else if (shape === 'fox') {
-    // Orelhas pontudas + focinho
-    ctx.beginPath();
-    ctx.moveTo(cx + size * 0.18, cy + size * 0.2);
-    ctx.lineTo(cx + size * 0.02, cy - size * 0.25);
-    ctx.lineTo(cx + size * 0.42, cy + size * 0.06);
-    ctx.closePath(); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(cx + size * 0.82, cy + size * 0.2);
-    ctx.lineTo(cx + size * 0.98, cy - size * 0.25);
-    ctx.lineTo(cx + size * 0.58, cy + size * 0.06);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#fff3e0';
-    ctx.beginPath();
-    ctx.ellipse(cx + size * 0.5, cy + size * 0.67, size * 0.28, size * 0.2, 0, 0, Math.PI * 2); ctx.fill();
-  } else if (shape === 'shark') {
-    // Barbatana dorsal e focinho
-    ctx.beginPath();
-    ctx.moveTo(cx + size * 0.25, cy + size * 0.08);
-    ctx.lineTo(cx + size * 0.5, cy - size * 0.3);
-    ctx.lineTo(cx + size * 0.72, cy + size * 0.08);
-    ctx.closePath(); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(cx + size * 0.08, cy + size * 0.58);
-    ctx.lineTo(cx - size * 0.22, cy + size * 0.48);
-    ctx.lineTo(cx + size * 0.08, cy + size * 0.4);
-    ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(1, cell * 0.045);
-    ctx.beginPath();
-    ctx.arc(cx + size * 0.5, cy + size * 0.62, size * 0.22, 0.1, Math.PI - 0.1); ctx.stroke();
-  } else if (shape === 'bee') {
-    // Listras e anteninhas
-    ctx.strokeStyle = '#202020'; ctx.lineWidth = Math.max(1, cell * 0.1);
-    for (const yy of [0.32, 0.52, 0.72]) {
-      ctx.beginPath(); ctx.moveTo(cx + size * 0.1, cy + size * yy); ctx.lineTo(cx + size * 0.9, cy + size * yy); ctx.stroke();
-    }
-    ctx.lineWidth = Math.max(1, cell * 0.035);
-    ctx.beginPath(); ctx.moveTo(cx + size * 0.32, cy + size * 0.1); ctx.lineTo(cx + size * 0.15, cy - size * 0.2);
-    ctx.moveTo(cx + size * 0.68, cy + size * 0.1); ctx.lineTo(cx + size * 0.85, cy - size * 0.2); ctx.stroke();
-  } else if (shape === 'unicorn') {
-    // Chifre central e crina
-    ctx.beginPath();
-    ctx.moveTo(cx + size * 0.5, cy - size * 0.36);
-    ctx.lineTo(cx + size * 0.4, cy + size * 0.08);
-    ctx.lineTo(cx + size * 0.62, cy + size * 0.08);
-    ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = Math.max(1, cell * 0.035);
-    ctx.beginPath();
-    ctx.moveTo(cx + size * 0.18, cy + size * 0.16); ctx.quadraticCurveTo(cx + size * 0.06, cy + size * 0.45, cx + size * 0.2, cy + size * 0.86);
-    ctx.stroke();
-  } else if (shape === 'monkey') {
-    // Orelhas laterais e topete
-    ctx.beginPath(); ctx.arc(cx + size * 0.08, cy + size * 0.5, size * 0.19, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx + size * 0.92, cy + size * 0.5, size * 0.19, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#c98b5b';
-    ctx.beginPath(); ctx.ellipse(cx + size * 0.5, cy + size * 0.65, size * 0.3, size * 0.22, 0, 0, Math.PI * 2); ctx.fill();
-  } else if (shape === 'lion') {
-    // Juba em pequenos círculos
-    ctx.fillStyle = '#f0a33a';
-    for (let a = 0; a < 12; a++) {
-      const ang = a * Math.PI / 6, px = cx + size * 0.5 + Math.cos(ang) * size * 0.54, py = cy + size * 0.5 + Math.sin(ang) * size * 0.54;
-      ctx.beginPath(); ctx.arc(px, py, size * 0.16, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.fillStyle = color;
-    ctx.beginPath(); ctx.arc(cx + size * 0.5, cy + size * 0.5, size * 0.34, 0, Math.PI * 2); ctx.fill();
-  } else if (shape === 'alien') {
-    // Antenas e olhos grandes
-    ctx.strokeStyle = '#9cff57'; ctx.lineWidth = Math.max(1, cell * 0.045);
-    ctx.beginPath(); ctx.moveTo(cx + size * 0.32, cy + size * 0.12); ctx.lineTo(cx + size * 0.18, cy - size * 0.22);
-    ctx.moveTo(cx + size * 0.68, cy + size * 0.12); ctx.lineTo(cx + size * 0.82, cy - size * 0.22); ctx.stroke();
-    ctx.fillStyle = '#111';
-    ctx.beginPath(); ctx.ellipse(cx + size * 0.33, cy + size * 0.48, size * 0.1, size * 0.18, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(cx + size * 0.67, cy + size * 0.48, size * 0.1, size * 0.18, 0, 0, Math.PI * 2); ctx.fill();
-  } else if (shape === 'pirata') {
-    // Chapéu e tapa-olho
-    ctx.fillStyle = '#161616';
-    ctx.beginPath();
-    ctx.roundRect(cx + size * 0.02, cy - size * 0.22, size * 0.96, size * 0.28, size * 0.08); ctx.fill();
-    ctx.fillRect(cx + size * 0.28, cy - size * 0.38, size * 0.44, size * 0.18);
-    ctx.fillStyle = '#111';
-    ctx.beginPath(); ctx.roundRect(cx + size * 0.18, cy + size * 0.35, size * 0.64, size * 0.17, size * 0.06); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = `bold ${cell * 0.28}px sans-serif`; ctx.fillText('✕', cx + size * 0.54, cy + size * 0.45);
-  } else if (shape === 'robot') {
-    // Antena e detalhes quadrados
-    ctx.strokeStyle = '#d7e2ef'; ctx.lineWidth = Math.max(1, cell * 0.05);
-    ctx.beginPath(); ctx.moveTo(cx + size * 0.5, cy - size * 0.02); ctx.lineTo(cx + size * 0.5, cy - size * 0.32); ctx.stroke();
-    ctx.fillStyle = '#d7e2ef'; ctx.beginPath(); ctx.arc(cx + size * 0.5, cy - size * 0.35, size * 0.07, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(cx + size * 0.2, cy + size * 0.38, size * 0.16, size * 0.13);
-    ctx.fillRect(cx + size * 0.64, cy + size * 0.38, size * 0.16, size * 0.13);
-  } else if (shape === 'skull') {
-    // Olhos e nariz de caveira
-    ctx.fillStyle = '#111';
-    ctx.beginPath(); ctx.ellipse(cx + size * 0.32, cy + size * 0.48, size * 0.11, size * 0.14, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(cx + size * 0.68, cy + size * 0.48, size * 0.11, size * 0.14, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(cx + size * 0.5, cy + size * 0.58); ctx.lineTo(cx + size * 0.44, cy + size * 0.72); ctx.lineTo(cx + size * 0.56, cy + size * 0.72); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#111'; ctx.lineWidth = Math.max(1, cell * 0.035);
-    ctx.beginPath(); ctx.moveTo(cx + size * 0.3, cy + size * 0.82); ctx.lineTo(cx + size * 0.7, cy + size * 0.82); ctx.stroke();
   }
-
-  // Reflexo de luz para dar acabamento 3D.
-  ctx.save();
-  ctx.globalAlpha = 0.15;
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.ellipse(cx + size * 0.34, cy + size * 0.22, size * 0.18, size * 0.07, -0.30, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
 
   // Olhinhos em toda cabeça, com uma piscadinha de vez em quando — dá mais vida e é
   // barato de desenhar (só dois pontinhos ou dois tracinhos quando pisca)
@@ -937,6 +652,7 @@ function drawBodySegment(x, y, color, pattern, k, palette) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.22;
   const cx = sx(x) + pad, cy = sy(y) + pad;
 
+  // Sombrinha sutil embaixo, pra dar uma sensação de profundidade (bem barata de desenhar)
   ctx.fillStyle = 'rgba(0,0,0,0.22)';
   ctx.beginPath();
   ctx.roundRect(cx + size * 0.06, cy + size * 0.12, size, size, r);
@@ -945,23 +661,13 @@ function drawBodySegment(x, y, color, pattern, k, palette) {
   let fillColor = color;
   if (pattern === 'tricolor') {
     const preset = TRICOLOR_PALETTES.find(p => p.value === palette);
-    if (preset && preset.colors) fillColor = preset.colors[k % 3];
-    else {
+    if (preset && preset.colors) {
+      fillColor = preset.colors[k % 3];
+    } else {
       const variant = k % 3;
       fillColor = variant === 1 ? shadeColor(color, 55) : variant === 2 ? shadeColor(color, -55) : color;
     }
-  } else if (pattern === 'fire') {
-    fillColor = k % 3 === 0 ? '#ff5533' : k % 3 === 1 ? '#ff9f43' : '#ffd34d';
-  } else if (pattern === 'ice') {
-    fillColor = k % 2 ? '#8ee9ff' : '#d9fbff';
-  } else if (pattern === 'galaxy') {
-    fillColor = k % 3 === 0 ? '#7047c6' : k % 3 === 1 ? '#2b3d91' : '#a07ce9';
-  } else if (pattern === 'electric') {
-    fillColor = k % 2 ? '#51e6ff' : '#b7f8ff';
-  } else if (pattern === 'venom') {
-    fillColor = k % 2 ? '#72c94b' : '#3f8f3b';
   }
-
   ctx.fillStyle = fillColor;
   ctx.beginPath();
   ctx.roundRect(cx, cy, size, size, r);
@@ -969,52 +675,14 @@ function drawBodySegment(x, y, color, pattern, k, palette) {
 
   if (pattern === 'stripes' && k % 2 === 1) {
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.beginPath(); ctx.roundRect(cx, cy, size, size, r); ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(cx, cy, size, size, r);
+    ctx.fill();
   } else if (pattern === 'dots') {
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.beginPath(); ctx.arc(sx(x) + cell / 2, sy(y) + cell / 2, cell * 0.13, 0, Math.PI * 2); ctx.fill();
-  } else if (pattern === 'neon') {
-    ctx.save();
-    ctx.shadowColor = color;
-    ctx.shadowBlur = cell * 0.65;
-    ctx.strokeStyle = '#ffffff55';
-    ctx.lineWidth = Math.max(1, cell * 0.035);
-    ctx.stroke();
-    ctx.restore();
-  } else if (pattern === 'fire') {
-    ctx.fillStyle = k % 2 ? '#ffe26b' : '#ff6a2a';
-    ctx.globalAlpha = 0.72;
-    ctx.beginPath(); ctx.arc(sx(x) + cell * 0.5, sy(y) + cell * 0.38, cell * 0.10, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
-  } else if (pattern === 'ice') {
-    ctx.fillStyle = '#ffffffaa';
     ctx.beginPath();
-    ctx.moveTo(cx + size * 0.18, cy + size * 0.28);
-    ctx.lineTo(cx + size * 0.46, cy + size * 0.10);
-    ctx.lineTo(cx + size * 0.35, cy + size * 0.34);
-    ctx.closePath(); ctx.fill();
-  } else if (pattern === 'galaxy') {
-    ctx.fillStyle = '#ffffffcc';
-    const star = size * 0.08;
-    ctx.fillRect(cx + size * (0.20 + (k % 3) * 0.24), cy + size * 0.28, star, star);
-    ctx.fillRect(cx + size * (0.42 + (k % 2) * 0.20), cy + size * 0.64, star, star);
-  } else if (pattern === 'electric') {
-    ctx.strokeStyle = '#ffffffdd';
-    ctx.lineWidth = Math.max(1, cell * 0.035);
-    ctx.beginPath();
-    ctx.moveTo(cx + size * 0.18, cy + size * 0.58);
-    ctx.lineTo(cx + size * 0.40, cy + size * 0.35);
-    ctx.lineTo(cx + size * 0.56, cy + size * 0.62);
-    ctx.lineTo(cx + size * 0.78, cy + size * 0.36);
-    ctx.stroke();
-  } else if (pattern === 'venom') {
-    ctx.fillStyle = '#c7ff5a';
-    ctx.globalAlpha = 0.75;
-    ctx.beginPath();
-    ctx.arc(cx + size * 0.28, cy + size * 0.70, cell * 0.055, 0, Math.PI * 2);
-    ctx.arc(cx + size * 0.72, cy + size * 0.70, cell * 0.055, 0, Math.PI * 2);
+    ctx.arc(sx(x) + cell / 2, sy(y) + cell / 2, cell * 0.13, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1;
   }
 }
 
@@ -1285,8 +953,8 @@ function drawMinimap() {
   // Comidinhas e estrelas no minimapa — bem maiores e com contorno branco, pra dar
   // pra ver de relance mesmo numa tela pequena de celular
   for (const f of state.foods) {
-    const r = f.kind === 'bonus' || f.kind === 'secondPlace' ? 3.2 : 2.2;
-    ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : f.kind === 'secondPlace' ? '#63e6ff' : f.kind === 'drop' ? (state.colors[f.owner] || '#ff4f7a') : '#ff4f7a';
+    const r = f.kind === 'bonus' || f.kind === 'streak' ? 3.2 : 2.2;
+    ctx.fillStyle = f.kind === 'bonus' ? '#ffd24d' : f.kind === 'streak' ? '#c084fc' : f.kind === 'drop' ? (state.colors[f.owner] || '#ff4f7a') : '#ff4f7a';
     ctx.beginPath();
     ctx.arc(mx + f.x * scale, my + f.y * scale, r, 0, Math.PI * 2);
     ctx.fill();
@@ -1343,20 +1011,6 @@ function drawMinimap() {
   ctx.strokeStyle = 'rgba(255,255,255,0.65)';
   ctx.lineWidth = 1.3;
   ctx.strokeRect(mx + camX * scale, my + camY * scale, viewW * scale, viewH * scale);
-
-  // Varredura de radar discreta girando no minimapa.
-  const radarT = (Date.now() / 900) % (Math.PI * 2);
-  const rcx = mx + mmW / 2, rcy = my + mmH / 2;
-  ctx.save();
-  ctx.globalAlpha = 0.22;
-  ctx.strokeStyle = '#67ef8a';
-  ctx.lineWidth = Math.max(1, Math.min(2, mmW * 0.012));
-  ctx.beginPath();
-  ctx.moveTo(rcx, rcy);
-  ctx.lineTo(rcx + Math.cos(radarT) * mmW * 0.50, rcy + Math.sin(radarT) * mmW * 0.50);
-  ctx.stroke();
-  ctx.restore();
-
   ctx.restore();
 }
 
@@ -1383,15 +1037,6 @@ export function renderScores() {
   const teamBadge = ['🔵', '🔴'];
 
   // Descobre quem tá na frente (só faz sentido com mais de 1 jogador, e com pontuação > 0)
-  // Ordem visual do ranking fica sempre disponível, inclusive quando há só 1 jogador.
-  // O desempate usa comida consumida e, por último, a ordem original dos slots.
-  const rankOrder = Array.from({ length: state.count }, (_, i) => i).sort((a, b) => {
-    const scoreDiff = (state.scores[b] || 0) - (state.scores[a] || 0);
-    if (scoreDiff !== 0) return scoreDiff;
-    const foodDiff = (state.foodsEaten[b] || 0) - (state.foodsEaten[a] || 0);
-    return foodDiff !== 0 ? foodDiff : a - b;
-  });
-
   let leaderIdx = -1;
   if (state.count > 1) {
     let maxScore = 0;
@@ -1430,11 +1075,8 @@ export function renderScores() {
     const sinalBadge = sinalIndicador(i);
     // Ícone Humano/CPU — ajuda a saber de relance quem é controlado por gente de verdade
     const typeIcon = state.types[i] === 'cpu' ? '🤖' : '🧑';
-    const rank = rankOrder.indexOf(i) + 1;
-    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-    const rankClass = ` rank-${Math.min(rank, 3)}`;
     const nameStyle = (i === 0 && state.nameColor && state.nameColor !== 'auto') ? ` style="color:${state.nameColor}"` : '';
-    h += `<div class="score${leaderClass}${rankClass}" data-rank="${rank}" style="border-color:${state.colors[i]}"><span class="rankBadge">${rankIcon}</span> ${ICONS[i]} ${typeIcon} <b${nameStyle}>${label(i)}</b>${youBadge}${sinalBadge}${leader}${recordBadge}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
+    h += `<div class="score${leaderClass}" style="border-color:${state.colors[i]}">${ICONS[i]} ${typeIcon} <b${nameStyle}>${label(i)}</b>${youBadge}${sinalBadge}${leader}${recordBadge}${team} • 🍎 ${state.foodsEaten[i] || 0} • ⭐ <span class="scoreNum">${state.scores[i] || 0}</span> • 🎯 ${state.eliminations[i] || 0}${wins}${boost}${state.alive[i] ? '' : ' • ☠️'}${progressBar}</div>`;
   }
   // Placar somado dos times: quem está ganhando de relance (o de cima, em dourado)
   if (state.teamMode && state.count > 1) {
@@ -1488,98 +1130,6 @@ export function renderScores() {
   }
 }
 
-// Efeito visual de morte detectado pela transição vivo -> morto.
-const ultimoAliveVisual = Array(6).fill(null);
-const ultimaCabecaVisual = Array(6).fill(null);
-let deathEffects = [];
-
-function rastrearMortesVisuais() {
-  for (let i = 0; i < state.count; i++) {
-    const alive = !!state.alive[i];
-    if (ultimoAliveVisual[i] === true && !alive && ultimaCabecaVisual[i]) {
-      deathEffects.push({
-        x: ultimaCabecaVisual[i].x,
-        y: ultimaCabecaVisual[i].y,
-        color: state.colors[i] || '#ffffff',
-        bornAt: Date.now(),
-      });
-    }
-    ultimoAliveVisual[i] = alive;
-    if (alive && state.snakes[i]?.[0]) ultimaCabecaVisual[i] = { ...state.snakes[i][0] };
-  }
-}
-
-function drawDeathEffects() {
-  const agora = Date.now(), duracao = 650;
-  deathEffects = deathEffects.filter(e => agora - e.bornAt < duracao);
-  for (const e of deathEffects) {
-    const p = Math.max(0, Math.min(1, (agora - e.bornAt) / duracao));
-    const x = sx(e.x) + cell / 2, y = sy(e.y) + cell / 2;
-    ctx.save();
-    ctx.globalAlpha = 0.60 * (1 - p);
-    ctx.strokeStyle = e.color;
-    ctx.shadowColor = e.color;
-    ctx.shadowBlur = cell * (0.8 - p * 0.35);
-    ctx.lineWidth = Math.max(1, cell * 0.08);
-    ctx.beginPath();
-    ctx.arc(x, y, cell * (0.45 + p * 1.55), 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.globalAlpha = 0.86 * (1 - p);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `900 ${cell * 0.95}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('💥', x, y);
-    ctx.restore();
-  }
-}
-
-function drawLeaderCrown() {
-  if (state.count < 2) return;
-  let leader = -1, topScore = 0;
-  for (let i = 0; i < state.count; i++) {
-    if (state.alive[i] && (state.scores[i] || 0) > topScore) { topScore = state.scores[i] || 0; leader = i; }
-  }
-  if (leader < 0 || !state.snakes[leader]?.[0]) return;
-  const h = state.snakes[leader][0];
-  ctx.save();
-  ctx.globalAlpha = 0.75 + 0.25 * Math.sin(Date.now() / 180);
-  ctx.font = `900 ${Math.max(12, cell * 0.72)}px sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.shadowColor = '#ffd24d';
-  ctx.shadowBlur = cell * 0.55;
-  ctx.fillText('👑', sx(h.x) + cell / 2, sy(h.y) - cell * 0.28);
-  ctx.restore();
-}
-
-function drawEnhancedParticles() {
-  const agora = Date.now();
-  for (let i = 0; i < state.particles.length; i++) {
-    const p = state.particles[i];
-    const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
-    const lifeRatio = Math.max(0, Math.min(1, (p.life || 0) / 40));
-    const size = Math.max(1, cell * (0.05 + lifeRatio * 0.09));
-    ctx.save();
-    ctx.globalAlpha = lifeRatio * 0.95;
-    ctx.fillStyle = p.color;
-    ctx.shadowColor = p.color;
-    ctx.shadowBlur = size * 1.8;
-    ctx.translate(x, y);
-    ctx.rotate(agora / 180 + i * 1.7);
-    ctx.beginPath();
-    if (i % 3 === 0) {
-      ctx.moveTo(0, -size); ctx.lineTo(size, 0); ctx.lineTo(0, size); ctx.lineTo(-size, 0); ctx.closePath();
-    } else if (i % 3 === 1) {
-      ctx.rect(-size, -size, size * 2, size * 2);
-    } else {
-      ctx.arc(0, 0, size, 0, Math.PI * 2);
-    }
-    ctx.fill();
-    ctx.restore();
-  }
-}
-
 export function draw() {
   if (
     canvas.parentElement.clientWidth !== canvas._lastW ||
@@ -1596,7 +1146,6 @@ export function draw() {
     canvas._lastMapH = state.mapH;
   }
   updateCamera();
-  if (typeof rastrearMortesVisuais === 'function') rastrearMortesVisuais();
 
   ctx.save();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1605,7 +1154,6 @@ export function draw() {
   const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
   drawThemeBackdrop(theme);
   drawBiomeDecorations(theme);
-  if (typeof drawThemeReaction === 'function') drawThemeReaction(theme);
 
   ctx.strokeStyle = theme.grid;
   const gxStart = Math.floor(camX), gxEnd = Math.ceil(camX + viewW);
@@ -1647,66 +1195,47 @@ export function draw() {
   const t = Date.now() / 180;
   for (const f of state.foods) {
     const x = sx(f.x) + cell / 2, y = sy(f.y) + cell / 2;
-    if (x < -cell * 2 || x > canvas.width + cell * 2 || y < -cell * 2 || y > canvas.height + cell * 2) continue;
-    const bob = Math.sin(Date.now() / 330 + f.x * 1.7 + f.y * 2.1) * cell * 0.05;
-    const rot = Math.sin(Date.now() / 700 + f.x * 0.8 + f.y) * 0.08;
+    if (x < -cell || x > canvas.width + cell || y < -cell || y > canvas.height + cell) continue;
     ctx.save();
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.translate(x, y + bob); ctx.rotate(rot);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     if (f.piscando) {
-      const visible = Math.floor(Date.now() / 120) % 2 === 0;
-      if (!visible) { ctx.restore(); continue; }
-      ctx.scale(1.16, 1.16);
+      // Prestes a virar estrela — pisca rapidinho e já brilha dourado, dando a dica
+      // visual de que está prestes a se transformar
+      const piscaVisivel = Math.floor(Date.now() / 120) % 2 === 0;
+      if (!piscaVisivel) { ctx.restore(); continue; }
       ctx.font = `${cell}px sans-serif`;
-      ctx.shadowBlur = 18; ctx.shadowColor = '#ffd24d'; ctx.fillText(theme.food, 0, 0);
-      ctx.restore(); continue;
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = '#ffd24d';
+      ctx.fillText(f.kind === 'drop' ? theme.food : theme.food, x, y);
+      ctx.restore();
+      continue;
     }
     if (f.kind === 'bonus') {
-      const pulse = 1 + Math.sin(Date.now() / 170) * 0.10;
-      ctx.scale(pulse, pulse);
       ctx.font = `${cell * 1.2}px sans-serif`;
-      ctx.shadowBlur = 15 + Math.sin(t) * 8; ctx.shadowColor = '#ffd24d'; ctx.fillText('⭐', 0, 0);
-    } else if (f.kind === 'secondPlace') {
-      const pulse = 1.05 + Math.sin(Date.now() / 140) * 0.12;
-      ctx.scale(pulse, pulse);
-      ctx.font = `${cell * 1.28}px sans-serif`;
-      ctx.shadowBlur = 18 + Math.sin(t * 1.4) * 10; ctx.shadowColor = '#63e6ff'; ctx.fillText('💎', 0, 0);
-      ctx.font = `${cell * 0.32}px sans-serif`; ctx.fillText('✦', cell * 0.62, -cell * 0.48);
+      ctx.shadowBlur = 12 + Math.sin(t) * 7;
+      ctx.shadowColor = '#ffd24d';
+      ctx.fillText('⭐', x, y);
+    } else if (f.kind === 'streak') {
+      // Comida de sequência vencedora — uma coroa roxa brilhante, bem diferente de tudo
+      // o resto, pra deixar claro que é uma recompensa especial rara
+      ctx.font = `${cell * 1.25}px sans-serif`;
+      ctx.shadowBlur = 14 + Math.sin(t * 1.3) * 8;
+      ctx.shadowColor = '#c084fc';
+      ctx.fillText('👑', x, y);
     } else {
-      const pulse = 0.96 + Math.sin(Date.now() / 280 + f.x) * 0.05;
-      const rarity = f.rarity || 'normal';
-      const style = {
-        normal: { color: '#ff4f7a', scale: 1, ring: null },
-        rare: { color: '#63b3ff', scale: 1.04, ring: '#63b3ff' },
-        epic: { color: '#b57bff', scale: 1.09, ring: '#b57bff' },
-        legendary: { color: '#ffd24d', scale: 1.15, ring: '#ffd24d' },
-      }[rarity] || { color: '#ff4f7a', scale: 1, ring: null };
-      ctx.scale(pulse * style.scale, pulse * style.scale);
       ctx.font = `${cell}px sans-serif`;
-      ctx.shadowBlur = rarity === 'normal' ? 9 : rarity === 'rare' ? 13 : rarity === 'epic' ? 17 : 22;
-      ctx.shadowColor = f.kind === 'drop' ? (state.colors[f.owner] || style.color) : style.color;
-      ctx.fillText(theme.food, 0, 0);
-      if (style.ring) {
-        ctx.globalAlpha = 0.46 + Math.sin(Date.now() / 180) * 0.16;
-        ctx.strokeStyle = style.ring;
-        ctx.lineWidth = Math.max(1, cell * 0.045);
-        ctx.beginPath(); ctx.arc(0, 0, cell * 0.57, 0, Math.PI * 2); ctx.stroke();
-      }
-      if (rarity === 'epic' || rarity === 'legendary') {
-        ctx.globalAlpha = rarity === 'legendary' ? 0.92 : 0.66;
-        ctx.fillStyle = style.color;
-        ctx.font = `${cell * 0.27}px sans-serif`;
-        ctx.fillText(rarity === 'legendary' ? '✦' : '◆', cell * 0.56, -cell * 0.48);
-      }
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = f.kind === 'drop' ? (state.colors[f.owner] || '#fff') : '#ff4f7a';
+      ctx.fillText(theme.food, x, y);
     }
     ctx.restore();
   }
+
   for (let i = 0; i < state.count; i++) if (state.alive[i]) {
     const s = state.snakes[i];
     if (!s || !s.length) continue; // proteção: marcada como viva mas sem dados ainda (ex: acabou de entrar) — não trava o resto do desenho
     const boosting = state.boosting[i];
-
-    if (typeof drawEnergyTrail === 'function') drawEnergyTrail(s, i, boosting);
 
     ctx.save();
     // Rastro neon: um brilho na cor da minhoca, mais forte pertinho da cabeça e
@@ -1721,18 +1250,19 @@ export function draw() {
       if (k === 0) {
         // Efeito "squash": achata rapidinho a cabeça bem no instante que vira uma curva,
         // dá uma sensação de movimento mais viva (efeito clássico de animação)
-        // Squash na curva + respiração contínua, sem alterar colisões.
-        const nowVisual = Date.now();
-        const sinceTurn = nowVisual - (state.lastTurnAt[i] || 0);
-        const turnSquash = sinceTurn < 140 ? 1 - (1 - sinceTurn / 140) * 0.22 : 1;
-        const breathe = 1 + Math.sin(nowVisual / 150 + i * 1.7) * 0.025;
-        const hx = sx(p.x) + cell / 2, hy = sy(p.y) + cell / 2;
-        ctx.save();
-        ctx.translate(hx, hy);
-        ctx.scale((1 / turnSquash) * breathe, turnSquash * (1 - (breathe - 1) * 0.45));
-        ctx.translate(-hx, -hy);
-        drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
-        ctx.restore();
+        const sinceTurn = Date.now() - (state.lastTurnAt[i] || 0);
+        const squash = sinceTurn < 140 ? 1 - (1 - sinceTurn / 140) * 0.22 : 1;
+        if (squash !== 1) {
+          const hx = sx(p.x) + cell / 2, hy = sy(p.y) + cell / 2;
+          ctx.save();
+          ctx.translate(hx, hy);
+          ctx.scale(1 / squash, squash);
+          ctx.translate(-hx, -hy);
+          drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
+          ctx.restore();
+        } else {
+          drawHead(p.x, p.y, state.heads[i] || 'round', state.colors[i]);
+        }
         // Destaque na SUA própria minhoca — um aneizinho branco pulsante ao redor da
         // cabeça, fácil de achar você mesmo no meio de várias minhocas na tela
         if (i === mySlot) {
@@ -1776,11 +1306,16 @@ export function draw() {
     }
   }
 
-  if (typeof drawDeathEffects === 'function') drawDeathEffects();
-  if (typeof drawLeaderCrown === 'function') drawLeaderCrown();
   drawHunter();
 
-  if (typeof drawEnhancedParticles === 'function') drawEnhancedParticles();
+  for (const p of state.particles) {
+    const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
+    ctx.globalAlpha = Math.max(0, p.life / 40);
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(1, (p.life / 12) * (cell / 20)), 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   // Texto flutuante de comemoração (marco de crescimento)
   if (state.toast && Date.now() < state.toast.until) {

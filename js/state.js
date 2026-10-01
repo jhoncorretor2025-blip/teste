@@ -73,9 +73,8 @@ export const state = {
   hunterMilestoneIndex: 0, // quantos marcos (100, 150...) já foram usados nessa partida
   diagAutoShown: false, // o painel 🩺 foi aberto sozinho (não pela pessoa) — some sozinho quando os dados chegarem
   diagManual: false, // a pessoa abriu o painel 🩺 de propósito — aí ele NÃO some sozinho
-  secondPlaceBonusTarget: -1, // jogador atualmente em 2º lugar que pode receber a sequência de bônus
-  secondPlaceBonusRemaining: 0, // quantas comidas especiais de 10 ainda podem nascer para esse 2º lugar
-  secondPlaceBonusCollected: 0, // quantas das comidas especiais o jogador já coletou nesta partida
+  streakBonusActive: false, // comida de sequência vencedora — liga quando o líder abre 25+ de vantagem
+  streakBonusNextAt: 0, // quando a próxima comidinha especial (valendo 10) vai aparecer
   hunterBurstUntil: 0, // até quando a rajada de velocidade atual dura (0 = sem rajada agora)
   hunterNextBurstAt: 0, // quando a próxima rajada de velocidade pode começar
   hunterDistractedUntil: 0, // até quando ela tá "distraída" perseguindo outro alvo (não o líder)

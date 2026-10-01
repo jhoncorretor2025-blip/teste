@@ -9,10 +9,10 @@ import { loadTeamPrefs, saveTeamPrefs } from './storage.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
 import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
-import { render } from './render.js?v=3.6.3';
+import { render } from './render.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -53,40 +53,6 @@ function updateSessionScoreDisplay() {
   const parts = Object.entries(sessionWins).map(([slot, w]) => `${label(Number(slot))}: ${w} vitória${w === 1 ? '' : 's'}`);
   box.textContent = `📊 Nessa sala hoje: ${parts.join(' • ')}`;
   box.classList.remove('hidden');
-}
-
-// Conquistas exclusivas do multiplayer: os clientes não simulam o jogo, então
-// acompanham os estados enviados pelo anfitrião para desbloquear objetivos online.
-let onlineAchievementStartAt = 0;
-let onlineLastFoods = 0;
-function checkOnlineAchievementsFromState() {
-  if (!net.isOnline() || !state.running) return;
-  const totalPlayers = state.count || 0;
-  if (totalPlayers >= 3) unlockOnline('online_trio');
-  if (totalPlayers >= 6) unlockOnline('online_full_room');
-  if (state.teamMode) unlockOnline('online_team');
-
-  const myFood = state.foodsEaten[net.mySlot] || 0;
-  const myScore = state.scores[net.mySlot] || 0;
-  const myElims = state.eliminations[net.mySlot] || 0;
-  if (myFood > 0) unlockOnline('online_first_food');
-  if (myFood >= 25) unlockOnline('online_food_25');
-  if (myScore >= 100) unlockOnline('online_score_100');
-  if (myScore >= 500) unlockOnline('online_score_500');
-  if (myElims >= 1) unlockOnline('online_kill_1');
-  if (myElims >= 3) unlockOnline('online_kill_3');
-
-  // Só conta tempo a partir do começo desta partida online.
-  if (!onlineAchievementStartAt) onlineAchievementStartAt = Date.now();
-  if (state.alive[net.mySlot] && Date.now() - onlineAchievementStartAt >= 120000) {
-    unlockOnline('online_survive_2m');
-  }
-
-  onlineLastFoods = Math.max(onlineLastFoods, myFood);
-}
-function unlockOnline(id) {
-  const a = unlockAchievement(id);
-  if (a) document.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: a }));
 }
 
 net.setHandlers({
@@ -150,7 +116,6 @@ net.setHandlers({
   onStateUpdate: (msg) => {
     applyRemoteState(msg);
     capturePartnerNameOnce(msg.names?.[0]);
-    checkOnlineAchievementsFromState();
   },
   // A configuração estável da sala agora pode chegar a qualquer momento: entrada tardia,
   // reconexão ou após uma troca de anfitrião. Ela não depende do primeiro pacote de estado.
@@ -815,15 +780,6 @@ document.addEventListener('onlineMatchResult', (e) => {
   if (net.isOnline()) {
     sessionWins[champion] = (sessionWins[champion] || 0) + 1;
     updateSessionScoreDisplay();
-
-    const my = net.mySlot;
-    if ((foodsEaten[my] || 0) > 0) unlockOnline('online_first_food');
-    if ((foodsEaten[my] || 0) >= 25) unlockOnline('online_food_25');
-    if ((scores[my] || 0) >= 100) unlockOnline('online_score_100');
-    if ((scores[my] || 0) >= 500) unlockOnline('online_score_500');
-    if ((eliminations[my] || 0) >= 1) unlockOnline('online_kill_1');
-    if ((eliminations[my] || 0) >= 3) unlockOnline('online_kill_3');
-    if (champion === my) unlockOnline('online_champion');
   }
 
   // A revanche usa a mesma sala: o anfitrião dispara uma nova partida e os clientes
@@ -991,22 +947,6 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
   document.querySelectorAll('.tabBtn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
   btn.classList.add('active');
   btn.setAttribute('aria-selected', 'true');
-
-  // Ao entrar na aba JOGAR, a configuração da partida fica aberta automaticamente.
-  // Assim a pessoa vê imediatamente quantidade de jogadores, controles, mapa, velocidade
-  // e demais opções, sem precisar descobrir o botão de configurações.
-  if (tab === 'jogar') {
-    const settingsBox = $('gameAdvancedSettings');
-    const settingsBtn = $('gameSettingsToggle');
-    if (settingsBox && settingsBtn) {
-      settingsBox.classList.remove('hidden');
-      settingsBtn.setAttribute('aria-expanded', 'true');
-      settingsBtn.classList.add('open');
-      const arrow = settingsBtn.querySelector('span');
-      if (arrow) arrow.textContent = '▴';
-    }
-  }
-
   const current = document.querySelector('.tabPanel:not(.hidden)');
   if (current) current.classList.add('tabFading');
   setTimeout(() => {
@@ -1779,11 +1719,32 @@ updateTopRecordDisplay();
 updateRoomSettingsPreview();
 maybeShowTutorial();
 
-// Service Worker desativado temporariamente para eliminar o ciclo de recarregamento.
+// Deixa o jogo instalável como app e funcionando offline
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations()
-    .then((regs) => Promise.all(regs.map((reg) => reg.unregister())))
-    .catch(() => {});
+  navigator.serviceWorker.register('sw.js').then((reg) => {
+    // Confere se já tem uma versão nova esperando (ex: a pessoa abriu o jogo de novo
+    // depois de eu ter publicado uma atualização)
+    if (reg.waiting) showUpdateBanner(reg);
+
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner(reg);
+        }
+      });
+    });
+
+    // Checagem ativa: por padrão, o navegador só verifica se tem versão nova de vez em
+    // quando (às vezes só uma vez por dia) — isso fazia a pessoa continuar numa versão
+    // velha por bastante tempo mesmo com internet boa. Agora checa na hora, e de novo
+    // toda vez que a pessoa volta pra aba (ex: saiu pro WhatsApp e voltou).
+    reg.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update().catch(() => {});
+    });
+  }).catch(() => {});
 }
 
 // Checagem de versão à parte, direta da internet (segurança extra) — em vez de
@@ -1794,14 +1755,53 @@ if ('serviceWorker' in navigator) {
 // etc.). Se a versão aí for diferente da que está rodando agora, força uma atualização
 // completa sozinho, sem precisar de nenhuma ação da pessoa.
 async function checarVersaoDeVerdade() {
-  // Não faz reload automático. A versão é verificada apenas para informação.
-  return false;
+  try {
+    const resp = await fetch(`./version.txt?nocache=${Date.now()}-${Math.random()}`, { cache: 'no-store' });
+    if (!resp.ok) return;
+    const versaoNoServidor = (await resp.text()).trim();
+    // Correção de bug real: antes só checava "!state.running" (partida rodando), mas
+    // isso deixava passar o momento mais comum de todos — CRIAR a sala e ficar esperando
+    // o amigo entrar ("1/6 jogadores"), já que o jogo em si ainda não começou. Quem saía
+    // pro WhatsApp mandar o link e voltava tinha a sala inteira apagada sem aviso, tendo
+    // que criar tudo de novo. Agora também protege enquanto estiver online de qualquer
+    // jeito (hospedando, esperando, ou já jogando).
+    if (versaoNoServidor && versaoNoServidor !== VERSION && !state.running && !net.isOnline()) {
+      announce(`🔄 Versão nova encontrada (${versaoNoServidor}) — atualizando sozinho...`);
+      if ('caches' in window) {
+        const nomes = await caches.keys();
+        await Promise.all(nomes.map((n) => caches.delete(n)));
+      }
+      if (navigator.serviceWorker) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      setTimeout(() => location.reload(), 800);
+    }
+  } catch {} // sem internet ou o arquivo não existe — não faz nada, sem problema
 }
+checarVersaoDeVerdade();
+setInterval(checarVersaoDeVerdade, 60000); // confere de novo a cada minuto, caso publique algo novo enquanto a pessoa já está com o jogo aberto
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') checarVersaoDeVerdade();
+});
 
 let pendingUpdateReg = null;
 function showUpdateBanner(reg) {
-  pendingUpdateReg = reg || null;
-  announce('🔄 Atualização disponível. Ela não será aplicada automaticamente.');
+  // Se tiver uma partida rolando OU a pessoa estiver online de qualquer jeito (criou uma
+  // sala e tá esperando o amigo entrar, por exemplo), não interrompe na hora — espera ela
+  // voltar pro menu local. Sem isso, sair pro WhatsApp mandar o link da sala e voltar
+  // apagava a sala inteira sem aviso nenhum.
+  if (state.running || net.isOnline()) {
+    pendingUpdateReg = reg;
+    return;
+  }
+  // Fora de partida (no menu), aplica sozinho — sem precisar de clique. Só avisa rapidinho
+  // o que tá acontecendo, pra não parecer que a página travou/recarregou do nada.
+  announce('🔄 Atualizando o jogo pra versão mais nova...');
+  setTimeout(() => {
+    if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    location.reload();
+  }, 600);
 }
 
 // No celular, ativa o modo maximizado (⛶) sozinho na primeira partida — a maioria nem
@@ -2173,35 +2173,13 @@ function renderAchievementsGallery() {
   if (!grid) return;
   const unlocked = loadUnlockedAchievements();
   $('achievementsProgress').textContent = `${unlocked.length} de ${ACHIEVEMENTS.length} conquistas desbloqueadas`;
-
-  const groups = [
-    { key: 'iniciante', title: '🟢 Iniciante', subtitle: 'Primeiros objetivos para pegar o jeito' },
-    { key: 'intermediario', title: '🟡 Intermediário', subtitle: 'Desafios que exigem mais consistência' },
-    { key: 'avancado', title: '🔴 Avançado', subtitle: 'Conquistas para dominar a arena' },
-    { key: 'online', title: '🌐 Online', subtitle: 'Desafios exclusivos para partidas multiplayer' },
-  ];
-
-  grid.innerHTML = groups.map((group) => {
-    const items = ACHIEVEMENTS
-      .filter((a) => a.category === group.key)
-      // O config.js já guarda cada categoria do mais fácil ao mais difícil.
-      .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }));
-    return `
-      <div style="grid-column:1/-1;margin-top:10px">
-        <div style="font-size:1rem;font-weight:800;margin-bottom:2px">${group.title}</div>
-        <div class="muted" style="margin-bottom:7px">${group.subtitle}</div>
-      </div>
-      ${items.map(({ a, difficultyNumber }) => {
-        const isUnlocked = unlocked.includes(a.id);
-        return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}" title="${a.desc}">
-          <span class="aLevel" aria-label="Dificuldade ${difficultyNumber}">${difficultyNumber}</span>
-          <span class="aIcon">${a.icon}</span>
-          <span class="aName">${a.name}</span>
-          <span class="aDesc">${a.desc}</span>
-          <span class="aStatus">${isUnlocked ? '✅ Desbloqueada' : '🔒 Bloqueada'}</span>
-        </div>`;
-      }).join('')}
-    `;
+  grid.innerHTML = ACHIEVEMENTS.map((a) => {
+    const isUnlocked = unlocked.includes(a.id);
+    return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}">
+      <span class="aIcon">${isUnlocked ? a.icon : '❓'}</span>
+      <span class="aName">${isUnlocked ? a.name : '???'}</span>
+      <span class="aDesc">${isUnlocked ? a.desc : 'Ainda não desbloqueada'}</span>
+    </div>`;
   }).join('');
 }
 renderAchievementsGallery();

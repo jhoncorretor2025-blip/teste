@@ -57,6 +57,3 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 ## Visual
 **14. Cada tema visual tem o seu fundo: cor, brilho central, decoração animada e comidinha (v2.82.0).**
 - **Por quê:** antes só a cor de fundo e a das linhas mudavam, e escuras e parecidas; as estrelinhas eram sempre iguais. **Regra:** o fundo mais claro de cada tema (`bg2`) precisa ter contraste ≥ 2,6 com **todas** as cores de minhoca (a roxa quase sumia). O verificador confere que `BOARD_THEMES` e o `<select id="boardTheme">` têm os mesmos temas.
-**16. No celular, a janela da câmera acompanha a proporção real da arena; no PC, o zoom antigo continua valendo.**
-- **Por quê:** a janela fixa de 32 × 25 células deixava grandes faixas pretas quando o telefone ficava em retrato ou paisagem.
-- **Cuidado:** a adaptação só é ativada em aparelhos móveis com toque; não altere a regra do PC sem testar o layout desktop.

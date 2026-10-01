@@ -6,7 +6,7 @@ import { state } from './state.js';
 import { planTeams, unifyTeamColors } from './teams.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall, checkFoodConsolidation, updateFoodConsolidation } from './food.js';
 import { aiDir, hunterDir } from './ai.js';
-import { render } from './render.js?v=3.3.2';
+import { render } from './render.js';
 import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
@@ -64,42 +64,10 @@ function computeStartPoint(i, total, w, h) {
   return { x, y, dx: dir.dx, dy: dir.dy };
 }
 
-function findSafePlayerSpawn(prefX, prefY, dx, dy) {
-  let best = null, bestDistance = -1;
-
-  for (let n = 0; n < 250; n++) {
-    const x = n === 0 ? prefX : Math.floor(Math.random() * state.mapW);
-    const y = n === 0 ? prefY : Math.floor(Math.random() * state.mapH);
-    const body = [
-      { x, y },
-      { x: x - dx, y: y - dy },
-      { x: x - 2 * dx, y: y - 2 * dy },
-    ];
-
-    if (body.some((p) => wall(p.x, p.y))) continue;
-
-    let minDistance = Infinity;
-    for (const seg of body) {
-      minDistance = Math.min(minDistance, minDistanceToSnakes(seg.x, seg.y));
-    }
-
-    if (minDistance > bestDistance && body.every((p) => !occupied(p.x, p.y))) {
-      bestDistance = minDistance;
-      best = { x, y };
-    }
-
-    if (minDistance >= SAFE_SPAWN_DISTANCE && body.every((p) => !occupied(p.x, p.y))) {
-      return { x, y };
-    }
-  }
-
-  return best || findSafeSpawn(prefX, prefY);
-}
-
 export function spawn(i) {
   const w = state.mapW, h = state.mapH;
   const s = computeStartPoint(i, Math.max(state.count, i + 1), w, h);
-  const p = findSafePlayerSpawn(s.x, s.y, s.dx, s.dy);
+  const p = findSafeSpawn(s.x, s.y);
   state.snakes[i] = [{ x: p.x, y: p.y }, { x: p.x - s.dx, y: p.y - s.dy }, { x: p.x - 2 * s.dx, y: p.y - 2 * s.dy }];
   state.dirs[i] = { x: s.dx, y: s.dy };
   state.nextDirs[i] = { x: s.dx, y: s.dy };
@@ -127,9 +95,8 @@ export function reset() {
   state.hunterActive = false;
   state.hunterSnake = [];
   state.hunterMilestoneIndex = 0;
-  state.secondPlaceBonusTarget = -1;
-  state.secondPlaceBonusRemaining = 0;
-  state.secondPlaceBonusCollected = 0;
+  state.streakBonusActive = false;
+  state.streakBonusNextAt = 0;
   state.hunterBurstUntil = 0;
   state.hunterNextBurstAt = 0;
   state.hunterDistractedUntil = 0;
@@ -190,7 +157,6 @@ const SAVE_FIELDS = [
   'snakes', 'alive', 'dirs', 'nextDirs', 'foods', 'scores', 'foodsEaten', 'grow',
   'respawnAt', 'milestones', 'eliminations', 'boosting', 'boostUsedCount', 'mission',
   'hunterActive', 'hunterSnake', 'hunterDir', 'hunterEndsAt', 'hunterMilestoneIndex',
-  'secondPlaceBonusTarget', 'secondPlaceBonusRemaining', 'secondPlaceBonusCollected',
 ];
 
 function snapshotGameState() {
@@ -235,26 +201,15 @@ export function resumeSavedGame(snap) {
 export function startGame() {
   syncSettings();
   setVibrationEnabled(state.vibrationOn);
-  const totalGames = incrementGamesPlayed();
-  updateGamesPlayedBadge(totalGames);
-  if (totalGames >= 5) announceAchievement(unlockAchievement('games_5'));
-  if (totalGames >= 10) announceAchievement(unlockAchievement('games_10'));
+  updateGamesPlayedBadge(incrementGamesPlayed());
   updateSessionStatsDisplay(incrementSessionGames());
   updateStreakAndLastPlayed();
   clearSavedGame();
 
   announceAchievement(unlockAchievement('first_game'));
-  if (state.noWalls) announceAchievement(unlockAchievement('no_walls'));
   announceAchievements(trackCumulativeProgress('themesUsed', state.theme));
   announceAchievements(trackCumulativeProgress('headsUsed', state.heads[0]));
-  if (isOnline()) {
-    announceAchievement(unlockAchievement('social'));
-    announceAchievement(unlockAchievement('online_first'));
-    announceAchievements(trackCumulativeProgress('onlineGames', 1));
-    if (state.count >= 3) announceAchievement(unlockAchievement('online_trio'));
-    if (state.count >= 6) announceAchievement(unlockAchievement('online_full_room'));
-    if (state.teamMode) announceAchievement(unlockAchievement('online_team'));
-  }
+  if (isOnline()) announceAchievement(unlockAchievement('social'));
 
   reset();
   // Aviso do tamanho do mapa logo que a partida começa — trocar de mapa quase não muda o que
@@ -336,10 +291,6 @@ export function tryBoost(i) {
 
   state.boosting[i] = true;
   state.boostUsedCount[i] = (state.boostUsedCount[i] || 0) + 1;
-  if (i === mySlot) {
-    if (state.boostUsedCount[i] >= 1) announceAchievement(unlockAchievement('boost_first'));
-    if (state.boostUsedCount[i] >= 10) announceAchievement(unlockAchievement('boost_10'));
-  }
   state.boostUntil[i] = now + BOOST_DURATION;
   state.boostReadyAt[i] = now + BOOST_COOLDOWN;
   state.boostReadySoundPlayed[i] = false;
@@ -409,18 +360,13 @@ function stepMovement(indices) {
         state.eliminations[die[i]] = (state.eliminations[die[i]] || 0) + 1;
         trackEliminationForMission(die[i]);
         if (die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('eliminator'));
-        if (isOnline() && die[i] === mySlot && state.eliminations[die[i]] >= 1) announceAchievement(unlockAchievement('online_kill_1'));
-        if (isOnline() && die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('online_kill_3'));
-        if (die[i] === mySlot && state.eliminations[die[i]] >= 5) announceAchievement(unlockAchievement('eliminator_5'));
-        if (die[i] === mySlot && state.eliminations[die[i]] >= 10) announceAchievement(unlockAchievement('eliminator_10'));
       }
       kill(i);
       return;
     }
     const h = heads[i];
     state.snakes[i].unshift(h);
-    const candidato = state.foods.find(q => q.x === h.x && q.y === h.y);
-    const f = candidato && (candidato.kind !== 'secondPlace' || candidato.target === i) ? candidato : null;
+    const f = state.foods.find(q => q.x === h.x && q.y === h.y);
     if (f) {
       // Combo de velocidade: comer rápido e seguido dá pontos extras, que vão subindo
       const eatNow = Date.now();
@@ -452,32 +398,10 @@ function stepMovement(indices) {
 
       // Conquistas — só rastreadas pra VOCÊ (mySlot), já que são do seu aparelho
       if (i === mySlot) {
-        announceAchievement(unlockAchievement('first_food'));
         announceAchievements(trackCumulativeProgress('totalFoods', f.value));
-        if (f.kind === 'bonus') {
-          announceAchievement(unlockAchievement('first_star'));
-          announceAchievements(trackCumulativeProgress('totalStars', 1));
-        }
-        if (f.kind === 'secondPlace') {
-          state.secondPlaceBonusCollected = (state.secondPlaceBonusCollected || 0) + 1;
-          if (state.secondPlaceBonusCollected >= 5) announceAchievement(unlockAchievement('second_bonus_5'));
-        }
+        if (f.kind === 'bonus') announceAchievements(trackCumulativeProgress('totalStars', 1));
         if (combo >= 5) announceAchievement(unlockAchievement('combo_master'));
-        if (combo >= 10) announceAchievement(unlockAchievement('combo_10'));
-        if (isOnline()) announceAchievement(unlockAchievement('online_first_food'));
-        if (state.foodsEaten[i] >= 10) announceAchievement(unlockAchievement('food_10'));
-        if (isOnline() && state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('online_food_25'));
-        if (state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('food_25'));
-        if (state.scores[i] >= 25) announceAchievement(unlockAchievement('score_25'));
-        if (state.scores[i] >= 50) announceAchievement(unlockAchievement('score_50'));
         if (state.scores[i] >= 100) announceAchievement(unlockAchievement('century'));
-        if (isOnline() && state.scores[i] >= 100) announceAchievement(unlockAchievement('online_score_100'));
-        if (state.scores[i] >= 250) announceAchievement(unlockAchievement('score_250'));
-        if (state.scores[i] >= 350) announceAchievement(unlockAchievement('score_350'));
-        if (state.scores[i] >= 500) announceAchievement(unlockAchievement('score_500'));
-        if (isOnline() && state.scores[i] >= 500) announceAchievement(unlockAchievement('online_score_500'));
-        if (state.scores[i] >= 1000) announceAchievement(unlockAchievement('score_1000'));
-        if (state.scores[i] >= 1500) announceAchievement(unlockAchievement('score_1500'));
       }
     }
     if (state.grow[i] > 0) state.grow[i]--;
@@ -512,7 +436,6 @@ function endTournamentRound() {
     if (state.tournamentRoundScore[i] > state.tournamentRoundScore[winner]) winner = i;
   }
   state.tournamentWins[winner] = (state.tournamentWins[winner] || 0) + 1;
-  if (winner === mySlot && state.tournamentWins[winner] >= 3) announceAchievement(unlockAchievement('tournament_3wins'));
   const roundJustEnded = state.tournamentRound;
 
   if (roundJustEnded >= TOURNAMENT_ROUNDS) {
@@ -522,9 +445,6 @@ function endTournamentRound() {
     }
     state.tournamentChampion = champion;
     if (champion === mySlot) announceAchievement(unlockAchievement('tournament_champion'));
-    if (isOnline() && champion === mySlot) {
-      announceAchievement(unlockAchievement('online_champion'));
-    }
     state.running = false;
     clearSavedGame();
     render();
@@ -576,98 +496,44 @@ function findFoodLeader() {
   return { leaderIdx, leaderFood };
 }
 
-// Bônus do 2º lugar:
-// quando o segundo colocado já comeu MAIS DE 25 comidas, ele recebe uma sequência de
-// 5 comidas especiais valendo 10 pontos cada. Só uma aparece por vez e cada uma nasce
-// perto da minhoca que está em 2º lugar naquele momento.
-const SEGUNDO_LUGAR_MIN_COMIDAS = 25;
-const SEGUNDO_LUGAR_TOTAL_BONUS = 5;
-const SEGUNDO_LUGAR_RAIO_COMIDA = 7;
-
-function findFoodSecondPlace() {
-  const ranking = [];
+// Comida de sequência vencedora — só faz sentido comparar com o "segundo lugar" se
+// tiver mais de um jogador na partida. Acha o líder e a maior pontuação entre TODOS OS
+// OUTROS jogadores, pra saber a vantagem de verdade (não só o valor absoluto do líder).
+const VANTAGEM_MINIMA_SEQUENCIA = 25;
+const INTERVALO_COMIDA_SEQUENCIA_MS = 15000;
+function ativarComidaSequenciaSeMerecer() {
+  if (state.count < 2) return;
+  const { leaderIdx, leaderFood } = findFoodLeader();
+  if (leaderIdx === -1) return;
+  let segundoLugar = -1;
   for (let i = 0; i < state.count; i++) {
-    if (!state.alive[i]) continue;
-    ranking.push({ i, food: state.foodsEaten[i] || 0 });
+    if (i !== leaderIdx && state.alive[i] && state.foodsEaten[i] > segundoLugar) segundoLugar = state.foodsEaten[i];
   }
-  ranking.sort((x, y) => y.food - x.food);
-  const second = ranking[1];
-  return {
-    leaderIdx: ranking[0]?.i ?? -1,
-    leaderFood: ranking[0]?.food ?? -1,
-    secondIdx: second?.i ?? -1,
-    secondFood: second?.food ?? -1,
-  };
-}
-
-function findFoodNearPlayer(i, radius = SEGUNDO_LUGAR_RAIO_COMIDA) {
-  const head = state.snakes[i]?.[0];
-  if (!head) return freeCell();
-
-  // Primeiro tenta posições próximas da cabeça. Assim o bônus realmente fica "perto dela".
-  for (let n = 0; n < 250; n++) {
-    const dx = Math.floor(Math.random() * (radius * 2 + 1)) - radius;
-    const dy = Math.floor(Math.random() * (radius * 2 + 1)) - radius;
-    if (Math.abs(dx) + Math.abs(dy) > radius) continue;
-    const x = head.x + dx, y = head.y + dy;
-    if (wall(x, y) || occupied(x, y)) continue;
-    return { x, y };
+  if (segundoLugar === -1) return; // não tem mais ninguém vivo pra comparar
+  if (leaderFood - segundoLugar >= VANTAGEM_MINIMA_SEQUENCIA) {
+    state.streakBonusActive = true;
+    state.streakBonusNextAt = Date.now() + INTERVALO_COMIDA_SEQUENCIA_MS;
   }
-  return freeCell();
 }
 
-function clearSecondPlaceBonusFoods() {
-  state.foods = state.foods.filter((f) => f.kind !== 'secondPlace');
-}
-
-// Executado pelo anfitrião. O bônus fica preso ao jogador que realmente está em 2º lugar.
-// Quando uma das 5 comidas é comida, no próximo tick nasce a próxima, novamente perto dele.
-function updateSecondPlaceBonusFood() {
-  // No jogo local o aparelho é a autoridade; no online apenas o anfitrião pode criar a comida.
-  if (isOnline() && !isHost()) return;
-
-  const { secondIdx, secondFood } = findFoodSecondPlace();
-
-  if (secondIdx === -1 || secondFood <= SEGUNDO_LUGAR_MIN_COMIDAS) {
-    if (state.secondPlaceBonusTarget !== -1) clearSecondPlaceBonusFoods();
-    state.secondPlaceBonusTarget = -1;
-    state.secondPlaceBonusRemaining = 0;
+// Chamado a cada instante — enquanto a sequência vencedora estiver ativa, solta uma
+// comidinha especial (valendo 10, bem mais que o normal) a cada 15 segundos. Se a
+// vantagem cair abaixo do mínimo no meio do caminho, desliga sozinho.
+function updateStreakBonusFood() {
+  if (!state.streakBonusActive) return;
+  const { leaderIdx, leaderFood } = findFoodLeader();
+  let segundoLugar = -1;
+  for (let i = 0; i < state.count; i++) {
+    if (i !== leaderIdx && state.alive[i] && state.foodsEaten[i] > segundoLugar) segundoLugar = state.foodsEaten[i];
+  }
+  if (leaderIdx === -1 || segundoLugar === -1 || leaderFood - segundoLugar < VANTAGEM_MINIMA_SEQUENCIA) {
+    state.streakBonusActive = false; // perdeu a vantagem — a recompensa extra some
     return;
   }
-
-  // Mudou quem está em 2º: encerra a sequência antiga e começa uma nova para o novo 2º.
-  if (state.secondPlaceBonusTarget !== secondIdx) {
-    clearSecondPlaceBonusFoods();
-    state.secondPlaceBonusTarget = secondIdx;
-    state.secondPlaceBonusRemaining = SEGUNDO_LUGAR_TOTAL_BONUS;
-  }
-
-  if (state.secondPlaceBonusRemaining <= 0) return;
-
-  const jaExiste = state.foods.some(
-    (f) => f.kind === 'secondPlace' && f.target === secondIdx
-  );
-  if (jaExiste) return;
-
-  const p = findFoodNearPlayer(secondIdx);
-  state.foods.push({
-    x: p.x,
-    y: p.y,
-    kind: 'secondPlace',
-    value: 10,
-    target: secondIdx,
-  });
-  state.secondPlaceBonusRemaining--;
-
-  const h = state.snakes[secondIdx]?.[0];
-  if (h) {
-    state.toast = {
-      x: h.x,
-      y: h.y,
-      text: '💎 Bônus do 2º lugar! +10',
-      color: '#63e6ff',
-      until: Date.now() + 1800,
-    };
+  if (Date.now() >= state.streakBonusNextAt) {
+    const p = freeCell();
+    state.foods.push({ x: p.x, y: p.y, kind: 'streak', value: 10 });
+    state.streakBonusNextAt = Date.now() + INTERVALO_COMIDA_SEQUENCIA_MS;
   }
 }
 
@@ -705,42 +571,12 @@ export function montarCorpoDaCacadora(p, mapW, mapH, tamanho = 50) {
   return corpo;
 }
 
-const SAFE_HUNTER_DISTANCE = 7;
-
-function findSafeHunterSpawn(bodyLength) {
-  let best = null;
-  let bestDistance = -1;
-
-  // A cabeça e, principalmente, o corpo inteiro precisam nascer afastados das cobrinhas.
-  // Testamos muitas posições e guardamos também a melhor encontrada como fallback.
-  for (let n = 0; n < 300; n++) {
-    const p = {
-      x: Math.floor(Math.random() * state.mapW),
-      y: Math.floor(Math.random() * state.mapH),
-    };
-    const body = montarCorpoDaCacadora(p, state.mapW, state.mapH, bodyLength);
-    let minDistance = Infinity;
-    for (const seg of body) {
-      minDistance = Math.min(minDistance, minDistanceToSnakes(seg.x, seg.y));
-    }
-    if (minDistance > bestDistance) best = { p, body, distance: minDistance };
-    if (minDistance >= SAFE_HUNTER_DISTANCE) return { p, body };
-  }
-
-  return best ? { p: best.p, body: best.body } : {
-    p: freeCell(),
-    body: montarCorpoDaCacadora({ x: 2, y: 2 }, state.mapW, state.mapH, bodyLength),
-  };
-}
-
 function spawnHunter(durationSec) {
-  const hunterCfg = state.hunterConfig || {};
-  const bodyLength = hunterCfg.bodyLength || 50;
-  const spawn = findSafeHunterSpawn(bodyLength);
-  const p = spawn.p;
+  const p = freeCell();
   state.hunterVictims = new Set();
   // A Minhoca Caçadora nasce bem grande (50 partes) — bem mais ameaçadora de se ver chegando
-  const corpo = spawn.body;
+  const hunterCfg = state.hunterConfig || {};
+  const corpo = montarCorpoDaCacadora(p, state.mapW, state.mapH, hunterCfg.bodyLength || 50);
   state.hunterSnake = corpo;
   state.hunterDir = { x: 1, y: 0 };
   state.hunterActive = true;
@@ -768,6 +604,11 @@ export function updateHunter() {
     if (!state.hunterVictims.has(mySlot)) announceAchievement(unlockAchievement('hunter_escape'));
     state.hunterSnake = [];
     state.hunterCloseToAnyone = false;
+    // Depois que a Minhoca Caçadora vai embora, confere se o líder abriu uma vantagem
+    // grande (25+ comidinhas) sobre o segundo colocado — se sim, liga a "comida de
+    // sequência vencedora": uma comidinha especial valendo 10 pontos, aparecendo a
+    // cada 15 segundos, como recompensa extra por ter sobrevivido e continuar na frente
+    ativarComidaSequenciaSeMerecer();
     return;
   }
 
@@ -878,22 +719,11 @@ function tick() {
   if (state.mission?.type === 'survive') renderMission(); // atualiza a contagem regressiva na tela
 
   checkHunterSpawn();
-  if (state.alive[mySlot]) {
-    const mySnake = state.snakes[mySlot] || [];
-    const survivedMs = Date.now() - state.spawnedAt[mySlot];
-    if (survivedMs >= 30000) announceAchievement(unlockAchievement('survive_30'));
-    if (survivedMs >= 120000) announceAchievement(unlockAchievement('survivor'));
-    if (isOnline() && survivedMs >= 120000) announceAchievement(unlockAchievement('online_survive_2m'));
-    if (survivedMs >= 300000) announceAchievement(unlockAchievement('survive_5m'));
-    if (mySnake.length >= 15) announceAchievement(unlockAchievement('length_15'));
-    if (mySnake.length >= 20) announceAchievement(unlockAchievement('length_20'));
-    if (mySnake.length >= 25) announceAchievement(unlockAchievement('length_25'));
-    if (mySnake.length >= 35) announceAchievement(unlockAchievement('length_35'));
-    if (mySnake.length >= 50) announceAchievement(unlockAchievement('length_50'));
-    if (mySnake.length >= 75) announceAchievement(unlockAchievement('length_75'));
+  if (state.alive[mySlot] && Date.now() - state.spawnedAt[mySlot] >= 120000) {
+    announceAchievement(unlockAchievement('survivor'));
   }
   updateHunter();
-  updateSecondPlaceBonusFood();
+  updateStreakBonusFood();
   checkFoodConsolidation();
   const estrelaNascida = updateFoodConsolidation();
   if (estrelaNascida) {
@@ -1021,8 +851,6 @@ export function startClientGame() {
   $('clientReadyBtn').disabled = false;
   updateSessionStatsDisplay(incrementSessionGames());
   announceAchievement(unlockAchievement('social'));
-  announceAchievement(unlockAchievement('online_first'));
-  announceAchievements(trackCumulativeProgress('onlineGames', 1));
   render();
   // Rede de segurança final: se por QUALQUER motivo nem a contagem regressiva nem o
   // primeiro pacote de estado chegarem (problema de rede raro, mas real), a pessoa NUNCA
