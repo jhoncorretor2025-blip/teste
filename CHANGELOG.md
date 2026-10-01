@@ -1,3 +1,8 @@
+## [3.6.5] — 2026-09-30
+- **Animais:** cabeças de gato, coelho, urso, raposa, coruja, dragão e outros formatos agora têm detalhes de rosto mais claros (focinho/nariz e expressão), além dos olhos.
+- **Campo de Girassóis:** removida a camada atmosférica que criava aparência de névoa; a iluminação do tema ficou bem mais discreta.
+- **Visual:** preservada a identidade das cabeças e o restante do jogo.
+
 ## [3.6.4] — 2026-09-30
 - **Conquista:** popup ficou mais transparente, permitindo enxergar melhor a partida por trás.
 - **Minhoca Inimiga:** as duas aparições padrão ficaram menos eficientes: menor duração, rajada mais curta e espaçada, menor antecipação, menor crescimento por vítima e distração reduzida.
