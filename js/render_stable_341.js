@@ -850,16 +850,92 @@ function drawHead(x, y, shape, color) {
     ctx.ellipse(cx + size * 0.72, cy - size * 0.12, size * 0.11, size * 0.4, 0.12, 0, Math.PI * 2);
     ctx.fill();
   } else if (shape === 'dragon') {
-    // trinca de espinhos/chifrinhos no topo
-    for (let s = 0; s < 3; s++) {
-      const bx = cx + size * (0.22 + s * 0.28);
+    // Cabeça de dragão de verdade: chifres, sobrancelhas, olhos de réptil,
+    // focinho com narinas e uma boca marcada. Sem isso ele parecia só uma cabeça verde.
+    ctx.save();
+    ctx.fillStyle = '#173a2b';
+    ctx.strokeStyle = '#0c2419';
+    ctx.lineWidth = Math.max(1, cell * 0.035);
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.18, cy + size * 0.14);
+    ctx.lineTo(cx + size * 0.10, cy - size * 0.42);
+    ctx.lineTo(cx + size * 0.34, cy - size * 0.08);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.82, cy + size * 0.14);
+    ctx.lineTo(cx + size * 0.90, cy - size * 0.42);
+    ctx.lineTo(cx + size * 0.66, cy - size * 0.08);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    // Espinhos laterais reforçam a silhueta de dragão sem esconder a carinha.
+    ctx.fillStyle = '#2a6e46';
+    for (const side of [-1, 1]) {
+      for (let k = 0; k < 2; k++) {
+        const bx = cx + size * (0.18 + k * 0.18) + side * size * (k * 0.02);
+        const by = cy + size * (0.32 + k * 0.16);
+        ctx.beginPath();
+        ctx.moveTo(bx + side * size * 0.02, by);
+        ctx.lineTo(bx + side * size * 0.17, by - size * 0.13);
+        ctx.lineTo(bx + side * size * 0.06, by + size * 0.10);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    // Sobrancelhas inclinadas: expressão de réptil/dragão.
+    ctx.strokeStyle = '#10251a';
+    ctx.lineWidth = Math.max(1.5, cell * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.17, cy + size * 0.33);
+    ctx.lineTo(cx + size * 0.41, cy + size * 0.40);
+    ctx.moveTo(cx + size * 0.59, cy + size * 0.40);
+    ctx.lineTo(cx + size * 0.83, cy + size * 0.33);
+    ctx.stroke();
+
+    // Olhos dourados com pupila vertical.
+    ctx.fillStyle = '#f3c642';
+    for (const ex of [0.28, 0.72]) {
       ctx.beginPath();
-      ctx.moveTo(bx, cy);
-      ctx.lineTo(bx - size * 0.07, cy - size * 0.3);
-      ctx.lineTo(bx + size * 0.07, cy);
+      ctx.ellipse(cx + size * ex, cy + size * 0.48, size * 0.12, size * 0.095, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#111';
+      ctx.beginPath();
+      ctx.ellipse(cx + size * ex, cy + size * 0.48, size * 0.025, size * 0.075, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f3c642';
+    }
+
+    // Focinho e duas narinas.
+    ctx.fillStyle = 'rgba(12,26,18,.72)';
+    ctx.beginPath();
+    ctx.ellipse(cx + size * 0.5, cy + size * 0.64, size * 0.20, size * 0.11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#050806';
+    for (const nx of [0.44, 0.56]) {
+      ctx.beginPath();
+      ctx.ellipse(cx + size * nx, cy + size * 0.63, size * 0.028, size * 0.022, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Boca com dois pequenos dentes.
+    ctx.strokeStyle = '#07120c';
+    ctx.lineWidth = Math.max(1, cell * 0.03);
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.30, cy + size * 0.76);
+    ctx.quadraticCurveTo(cx + size * 0.5, cy + size * 0.88, cx + size * 0.70, cy + size * 0.76);
+    ctx.stroke();
+    ctx.fillStyle = '#f2f4df';
+    for (const tx of [0.42, 0.58]) {
+      ctx.beginPath();
+      ctx.moveTo(cx + size * tx, cy + size * 0.78);
+      ctx.lineTo(cx + size * (tx + 0.025), cy + size * 0.88);
+      ctx.lineTo(cx + size * (tx + 0.05), cy + size * 0.78);
       ctx.closePath();
       ctx.fill();
     }
+    ctx.restore();
   } else if (shape === 'bear') {
     // orelhinhas redondas de ursinho
     ctx.beginPath();
