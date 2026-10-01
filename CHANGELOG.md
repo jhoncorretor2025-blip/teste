@@ -1,3 +1,8 @@
+## [3.6.4] — 2026-09-30
+- **Conquista:** popup ficou mais transparente, permitindo enxergar melhor a partida por trás.
+- **Minhoca Inimiga:** as duas aparições padrão ficaram menos eficientes: menor duração, rajada mais curta e espaçada, menor antecipação, menor crescimento por vítima e distração reduzida.
+- **Migração:** configurações antigas que ainda estavam exatamente no padrão anterior são convertidas automaticamente; configurações personalizadas continuam preservadas.
+
 ## [3.6.3] — 2026-09-30
 - **Conquistas:** corrigida a numeração da galeria. Agora cada categoria fica realmente em ordem do mais fácil ao mais difícil, com números consecutivos (1, 2, 3, 4...) sem pular números quando algumas já foram desbloqueadas.
 
