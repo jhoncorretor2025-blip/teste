@@ -142,6 +142,9 @@ const DECO = Array.from({ length: 90 }, () => ({
 const enrola = (v, span) => ((v % span) + span) % span;
 
 function drawThemeAtmosphere(theme) {
+  // O Campo de Girassóis precisa ficar limpo e nítido: a luz atmosférica anterior
+  // deixava uma "névoa" sobre o mapa.
+  if (theme.value === 'sunflower') return;
   // Luz ambiental lenta e específica do tema; calculada no desenho para funcionar também online.
   const t = Date.now() / 1000;
   const w = canvas.width, h = canvas.height;
@@ -215,7 +218,7 @@ function drawDynamicGraphicLighting(theme) {
   const accent = theme.accent || '#ffffff';
 
   ctx.save();
-  ctx.globalAlpha = 0.10;
+  ctx.globalAlpha = theme.value === 'sunflower' ? 0.025 : 0.10;
   ctx.globalCompositeOperation = 'screen';
 
   const spots = [
@@ -1008,6 +1011,35 @@ function drawHead(x, y, shape, color) {
   ctx.ellipse(cx + size * 0.34, cy + size * 0.22, size * 0.18, size * 0.07, -0.30, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
+
+  // Carinhas dos animais: olhos + focinho/nariz simples. Antes todos recebiam apenas
+  // dois olhos genéricos, então gato, coelho, urso etc. pareciam apenas "cabeças coloridas".
+  const animalFace = ['owl', 'cat', 'bunny', 'dragon', 'bear', 'fox', 'shark', 'bee', 'unicorn', 'monkey', 'lion'].includes(shape);
+  if (animalFace) {
+    const faceY = cy + size * 0.48;
+    ctx.save();
+    ctx.fillStyle = shape === 'cat' || shape === 'fox' ? '#24151a' : '#10151d';
+    ctx.beginPath();
+    if (shape === 'owl') {
+      ctx.arc(cx + size * 0.5, faceY + size * 0.08, size * 0.08, 0, Math.PI * 2);
+    } else if (shape === 'shark') {
+      ctx.arc(cx + size * 0.5, faceY + size * 0.12, size * 0.055, 0, Math.PI * 2);
+    } else {
+      ctx.moveTo(cx + size * 0.5, faceY);
+      ctx.lineTo(cx + size * 0.42, faceY + size * 0.07);
+      ctx.quadraticCurveTo(cx + size * 0.5, faceY + size * 0.14, cx + size * 0.58, faceY + size * 0.07);
+      ctx.closePath();
+    }
+    ctx.fill();
+    if (['cat', 'bunny', 'bear', 'fox', 'monkey'].includes(shape)) {
+      ctx.strokeStyle = 'rgba(20,20,25,.8)';
+      ctx.lineWidth = Math.max(1, cell * 0.025);
+      ctx.beginPath();
+      ctx.arc(cx + size * 0.5, faceY + size * 0.05, size * 0.10, 0.15, Math.PI - 0.15);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   // Olhinhos em toda cabeça, com uma piscadinha de vez em quando — dá mais vida e é
   // barato de desenhar (só dois pontinhos ou dois tracinhos quando pisca)
