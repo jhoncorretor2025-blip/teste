@@ -1,3 +1,7 @@
+## [3.6.6] — 2026-09-30
+- **Dragão:** a cabeça ganhou uma carinha própria, com chifres, olhos de réptil, focinho, narinas, boca, dentes e espinhos laterais. O desenho antigo parecia apenas uma cabeça verde com pontas.
+- **Compatibilidade:** o restante das cabeças de animais continua com o visual anterior.
+
 ## [3.6.5] — 2026-09-30
 - **Animais:** cabeças de gato, coelho, urso, raposa, coruja, dragão e outros formatos agora têm detalhes de rosto mais claros (focinho/nariz e expressão), além dos olhos.
 - **Campo de Girassóis:** removida a camada atmosférica que criava aparência de névoa; a iluminação do tema ficou bem mais discreta.
