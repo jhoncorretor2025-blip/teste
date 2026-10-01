@@ -711,6 +711,15 @@ function drawHead(x, y, shape, color) {
     ctx.beginPath();
     ctx.moveTo(cx + size * 0.88, cy + size * 0.2); ctx.lineTo(cx + size * 1.12, cy - size * 0.25); ctx.lineTo(cx + size * 0.65, cy + size * 0.05);
     ctx.closePath(); ctx.fill();
+    // Bico pequeno e pontudo, cor laranja (as orelhinhas sozinhas pareciam "qualquer bicho
+    // de orelha pontuda" — o bico amarelo/laranja é o que grita "coruja" de verdade)
+    ctx.fillStyle = '#f0a830';
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.42, cy + size * 0.46);
+    ctx.lineTo(cx + size * 0.58, cy + size * 0.46);
+    ctx.lineTo(cx + size * 0.5, cy + size * 0.66);
+    ctx.closePath();
+    ctx.fill();
   } else if (shape === 'cat') {
     // orelhinhas triangulares e pontudas de gato
     ctx.beginPath();
@@ -737,16 +746,28 @@ function drawHead(x, y, shape, color) {
     ctx.ellipse(cx + size * 0.72, cy - size * 0.12, size * 0.11, size * 0.4, 0.12, 0, Math.PI * 2);
     ctx.fill();
   } else if (shape === 'dragon') {
-    // trinca de espinhos/chifrinhos no topo
-    for (let s = 0; s < 3; s++) {
-      const bx = cx + size * (0.22 + s * 0.28);
+    // Chifres grandes e recurvados pra trás (bem maiores que o design antigo, que eram só
+    // 3 bolinhas quase invisíveis no tamanho real do jogo — "não tinha cara de dragão")
+    for (const lado of [-1, 1]) {
+      const bx = cx + size * (0.5 + lado * 0.26); // base do chifre, afastada do centro
       ctx.beginPath();
-      ctx.moveTo(bx, cy);
-      ctx.lineTo(bx - size * 0.07, cy - size * 0.3);
-      ctx.lineTo(bx + size * 0.07, cy);
+      ctx.moveTo(bx - size * 0.1 * lado, cy + size * 0.08); // base, mais larga
+      ctx.quadraticCurveTo(bx + size * 0.14 * lado, cy - size * 0.3, bx + size * 0.05 * lado, cy - size * 0.52); // curva pra trás e sobe
+      ctx.lineTo(bx - size * 0.1 * lado, cy - size * 0.3); // volta formando a pontinha fina
       ctx.closePath();
       ctx.fill();
     }
+    // Focinho pontudo na frente (focinho de dragão é mais alongado que o das outras cabeças)
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.32, cy + size * 0.62);
+    ctx.lineTo(cx + size * 0.68, cy + size * 0.62);
+    ctx.lineTo(cx + size * 0.5, cy + size * 0.92);
+    ctx.closePath();
+    ctx.fill();
+    // Narinas pequenas (dois pontinhos escuros no focinho, dão o toque final de "cara de dragão")
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.beginPath(); ctx.arc(cx + size * 0.42, cy + size * 0.68, size * 0.035, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + size * 0.58, cy + size * 0.68, size * 0.035, 0, Math.PI * 2); ctx.fill();
   } else if (shape === 'bear') {
     // orelhinhas redondas de ursinho
     ctx.beginPath();
@@ -754,6 +775,16 @@ function drawHead(x, y, shape, color) {
     ctx.fill();
     ctx.beginPath();
     ctx.arc(cx + size * 0.86, cy + size * 0.06, size * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+    // Focinho claro + narizinho escuro embaixo (só as orelhas redondas pareciam "qualquer
+    // bicho de orelha redonda" — o focinho claro de ursinho de pelúcia é o toque que faltava)
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.ellipse(cx + size * 0.5, cy + size * 0.68, size * 0.22, size * 0.16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.beginPath();
+    ctx.ellipse(cx + size * 0.5, cy + size * 0.6, size * 0.07, size * 0.05, 0, 0, Math.PI * 2);
     ctx.fill();
   } else if (shape === 'sunflower') {
     // Pétalas amarelas ao redor, com um centro escuro — a base colorida já fica por

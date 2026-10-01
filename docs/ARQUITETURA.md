@@ -45,7 +45,7 @@ O canvas se ajusta ao tamanho da arena; a câmera segue a sua minhoca (`updateCa
 
 ## 8. Minhoca Caçadora e comidas especiais
 - Aparece em marcos de comida (`HUNTER_MILESTONES`). `spawnHunter` cria o corpo (50 partes, `montarCorpoDaCacadora`); `updateHunter` faz ela perseguir o líder — ou quem usou turbo por perto —, mirar à frente, dar rajadas de velocidade, crescer ao pegar alguém e dar bônus a quem escapa por pouco.
-- Quando ela some, se o líder tem 25+ de vantagem, liga a **comida de sequência** (👑 valendo 10, a cada 15 s): `ativarComidaSequenciaSeMerecer` em `loop.js`.
+- Comida de sequência vencedora: o jogo evoluiu bastante aqui por conta de mudanças de outra IA (ex: bônus do 2º lugar) — ver `js/loop.js` e `js/food.js` para o comportamento atual, em vez de confiar nesta descrição.
 - Com 50+ comidas comuns espalhadas, grupos de 5 piscam e viram ⭐ (`checkFoodConsolidation` e `updateFoodConsolidation`, em `food.js`).
 
 ## 9. Cache, offline e atualização

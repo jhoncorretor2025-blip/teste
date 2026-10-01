@@ -81,7 +81,10 @@ export function criarJanela({ pasta = RAIZ, url = 'http://localhost/index.html',
     };
   };
   w.navigator.vibrate = () => true;
-  w.navigator.serviceWorker = { register: async () => ({ addEventListener() {}, update: async () => {} }) };
+  // getRegistrations() foi adicionado aqui porque o main.js de verdade passou a chamá-lo
+  // (parte de uma mudança feita por outra IA no projeto) — sem isso no mock, qualquer teste
+  // que carregasse main.js até esse ponto quebrava com "getRegistrations is not a function"
+  w.navigator.serviceWorker = { register: async () => ({ addEventListener() {}, update: async () => {} }), getRegistrations: async () => [] };
   w.fetch = async () => ({ ok: false });
   w.__copiado = [];
   w.navigator.clipboard = { writeText: async (t) => { w.__copiado.push(t); } }; // o que a pessoa "copiou" (ex: link da sala)

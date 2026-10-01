@@ -2,6 +2,17 @@
 
 Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por que** é assim), este arquivo diz **o que falta**. Terminou algo daqui? **Apague o item** e registre no `CHANGELOG.md`. Achou algo novo? **Acrescente aqui**, com o que já foi tentado.
 
+## 🟡 Suíte de testes desatualizada em relação às mudanças do ChatGPT (30/09)
+Depois de centenas de commits de outra IA no mesmo dia (v2.94.10 → v3.6.6+), alguns testes antigos passaram a falhar — não por bug novo, e sim porque o comportamento que eles verificavam mudou de propósito:
+- `nao-apaga-sala-ao-voltar.mjs`: o commit "Desativa reload automático do Service Worker e verificador de versão" parece ter desligado (ou mudado bastante) o mecanismo de auto-atualização que esse teste cobre. Precisa reler `js/main.js` (função `checarVersaoDeVerdade`) e `docs/ARMADILHAS.md`/`docs/DECISOES.md` (casos 30) pra entender o que ainda vale, e atualizar o teste (ou os documentos) de acordo.
+- `melhorias-de-interface.mjs`: os testes da setinha da Minhoca Caçadora dão ângulo inválido (tipo `9948976424.99`) — a Caçadora passou por reformas bem grandes (config migrada pro "novo padrão", comida dos 50 alimentos, menos eficiente). Precisa reler o estado atual dela em `js/loop.js`/`js/state.js` e refazer o cenário de teste.
+- `formatar-css.mjs`: o `css/style.css` cresceu bastante (não é mais estável rodando o formatador duas vezes) — provavelmente algum recurso novo de CSS que `tools/formatar-css.py` não trata direito ainda (parecido com o caso das expressões regulares, resolvido antes). Precisa investigar com um CSS mínimo reproduzindo o problema, igual foi feito da outra vez.
+- `verificador-pega-erros.mjs` e `bump-versao-e-changelog.mjs`: alguns testes assumiam "o projeto limpo passa em TODAS as checagens" — mas agora há 3 avisos aceitos de propósito (os arquivos `_stable_*`, veja abaixo). Os testes precisam aprender a tolerar esses 3 avisos conhecidos, em vez de esperar zero.
+Nenhum desses mexe com o jogo em si — só a suíte de testes ficou desatualizada. Não foram corrigidos agora porque não era o pedido da vez (trocar os visuais de cabeça) e mexer neles exigiria entender a fundo mudanças grandes feitas por outra IA.
+
+## 🟡 Arquivos `js/*_stable_NNN.js` (criados pelo ChatGPT) sem explicação registrada
+Existem 18 arquivos assim (`main_stable_334.js` até `342`, `loop_stable_334-336`, `render_stable_334-341`, `net_stable_360.js`) que ninguém importa e não estão no cache do Service Worker — o verificador aponta isso a cada checagem (3 avisos aceitos por enquanto). Parecem backups/pontos de restauração de um fluxo de trabalho do ChatGPT. **Não foram apagados** por precaução (podem ser necessários pra ele reverter algo) — mas vale perguntar/confirmar se ainda servem pra alguma coisa; se não, apagar e documentar por quê.
+
 ## 🔴 Bug em aberto: multiplayer real no celular
 Com o anfitrião no PC e o amigo no celular, o celular não recebe os dados do jogo (embora o ping funcione e o anfitrião veja a minhoca do amigo se mexer). Sintoma, o que já foi tentado e o próximo passo mais útil (print do painel 🩺 **do anfitrião**) estão no fim de `docs/ARMADILHAS.md`. **Nunca foi conseguido esse print.** **Atualização:** entre a v2.84.0 e a v2.94.5 (outra IA), o multiplayer online passou por um rework grande — reenvio da configuração estável pra quem entra tarde (v2.85.0), slots fixos ao sair jogador (v2.86.0), lobby visual completo (v2.90.0/2.92.0). Nada disso foi testado em **aparelho real**; pode (ou não) ter mexido nesse bug. Vale re-testar do zero antes de investigar mais.
 

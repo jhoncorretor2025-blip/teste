@@ -101,6 +101,8 @@ Este projeto é mexido por várias IAs, uma depois da outra. O que evita retraba
 6. Publique com `tools/publicar.py` e confira o resultado pela **API** do GitHub (o endereço `raw.githubusercontent.com` guarda cache e mostra versão velha por um tempo).
 
 ## Publicar
+⚠️ **Antes de publicar, baixe o repositório de novo, agora mesmo** — nunca reaproveite uma cópia de uma mensagem anterior da conversa. Este projeto é mexido por mais de uma IA (às vezes no mesmo dia); se o repositório mudou desde que você baixou, publicar com `--apagar-removidos` em cima de uma cópia velha **apaga o trabalho de quem mexeu depois de você** (já aconteceu de verdade — caso 31 em `docs/ARMADILHAS.md`). `python3 tools/publicar.py` sozinho (sem `--enviar`) mostra o que mudaria sem publicar nada — rode assim primeiro e desconfie se aparecer gente em "removidos" que você não esperava.
+
 O `tools/publicar.py` manda **todas** as mudanças num **único commit** (evita a enxurrada de builds do Pages, em que os intermediários dão "errored" — só o último importa). Ele precisa de um token do GitHub: peça ao dono para criar um *fine-grained token* com **Contents: Read and write** só neste repositório, e passe pela variável `GITHUB_TOKEN`. **Jamais grave o token em arquivo, commit ou mensagem** — o repositório é público (o verificador procura tokens e reprova).
 
 ## Armadilhas que já custaram caro (resumo — detalhes em `docs/ARMADILHAS.md`)
@@ -113,7 +115,8 @@ O `tools/publicar.py` manda **todas** as mudanças num **único commit** (evita 
 7. Testes com dois participantes exigem **cópias isoladas** do jogo (módulos usam `document` global).
 8. Código morto engana: tudo em `js/` precisa ser importado por alguém (o verificador confere).
 9. CSS com linhas gigantes: o `css/style.css` chegou a ter linhas de 13 mil caracteres; mantenha legível (`tools/formatar-css.py`, o verificador confere).
-10. O histórico do Git é ilegível (centenas de commits repetidos, um por arquivo, nas versões antigas): a memória do projeto é o `CHANGELOG.md`, não o `git log`.
+10. Publicar com cópia local desatualizada apaga trabalho de outra IA — baixe de novo antes de publicar, sempre (caso 31 nas armadilhas).
+11. O histórico do Git é ilegível (centenas de commits repetidos, um por arquivo, nas versões antigas): a memória do projeto é o `CHANGELOG.md`, não o `git log`.
 
 ## Problema em aberto
 O multiplayer **real** no celular ainda tem um bug sem causa confirmada (o celular do amigo não recebe os dados do jogo, embora o ping funcione). Está descrito, com o que já foi tentado, no fim de `docs/ARMADILHAS.md`. Se for investigar, comece pelo painel 🩺.

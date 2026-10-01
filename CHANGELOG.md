@@ -93,6 +93,12 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 _(nada por enquanto)_
 
+## [3.6.7] — 2026-10-01
+- **Visual:** melhorados 3 visuais de cabeça que ficavam genéricos demais no tamanho real do jogo: 🐲 Dragãozinho (tinha só 3 bolinhas quase invisíveis; ganhou 2 chifres grandes recurvados + focinho com narinas), 🦉 Coruja (ganhou um biquinho laranja) e 🐻 Ursinho (ganhou focinho claro + narizinho). As novas cabeças que o ChatGPT adicionou nesse mesmo dia (raposa, tubarão, abelha, macaco, leão, unicórnio, alienígena, pirata, robô, caveira) não foram mexidas.
+- Correção na própria ferramenta `tools/verificar-projeto.py`/`gerar-mapa.py`: o jeito de achar "quem importa quem" não reconhecia `import ... from './arquivo.js?v=X.Y.Z'` (com uma query de cache-busting), e por isso achava (errado) que `render.js` era código morto, sem ninguém importando. Corrigido — isso evita que uma IA futura apague `render.js` por engano, achando que não é usado.
+- Pendências novas registradas em `docs/PENDENCIAS.md`: parte da suíte de testes ficou desatualizada depois das mudanças grandes feitas pelo ChatGPT no mesmo dia (Minhoca Caçadora reformada, auto-atualização desativada, CSS crescido) — não foram corrigidas agora por não ser o pedido da vez.
+- **Nota importante (processo):** uma publicação anterior hoje (`95bff09`) tinha sido feita em cima de uma cópia local desatualizada e apagou por engano cerca de 240 commits de trabalho do ChatGPT (v2.94.10 → v3.6.6). Foi revertida imediatamente (`6b464c3`) assim que percebida. Lição registrada em `docs/ARMADILHAS.md`.
+
 ## [3.2.3] — 2026-09-30
 - **Correção defensiva de renderização:** os efeitos gráficos novos agora são opcionais quando uma cópia antiga do módulo está presa em cache, evitando que um único efeito impeça a Mioquinha de ser desenhada.
 - **Cache:** nova identificação `render.js?v=3.2.3` para forçar a carga do módulo gráfico atualizado.

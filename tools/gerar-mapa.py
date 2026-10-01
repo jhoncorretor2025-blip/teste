@@ -37,7 +37,7 @@ def exportados(texto):
 
 
 def importa_de(texto):
-    return sorted(set(re.findall(r"from\s+'\./([A-Za-z0-9_\-]+)\.js'", texto)))
+    return sorted(set(re.findall(r"from\s+'\./([A-Za-z0-9_\-]+)\.js(?:\?[^']*)?'", texto)))
 
 
 def campos_do_estado(texto):

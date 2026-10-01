@@ -103,6 +103,11 @@ Criar sala, trocar de app pra mandar o link, voltar → sala apagada, como se ti
 **Lição geral:** ao proteger algo contra interrupção automática ("não atualiza durante X"), pense em TODOS os momentos em que perder o estado seria ruim — não só o mais óbvio (partida rodando). Aqui "esperando alguém entrar" era tão importante de proteger quanto "jogando", mas foi esquecido na primeira versão da proteção.
 **Armadilha de teste:** meu primeiro teste pra isso "passava" mesmo sem a correção, porque nunca simulava de verdade o evento `visibilitychange` (só mudava uma variável e esperava, sem a checagem rodar de novo). Criei `simularTrocarDeAppEVoltar()` em `tests/_ambiente.mjs` (dispara hidden→visible de verdade) — e SÓ confiei no teste depois de ver ele FALHAR contra o código antigo.
 
+**31. Publicar em cima de uma cópia local desatualizada apaga trabalho de outra IA (incidente real, 30/09).**
+Trabalhei numa cópia local baixada no começo de uma investigação, continuei usando ELA MESMA por várias mensagens seguidas (sem rebaixar), e no fim publiquei com `--apagar-removidos`. Nesse meio-tempo, o ChatGPT tinha feito mais de 240 commits no mesmo repositório (v2.94.10 → v3.6.6: código/PIN de sala, 42 conquistas, 20 cabeças, 21 temas, skins). Minha publicação, comparando a cópia VELHA com o repositório, achou que os arquivos novos do ChatGPT "não deviam existir" e apagou tudo, sobrescrevendo com a versão antiga. Percebido pela lista de "removidos" do próprio `publicar.py` (nomes estranhos de arquivo) — revertido na hora (`git checkout <commit-anterior-ao-meu> -- .` seguido de novo `publicar.py`).
+**Prevenção:** baixar o repositório **de novo, na hora**, logo antes de qualquer publicação — nunca reutilizar uma cópia de uma mensagem anterior da conversa, especialmente sabendo que outra IA mexe no mesmo projeto em paralelo. Isso agora é a prática seguida (ver AGENTS.md).
+**Se acontecer de novo:** `git log --oneline <meu-commit-ruim>^..HEAD` no repositório pra ver o estrago, `git checkout <commit-anterior-ao-meu> -- .` numa cópia fresca, conferir com `git diff <commit-anterior> -- .` que bate 100% (zero linhas), e publicar de novo — sem tentar "consertar por cima", só desfazer.
+
 ---
 
 # Problema em aberto: multiplayer real no celular

@@ -40,7 +40,7 @@ faltando = sorted(ids_js - ids_html)
 ok(f'{len(ids_js)} ids conferidos') if not faltando else falha(f'ids que o JS usa e o HTML não tem: {faltando}', 'Um `$("x")` nulo derruba o script inteiro na hora de carregar.')
 
 print('3) Nenhum módulo morto (todo js/*.js é alcançável a partir de main.js)')
-grafo = {f.name: set(m + '.js' for m in re.findall(r"from\s+'\./([A-Za-z0-9_\-]+)\.js'", f.read_text(encoding='utf-8'))) for f in JS.glob('*.js')}
+grafo = {f.name: set(m + '.js' for m in re.findall(r"from\s+'\./([A-Za-z0-9_\-]+)\.js(?:\?[^']*)?'", f.read_text(encoding='utf-8'))) for f in JS.glob('*.js')}
 vistos, fila = set(), ['main.js']
 while fila:
     n = fila.pop()
