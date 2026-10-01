@@ -2285,17 +2285,11 @@ function renderAchievementsGallery() {
 
   grid.innerHTML = groups.map((group) => {
     const items = ACHIEVEMENTS
-      .map((a, originalIndex) => ({ a, originalIndex }))
-      .filter(({ a }) => a.category === group.key)
-      .map((item, difficultyIndex) => ({ ...item, difficultyNumber: difficultyIndex + 1 }))
-      .sort((x, y) => {
-        const xUnlocked = unlocked.includes(x.a.id);
-        const yUnlocked = unlocked.includes(y.a.id);
-        // Primeiro aparecem as conquistadas. Dentro de cada bloco, preserva a ordem
-        // de dificuldade definida no config.js.
-        if (xUnlocked !== yUnlocked) return xUnlocked ? -1 : 1;
-        return x.difficultyNumber - y.difficultyNumber;
-      });
+      .filter((a) => a.category === group.key)
+      // O config.js já guarda cada categoria do mais fácil ao mais difícil.
+      // Não movemos as desbloqueadas para cima: isso fazia aparecer 1, 2, 4, 9...
+      // na tela. A numeração precisa representar a posição real da dificuldade.
+      .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }));
     return `
       <div style="grid-column:1/-1;margin-top:10px">
         <div style="font-size:1rem;font-weight:800;margin-bottom:2px">${group.title}</div>
