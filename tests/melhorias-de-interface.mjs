@@ -1,5 +1,6 @@
 // Interface do jogo: painel 🩺 que some sozinho, setinha da caçadora, placar somado dos times, marcador de time.
 import { RAIZ, novoRelatorio, criarGravador, criarJanela, ativar, importarDe, esperar } from './_ambiente.mjs';
+import fs from 'fs';
 const g = criarGravador();
 const w = criarJanela({ gravador: g }); ativar(w);
 const imp = importarDe(RAIZ);
@@ -8,6 +9,12 @@ const { state } = await imp('js/state.js');
 const loop = await imp('js/loop.js');
 const renderMod = await imp('js/render.js');
 const r = novoRelatorio();
+
+r.secao('Numeração da galeria de conquistas');
+const mainStableSource = fs.readFileSync(RAIZ + '/js/main_stable_342.js', 'utf8');
+r.check('cada categoria recebe números consecutivos', mainStableSource.includes('.map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }))'));
+r.check('conquistas desbloqueadas não pulam números', !mainStableSource.includes('xUnlocked !== yUnlocked'));
+r.check('a ordem de dificuldade continua vindo do config.js', mainStableSource.includes('filter((a) => a.category === group.key)'));
 
 r.secao('Câmera mobile aproveita a proporção da arena');
 const portraitView = renderMod.getViewWindow(40, 31, 32, 25, 630, 686, true);
