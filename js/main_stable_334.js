@@ -8,8 +8,8 @@ import { planTeams } from './teams.js';
 import { loadTeamPrefs, saveTeamPrefs } from './storage.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
-import { render } from './render.js?v=3.6.3';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop_stable_334.js';
+import { render } from './render_stable_334.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
 import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
@@ -2182,19 +2182,15 @@ function renderAchievementsGallery() {
   ];
 
   grid.innerHTML = groups.map((group) => {
-    const items = ACHIEVEMENTS
-      .filter((a) => a.category === group.key)
-      // O config.js já guarda cada categoria do mais fácil ao mais difícil.
-      .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }));
+    const items = ACHIEVEMENTS.filter((a) => a.category === group.key);
     return `
       <div style="grid-column:1/-1;margin-top:10px">
         <div style="font-size:1rem;font-weight:800;margin-bottom:2px">${group.title}</div>
         <div class="muted" style="margin-bottom:7px">${group.subtitle}</div>
       </div>
-      ${items.map(({ a, difficultyNumber }) => {
+      ${items.map((a) => {
         const isUnlocked = unlocked.includes(a.id);
         return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}" title="${a.desc}">
-          <span class="aLevel" aria-label="Dificuldade ${difficultyNumber}">${difficultyNumber}</span>
           <span class="aIcon">${a.icon}</span>
           <span class="aName">${a.name}</span>
           <span class="aDesc">${a.desc}</span>

@@ -49,37 +49,6 @@ function getZoomWindow() {
   return { w: z.w, h: z.h };
 }
 
-// Calcula a janela do mapa que cabe no canvas sem criar faixas vazias.
-export function getViewWindow(mapW, mapH, zoomW, zoomH, canvasWidth, canvasHeight, adaptToMobile = false) {
-  let w = Math.min(mapW, zoomW);
-  let h = Math.min(mapH, zoomH);
-  if (!adaptToMobile || canvasWidth <= 0 || canvasHeight <= 0) return { w, h };
-
-  const aspect = canvasWidth / canvasHeight;
-  if (!Number.isFinite(aspect) || aspect <= 0) return { w, h };
-
-  // No retrato, reduz a largura da janela; no paisagem, reduz a altura.
-  // Assim o mapa ocupa o canvas inteiro sem mudar a proporção das células.
-  if (aspect < w / h) {
-    w = Math.max(8, Math.round(h * aspect));
-  } else if (aspect > w / h) {
-    h = Math.max(8, Math.round(w / aspect));
-  }
-
-  w = Math.min(mapW, w);
-  h = Math.min(mapH, h);
-  return { w, h };
-}
-
-function isMobileTouchDevice() {
-  const ua = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
-  const touch = typeof navigator !== 'undefined' && (Number(navigator.maxTouchPoints) > 0 || 'ontouchstart' in window);
-  const shortSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
-  return /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(ua) && touch && (!shortSide || shortSide <= 1000);
-}
-
-const MOBILE_TOUCH_DEVICE = isMobileTouchDevice();
-
 function resizeCanvas() {
   const box = canvas.parentElement; // .arena
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -92,17 +61,8 @@ function resizeCanvas() {
   canvas.style.height = ch + 'px';
 
   const zoom = getZoomWindow();
-  const view = getViewWindow(
-    state.mapW,
-    state.mapH,
-    zoom.w,
-    zoom.h,
-    canvas.width,
-    canvas.height,
-    MOBILE_TOUCH_DEVICE,
-  );
-  viewW = view.w;
-  viewH = view.h;
+  viewW = Math.min(state.mapW, zoom.w);
+  viewH = Math.min(state.mapH, zoom.h);
   cell = Math.min(canvas.width / viewW, canvas.height / viewH);
   offX = (canvas.width - cell * viewW) / 2;
   offY = (canvas.height - cell * viewH) / 2;

@@ -49,37 +49,6 @@ function getZoomWindow() {
   return { w: z.w, h: z.h };
 }
 
-// Calcula a janela do mapa que cabe no canvas sem criar faixas vazias.
-export function getViewWindow(mapW, mapH, zoomW, zoomH, canvasWidth, canvasHeight, adaptToMobile = false) {
-  let w = Math.min(mapW, zoomW);
-  let h = Math.min(mapH, zoomH);
-  if (!adaptToMobile || canvasWidth <= 0 || canvasHeight <= 0) return { w, h };
-
-  const aspect = canvasWidth / canvasHeight;
-  if (!Number.isFinite(aspect) || aspect <= 0) return { w, h };
-
-  // No retrato, reduz a largura da janela; no paisagem, reduz a altura.
-  // Assim o mapa ocupa o canvas inteiro sem mudar a proporção das células.
-  if (aspect < w / h) {
-    w = Math.max(8, Math.round(h * aspect));
-  } else if (aspect > w / h) {
-    h = Math.max(8, Math.round(w / aspect));
-  }
-
-  w = Math.min(mapW, w);
-  h = Math.min(mapH, h);
-  return { w, h };
-}
-
-function isMobileTouchDevice() {
-  const ua = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
-  const touch = typeof navigator !== 'undefined' && (Number(navigator.maxTouchPoints) > 0 || 'ontouchstart' in window);
-  const shortSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
-  return /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(ua) && touch && (!shortSide || shortSide <= 1000);
-}
-
-const MOBILE_TOUCH_DEVICE = isMobileTouchDevice();
-
 function resizeCanvas() {
   const box = canvas.parentElement; // .arena
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -92,17 +61,8 @@ function resizeCanvas() {
   canvas.style.height = ch + 'px';
 
   const zoom = getZoomWindow();
-  const view = getViewWindow(
-    state.mapW,
-    state.mapH,
-    zoom.w,
-    zoom.h,
-    canvas.width,
-    canvas.height,
-    MOBILE_TOUCH_DEVICE,
-  );
-  viewW = view.w;
-  viewH = view.h;
+  viewW = Math.min(state.mapW, zoom.w);
+  viewH = Math.min(state.mapH, zoom.h);
   cell = Math.min(canvas.width / viewW, canvas.height / viewH);
   offX = (canvas.width - cell * viewW) / 2;
   offY = (canvas.height - cell * viewH) / 2;
@@ -1072,6 +1032,77 @@ function updateAndDrawConfetti() {
 // Desenha a Minhoca Caçadora — visual bem diferente das minhocas normais, pra ficar
 // claro que é uma ameaça especial: escura, com um brilho vermelho pulsante e uma
 // caveira na cabeça em vez de olhinhos fofos.
+const FIFTY_FEATURE_KEY = '__mioquinhaFiftyFoodFeature';
+
+function drawFiftyFoodEnemies() {
+  const enemies = globalThis[FIFTY_FEATURE_KEY]?.enemies;
+  if (!Array.isArray(enemies)) return;
+  const agora = Date.now();
+
+  for (const enemy of enemies) {
+    if (!enemy?.snake?.length || agora >= enemy.endsAt) continue;
+    const targetIsMe = enemy.target === mySlot;
+    const seconds = Math.max(0, Math.ceil((enemy.endsAt - agora) / 1000));
+
+    ctx.save();
+    ctx.globalAlpha = targetIsMe ? 1 : 0.88;
+
+    for (let k = enemy.snake.length - 1; k >= 0; k--) {
+      const p = enemy.snake[k];
+      const px = sx(p.x), py = sy(p.y);
+      const size = cell * 0.78;
+
+      ctx.fillStyle = '#240711';
+      ctx.shadowColor = '#ff304f';
+      ctx.shadowBlur = targetIsMe ? cell * 0.40 : cell * 0.22;
+      ctx.beginPath();
+      ctx.roundRect(px + cell * 0.11, py + cell * 0.11, size, size, cell * 0.20);
+      ctx.fill();
+
+      ctx.fillStyle = k % 2 ? '#741328' : '#b41c37';
+      ctx.shadowBlur = targetIsMe ? cell * 0.18 : cell * 0.08;
+      ctx.beginPath();
+      ctx.roundRect(px + cell * 0.15, py + cell * 0.15, size - cell * 0.08, size - cell * 0.08, cell * 0.16);
+      ctx.fill();
+    }
+
+    const h = enemy.snake[0];
+    const hx = sx(h.x) + cell / 2, hy = sy(h.y) + cell / 2;
+    const pulse = 0.82 + 0.18 * Math.sin(agora / 150 + enemy.target);
+
+    ctx.globalAlpha = targetIsMe ? pulse : 0.86;
+    ctx.fillStyle = '#ff304f';
+    ctx.shadowColor = '#ff183d';
+    ctx.shadowBlur = cell * 0.65;
+    ctx.beginPath();
+    ctx.arc(hx, hy, cell * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.font = `900 ${Math.max(12, cell * 0.55)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = cell * 0.35;
+    ctx.fillText('☠️', hx, hy);
+
+    ctx.font = `900 ${Math.max(9, cell * 0.38)}px system-ui`;
+    ctx.fillStyle = targetIsMe ? '#ff9aaa' : '#d9a2ac';
+    ctx.fillText('☠️ ' + (state.names[enemy.target] || 'Jogador ' + (enemy.target + 1)) + ' • ' + seconds + 's', hx, hy - cell * 0.72);
+
+    if (targetIsMe) {
+      ctx.globalAlpha = 0.26 + 0.18 * Math.sin(agora / 140);
+      ctx.strokeStyle = '#ff4058';
+      ctx.lineWidth = Math.max(1.5, cell * 0.065);
+      ctx.beginPath();
+      ctx.arc(hx, hy, cell * (0.72 + 0.08 * Math.sin(agora / 120)), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+}
+
 function drawHunter() {
   if (!state.hunterActive || !state.hunterSnake.length) return;
   const pulse = 0.5 + Math.sin(Date.now() / 150) * 0.5;
@@ -1701,7 +1732,9 @@ export function draw() {
     }
     ctx.restore();
   }
-  for (let i = 0; i < state.count; i++) if (state.alive[i]) {
+  drawFiftyFoodEnemies();
+
+    for (let i = 0; i < state.count; i++) if (state.alive[i]) {
     const s = state.snakes[i];
     if (!s || !s.length) continue; // proteção: marcada como viva mas sem dados ainda (ex: acabou de entrar) — não trava o resto do desenho
     const boosting = state.boosting[i];
@@ -1736,7 +1769,31 @@ export function draw() {
         // Destaque na SUA própria minhoca — um aneizinho branco pulsante ao redor da
         // cabeça, fácil de achar você mesmo no meio de várias minhocas na tela
         if (i === mySlot) {
-          const pulse = 0.5 + Math.sin(Date.now() / 260) * 0.5;
+          const pulse = 0.5 + Math.sin(Date.now() / 260) * 0.5;          // Aviso piscando enquanto o turbo está disponível e não está sendo usado.
+          const turboReady = !boosting &&
+            (state.foodsEaten[i] || 0) >= 1 &&
+            Date.now() >= (state.boostReadyAt[i] || 0);
+          if (turboReady && Math.floor(Date.now() / 260) % 2 === 0) {
+            const tx = sx(p.x) + cell / 2;
+            const ty = sy(p.y) - cell * 0.86;
+            ctx.save();
+            ctx.globalAlpha = 0.95;
+            ctx.strokeStyle = '#ffd24d';
+            ctx.fillStyle = '#ffd24d';
+            ctx.shadowColor = '#ffd24d';
+            ctx.shadowBlur = cell * 0.55;
+            ctx.lineWidth = Math.max(1.5, cell * 0.065);
+            ctx.beginPath();
+            ctx.arc(sx(p.x) + cell / 2, sy(p.y) + cell / 2, cell * (0.80 + pulse * 0.07), 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.font = `900 ${Math.max(11, cell * 0.47)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('⚡ TURBO', tx, ty);
+            ctx.restore();
+          }
+
+
           ctx.save();
           ctx.globalAlpha = 0.35 + pulse * 0.35;
           ctx.strokeStyle = '#ffffff';

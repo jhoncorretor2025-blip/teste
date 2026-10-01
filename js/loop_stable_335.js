@@ -6,7 +6,7 @@ import { state } from './state.js';
 import { planTeams, unifyTeamColors } from './teams.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall, checkFoodConsolidation, updateFoodConsolidation } from './food.js';
 import { aiDir, hunterDir } from './ai.js';
-import { render } from './render.js?v=3.3.2';
+import { render } from './render_stable_335.js';
 import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
@@ -16,6 +16,180 @@ import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot 
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 let clientReadyFallbackTimer = null; // rede de segurança pra nunca deixar o cliente preso na tela de espera
+
+
+// 🌟 Desafio das 50 comidas: uma inimiga exclusiva para cada Mioquinha que atingir 50.
+const FIFTY_FEATURE_KEY = '__mioquinhaFiftyFoodFeature';
+const fiftyFeature = globalThis[FIFTY_FEATURE_KEY] || {
+  enemies: [],
+  armed: Array(6).fill(true),
+};
+globalThis[FIFTY_FEATURE_KEY] = fiftyFeature;
+
+const FIFTY_FOOD_THRESHOLD = 50;
+const FIFTY_ENEMY_DURATION_MS = 20000;
+const FIFTY_ENEMY_LENGTH = 12;
+const FIFTY_ENEMY_SAFE_DISTANCE = 9;
+
+function makeFiftyEnemyBody(head, dir, length = FIFTY_ENEMY_LENGTH) {
+  const body = [];
+  for (let k = 0; k < length; k++) {
+    let x = head.x - dir.x * k;
+    let y = head.y - dir.y * k;
+    if (state.noWalls) {
+      x = (x + state.mapW) % state.mapW;
+      y = (y + state.mapH) % state.mapH;
+    } else if (x < 0 || x >= state.mapW || y < 0 || y >= state.mapH) {
+      return null;
+    }
+    body.push({ x, y });
+  }
+  return body;
+}
+
+function findSafeFiftyEnemySpawn(targetIndex) {
+  const targetHead = state.snakes[targetIndex]?.[0];
+  const dirs = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
+  let best = null;
+  let bestScore = -1;
+
+  for (let n = 0; n < 260; n++) {
+    const p = {
+      x: Math.floor(Math.random() * state.mapW),
+      y: Math.floor(Math.random() * state.mapH),
+    };
+
+    const targetDist = targetHead
+      ? Math.abs(p.x - targetHead.x) + Math.abs(p.y - targetHead.y)
+      : Infinity;
+    if (targetDist < FIFTY_ENEMY_SAFE_DISTANCE) continue;
+
+    for (const dir of dirs) {
+      const body = makeFiftyEnemyBody(p, dir);
+      if (!body) continue;
+
+      let minSnakeDistance = Infinity;
+      for (const seg of body) {
+        minSnakeDistance = Math.min(minSnakeDistance, minDistanceToSnakes(seg.x, seg.y));
+      }
+
+      const overlapsOtherEnemy = fiftyFeature.enemies.some(enemy =>
+        enemy.snake?.some(seg => body.some(p2 => p2.x === seg.x && p2.y === seg.y))
+      );
+      if (overlapsOtherEnemy) continue;
+
+      const score = Math.min(minSnakeDistance, targetDist);
+      if (score > bestScore) {
+        bestScore = score;
+        best = { p, dir, body };
+      }
+
+      if (minSnakeDistance >= FIFTY_ENEMY_SAFE_DISTANCE && targetDist >= FIFTY_ENEMY_SAFE_DISTANCE) {
+        return { p, dir, body };
+      }
+    }
+  }
+
+  return best;
+}
+
+function spawnFiftyEnemy(targetIndex) {
+  const spawn = findSafeFiftyEnemySpawn(targetIndex);
+  if (!spawn) return false;
+
+  fiftyFeature.enemies = fiftyFeature.enemies.filter(enemy => enemy.target !== targetIndex);
+  fiftyFeature.enemies.push({
+    target: targetIndex,
+    snake: spawn.body,
+    dir: spawn.dir,
+    endsAt: Date.now() + FIFTY_ENEMY_DURATION_MS,
+  });
+
+  const h = spawn.body[0];
+  state.toast = {
+    x: h.x,
+    y: h.y,
+    text: '☠️ Inimiga de 50 comidas para ' + (state.names[targetIndex] || 'Jogador ' + (targetIndex + 1)),
+    color: '#ff4058',
+    until: Date.now() + 2200,
+  };
+  sfx.hunterArrives();
+  vibrate([35, 50, 35]);
+  return true;
+}
+
+export function updateFiftyFoodEnemies() {
+  if (isOnline() && !isHost()) return;
+
+  const now = Date.now();
+  if (!Array.isArray(fiftyFeature.enemies)) fiftyFeature.enemies = [];
+  if (!Array.isArray(fiftyFeature.armed)) fiftyFeature.armed = Array(6).fill(true);
+
+  // Cada slot é armado de novo quando cai abaixo de 50; ao atingir 50, dispara uma vez.
+  for (let i = 0; i < state.count; i++) {
+    const food = state.foodsEaten[i] || 0;
+
+    if (food < FIFTY_FOOD_THRESHOLD) {
+      fiftyFeature.armed[i] = true;
+      continue;
+    }
+
+    const active = fiftyFeature.enemies.some(
+      enemy => enemy.target === i && now < enemy.endsAt
+    );
+
+    if (fiftyFeature.armed[i] && !active && state.alive[i]) {
+      if (spawnFiftyEnemy(i)) fiftyFeature.armed[i] = false;
+    }
+  }
+
+  const next = [];
+
+  for (const enemy of fiftyFeature.enemies) {
+    const target = enemy.target;
+
+    // Some aos 20 segundos ou quando o alvo morre.
+    if (now >= enemy.endsAt || !state.alive[target] || !state.snakes[target]?.[0]) continue;
+
+    const head = enemy.snake?.[0];
+    const targetHead = state.snakes[target][0];
+    if (!head || !targetHead) continue;
+
+    enemy.dir = hunterDir(head, enemy.dir, targetHead);
+
+    let nx = head.x + enemy.dir.x;
+    let ny = head.y + enemy.dir.y;
+
+    if (state.noWalls) {
+      nx = (nx + state.mapW) % state.mapW;
+      ny = (ny + state.mapH) % state.mapH;
+    } else if (wall(nx, ny)) {
+      const alternatives = [
+        enemy.dir,
+        { x: -enemy.dir.y, y: enemy.dir.x },
+        { x: enemy.dir.y, y: -enemy.dir.x },
+        { x: -enemy.dir.x, y: -enemy.dir.y },
+      ];
+      const choice = alternatives.find(d => !wall(head.x + d.x, head.y + d.y)) || enemy.dir;
+      enemy.dir = choice;
+      nx = head.x + enemy.dir.x;
+      ny = head.y + enemy.dir.y;
+      if (wall(nx, ny)) continue;
+    }
+
+    enemy.snake.unshift({ x: nx, y: ny });
+    while (enemy.snake.length > FIFTY_ENEMY_LENGTH) enemy.snake.pop();
+
+    if (enemy.snake.some(p => p.x === targetHead.x && p.y === targetHead.y)) {
+      kill(target);
+      continue;
+    }
+
+    next.push(enemy);
+  }
+
+  fiftyFeature.enemies = next;
+}
 
 // Acha uma célula livre e, de preferência, BEM longe de qualquer minhoca viva —
 // evita o problema de nascer de novo já grudado num adversário e morrer na hora
@@ -138,6 +312,8 @@ export function reset() {
   state.hunterCloseToAnyone = false;
   state.boostUsedCount = Array(6).fill(0);
   state.lastTurnAt = Array(6).fill(Date.now());
+  fiftyFeature.enemies = [];
+  fiftyFeature.armed = Array(6).fill(true);
   for (let i = 0; i < state.count; i++) spawn(i);
   ensureFoods();
   startMission();
@@ -366,6 +542,8 @@ export function kill(i) {
   state.scores[i] = 0;
   state.foodsEaten[i] = 0;
   state.grow[i] = 0;
+  fiftyFeature.armed[i] = true;
+  fiftyFeature.enemies = fiftyFeature.enemies.filter(enemy => enemy.target !== i);
   state.boosting[i] = false;
   state.comboCount[i] = 0;
   state.respawnAt[i] = Date.now() + 900;
@@ -942,6 +1120,9 @@ function tick() {
   const boostedIdx = aliveIdx.filter(i => state.alive[i] && state.boosting[i]);
   if (boostedIdx.length) stepMovement(boostedIdx);
 
+  // Desafio das 50 comidas.
+  updateFiftyFoodEnemies();
+
   // Rastro de partículas atrás de quem tá turbinando — melhoria visual #3
   boostedIdx.forEach(i => {
     const tail = state.snakes[i]?.[state.snakes[i].length - 1];
@@ -970,6 +1151,8 @@ function tick() {
       dirs: state.dirs, shake: state.shake, flash: state.flash,
       toast: state.toast,
       hunterActive: state.hunterActive, hunterSnake: state.hunterSnake,
+      fiftyFoodEnemies: fiftyFeature.enemies,
+      boostReadyAt: state.boostReadyAt,
     });
   }
 }
@@ -1072,6 +1255,10 @@ export function applyRemoteState(msg) {
   state.eliminations = msg.eliminations || state.eliminations;
   state.alive = msg.alive || state.alive;
   state.boosting = msg.boosting || state.boosting;
+  state.boostReadyAt = msg.boostReadyAt || state.boostReadyAt;
+  if (Array.isArray(msg.fiftyFoodEnemies)) {
+    fiftyFeature.enemies = msg.fiftyFoodEnemies;
+  }
   state.colors = msg.colors || state.colors;
   state.names = msg.names || state.names;
   state.show = msg.show || state.show;

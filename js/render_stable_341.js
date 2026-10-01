@@ -49,37 +49,6 @@ function getZoomWindow() {
   return { w: z.w, h: z.h };
 }
 
-// Calcula a janela do mapa que cabe no canvas sem criar faixas vazias.
-export function getViewWindow(mapW, mapH, zoomW, zoomH, canvasWidth, canvasHeight, adaptToMobile = false) {
-  let w = Math.min(mapW, zoomW);
-  let h = Math.min(mapH, zoomH);
-  if (!adaptToMobile || canvasWidth <= 0 || canvasHeight <= 0) return { w, h };
-
-  const aspect = canvasWidth / canvasHeight;
-  if (!Number.isFinite(aspect) || aspect <= 0) return { w, h };
-
-  // No retrato, reduz a largura da janela; no paisagem, reduz a altura.
-  // Assim o mapa ocupa o canvas inteiro sem mudar a proporção das células.
-  if (aspect < w / h) {
-    w = Math.max(8, Math.round(h * aspect));
-  } else if (aspect > w / h) {
-    h = Math.max(8, Math.round(w / aspect));
-  }
-
-  w = Math.min(mapW, w);
-  h = Math.min(mapH, h);
-  return { w, h };
-}
-
-function isMobileTouchDevice() {
-  const ua = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
-  const touch = typeof navigator !== 'undefined' && (Number(navigator.maxTouchPoints) > 0 || 'ontouchstart' in window);
-  const shortSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
-  return /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(ua) && touch && (!shortSide || shortSide <= 1000);
-}
-
-const MOBILE_TOUCH_DEVICE = isMobileTouchDevice();
-
 function resizeCanvas() {
   const box = canvas.parentElement; // .arena
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -92,17 +61,8 @@ function resizeCanvas() {
   canvas.style.height = ch + 'px';
 
   const zoom = getZoomWindow();
-  const view = getViewWindow(
-    state.mapW,
-    state.mapH,
-    zoom.w,
-    zoom.h,
-    canvas.width,
-    canvas.height,
-    MOBILE_TOUCH_DEVICE,
-  );
-  viewW = view.w;
-  viewH = view.h;
+  viewW = Math.min(state.mapW, zoom.w);
+  viewH = Math.min(state.mapH, zoom.h);
   cell = Math.min(canvas.width / viewW, canvas.height / viewH);
   offX = (canvas.width - cell * viewW) / 2;
   offY = (canvas.height - cell * viewH) / 2;
@@ -182,6 +142,9 @@ const DECO = Array.from({ length: 90 }, () => ({
 const enrola = (v, span) => ((v % span) + span) % span;
 
 function drawThemeAtmosphere(theme) {
+  // O Campo de Girassóis precisa ficar limpo e nítido: a luz atmosférica anterior
+  // deixava uma "névoa" sobre o mapa.
+  if (theme.value === 'sunflower') return;
   // Luz ambiental lenta e específica do tema; calculada no desenho para funcionar também online.
   const t = Date.now() / 1000;
   const w = canvas.width, h = canvas.height;
@@ -249,6 +212,36 @@ function drawThemeAtmosphere(theme) {
   }
 }
 
+function drawDynamicGraphicLighting(theme) {
+  const t = Date.now() / 1000;
+  const w = canvas.width, h = canvas.height;
+  const accent = theme.accent || '#ffffff';
+
+  ctx.save();
+  ctx.globalAlpha = theme.value === 'sunflower' ? 0.025 : 0.10;
+  ctx.globalCompositeOperation = 'screen';
+
+  const spots = [
+    { x: 0.18 + Math.sin(t * 0.19) * 0.08, y: 0.22 + Math.cos(t * 0.17) * 0.06 },
+    { x: 0.78 + Math.cos(t * 0.14) * 0.07, y: 0.68 + Math.sin(t * 0.16) * 0.06 },
+  ];
+
+  for (const spot of spots) {
+    const x = w * spot.x;
+    const y = h * spot.y;
+    const r = Math.min(w, h) * 0.26;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, accent);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
 function drawThemeBackdrop(theme) {
   const w = canvas.width, h = canvas.height;
   ctx.fillStyle = theme.bg;
@@ -262,6 +255,7 @@ function drawThemeBackdrop(theme) {
     ctx.fillRect(0, 0, w, h);
   }
   if (typeof drawThemeAtmosphere === 'function') drawThemeAtmosphere(theme);
+  drawDynamicGraphicLighting(theme);
   if (theme.deco === 'stars') drawStars();
   else if (theme.deco && theme.deco !== 'none') drawThemeDeco(theme);
 }
@@ -466,6 +460,48 @@ function drawBiomeDecorations(theme) {
   ctx.restore();
 }
 
+function drawFoodGraphicAccent(food) {
+  if (!food) return;
+  const rarity = food.rarity || 'normal';
+  if (rarity === 'normal' && food.kind !== 'bonus' && food.kind !== 'secondPlace') return;
+
+  const x = sx(food.x) + cell / 2;
+  const y = sy(food.y) + cell / 2;
+  const now = Date.now();
+  const pulse = 0.5 + 0.5 * Math.sin(now / 170 + food.x * 0.7 + food.y);
+  const color = rarity === 'legendary' ? '#ffd24d'
+    : rarity === 'epic' ? '#b57bff'
+    : rarity === 'rare' ? '#63b3ff'
+    : food.kind === 'bonus' ? '#ffd24d'
+    : '#63e6ff';
+
+  ctx.save();
+  ctx.globalAlpha = 0.35 + pulse * 0.28;
+  ctx.strokeStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = cell * 0.55;
+
+  const ring = cell * (0.52 + pulse * 0.12);
+  ctx.lineWidth = Math.max(1, cell * 0.035);
+  ctx.beginPath();
+  ctx.arc(x, y, ring, -Math.PI * 0.15, Math.PI * 1.45);
+  ctx.stroke();
+
+  if (rarity === 'epic' || rarity === 'legendary' || food.kind === 'secondPlace') {
+    ctx.globalAlpha = 0.68;
+    ctx.fillStyle = color;
+    for (let n = 0; n < 4; n++) {
+      const a = now / 650 + n * Math.PI / 2;
+      const rr = cell * (0.58 + pulse * 0.10);
+      const px = x + Math.cos(a) * rr;
+      const py = y + Math.sin(a) * rr;
+      const s = Math.max(1, cell * 0.035);
+      ctx.fillRect(px - s / 2, py - s / 2, s, s);
+    }
+  }
+  ctx.restore();
+}
+
 function drawThemeReaction(theme) {
   const head = state.snakes[mySlot]?.[0];
   if (!head || !state.alive[mySlot]) return;
@@ -494,6 +530,42 @@ function drawThemeReaction(theme) {
       const rr = cell * (0.70 + n * 0.11);
       ctx.beginPath(); ctx.arc(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr, cell * 0.045, 0, Math.PI * 2); ctx.stroke();
     }
+  }
+  ctx.restore();
+}
+
+function drawMapGraphicForeground(theme) {
+  const w = canvas.width, h = canvas.height;
+  const t = Date.now() / 1000;
+  const accent = theme.accent || '#ffffff';
+
+  ctx.save();
+  ctx.globalAlpha = 0.07;
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = Math.max(1, cell * 0.025);
+
+  if (['space','night','void','cyber','aurora'].includes(theme.value)) {
+    for (let i = 0; i < 9; i++) {
+      const x = ((i * 149 + t * (6 + i)) % (w + 80)) - 40;
+      const y = ((i * 83 + t * (3 + i * 0.3)) % (h + 80)) - 40;
+      ctx.beginPath();
+      ctx.arc(x, y, cell * (0.08 + (i % 3) * 0.04), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  } else if (['forest','garden','sunflower','jungle','swamp'].includes(theme.value)) {
+    for (let i = 0; i < 7; i++) {
+      const x = ((i * 181 + t * (4 + i)) % (w + 80)) - 40;
+      const y = h - ((i * 67 + t * (2 + i * 0.2)) % (h + 80));
+      ctx.beginPath();
+      ctx.arc(x, y, cell * (0.10 + (i % 2) * 0.05), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  } else {
+    const sweep = (t * cell * 0.25) % (w + h);
+    ctx.beginPath();
+    ctx.moveTo(sweep - h, 0);
+    ctx.lineTo(sweep, h);
+    ctx.stroke();
   }
   ctx.restore();
 }
@@ -607,6 +679,47 @@ function drawStars() {
 }
 
 // Trilha de energia suave usando a cor de rastro já escolhida pelo jogador.
+function drawTurboCinematic(snake, playerIndex, boosting) {
+  if (!boosting || !snake || snake.length < 2) return;
+
+  const color = (state.trailColors[playerIndex] && state.trailColors[playerIndex] !== 'auto')
+    ? state.trailColors[playerIndex] : state.colors[playerIndex] || '#ffffff';
+  const head = snake[0];
+  const next = snake[1] || head;
+  const dx = Math.sign(head.x - next.x) || 1;
+  const dy = Math.sign(head.y - next.y);
+  const hx = sx(head.x) + cell / 2;
+  const hy = sy(head.y) + cell / 2;
+  const now = Date.now();
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = cell * 0.65;
+  ctx.lineWidth = Math.max(1, cell * 0.06);
+  ctx.globalAlpha = 0.45;
+
+  for (let n = 0; n < 4; n++) {
+    const offset = (n - 1.5) * cell * 0.15;
+    const wobble = Math.sin(now / 85 + n) * cell * 0.05;
+    ctx.beginPath();
+    ctx.moveTo(hx - dx * cell * (0.55 + n * 0.20) + dy * offset, hy - dy * cell * (0.55 + n * 0.20) - dx * offset);
+    ctx.lineTo(hx - dx * cell * (1.10 + n * 0.24) + dy * offset + wobble, hy - dy * cell * (1.10 + n * 0.24) - dx * offset + wobble);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 0.82;
+  ctx.fillStyle = '#ffffff';
+  for (let n = 0; n < 5; n++) {
+    const p = snake[Math.min(snake.length - 1, 1 + n * 2)];
+    const pulse = 0.6 + 0.4 * Math.sin(now / 70 + n * 1.7 + playerIndex);
+    ctx.beginPath();
+    ctx.arc(sx(p.x) + cell / 2, sy(p.y) + cell / 2, Math.max(1, cell * (0.03 + pulse * 0.025)), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawEnergyTrail(snake, playerIndex, boosting) {
   if (!snake || snake.length < 2) return;
   const pattern = state.patterns[playerIndex] || 'solid';
@@ -737,16 +850,92 @@ function drawHead(x, y, shape, color) {
     ctx.ellipse(cx + size * 0.72, cy - size * 0.12, size * 0.11, size * 0.4, 0.12, 0, Math.PI * 2);
     ctx.fill();
   } else if (shape === 'dragon') {
-    // trinca de espinhos/chifrinhos no topo
-    for (let s = 0; s < 3; s++) {
-      const bx = cx + size * (0.22 + s * 0.28);
+    // Cabeça de dragão de verdade: chifres, sobrancelhas, olhos de réptil,
+    // focinho com narinas e uma boca marcada. Sem isso ele parecia só uma cabeça verde.
+    ctx.save();
+    ctx.fillStyle = '#173a2b';
+    ctx.strokeStyle = '#0c2419';
+    ctx.lineWidth = Math.max(1, cell * 0.035);
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.18, cy + size * 0.14);
+    ctx.lineTo(cx + size * 0.10, cy - size * 0.42);
+    ctx.lineTo(cx + size * 0.34, cy - size * 0.08);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.82, cy + size * 0.14);
+    ctx.lineTo(cx + size * 0.90, cy - size * 0.42);
+    ctx.lineTo(cx + size * 0.66, cy - size * 0.08);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    // Espinhos laterais reforçam a silhueta de dragão sem esconder a carinha.
+    ctx.fillStyle = '#2a6e46';
+    for (const side of [-1, 1]) {
+      for (let k = 0; k < 2; k++) {
+        const bx = cx + size * (0.18 + k * 0.18) + side * size * (k * 0.02);
+        const by = cy + size * (0.32 + k * 0.16);
+        ctx.beginPath();
+        ctx.moveTo(bx + side * size * 0.02, by);
+        ctx.lineTo(bx + side * size * 0.17, by - size * 0.13);
+        ctx.lineTo(bx + side * size * 0.06, by + size * 0.10);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    // Sobrancelhas inclinadas: expressão de réptil/dragão.
+    ctx.strokeStyle = '#10251a';
+    ctx.lineWidth = Math.max(1.5, cell * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.17, cy + size * 0.33);
+    ctx.lineTo(cx + size * 0.41, cy + size * 0.40);
+    ctx.moveTo(cx + size * 0.59, cy + size * 0.40);
+    ctx.lineTo(cx + size * 0.83, cy + size * 0.33);
+    ctx.stroke();
+
+    // Olhos dourados com pupila vertical.
+    ctx.fillStyle = '#f3c642';
+    for (const ex of [0.28, 0.72]) {
       ctx.beginPath();
-      ctx.moveTo(bx, cy);
-      ctx.lineTo(bx - size * 0.07, cy - size * 0.3);
-      ctx.lineTo(bx + size * 0.07, cy);
+      ctx.ellipse(cx + size * ex, cy + size * 0.48, size * 0.12, size * 0.095, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#111';
+      ctx.beginPath();
+      ctx.ellipse(cx + size * ex, cy + size * 0.48, size * 0.025, size * 0.075, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f3c642';
+    }
+
+    // Focinho e duas narinas.
+    ctx.fillStyle = 'rgba(12,26,18,.72)';
+    ctx.beginPath();
+    ctx.ellipse(cx + size * 0.5, cy + size * 0.64, size * 0.20, size * 0.11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#050806';
+    for (const nx of [0.44, 0.56]) {
+      ctx.beginPath();
+      ctx.ellipse(cx + size * nx, cy + size * 0.63, size * 0.028, size * 0.022, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Boca com dois pequenos dentes.
+    ctx.strokeStyle = '#07120c';
+    ctx.lineWidth = Math.max(1, cell * 0.03);
+    ctx.beginPath();
+    ctx.moveTo(cx + size * 0.30, cy + size * 0.76);
+    ctx.quadraticCurveTo(cx + size * 0.5, cy + size * 0.88, cx + size * 0.70, cy + size * 0.76);
+    ctx.stroke();
+    ctx.fillStyle = '#f2f4df';
+    for (const tx of [0.42, 0.58]) {
+      ctx.beginPath();
+      ctx.moveTo(cx + size * tx, cy + size * 0.78);
+      ctx.lineTo(cx + size * (tx + 0.025), cy + size * 0.88);
+      ctx.lineTo(cx + size * (tx + 0.05), cy + size * 0.78);
       ctx.closePath();
       ctx.fill();
     }
+    ctx.restore();
   } else if (shape === 'bear') {
     // orelhinhas redondas de ursinho
     ctx.beginPath();
@@ -899,8 +1088,39 @@ function drawHead(x, y, shape, color) {
   ctx.fill();
   ctx.restore();
 
+  // Carinhas dos animais: olhos + focinho/nariz simples. Antes todos recebiam apenas
+  // dois olhos genéricos, então gato, coelho, urso etc. pareciam apenas "cabeças coloridas".
+  const animalFace = ['owl', 'cat', 'bunny', 'dragon', 'bear', 'fox', 'shark', 'bee', 'unicorn', 'monkey', 'lion'].includes(shape);
+  if (animalFace) {
+    const faceY = cy + size * 0.48;
+    ctx.save();
+    ctx.fillStyle = shape === 'cat' || shape === 'fox' ? '#24151a' : '#10151d';
+    ctx.beginPath();
+    if (shape === 'owl') {
+      ctx.arc(cx + size * 0.5, faceY + size * 0.08, size * 0.08, 0, Math.PI * 2);
+    } else if (shape === 'shark') {
+      ctx.arc(cx + size * 0.5, faceY + size * 0.12, size * 0.055, 0, Math.PI * 2);
+    } else {
+      ctx.moveTo(cx + size * 0.5, faceY);
+      ctx.lineTo(cx + size * 0.42, faceY + size * 0.07);
+      ctx.quadraticCurveTo(cx + size * 0.5, faceY + size * 0.14, cx + size * 0.58, faceY + size * 0.07);
+      ctx.closePath();
+    }
+    ctx.fill();
+    if (['cat', 'bunny', 'bear', 'fox', 'monkey'].includes(shape)) {
+      ctx.strokeStyle = 'rgba(20,20,25,.8)';
+      ctx.lineWidth = Math.max(1, cell * 0.025);
+      ctx.beginPath();
+      ctx.arc(cx + size * 0.5, faceY + size * 0.05, size * 0.10, 0.15, Math.PI - 0.15);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   // Olhinhos em toda cabeça, com uma piscadinha de vez em quando — dá mais vida e é
   // barato de desenhar (só dois pontinhos ou dois tracinhos quando pisca)
+  if (shape === 'dragon') return;
+
   const eyeY = cy + size * 0.36;
   const eyeR = size * 0.09;
   const blinking = Math.sin(Date.now() / 480 + x * 7 + y * 3) > 0.985;
@@ -920,6 +1140,7 @@ function drawHead(x, y, shape, color) {
   }
 }
 
+// v3.5.1 graphics — refinamentos visuais sem alterar a lógica da partida
 // Clareia (percent > 0) ou escurece (percent < 0) uma cor hex — usado no padrão Tricolor
 function shadeColor(hex, percent) {
   const num = parseInt(hex.replace('#', ''), 16);
@@ -966,6 +1187,24 @@ function drawBodySegment(x, y, color, pattern, k, palette) {
   ctx.beginPath();
   ctx.roundRect(cx, cy, size, size, r);
   ctx.fill();
+
+  /* v3.5.1 volume overlay — reflexo, sombra e contorno */
+  ctx.save();
+  const vg = ctx.createLinearGradient(cx, cy, cx + size, cy + size);
+  vg.addColorStop(0, 'rgba(255,255,255,0.22)');
+  vg.addColorStop(0.34, 'rgba(255,255,255,0.03)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.25)');
+  ctx.fillStyle = vg;
+  ctx.beginPath();
+  ctx.roundRect(cx, cy, size, size, r);
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+  ctx.lineWidth = Math.max(1, cell * 0.028);
+  ctx.beginPath();
+  ctx.roundRect(cx + cell * 0.015, cy + cell * 0.015, size - cell * 0.03, size - cell * 0.03, Math.max(1, r - cell * 0.02));
+  ctx.stroke();
+  ctx.restore();
 
   if (pattern === 'stripes' && k % 2 === 1) {
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
@@ -1072,6 +1311,77 @@ function updateAndDrawConfetti() {
 // Desenha a Minhoca Caçadora — visual bem diferente das minhocas normais, pra ficar
 // claro que é uma ameaça especial: escura, com um brilho vermelho pulsante e uma
 // caveira na cabeça em vez de olhinhos fofos.
+const FIFTY_FEATURE_KEY = '__mioquinhaFiftyFoodFeature';
+
+function drawFiftyFoodEnemies() {
+  const enemies = globalThis[FIFTY_FEATURE_KEY]?.enemies;
+  if (!Array.isArray(enemies)) return;
+  const agora = Date.now();
+
+  for (const enemy of enemies) {
+    if (!enemy?.snake?.length || agora >= enemy.endsAt) continue;
+    const targetIsMe = enemy.target === mySlot;
+    const seconds = Math.max(0, Math.ceil((enemy.endsAt - agora) / 1000));
+
+    ctx.save();
+    ctx.globalAlpha = targetIsMe ? 1 : 0.88;
+
+    for (let k = enemy.snake.length - 1; k >= 0; k--) {
+      const p = enemy.snake[k];
+      const px = sx(p.x), py = sy(p.y);
+      const size = cell * 0.78;
+
+      ctx.fillStyle = '#240711';
+      ctx.shadowColor = '#ff304f';
+      ctx.shadowBlur = targetIsMe ? cell * 0.40 : cell * 0.22;
+      ctx.beginPath();
+      ctx.roundRect(px + cell * 0.11, py + cell * 0.11, size, size, cell * 0.20);
+      ctx.fill();
+
+      ctx.fillStyle = k % 2 ? '#741328' : '#b41c37';
+      ctx.shadowBlur = targetIsMe ? cell * 0.18 : cell * 0.08;
+      ctx.beginPath();
+      ctx.roundRect(px + cell * 0.15, py + cell * 0.15, size - cell * 0.08, size - cell * 0.08, cell * 0.16);
+      ctx.fill();
+    }
+
+    const h = enemy.snake[0];
+    const hx = sx(h.x) + cell / 2, hy = sy(h.y) + cell / 2;
+    const pulse = 0.82 + 0.18 * Math.sin(agora / 150 + enemy.target);
+
+    ctx.globalAlpha = targetIsMe ? pulse : 0.86;
+    ctx.fillStyle = '#ff304f';
+    ctx.shadowColor = '#ff183d';
+    ctx.shadowBlur = cell * 0.65;
+    ctx.beginPath();
+    ctx.arc(hx, hy, cell * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.font = `900 ${Math.max(12, cell * 0.55)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = cell * 0.35;
+    ctx.fillText('☠️', hx, hy);
+
+    ctx.font = `900 ${Math.max(9, cell * 0.38)}px system-ui`;
+    ctx.fillStyle = targetIsMe ? '#ff9aaa' : '#d9a2ac';
+    ctx.fillText('☠️ ' + (state.names[enemy.target] || 'Jogador ' + (enemy.target + 1)) + ' • ' + seconds + 's', hx, hy - cell * 0.72);
+
+    if (targetIsMe) {
+      ctx.globalAlpha = 0.26 + 0.18 * Math.sin(agora / 140);
+      ctx.strokeStyle = '#ff4058';
+      ctx.lineWidth = Math.max(1.5, cell * 0.065);
+      ctx.beginPath();
+      ctx.arc(hx, hy, cell * (0.72 + 0.08 * Math.sin(agora / 120)), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+}
+
 function drawHunter() {
   if (!state.hunterActive || !state.hunterSnake.length) return;
   const pulse = 0.5 + Math.sin(Date.now() / 150) * 0.5;
@@ -1152,6 +1462,46 @@ function distanciaAteCacadora() {
 
 // Vinheta vermelha nas bordas da tela (melhoria #3) — fica mais forte quanto mais
 // perto a caçadora está de VOCÊ especificamente, dando aquela sensação de perigo.
+function drawHunterTargetLock() {
+  if (!state.hunterActive) return;
+
+  let leader = -1;
+  let top = -1;
+  for (let i = 0; i < state.count; i++) {
+    if (state.alive[i] && (state.scores[i] || 0) > top) {
+      top = state.scores[i] || 0;
+      leader = i;
+    }
+  }
+  const target = leader >= 0 ? state.snakes[leader]?.[0] : null;
+  if (!target) return;
+
+  const x = sx(target.x) + cell / 2;
+  const y = sy(target.y) + cell / 2;
+  const now = Date.now();
+  const pulse = 0.55 + 0.45 * Math.sin(now / 130);
+
+  ctx.save();
+  ctx.globalAlpha = 0.42 + pulse * 0.24;
+  ctx.strokeStyle = '#ff4058';
+  ctx.shadowColor = '#ff304f';
+  ctx.shadowBlur = cell * 0.55;
+  ctx.lineWidth = Math.max(1, cell * 0.045);
+
+  const r = cell * (0.94 + pulse * 0.12);
+  const gap = cell * 0.24;
+  for (const a of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, a + 0.16, a + Math.PI / 2 - 0.16);
+    ctx.stroke();
+  }
+
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.58, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawHunterVignette() {
   const d = distanciaAteCacadora();
   if (d === null) return;
@@ -1378,6 +1728,40 @@ function sinalIndicador(i) {
   return ` <span class="sinalBadge" style="color:${cor}" title="${ping}ms de ping">📶 ${ping}ms</span>`;
 }
 
+function renderOnlineMatchStats(rankOrder) {
+  const box = typeof document !== 'undefined' ? document.getElementById('onlineMatchStats') : null;
+  if (!box || !isOnline()) {
+    if (box) box.classList.add('hidden');
+    return;
+  }
+
+  let ping = null;
+  if (isHost()) {
+    const values = Object.values(pingStats).filter(v => Number.isFinite(v));
+    if (values.length) ping = Math.round(values.reduce((a,b)=>a+b,0) / values.length);
+  } else if (Number.isFinite(hostLatency)) {
+    ping = Math.round(hostLatency);
+  }
+
+  const myRank = rankOrder.indexOf(mySlot) + 1;
+  const totalScore = rankOrder.reduce((n,i)=>n+(state.scores[i]||0),0);
+  const totalFood = rankOrder.reduce((n,i)=>n+(state.foodsEaten[i]||0),0);
+  const totalElim = rankOrder.reduce((n,i)=>n+(state.eliminations[i]||0),0);
+  const quality = ping == null ? '📶 Medindo' : ping < 100 ? '🟢 Excelente' : ping < 250 ? '🟡 Estável' : '🔴 Instável';
+
+  box.classList.remove('hidden');
+  box.innerHTML =
+    '<div class="onlineStatsTitle">🌐 Painel Online <span>' + (isHost() ? '👑 Anfitrião' : '🎮 Cliente') + '</span></div>' +
+    '<div class="onlineStatsGrid">' +
+      '<div><span>🏅 Sua posição</span><b>' + myRank + 'º / ' + state.count + '</b></div>' +
+      '<div><span>⭐ Pontos totais</span><b>' + totalScore + '</b></div>' +
+      '<div><span>🍎 Comidas</span><b>' + totalFood + '</b></div>' +
+      '<div><span>☠️ Eliminações</span><b>' + totalElim + '</b></div>' +
+      '<div><span>📶 Conexão</span><b>' + quality + '</b></div>' +
+      '<div><span>📡 Ping</span><b>' + (ping == null ? '—' : ping + ' ms') + '</b></div>' +
+    '</div>';
+}
+
 export function renderScores() {
   let h = '';
   const teamBadge = ['🔵', '🔴'];
@@ -1447,6 +1831,7 @@ export function renderScores() {
   }
   h += `<div class="score" style="border-color:#ffd24d">🏅 Recorde: ${state.best || 0}</div>`;
   $('scores').innerHTML = h;
+  renderOnlineMatchStats(rankOrder);
   const scoresBottomBox = $('scoresBottom');
   if (scoresBottomBox) scoresBottomBox.innerHTML = h;
   $('alive').textContent = state.alive.filter(Boolean).length;
@@ -1531,6 +1916,24 @@ function drawDeathEffects() {
     ctx.textBaseline = 'middle';
     ctx.fillText('💥', x, y);
     ctx.restore();
+
+    // v3.5.1 death shards — pequenas faíscas saem do impacto.
+    ctx.save();
+    ctx.globalAlpha = 0.72 * (1 - p);
+    ctx.strokeStyle = e.color;
+    ctx.shadowColor = e.color;
+    ctx.shadowBlur = cell * 0.35;
+    ctx.lineWidth = Math.max(1, cell * 0.035);
+    for (let s = 0; s < 8; s++) {
+      const a = s * Math.PI / 4;
+      const inner = cell * (0.40 + p * 0.55);
+      const outer = cell * (0.72 + p * 1.00);
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(a) * inner, y + Math.sin(a) * inner);
+      ctx.lineTo(x + Math.cos(a) * outer, y + Math.sin(a) * outer);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 }
 
@@ -1542,20 +1945,54 @@ function drawLeaderCrown() {
   }
   if (leader < 0 || !state.snakes[leader]?.[0]) return;
   const h = state.snakes[leader][0];
+  const now = Date.now();
+  const pulse = 0.75 + 0.25 * Math.sin(now / 180);
+  const x = sx(h.x) + cell / 2;
+  const y = sy(h.y) + cell / 2;
+
   ctx.save();
-  ctx.globalAlpha = 0.75 + 0.25 * Math.sin(Date.now() / 180);
+  ctx.globalAlpha = 0.15 + pulse * 0.10;
+  ctx.strokeStyle = '#ffd24d';
+  ctx.shadowColor = '#ffd24d';
+  ctx.shadowBlur = cell * 0.80;
+  ctx.lineWidth = Math.max(1, cell * 0.06);
+  ctx.beginPath();
+  ctx.arc(x, y, cell * (0.72 + pulse * 0.10), 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha = pulse;
   ctx.font = `900 ${Math.max(12, cell * 0.72)}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.shadowColor = '#ffd24d';
   ctx.shadowBlur = cell * 0.55;
-  ctx.fillText('👑', sx(h.x) + cell / 2, sy(h.y) - cell * 0.28);
+  ctx.fillText('👑', x, y - cell * 0.30);
+  ctx.font = `900 ${Math.max(8, cell * 0.28)}px system-ui`;
+  ctx.fillText('LÍDER', x, y - cell * 0.76);
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha = 0.72;
+  ctx.fillStyle = '#fff0a8';
+  for (let n = 0; n < 4; n++) {
+    const a = now / 900 + n * Math.PI / 2;
+    const rr = cell * 0.78;
+    const px = x + Math.cos(a) * rr;
+    const py = y + Math.sin(a) * rr;
+    ctx.beginPath();
+    ctx.arc(px, py, Math.max(1, cell * 0.035), 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.restore();
 }
 
 function drawEnhancedParticles() {
   const agora = Date.now();
-  for (let i = 0; i < state.particles.length; i++) {
+  /* v3.5.1 particle cap — mantém o visual rico sem sobrecarregar celular/PC */
+  const start = Math.max(0, state.particles.length - 140);
+  for (let i = start; i < state.particles.length; i++) {
     const p = state.particles[i];
     const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
     const lifeRatio = Math.max(0, Math.min(1, (p.life || 0) / 40));
@@ -1576,6 +2013,13 @@ function drawEnhancedParticles() {
       ctx.arc(0, 0, size, 0, Math.PI * 2);
     }
     ctx.fill();
+    if (lifeRatio > 0.35) {
+      ctx.globalAlpha *= 0.45;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(1, size * 0.32), 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   }
 }
@@ -1605,6 +2049,7 @@ export function draw() {
   const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
   drawThemeBackdrop(theme);
   drawBiomeDecorations(theme);
+  drawMapGraphicForeground(theme);
   if (typeof drawThemeReaction === 'function') drawThemeReaction(theme);
 
   ctx.strokeStyle = theme.grid;
@@ -1700,13 +2145,17 @@ export function draw() {
       }
     }
     ctx.restore();
+    drawFoodGraphicAccent(f);
   }
-  for (let i = 0; i < state.count; i++) if (state.alive[i]) {
+  drawFiftyFoodEnemies();
+
+    for (let i = 0; i < state.count; i++) if (state.alive[i]) {
     const s = state.snakes[i];
     if (!s || !s.length) continue; // proteção: marcada como viva mas sem dados ainda (ex: acabou de entrar) — não trava o resto do desenho
     const boosting = state.boosting[i];
 
     if (typeof drawEnergyTrail === 'function') drawEnergyTrail(s, i, boosting);
+    drawTurboCinematic(s, i, boosting);
 
     ctx.save();
     // Rastro neon: um brilho na cor da minhoca, mais forte pertinho da cabeça e
@@ -1736,7 +2185,31 @@ export function draw() {
         // Destaque na SUA própria minhoca — um aneizinho branco pulsante ao redor da
         // cabeça, fácil de achar você mesmo no meio de várias minhocas na tela
         if (i === mySlot) {
-          const pulse = 0.5 + Math.sin(Date.now() / 260) * 0.5;
+          const pulse = 0.5 + Math.sin(Date.now() / 260) * 0.5;          // Aviso piscando enquanto o turbo está disponível e não está sendo usado.
+          const turboReady = !boosting &&
+            (state.foodsEaten[i] || 0) >= 1 &&
+            Date.now() >= (state.boostReadyAt[i] || 0);
+          if (turboReady && Math.floor(Date.now() / 260) % 2 === 0) {
+            const tx = sx(p.x) + cell / 2;
+            const ty = sy(p.y) - cell * 0.86;
+            ctx.save();
+            ctx.globalAlpha = 0.95;
+            ctx.strokeStyle = '#ffd24d';
+            ctx.fillStyle = '#ffd24d';
+            ctx.shadowColor = '#ffd24d';
+            ctx.shadowBlur = cell * 0.55;
+            ctx.lineWidth = Math.max(1.5, cell * 0.065);
+            ctx.beginPath();
+            ctx.arc(sx(p.x) + cell / 2, sy(p.y) + cell / 2, cell * (0.80 + pulse * 0.07), 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.font = `900 ${Math.max(11, cell * 0.47)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('⚡ TURBO', tx, ty);
+            ctx.restore();
+          }
+
+
           ctx.save();
           ctx.globalAlpha = 0.35 + pulse * 0.35;
           ctx.strokeStyle = '#ffffff';
@@ -1779,6 +2252,7 @@ export function draw() {
   if (typeof drawDeathEffects === 'function') drawDeathEffects();
   if (typeof drawLeaderCrown === 'function') drawLeaderCrown();
   drawHunter();
+  drawHunterTargetLock();
 
   if (typeof drawEnhancedParticles === 'function') drawEnhancedParticles();
 

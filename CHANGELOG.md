@@ -1,3 +1,80 @@
+## [3.6.6] — 2026-09-30
+- **Dragão:** a cabeça ganhou uma carinha própria, com chifres, olhos de réptil, focinho, narinas, boca, dentes e espinhos laterais. O desenho antigo parecia apenas uma cabeça verde com pontas.
+- **Compatibilidade:** o restante das cabeças de animais continua com o visual anterior.
+
+## [3.6.5] — 2026-09-30
+- **Animais:** cabeças de gato, coelho, urso, raposa, coruja, dragão e outros formatos agora têm detalhes de rosto mais claros (focinho/nariz e expressão), além dos olhos.
+- **Campo de Girassóis:** removida a camada atmosférica que criava aparência de névoa; a iluminação do tema ficou bem mais discreta.
+- **Visual:** preservada a identidade das cabeças e o restante do jogo.
+
+## [3.6.4] — 2026-09-30
+- **Conquista:** popup ficou mais transparente, permitindo enxergar melhor a partida por trás.
+- **Minhoca Inimiga:** as duas aparições padrão ficaram menos eficientes: menor duração, rajada mais curta e espaçada, menor antecipação, menor crescimento por vítima e distração reduzida.
+- **Migração:** configurações antigas que ainda estavam exatamente no padrão anterior são convertidas automaticamente; configurações personalizadas continuam preservadas.
+
+## [3.6.3] — 2026-09-30
+- **Conquistas:** corrigida a numeração da galeria. Agora cada categoria fica realmente em ordem do mais fácil ao mais difícil, com números consecutivos (1, 2, 3, 4...) sem pular números quando algumas já foram desbloqueadas.
+
+## [3.6.2] — 2026-09-30
+- **Celular:** a câmera agora se adapta à proporção da tela em retrato e paisagem, eliminando as grandes faixas vazias dentro da arena.
+- **Celular:** os botões de Pausar/Reiniciar/Menu ficam em uma única linha e a interface da partida fica mais compacta.
+- **Paisagem:** a arena aproveita praticamente toda a altura disponível, principalmente no modo compacto/tela cheia.
+- **PC:** o comportamento da câmera e o layout de desktop permanecem como antes.
+
+## [3.6.1] — 2026-09-30
+- **Celular:** layout do jogo online reorganizado para evitar estouro lateral e elementos espremidos.
+- **Visitante:** removido o placar duplicado no rodapé e reorganizados placar, reações, chat e botões.
+- **Arena:** controles touch permanecem dentro da área da arena e os cards de jogadores respeitam a largura do celular.
+- **Cache:** CSS e versão atualizados para garantir que o celular baixe a correção nova.
+
+## [3.6.0] — 2026-09-30
+- **Salas por código:** o anfitrião pode criar uma sala usando um código numérico de 4 dígitos.
+- **PIN:** a sala pode exigir um PIN numérico de 4 dígitos antes de liberar a entrada.
+- **Entrada sem link:** quem estiver no site pode digitar código + PIN e entrar diretamente.
+- **Compatibilidade:** o link de convite continua disponível como alternativa.
+
+## [3.5.1] — 2026-09-30
+- **Correção gráfica:** ativadas as chamadas da iluminação dinâmica e dos efeitos especiais de comidas que já faziam parte do renderizador, mas não estavam sendo executadas.
+- **Estabilidade:** nova cadeia gráfica para garantir que a atualização seja carregada sem depender de módulos antigos em cache.
+
+## [3.5.0] — 2026-09-30
+- **Iluminação:** luzes ambientais dinâmicas para dar profundidade aos mapas.
+- **Minhoca:** corpo com volume, reflexos e contorno 3D.
+- **Turbo:** efeito de velocidade com riscos luminosos e partículas.
+- **Comidas:** efeitos próprios de brilho, pulso e partículas para itens de maior raridade.
+- **Eliminações:** impacto com anel, explosão e fragmentos luminosos.
+- **Mapas:** camada visual adicional específica por família de tema.
+- **Líder:** coroa, halo, partículas e identificação "LÍDER".
+- **Caçadora:** mira visual sobre o líder e integração com o efeito de perigo já existente.
+- **Conquistas:** acabamento visual adicional nos cards/popup.
+- **Partículas:** limite inteligente e núcleo luminoso para manter o jogo fluido.
+
+## [3.4.4] — 2026-09-30
+- **Splash/topo:** corrigido o carregamento da tela inicial para ela permanecer como camada fixa sobre a página, eliminando a faixa branca que aparecia no topo depois do carregamento.
+- **Tema:** o splash agora mantém fundo escuro mesmo quando o navegador ou o modo claro estiver ativo.
+
+## [3.4.3] — 2026-09-30
+- **Conquistas:** cada card agora exibe um número pequeno de dificuldade de 1 a 14 dentro da categoria, seguindo a progressão do mais fácil ao mais difícil.
+- **Ordem visual:** a numeração permanece ligada à dificuldade mesmo quando as conquistas desbloqueadas aparecem antes das bloqueadas.
+
+## [3.4.1] — 2026-09-30
+- **Conquistas:** as 56 conquistas foram reorganizadas dentro de cada categoria em ordem progressiva, do objetivo mais fácil ao mais difícil, mantendo todas as conquistas existentes.
+
+## [3.4.0] — 2026-09-30
+- **Reconexão:** queda temporária dá até 8 segundos para reconectar antes de a CPU assumir.
+- **Anfitrião:** após migração, o novo host retoma a sala automaticamente.
+- **Placar online:** painel com posição, pontuação, comidas, eliminações, conexão e ping.
+- **Resultado online:** ranking detalhado com medalhas, campeão, identificação de você e resumo geral da partida.
+
+## [3.3.5] — 2026-09-30
+- **50 comidas:** ao atingir 50 comidas, cada Mioquinha recebe uma Minhoca Inimiga exclusiva por 20 segundos.
+- **Multiplayer:** várias inimigas podem ficar ativas ao mesmo tempo, uma para cada jogador que atingir a marca de 50.
+- **Turbo:** quando o turbo está disponível e não está sendo usado, a Mioquinha do jogador pisca com o aviso `⚡ TURBO`.
+
+## [3.3.4] — 2026-09-30
+- **Correção definitiva de carregamento:** criada uma cadeia nova `main_stable_334.js → loop_stable_334.js → render_stable_334.js` para impedir que módulos gráficos antigos em cache continuem sendo executados.
+- **Placar:** `rankOrder` passa a ser definido localmente dentro de `renderScores()`, inclusive quando existe apenas um jogador.
+
 # Histórico do que já foi feito (CHANGELOG)
 
 Este arquivo é a **memória do projeto**: qualquer IA (ou pessoa) lê aqui o que já foi feito antes de mexer, e registra o que fez depois. Mais recente primeiro.
@@ -16,12 +93,39 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 _(nada por enquanto)_
 
-## [2.94.10] — 2026-10-01
-- **Visual:** melhorados 3 dos visuais de cabeça ("bichinhos"), que ficavam genéricos demais pra reconhecer no tamanho real do jogo:
-  - **🐲 Dragãozinho:** tinha só 3 bolinhas quase invisíveis no topo; agora tem 2 chifres grandes recurvados pra trás e um focinho pontudo com narinas.
-  - **🦉 Coruja:** tinha só orelhinhas pontudas (parecia "qualquer bicho de orelha pontuda"); ganhou um biquinho laranja.
-  - **🐻 Ursinho:** tinha só orelhinhas redondas; ganhou um focinho claro com narizinho escuro, clássico de ursinho de pelúcia.
-  - 🐱 Gatinho (orelhas + bigodes) e 🐰 Coelhinho (orelhas compridas) já eram reconhecíveis e continuam como estavam.
+## [3.2.3] — 2026-09-30
+- **Correção defensiva de renderização:** os efeitos gráficos novos agora são opcionais quando uma cópia antiga do módulo está presa em cache, evitando que um único efeito impeça a Mioquinha de ser desenhada.
+- **Cache:** nova identificação `render.js?v=3.2.3` para forçar a carga do módulo gráfico atualizado.
+
+## [3.2.2] — 2026-09-30
+- **Correção de cache:** o `main.js` agora carrega o `render.js` com versão própria, evitando que o navegador reutilize um módulo gráfico antigo e provoque o erro `drawEnergyTrail is not defined`.
+
+## [3.2.1] — 2026-09-30
+- **Correção urgente:** o visual da v3.2.0 não carregava a Mioquinha porque a nova função `drawEnergyTrail` ficou dentro de `drawHead`. A função foi movida para o escopo correto, permitindo que o renderizador execute normalmente.
+
+## [3.2.0] — 2026-09-30
+- **Visual do jogo:** iluminação ambiental animada, profundidade e vinheta suave nos temas.
+- **Minhocas:** rastro de energia, animação contínua da cabeça, reflexos e coroa do líder.
+- **Comidas:** movimento, rotação, pulso e destaque das comidas especiais.
+- **Mortes/partículas:** impacto visual ampliado e partículas variadas.
+- **Minimapa:** varredura de radar animada.
+- **Conquistas:** popup com entrada mais forte e anel luminoso.
+- **Tela inicial:** splash com identidade visual e iluminação melhoradas.
+- **Menu:** microinterações visuais nos cards e botão principal.
+
+## [3.3.2] — 2026-09-30
+- **Correção de carregamento do renderizador:** `main.js` e `loop.js` agora importam exatamente o mesmo `render.js?v=3.3.2`, evitando que o loop do jogo carregue uma cópia antiga do módulo e gere `rankOrder is not defined`.
+
+## [3.3.1] — 2026-09-30
+- **Correção do placar:** a ordem visual do ranking foi movida para o escopo correto de `renderScores()`, evitando o erro `rankOrder is not defined` e permitindo que a partida seja desenhada normalmente.
+- **Cache:** `render.js` passou a ser carregado como v3.3.1 para impedir reutilização do módulo gráfico anterior.
+
+## [3.3.0] — 2026-09-30
+- **Skins:** 10 estilos de corpo, com 6 estilos temáticos novos: Neon, Fogo, Gelo, Galáxia, Elétrico e Veneno.
+- **Rastros:** cada estilo tem uma assinatura visual própria; o turbo ganha partículas adicionais.
+- **Comidas:** comidas normais, raras, épicas e lendárias passaram a ter distinção visual, sem alterar o valor dos pontos.
+- **Mapas:** a arena reage visualmente à posição da sua Mioquinha conforme o tema.
+- **HUD:** posições do ranking ganharam medalhas e destaque visual para o líder.
 
 ## [2.94.9] — 2026-09-30
 - **Correção urgente:** criar uma sala no celular, trocar de app (por exemplo, pra mandar o link pelo WhatsApp) e voltar fazia a sala inteira sumir, como se o navegador tivesse recarregado do zero — precisando criar tudo de novo. Causa: os dois mecanismos de atualização automática (o do `version.txt` e o do Service Worker) só se seguravam contra recarregar durante uma PARTIDA rodando (`state.running`), mas não durante a ESPERA na sala (depois de criar, antes de apertar "Jogar") — que é exatamente quando a pessoa sai pra mandar o link. Se o jogo detectasse uma versão nova publicada nesse meio tempo, recarregava a página sem aviso, apagando a sala. Agora os dois também respeitam `net.isOnline()` (hospedando OU já numa sala, mesmo sem a partida ter começado); a atualização fica represada até a pessoa sair da sala de verdade (não se perde, só espera). Detalhes em `docs/ARMADILHAS.md` (caso 30).

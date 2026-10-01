@@ -8,8 +8,8 @@ import { planTeams } from './teams.js';
 import { loadTeamPrefs, saveTeamPrefs } from './storage.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
-import { render } from './render.js?v=3.6.3';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop_stable_336.js';
+import { render } from './render_stable_336.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
 import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
@@ -25,6 +25,7 @@ const readyStatus = { 0: true };
 let onlineLobbyPlayers = [];
 let onlineLobbyConfig = null;
 const disconnectedOnline = {};
+const onlineDisconnectTimers = {};
 function updateReadyDisplay() {
   const box = $('readyStatusDisplay');
   if (!box) return;
@@ -122,10 +123,15 @@ net.setHandlers({
   onPeerLeft: (slot) => {
     const wasPlaying = net.isHost() && state.running && slot > 0 && slot < state.count;
     if (wasPlaying) {
-      state.types[slot] = 'cpu';
+      clearTimeout(onlineDisconnectTimers[slot]);
       disconnectedOnline[slot] = { name: state.names[slot] || `Jogador ${slot + 1}`, at: Date.now() };
-      $('roomStatus').textContent = `⚠️ ${disconnectedOnline[slot].name} caiu. A CPU assumiu temporariamente o controle.`;
-      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '⚠️ CPU assumiu temporariamente', color: '#ffd24d', until: Date.now() + 2200 };
+      $('roomStatus').textContent = `🔄 ${disconnectedOnline[slot].name} caiu. Tentando reconectar por até 8s...`;
+      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '🔄 Reconectando jogador...', color: '#ffd24d', until: Date.now() + 2200 };
+      onlineDisconnectTimers[slot] = setTimeout(() => {
+        if (!disconnectedOnline[slot]) return;
+        state.types[slot] = 'cpu';
+        $('roomStatus').textContent = `🤖 ${disconnectedOnline[slot].name} não voltou em 8s. A CPU assumiu temporariamente.`;
+      }, 8000);
     } else {
       state.count = Math.min(6, 1 + net.connectedCount());
       state.teamPrefs.length = Math.min(state.teamPrefs.length, state.count);
@@ -189,10 +195,12 @@ net.setHandlers({
   // nunca virava, só seguia reto na direção que nasceu (bug relatado)
   onInput: (slot, msg) => {
     if (disconnectedOnline[slot]) {
+      clearTimeout(onlineDisconnectTimers[slot]);
+      delete onlineDisconnectTimers[slot];
       delete disconnectedOnline[slot];
       state.types[slot] = 'human';
-      $('roomStatus').textContent = `🔄 ${state.names[slot] || `Jogador ${slot + 1}`} voltou! Controle devolvido.`;
-      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '🔄 Jogador voltou!', color: '#67ef8a', until: Date.now() + 1800 };
+      $('roomStatus').textContent = `✅ ${state.names[slot] || `Jogador ${slot + 1}`} voltou! Controle devolvido.`;
+      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '✅ Jogador reconectado!', color: '#67ef8a', until: Date.now() + 1800 };
     }
     if (msg.type === 'dir') setDir(slot, msg.dir);
     else if (msg.type === 'boost') tryBoost(slot);
@@ -242,8 +250,15 @@ net.setHandlers({
     announce('O anfitrião saiu da sala. Tentando reconectar automaticamente.');
   },
   onBecameNewHost: () => {
-    $('roomStatus').textContent = '🔄 Você virou o novo anfitrião da sala! Esperando o resto da galera reconectar...';
+    $('roomStatus').textContent = '👑 Novo anfitrião ativo! A sala vai retomar automaticamente.';
     $('hostPanel').classList.remove('hidden');
+    state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '👑 Novo anfitrião assumiu!', color: '#ffd24d', until: Date.now() + 2600 };
+    setTimeout(() => {
+      if (net.isOnline() && net.isHost()) {
+        $('hostPanel').classList.add('hidden');
+        startOnlineHostGame();
+      }
+    }, 4500);
   },
   onRejoinedAfterMigration: () => {
     $('joinStatus').textContent = '✅ Reconectado com o novo anfitrião! Aguardando a partida recomeçar...';
@@ -786,12 +801,41 @@ let achievementHideTimer = null;
 
 // Fim do Modo Torneio: mostra o campeão e o placar de cada rodada, reaproveitando o
 // overlay que já existia na tela (endTitle/endText/continueBtn) sem uso nenhum até agora
+function renderOnlineResultStats(result) {
+  const box = $('onlineResultStats');
+  if (!box || !result) return;
+  const names = result.names || [];
+  const wins = result.wins || [];
+  const scores = result.scores || [];
+  const foods = result.foodsEaten || [];
+  const elims = result.eliminations || [];
+  const safe = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const rows = names.map((name, i) => ({i, name:name || label(i), wins:wins[i]||0, score:scores[i]||0, food:foods[i]||0, elim:elims[i]||0}))
+    .sort((a,b)=>(b.wins-a.wins)||(b.score-a.score)||(b.food-a.food)||(a.i-b.i));
+  box.classList.remove('hidden');
+  box.innerHTML =
+    '<div class="onlineResultSummary">' +
+      '<div><span>👥 Jogadores</span><b>' + rows.length + '</b></div>' +
+      '<div><span>⭐ Pontos totais</span><b>' + rows.reduce((n,p)=>n+p.score,0) + '</b></div>' +
+      '<div><span>🍎 Comidas</span><b>' + rows.reduce((n,p)=>n+p.food,0) + '</b></div>' +
+      '<div><span>☠️ Eliminações</span><b>' + rows.reduce((n,p)=>n+p.elim,0) + '</b></div>' +
+    '</div>' +
+    '<div class="onlineResultRanking">' +
+      rows.map((p,pos)=>'<div class="onlineResultRow ' + (p.i===net.mySlot?'you ':'') + (p.i===result.champion?'champion':'') + '">' +
+        '<span class="onlineResultPlace">' + (pos===0?'🥇':pos===1?'🥈':pos===2?'🥉':(pos+1)+'º') + '</span>' +
+        '<div class="onlineResultPlayer"><b>' + safe(p.name) + (p.i===net.mySlot?' • 🫵 Você':'') + (p.i===result.champion?' • 👑 Campeão':'') + '</b>' +
+        '<small>🏆 ' + p.wins + ' rodada(s) • 🍎 ' + p.food + ' • ☠️ ' + p.elim + ' • ⭐ ' + p.score + '</small></div>' +
+      '</div>').join('') +
+    '</div>';
+}
+
 document.addEventListener('onlineMatchResult', (e) => {
   const { champion, wins, scores = [], foodsEaten = [], eliminations = [], teams = [], teamMode = false, names = [] } = e.detail;
   $('endTitle').textContent = '🏁 Resultado da partida!';
   const ranking = names.map((name, i) => ({ i, name: name || label(i), score: scores[i] || 0, food: foodsEaten[i] || 0, elim: eliminations[i] || 0, wins: wins[i] || 0 }))
     .sort((a, b) => (b.wins - a.wins) || (b.score - a.score) || (b.food - a.food));
   const championName = names[champion] || label(champion);
+  renderOnlineResultStats(e.detail);
   const placar = wins.map((w, i) => `${i === champion ? '👑 ' : ''}${names[i] || label(i)}: ${w} rodada${w === 1 ? '' : 's'}`).join(' • ');
   const destaque = ranking.map((p, pos) => `${pos + 1}º ${p.name}: 🏆 ${p.wins} • 🍎 ${p.food} • ☠️ ${p.elim} • ⭐ ${p.score}`).join('\n');
   // Vibração de "vitória" — animada e crescente, bem diferente da de derrota, só pra
@@ -2182,19 +2226,15 @@ function renderAchievementsGallery() {
   ];
 
   grid.innerHTML = groups.map((group) => {
-    const items = ACHIEVEMENTS
-      .filter((a) => a.category === group.key)
-      // O config.js já guarda cada categoria do mais fácil ao mais difícil.
-      .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }));
+    const items = ACHIEVEMENTS.filter((a) => a.category === group.key);
     return `
       <div style="grid-column:1/-1;margin-top:10px">
         <div style="font-size:1rem;font-weight:800;margin-bottom:2px">${group.title}</div>
         <div class="muted" style="margin-bottom:7px">${group.subtitle}</div>
       </div>
-      ${items.map(({ a, difficultyNumber }) => {
+      ${items.map((a) => {
         const isUnlocked = unlocked.includes(a.id);
         return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}" title="${a.desc}">
-          <span class="aLevel" aria-label="Dificuldade ${difficultyNumber}">${difficultyNumber}</span>
           <span class="aIcon">${a.icon}</span>
           <span class="aName">${a.name}</span>
           <span class="aDesc">${a.desc}</span>

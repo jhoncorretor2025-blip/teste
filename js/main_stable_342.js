@@ -8,15 +8,15 @@ import { planTeams } from './teams.js';
 import { loadTeamPrefs, saveTeamPrefs } from './storage.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop.js';
-import { render } from './render.js?v=3.6.3';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop_stable_336.js';
+import { render } from './render_stable_341.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
 import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
-import * as net from './net.js';
+import * as net from './net_stable_360.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
 // Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
@@ -25,6 +25,7 @@ const readyStatus = { 0: true };
 let onlineLobbyPlayers = [];
 let onlineLobbyConfig = null;
 const disconnectedOnline = {};
+const onlineDisconnectTimers = {};
 function updateReadyDisplay() {
   const box = $('readyStatusDisplay');
   if (!box) return;
@@ -122,10 +123,15 @@ net.setHandlers({
   onPeerLeft: (slot) => {
     const wasPlaying = net.isHost() && state.running && slot > 0 && slot < state.count;
     if (wasPlaying) {
-      state.types[slot] = 'cpu';
+      clearTimeout(onlineDisconnectTimers[slot]);
       disconnectedOnline[slot] = { name: state.names[slot] || `Jogador ${slot + 1}`, at: Date.now() };
-      $('roomStatus').textContent = `⚠️ ${disconnectedOnline[slot].name} caiu. A CPU assumiu temporariamente o controle.`;
-      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '⚠️ CPU assumiu temporariamente', color: '#ffd24d', until: Date.now() + 2200 };
+      $('roomStatus').textContent = `🔄 ${disconnectedOnline[slot].name} caiu. Tentando reconectar por até 8s...`;
+      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '🔄 Reconectando jogador...', color: '#ffd24d', until: Date.now() + 2200 };
+      onlineDisconnectTimers[slot] = setTimeout(() => {
+        if (!disconnectedOnline[slot]) return;
+        state.types[slot] = 'cpu';
+        $('roomStatus').textContent = `🤖 ${disconnectedOnline[slot].name} não voltou em 8s. A CPU assumiu temporariamente.`;
+      }, 8000);
     } else {
       state.count = Math.min(6, 1 + net.connectedCount());
       state.teamPrefs.length = Math.min(state.teamPrefs.length, state.count);
@@ -189,10 +195,12 @@ net.setHandlers({
   // nunca virava, só seguia reto na direção que nasceu (bug relatado)
   onInput: (slot, msg) => {
     if (disconnectedOnline[slot]) {
+      clearTimeout(onlineDisconnectTimers[slot]);
+      delete onlineDisconnectTimers[slot];
       delete disconnectedOnline[slot];
       state.types[slot] = 'human';
-      $('roomStatus').textContent = `🔄 ${state.names[slot] || `Jogador ${slot + 1}`} voltou! Controle devolvido.`;
-      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '🔄 Jogador voltou!', color: '#67ef8a', until: Date.now() + 1800 };
+      $('roomStatus').textContent = `✅ ${state.names[slot] || `Jogador ${slot + 1}`} voltou! Controle devolvido.`;
+      state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '✅ Jogador reconectado!', color: '#67ef8a', until: Date.now() + 1800 };
     }
     if (msg.type === 'dir') setDir(slot, msg.dir);
     else if (msg.type === 'boost') tryBoost(slot);
@@ -242,8 +250,15 @@ net.setHandlers({
     announce('O anfitrião saiu da sala. Tentando reconectar automaticamente.');
   },
   onBecameNewHost: () => {
-    $('roomStatus').textContent = '🔄 Você virou o novo anfitrião da sala! Esperando o resto da galera reconectar...';
+    $('roomStatus').textContent = '👑 Novo anfitrião ativo! A sala vai retomar automaticamente.';
     $('hostPanel').classList.remove('hidden');
+    state.toast = { x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2), text: '👑 Novo anfitrião assumiu!', color: '#ffd24d', until: Date.now() + 2600 };
+    setTimeout(() => {
+      if (net.isOnline() && net.isHost()) {
+        $('hostPanel').classList.add('hidden');
+        startOnlineHostGame();
+      }
+    }, 4500);
   },
   onRejoinedAfterMigration: () => {
     $('joinStatus').textContent = '✅ Reconectado com o novo anfitrião! Aguardando a partida recomeçar...';
@@ -265,11 +280,20 @@ setInterval(() => {
 updateOnlineLobbyUI();
 renderOnlineLobby();
 
-$('hostBtn').addEventListener('click', () => {
+function normalizeRoomNumberUI(value) {
+  return String(value ?? '').replace(/\D/g, '').slice(0, 4);
+}
+
+function generateRoomNumberUI() {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+function createOnlineRoom() {
   if (!navigator.onLine) {
-    $('roomStatus').textContent = '📡 Sem conexão com a internet — o multiplayer online precisa de internet pra funcionar. O modo local continua funcionando normalmente!';
+    $('roomStatus').textContent = '📡 Sem conexão com a internet — o multiplayer online precisa de internet.';
     return;
   }
+
   unlockAudio();
   state.teamPrefs = ['mine'];
   syncTeamCapacity();
@@ -278,21 +302,40 @@ $('hostBtn').addEventListener('click', () => {
   onlineLobbyConfig = null;
   renderOnlineLobby();
   updateSessionScoreDisplay();
+
+  const requestedCode = normalizeRoomNumberUI($('hostRoomCodeInput')?.value);
+  const requestedPin = normalizeRoomNumberUI($('hostRoomPinInput')?.value) || generateRoomNumberUI();
+
+  if (requestedCode && requestedCode.length !== 4) {
+    $('roomStatus').textContent = '⚠️ O código da sala precisa ter 4 números.';
+    return;
+  }
+  if (requestedPin.length !== 4) {
+    $('roomStatus').textContent = '⚠️ O PIN precisa ter 4 números.';
+    return;
+  }
+
+  const code = requestedCode || generateRoomNumberUI();
+  const peerId = 'mioquinha-room-' + code;
+
   $('hostBtn').disabled = true;
   const originalHostText = $('hostBtn').textContent;
   $('hostBtn').textContent = '⏳ Criando sala...';
+
   net.hostRoom(
     (roomId) => {
       $('hostBtn').textContent = originalHostText;
       $('hostPanel').classList.remove('hidden');
-      $('roomCode').textContent = roomId;
-      $('roomStatus').textContent = '👥 0 amigo(s) conectado(s). Compartilha o link e espera a galera entrar!';
+      $('roomCode').textContent = code;
+      $('roomPinDisplay').textContent = requestedPin;
+      $('hostRoomCodeInput').value = code;
+      $('hostRoomPinInput').value = requestedPin;
+      $('roomStatus').textContent = '👥 Sala pronta! Passe somente o código e o PIN para seus amigos.';
       updateOnlineLobbyUI();
       $('count').disabled = true;
       state.count = 1;
       makePlayers();
-      // Pede permissão de notificação só agora, no momento que faz sentido (criou uma
-      // sala e vai esperar alguém entrar) — nunca pede isso sem contexto, ao carregar a página
+
       if (window.Notification && window.Notification.permission === 'default') {
         window.Notification.requestPermission().catch(() => {});
       }
@@ -300,10 +343,20 @@ $('hostBtn').addEventListener('click', () => {
     (err) => {
       $('hostBtn').disabled = false;
       $('hostBtn').textContent = originalHostText;
-      alert('Não consegui criar a sala: ' + (err?.message || err));
-    }
+
+      if (err?.type === 'unavailable-id') {
+        $('roomStatus').textContent = '⚠️ Esse código já está sendo usado por outra sala. Escolha outro código.';
+        return;
+      }
+
+      $('roomStatus').textContent = '❌ Não consegui criar a sala: ' + (err?.message || err);
+    },
+    peerId,
+    { roomCode: code, roomPin: requestedPin, requirePin: true }
   );
-});
+}
+
+$('hostBtn').addEventListener('click', createOnlineRoom);
 
 $('copyRoom').addEventListener('click', async () => {
   const link = buildRoomLink();
@@ -602,48 +655,68 @@ function extractRoomCode(raw) {
 
 $('joinBtn').addEventListener('click', () => {
   const code = extractRoomCode($('joinCode').value);
+  const pin = normalizeRoomNumberUI($('joinPin').value);
+
   if (!code) return;
   if (!navigator.onLine) {
-    $('joinStatus').textContent = '📡 Sem conexão com a internet — não dá pra entrar numa sala sem internet. Confere o wi-fi ou os dados móveis.';
+    $('joinStatus').textContent = '📡 Sem conexão com a internet — não dá pra entrar em uma sala sem internet.';
     return;
   }
+  if (normalizeRoomNumberUI(code).length !== 4) {
+    $('joinStatus').textContent = '⚠️ O código da sala precisa ter 4 números.';
+    return;
+  }
+  if (pin.length !== 4) {
+    $('joinStatus').textContent = '⚠️ Digite o PIN de 4 números da sala.';
+    return;
+  }
+
   unlockAudio();
   $('joinBtn').disabled = true;
   const originalJoinText = $('joinBtn').textContent;
   $('joinBtn').textContent = '⏳ Entrando...';
   $('joinStatus').innerHTML = '<span class="spinner"></span>Conectando com a sala...';
-  const escolhaDeTime = $('joinTeamRow').classList.contains('hidden') ? 'mine' : ($('joinTeamChoice').value === 'other' ? 'other' : 'mine');
+
+  const escolhaDeTime = $('joinTeamRow').classList.contains('hidden')
+    ? 'mine'
+    : ($('joinTeamChoice').value === 'other' ? 'other' : 'mine');
+
   if (!$('joinTeamRow').classList.contains('hidden')) salvarPrefsDeTime();
-  net.joinRoom(code, state.names[0],
+
+  net.joinRoomByCode(normalizeRoomNumberUI(code), pin, state.names[0],
     (slot, time) => {
-      $('joinStatus').textContent = '';
+      $('joinStatus').textContent = '✅ Entrada autorizada!';
       updateOnlineLobbyUI();
       $('joinBtn').textContent = originalJoinText;
       document.querySelector('.siteHeader').classList.add('hidden');
-      saveLastOnlineRoom(code, null);
-      partnerNameCaptured = false; // sala nova — pode capturar o nome de quem hospeda de novo
+      saveLastOnlineRoom(normalizeRoomNumberUI(code), null);
+      partnerNameCaptured = false;
       startClientGame();
+
       if (time === 0 || time === 1) {
         const rotulo = TEAMS.find((t) => t.value === time)?.label || '';
-        $('clientReadyOverlay').querySelector('h2').textContent = `🌐 Você entrou no ${rotulo}!`;
-        announce(`Você entrou no ${rotulo}.`);
+        $('clientReadyOverlay').querySelector('h2').textContent = '🌐 Você entrou no ' + rotulo + '!';
+        announce('Você entrou no ' + rotulo + '.');
       }
     },
     (err) => {
       $('joinBtn').disabled = false;
       $('joinBtn').textContent = originalJoinText;
+
       let msg = '❌ Não consegui entrar. ';
-      if (err?.type === 'peer-unavailable') msg += 'Essa sala não existe (ou já fechou) — confere o código com quem criou, ou pede pra criar de novo.';
-      else if (err?.type === 'network' || err?.type === 'server-error' || err?.type === 'disconnected' || err?.type === 'socket-error' || err?.type === 'socket-closed') msg += 'Parece que a internet caiu no meio do caminho — confere sua conexão e tenta de novo.';
-      else if (err?.message === 'full') msg += 'Essa sala já está cheia (máximo de 6 jogadores).';
-      else if (err?.message === 'timeout') msg = '⏱️ A conexão com a sala travou e não completou. Isso acontece às vezes entre certas redes (dados móveis de operadoras diferentes, Wi-Fi corporativo). Tenta: os dois no mesmo Wi-Fi, ou um dos dois trocar pra dados móveis.';
-      else if (err?.message === 'rejected') msg = '🚫 O dono da sala não aceitou sua entrada dessa vez.';
-      else msg += 'Confere o código ou pede pro seu amigo criar a sala de novo.';
+      if (err?.type === 'peer-unavailable') msg += 'Essa sala não existe ou já fechou.';
+      else if (err?.message === 'wrongPin') msg += 'PIN incorreto. Confere os 4 números com quem criou a sala.';
+      else if (err?.message === 'invalidRoomCode') msg += 'O código precisa ter 4 números.';
+      else if (err?.message === 'invalidRoomPin') msg += 'O PIN precisa ter 4 números.';
+      else if (err?.type === 'network' || err?.type === 'server-error' || err?.type === 'disconnected' || err?.type === 'socket-error' || err?.type === 'socket-closed') msg += 'Parece que a internet caiu no meio do caminho.';
+      else if (err?.message === 'full') msg += 'Essa sala já está cheia.';
+      else if (err?.message === 'timeout') msg += 'A conexão demorou demais. Tenta novamente.';
+      else if (err?.message === 'rejected') msg += 'O dono da sala não aceitou sua entrada.';
+      else msg += 'Confere o código e o PIN.';
       $('joinStatus').textContent = msg;
     },
     () => {
-      // Conexão técnica já rolou — agora só falta o dono da sala aceitar de verdade
-      $('joinStatus').innerHTML = '<span class="spinner"></span>Conectado! Esperando o dono da sala aceitar sua entrada...';
+      $('joinStatus').innerHTML = '<span class="spinner"></span>Conectado! Validando o PIN e esperando a autorização do dono...';
     },
     escolhaDeTime
   );
@@ -786,12 +859,41 @@ let achievementHideTimer = null;
 
 // Fim do Modo Torneio: mostra o campeão e o placar de cada rodada, reaproveitando o
 // overlay que já existia na tela (endTitle/endText/continueBtn) sem uso nenhum até agora
+function renderOnlineResultStats(result) {
+  const box = $('onlineResultStats');
+  if (!box || !result) return;
+  const names = result.names || [];
+  const wins = result.wins || [];
+  const scores = result.scores || [];
+  const foods = result.foodsEaten || [];
+  const elims = result.eliminations || [];
+  const safe = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const rows = names.map((name, i) => ({i, name:name || label(i), wins:wins[i]||0, score:scores[i]||0, food:foods[i]||0, elim:elims[i]||0}))
+    .sort((a,b)=>(b.wins-a.wins)||(b.score-a.score)||(b.food-a.food)||(a.i-b.i));
+  box.classList.remove('hidden');
+  box.innerHTML =
+    '<div class="onlineResultSummary">' +
+      '<div><span>👥 Jogadores</span><b>' + rows.length + '</b></div>' +
+      '<div><span>⭐ Pontos totais</span><b>' + rows.reduce((n,p)=>n+p.score,0) + '</b></div>' +
+      '<div><span>🍎 Comidas</span><b>' + rows.reduce((n,p)=>n+p.food,0) + '</b></div>' +
+      '<div><span>☠️ Eliminações</span><b>' + rows.reduce((n,p)=>n+p.elim,0) + '</b></div>' +
+    '</div>' +
+    '<div class="onlineResultRanking">' +
+      rows.map((p,pos)=>'<div class="onlineResultRow ' + (p.i===net.mySlot?'you ':'') + (p.i===result.champion?'champion':'') + '">' +
+        '<span class="onlineResultPlace">' + (pos===0?'🥇':pos===1?'🥈':pos===2?'🥉':(pos+1)+'º') + '</span>' +
+        '<div class="onlineResultPlayer"><b>' + safe(p.name) + (p.i===net.mySlot?' • 🫵 Você':'') + (p.i===result.champion?' • 👑 Campeão':'') + '</b>' +
+        '<small>🏆 ' + p.wins + ' rodada(s) • 🍎 ' + p.food + ' • ☠️ ' + p.elim + ' • ⭐ ' + p.score + '</small></div>' +
+      '</div>').join('') +
+    '</div>';
+}
+
 document.addEventListener('onlineMatchResult', (e) => {
   const { champion, wins, scores = [], foodsEaten = [], eliminations = [], teams = [], teamMode = false, names = [] } = e.detail;
   $('endTitle').textContent = '🏁 Resultado da partida!';
   const ranking = names.map((name, i) => ({ i, name: name || label(i), score: scores[i] || 0, food: foodsEaten[i] || 0, elim: eliminations[i] || 0, wins: wins[i] || 0 }))
     .sort((a, b) => (b.wins - a.wins) || (b.score - a.score) || (b.food - a.food));
   const championName = names[champion] || label(champion);
+  renderOnlineResultStats(e.detail);
   const placar = wins.map((w, i) => `${i === champion ? '👑 ' : ''}${names[i] || label(i)}: ${w} rodada${w === 1 ? '' : 's'}`).join(' • ');
   const destaque = ranking.map((p, pos) => `${pos + 1}º ${p.name}: 🏆 ${p.wins} • 🍎 ${p.food} • ☠️ ${p.elim} • ⭐ ${p.score}`).join('\n');
   // Vibração de "vitória" — animada e crescente, bem diferente da de derrota, só pra
@@ -2185,6 +2287,8 @@ function renderAchievementsGallery() {
     const items = ACHIEVEMENTS
       .filter((a) => a.category === group.key)
       // O config.js já guarda cada categoria do mais fácil ao mais difícil.
+      // Não movemos as desbloqueadas para cima: isso fazia aparecer 1, 2, 4, 9...
+      // na tela. A numeração precisa representar a posição real da dificuldade.
       .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }));
     return `
       <div style="grid-column:1/-1;margin-top:10px">

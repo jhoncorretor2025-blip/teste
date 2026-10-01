@@ -16,8 +16,23 @@ export function makePlayers() {
   const colorOptions = SNAKE_COLORS.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
   const trailOptions = `<option value="auto">🎨 Rastro igual à cor</option>` + colorOptions.replace(/<option value="([^"]+)">([^<]+)<\/option>/g, '<option value="$1">✨ Rastro $2</option>');
   const nameColorOptions = `<option value="auto">🔤 Nome branco (padrão)</option>` + colorOptions.replace(/<option value="([^"]+)">([^<]+)<\/option>/g, '<option value="$1">🔤 Nome $2</option>');
-  const headOptions = HEAD_SHAPES.map(h => `<option value="${h.value}">${h.name}</option>`).join('');
-  const patternOptions = SKIN_PATTERNS.map(p => `<option value="${p.value}">${p.name}</option>`).join('');
+  const headCategoryLabels = {
+    classic: '⚪ Clássicas',
+    animals: '🐾 Animais',
+    fantasy: '🦄 Fantasia',
+    special: '🎭 Especiais',
+  };
+  const headCategories = ['classic', 'animals', 'fantasy', 'special'];
+  const headOptions = headCategories.map(category => {
+    const items = HEAD_SHAPES.filter(h => (h.category || 'classic') === category);
+    return `<optgroup label="${headCategoryLabels[category]}">${items.map(h => `<option value="${h.value}">${h.name}</option>`).join('')}</optgroup>`;
+  }).join('');
+  const patternCategoryLabels = { classic: '🎨 Clássicas', themed: '✨ Temáticas' };
+  const patternCategories = ['classic', 'themed'];
+  const patternOptions = patternCategories.map(category => {
+    const items = SKIN_PATTERNS.filter(p => (p.category || 'classic') === category);
+    return `<optgroup label="${patternCategoryLabels[category]}">${items.map(p => `<option value="${p.value}">${p.name}</option>`).join('')}</optgroup>`;
+  }).join('');
   const paletteOptions = TRICOLOR_PALETTES.map(p => `<option value="${p.value}">${p.name}</option>`).join('');
   const teamOptions = TEAMS.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
   const teamMode = $('teamMode').checked;
