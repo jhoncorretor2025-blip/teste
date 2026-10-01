@@ -174,6 +174,20 @@ export function loadHunterSettings(defaults) {
   try {
     const saved = JSON.parse(localStorage.getItem(HUNTER_SETTINGS_KEY));
     if (!saved || typeof saved !== 'object') return JSON.parse(JSON.stringify(defaults));
+
+    // Migra apenas o antigo padrão da Caçadora. Se a pessoa configurou manualmente,
+    // preserva a configuração dela.
+    const eraPadraoAntigo =
+      saved.milestones?.[0]?.foodThreshold === 100 &&
+      saved.milestones?.[0]?.durationSec === 35 &&
+      saved.milestones?.[1]?.foodThreshold === 150 &&
+      saved.milestones?.[1]?.durationSec === 50 &&
+      saved.burstDurationSec === 2.5 &&
+      saved.burstIntervalSec === 8 &&
+      saved.predictionSteps === 3 &&
+      saved.growthPerVictim === 8;
+    if (eraPadraoAntigo) return JSON.parse(JSON.stringify(defaults));
+
     return {
       ...JSON.parse(JSON.stringify(defaults)),
       ...saved,
