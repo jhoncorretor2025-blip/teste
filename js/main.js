@@ -2182,15 +2182,19 @@ function renderAchievementsGallery() {
   ];
 
   grid.innerHTML = groups.map((group) => {
-    const items = ACHIEVEMENTS.filter((a) => a.category === group.key);
+    const items = ACHIEVEMENTS
+      .filter((a) => a.category === group.key)
+      // O config.js já guarda cada categoria do mais fácil ao mais difícil.
+      .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }));
     return `
       <div style="grid-column:1/-1;margin-top:10px">
         <div style="font-size:1rem;font-weight:800;margin-bottom:2px">${group.title}</div>
         <div class="muted" style="margin-bottom:7px">${group.subtitle}</div>
       </div>
-      ${items.map((a) => {
+      ${items.map(({ a, difficultyNumber }) => {
         const isUnlocked = unlocked.includes(a.id);
         return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}" title="${a.desc}">
+          <span class="aLevel" aria-label="Dificuldade ${difficultyNumber}">${difficultyNumber}</span>
           <span class="aIcon">${a.icon}</span>
           <span class="aName">${a.name}</span>
           <span class="aDesc">${a.desc}</span>
