@@ -44,7 +44,7 @@ relatorio.check('Início da Caçadora fica no estado e é enviado pelo anfitriã
 relatorio.check('Conquistas da Caçadora também funcionam no cliente online', main.includes("unlockOnline('hunter_zone_perfect')") && main.includes("unlockOnline('hunter_no_fear')"));
 
 relatorio.secao('Versão');
-relatorio.check('Versão 4.3.0 no config', config.includes("VERSION = '4.3.0'"));
-relatorio.check('Versão 4.3.0 no site', index.includes('4.3.0'));
-relatorio.check('Cache 4.3.0', sw.includes('snake-arena-v4.3.0'));
+const versaoAtual = config.match(/VERSION = '([^']+)'/)?.[1] || '';
+relatorio.check('Versão sincronizada no config/site', !!versaoAtual && index.includes(versaoAtual));
+relatorio.check('Cache sincronizado', !!versaoAtual && sw.includes(`snake-arena-v${versaoAtual}`));
 relatorio.fim();

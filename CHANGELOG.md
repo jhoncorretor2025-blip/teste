@@ -1,3 +1,12 @@
+# v4.4.0 — nova tela inicial e Loja direta
+- Adicionada a **🛒 Loja** como opção do menu principal, também na navegação inferior do celular.
+- A tela inicial agora reúne moedas, nível, Liga, Desafio do Dia, sequência de dias e resumo do progresso.
+- Adicionado resumo completo da próxima partida, incluindo velocidade, mapa, dificuldade, modo e Minhoca Inimiga.
+- A escolha da Minhoca Inimiga ganhou dois cartões rápidos para ativar ou desativar sem abrir as configurações avançadas.
+- Adicionadas prévia visual do mapa, preços dos mapas premium, prévia da Minha Mioquinha e próxima conquista.
+- O botão principal passou a destacar **🚀 JOGAR AGORA** e os atalhos de Loja, Personalização e Progresso ficaram disponíveis na própria tela inicial.
+- Mantidos os dados existentes de moedas, compras, progressão, conquistas e multiplayer.
+
 # v4.3.0 — novas conquistas para a progressão
 - Adicionadas 18 conquistas novas ligadas à Minhoca Caçadora, zonas de fuga, moedas, Loja, mapas especiais, fantasias, Liga, sequência, Desafio do Dia e número de partidas.
 - A Loja agora registra moedas ganhas e moedas gastas ao longo do tempo para permitir conquistas cumulativas.

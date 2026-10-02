@@ -3,7 +3,7 @@
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
 import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
-import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS, HUNTER_DEFAULTS } from './config.js';
+import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS, HUNTER_DEFAULTS, HEAD_SHAPES, SKIN_PATTERNS } from './config.js';
 import { planTeams } from './teams.js';
 import { loadTeamPrefs, saveTeamPrefs } from './storage.js';
 import { state } from './state.js';
@@ -12,12 +12,12 @@ import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryB
 import { render } from './render_stable_341.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadBestLength, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net_stable_360.js';
-import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI } from './progression.js';
+import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, SHOP_MAPS } from './progression.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
 // Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
@@ -792,12 +792,12 @@ if (new URLSearchParams(location.search).get('diag') === '1') {
 // que a função que o usa já exista antes (funções são content içadas; const/let não).
 // Navegação principal: quatro áreas simples. Os nomes antigos "ranking" e "conquistas"
 // continuam aceitos em links antigos e atalhos, mas agora apontam para Progresso.
-const TAB_ALIASES = { ranking: 'progresso', conquistas: 'progresso' };
+const TAB_ALIASES = { ranking: 'progresso', conquistas: 'progresso', loja: 'progresso' };
 
 // Atalhos de app (melhoria #2) — segurar o ícone no Android oferece "Jogar Rápido" e
 // "Ver Conquistas", que chegam aqui como parâmetros na URL
 const urlAction = new URLSearchParams(location.search);
-const ABAS_VALIDAS = ['jogar', 'personalizar', 'online', 'progresso', 'ranking', 'conquistas'];
+const ABAS_VALIDAS = ['jogar', 'personalizar', 'online', 'progresso', 'loja', 'ranking', 'conquistas'];
 const tabDaUrl = urlAction.get('tab');
 const secaoDaUrl = urlAction.get('section') || 'stats';
 if (tabDaUrl && ABAS_VALIDAS.includes(tabDaUrl)) {
@@ -839,6 +839,69 @@ if (roomFromUrl && urlParams.get('mode')) {
 }
 
 // --- Botões principais ---
+function refreshHomeDashboard() {
+  const data = loadProgression();
+  const league = getLeagueInfo(data.leaguePoints);
+  const set = (id, value) => { const el = $(id); if (el) el.textContent = value; };
+  set('homeCoins', String(data.coins || 0));
+  set('homeLevel', `Nível ${data.level || 1}`);
+  set('homeLeague', `${league.current.icon} ${league.current.name}`);
+
+  const daily = data.dailyChallenge;
+  if (daily) {
+    set('homeDailyDesc', daily.desc || 'Prepare-se para o desafio de hoje.');
+    set('homeDailyProgress', daily.completed ? `✅ Concluído hoje! +${daily.rewardCoins} 🪙 +${daily.rewardXp} XP` : `${daily.progress}/${daily.target} • +${daily.rewardCoins} 🪙 +${daily.rewardXp} XP`);
+  }
+
+  const streak = loadStreakDays();
+  set('homeStreakValue', streak > 0 ? `🔥 ${streak} dias` : 'Comece hoje');
+  const streakReward = getNextStreakReward(streak);
+  set('homeStreakReward', `🎁 Dia ${streakReward.day}: +${streakReward.coins} 🪙 +${streakReward.xp} XP`);
+
+  const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
+  const mapNames = { small: 'Pequeno', medium: 'Médio', large: 'Grande' };
+  const mapLabel = mapNames[state.mapSize] || state.mapSize || 'Médio';
+  const preview = $('homeMapPreview');
+  if (preview) {
+    preview.style.background = `radial-gradient(circle at 50% 40%, ${theme.bg2 || theme.bg}, ${theme.bg} 78%)`;
+    preview.style.borderColor = theme.grid;
+    preview.style.color = theme.accent || '#fff';
+    preview.innerHTML = `<div class="homeMapPreviewIcon">${theme.food}</div><div><b>${theme.name}</b><small>${mapLabel} • ${state.mapW}×${state.mapH} • ${theme.food} comida temática</small></div>`;
+  }
+  set('homeMapSub', `${mapLabel} • ${state.mapW}×${state.mapH} • tema visual`);
+
+  const premium = $('homePremiumMaps');
+  if (premium) premium.innerHTML = SHOP_MAPS.map((item) => {
+    const unlocked = isMapUnlocked(item.id);
+    return `<button type="button" class="homeMapChip ${unlocked ? 'unlocked' : 'locked'}" data-home-shop-map="${item.id}"><span>${item.icon} ${item.name}</span><small>${unlocked ? '✅ Desbloqueado' : `🔒 ${item.cost} 🪙`}</small></button>`;
+  }).join('');
+
+  const snakeVisual = $('homeSnakeVisual');
+  if (snakeVisual) {
+    const color = state.colors[0] || COLORS[0];
+    snakeVisual.innerHTML = Array.from({ length: 8 }, (_, i) => `<span class="homeSnakeSegment${i === 0 ? ' head' : ''}" style="--snake-color:${color};--snake-step:${i}"></span>`).join('');
+  }
+  const head = HEAD_SHAPES.find((h) => h.value === state.heads[0]);
+  const skin = SKIN_PATTERNS.find((p) => p.value === state.patterns[0]);
+  set('homeSnakeLabel', `🐍 ${state.names[0] || 'Jhon'}`);
+  set('homeSnakeMeta', `${head?.name || '⚪ Arredondada'} • ${skin?.name || '◼️ Lisa'}`);
+
+  const unlocked = loadUnlockedAchievements();
+  const nextAchievement = ACHIEVEMENTS.find((a) => !unlocked.includes(a.id));
+  set('homeAchievementCount', `${unlocked.length}/${ACHIEVEMENTS.length}`);
+  set('homeNextAchievement', nextAchievement ? `${nextAchievement.icon} ${nextAchievement.name}` : '👑 Todas desbloqueadas!');
+  set('homeAchievementDesc', nextAchievement?.desc || 'Você completou toda a galeria.');
+  const bestLength = loadBestLength();
+  set('homeProgressSummary', `${loadGamesPlayed()} partidas • recorde ${state.best || 0} • ${bestLength} partes • ${unlocked.length} conquistas`);
+
+  const hunterOn = !!$('hunterEnabledStart')?.checked;
+  $('homeHunterStatus')?.classList.toggle('off', !hunterOn);
+  set('homeHunterStatus', hunterOn ? '☠️ Inimiga ativa' : '✅ Sem inimiga');
+  $('hunterHomeOnBtn')?.classList.toggle('active', hunterOn);
+  $('hunterHomeOffBtn')?.classList.toggle('active', !hunterOn);
+}
+document.addEventListener('progressionUpdated', refreshHomeDashboard);
+
 function doStart() {
   unlockAudio();
   requestWakeLock();
@@ -1128,6 +1191,28 @@ function shareLink() {
 }
 $('share').addEventListener('click', shareLink);
 $('shareHero').addEventListener('click', shareLink);
+$('homeOpenShopBtn')?.addEventListener('click', () => switchToTab('loja', 'push'));
+$('homeOpenPersonalizeBtn')?.addEventListener('click', () => switchToTab('personalizar', 'push'));
+$('homeOpenProgressBtn')?.addEventListener('click', () => switchToTab('progresso', 'push'));
+
+$('homePremiumMaps')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-home-shop-map]');
+  if (!btn) return;
+  const id = btn.dataset.homeShopMap;
+  if (!isMapUnlocked(id)) { switchToTab('loja', 'push'); return; }
+  $('boardTheme').value = id;
+  $('boardTheme').dispatchEvent(new Event('change', { bubbles: true }));
+  refreshHomeDashboard();
+});
+
+document.querySelector('.homeHunterChoices')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-hunter-choice]');
+  if (!btn) return;
+  const input = $('hunterEnabledStart');
+  if (!input) return;
+  input.checked = btn.dataset.hunterChoice === 'on';
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+});
 
 // Mostra o recorde pessoal em destaque logo no topo do menu (fácil de ver sem rolar a tela)
 function updateTopRecordDisplay() {
@@ -1137,6 +1222,7 @@ function updateTopRecordDisplay() {
   $('progressBestValue')?.replaceChildren(document.createTextNode(String(best)));
   $('progressGamesValue')?.replaceChildren(document.createTextNode(String(loadGamesPlayed() || 0)));
   $('progressSessionValue')?.replaceChildren(document.createTextNode(String(loadSessionGamesToday() || 0)));
+  refreshHomeDashboard();
 }
 
 function activateProgressSection(section = 'stats') {
@@ -1152,17 +1238,15 @@ function activateProgressSection(section = 'stats') {
   });
 }
 function switchToTab(tab, modoUrl = 'push', progressSection = null) {
-  tab = TAB_ALIASES[tab] || tab;
-  const btn = document.querySelector(`.tabBtn[data-tab="${tab}"]`);
+  const requestedTab = tab;
+  const activeTab = TAB_ALIASES[tab] || tab;
+  const btn = document.querySelector(`.tabBtn[data-tab="${requestedTab}"]`) || document.querySelector(`.tabBtn[data-tab="${activeTab}"]`);
   if (!btn) return;
   document.querySelectorAll('.tabBtn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
   btn.classList.add('active');
   btn.setAttribute('aria-selected', 'true');
 
-  // Ao entrar na aba JOGAR, a configuração da partida fica aberta automaticamente.
-  // Assim a pessoa vê imediatamente quantidade de jogadores, controles, mapa, velocidade
-  // e demais opções, sem precisar descobrir o botão de configurações.
-  if (tab === 'jogar') {
+  if (activeTab === 'jogar') {
     const settingsBox = $('gameAdvancedSettings');
     const settingsBtn = $('gameSettingsToggle');
     if (settingsBox && settingsBtn) {
@@ -1176,24 +1260,25 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
 
   const current = document.querySelector('.tabPanel:not(.hidden)');
   if (current) current.classList.add('tabFading');
+  const sectionForTab = requestedTab === 'loja' ? 'shop' : (progressSection || 'stats');
   setTimeout(() => {
-    document.querySelectorAll('.tabPanel').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== tab));
+    document.querySelectorAll('.tabPanel').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== activeTab));
     const next = document.querySelector('.tabPanel:not(.hidden)');
     if (next) {
       next.classList.add('tabFading');
       requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('tabFading')));
     }
-    if (tab === 'progresso') activateProgressSection(progressSection || 'stats');
+    if (activeTab === 'progresso') activateProgressSection(sectionForTab);
   }, 120);
 
   if (modoUrl === 'push' || modoUrl === 'replace') {
     const params = new URLSearchParams(location.search);
-    params.set('tab', tab);
-    if (tab === 'progresso' && progressSection && progressSection !== 'stats') params.set('section', progressSection);
+    params.set('tab', requestedTab);
+    if (activeTab === 'progresso' && sectionForTab !== 'stats') params.set('section', sectionForTab);
     else params.delete('section');
     const novaUrl = location.pathname + '?' + params.toString();
-    if (modoUrl === 'push') history.pushState({ tab, section: progressSection }, '', novaUrl);
-    else history.replaceState({ tab, section: progressSection }, '', novaUrl);
+    if (modoUrl === 'push') history.pushState({ tab: requestedTab, section: sectionForTab }, '', novaUrl);
+    else history.replaceState({ tab: requestedTab, section: sectionForTab }, '', novaUrl);
   }
 }
 
@@ -1254,6 +1339,10 @@ $('settingsSearch')?.addEventListener('input', (e) => {
   });
 });
 
+$('hunterEnabledStart')?.addEventListener('change', () => {
+  updateRoomSettingsPreview();
+  refreshHomeDashboard();
+});
 $('mode').addEventListener('change', e => { state.mode = e.target.value; updateRoomSettingsPreview(); });
 function updateDifficultyColor() {
   const val = $('difficulty').value;
@@ -1313,16 +1402,20 @@ $('silentModeBtn').addEventListener('click', () => {
 // Mostra um resuminho das configurações escolhidas bem em cima do botão "Criar sala",
 // pra ficar claro o que vai valer na sala antes de criar
 function updateRoomSettingsPreview() {
-  const get = (id) => $(id).selectedOptions[0]?.text || '';
+  const get = (id) => $(id)?.selectedOptions?.[0]?.text || '';
   const humanCount = state.types.slice(0, state.count).filter((t) => t === 'human').length;
   const cpuCount = state.count - humanCount;
   const composition = cpuCount > 0 ? `${humanCount} humano${humanCount === 1 ? '' : 's'}, ${cpuCount} CPU` : `${humanCount} humano${humanCount === 1 ? '' : 's'}`;
   const parts = [composition, get('mode'), get('speedSelect'), get('mapSize'), get('difficulty')];
+  if ($('hunterEnabledStart')?.checked) parts.push('☠️ Inimiga ativa'); else parts.push('✅ Sem inimiga');
   if ($('noWalls').checked) parts.push('🌀 Sem paredes');
   if ($('teamMode').checked) parts.push(`🤝 Times ${state.teamSizeMine} vs ${state.teamSizeOther}`);
   if ($('tournamentMode').checked) parts.push('🏆 Modo Torneio');
-  $('roomSettingsPreview').textContent = '⚙️ Vai criar a sala com: ' + parts.join(' • ');
-  $('playSummaryDisplay').textContent = composition + (state.count > 1 ? ' na partida' : '');
+  const summary = parts.join(' • ');
+  $('roomSettingsPreview').textContent = '⚙️ Vai criar a sala com: ' + summary;
+  $('playSummaryDisplay').textContent = summary;
+  $('homeMatchSummary')?.replaceChildren(document.createTextNode(summary));
+  refreshHomeDashboard();
 }
 
 $('count').addEventListener('change', e => {
@@ -1350,6 +1443,7 @@ $('players').addEventListener('change', e => {
     }
   }
   if (e.target.classList.contains('pshow')) state.show[i] = e.target.checked;
+  refreshHomeDashboard();
 });
 
 $('players').addEventListener('click', e => {
@@ -1953,6 +2047,7 @@ render();
 renderLeaderboard();
 updateTopRecordDisplay();
 updateRoomSettingsPreview();
+refreshHomeDashboard();
 maybeShowTutorial();
 
 // Service Worker desativado temporariamente para eliminar o ciclo de recarregamento.

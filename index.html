@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="4.3.0">
+<html lang="pt-BR" data-theme-version="4.4.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v4.3.0</title>
-<link rel="stylesheet" href="css/style.css?v=4.3.0">
+<title>🐍 Mioquinha v4.4.0</title>
+<link rel="stylesheet" href="css/style.css?v=4.4.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -17,7 +17,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>4.3.0</b></div>
+  <div class="appSplashVersion">VERSÃO <b>4.4.0</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -76,7 +76,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v4.3.0</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v4.4.0</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
   </header>
@@ -85,16 +85,77 @@
       <div class="menuHero">
         <div id="welcomeBackDisplay" class="muted" style="text-align:center"></div>
         <div id="topRecordDisplay" class="topRecord"></div>
-        <div class="row" style="margin-top:8px">
-          <div id="playSummaryDisplay" class="muted" style="text-align:center;margin-bottom:4px"></div>
-          <button id="startHero" class="btn heroPlay" type="button">🚀 Jogar</button>
+        <div class="homeHeroSummary"><div id="playSummaryDisplay" class="muted" style="text-align:center;margin-bottom:4px"></div></div>
+        <div class="homeHeroActions">
+          <button id="startHero" class="btn heroPlay" type="button">🚀 JOGAR AGORA</button>
           <button id="shareHero" class="btn alt" type="button">📤 Compartilhar</button>
         </div>
         <button id="resumeGameBtn" class="btn hidden" type="button" style="margin-top:8px;width:100%;background:#1f8a4c;color:#fff">▶️ Continuar partida anterior</button>
         
         <button id="quickRepeatBtn" class="btn alt hidden" type="button" style="margin-top:8px;width:100%"></button>
       </div>
-      <div id="dailyChallengeMenu" class="dailyChallengeMenu" aria-live="polite">🎯 Carregando desafio do dia...</div>
+      <div class="homeDashboard" aria-label="Central da partida">
+        <section class="homeWallet" aria-label="Resumo do jogador">
+          <div class="homeWalletStat homeWalletCoins"><span>🪙 Moedas</span><b id="homeCoins">0</b></div>
+          <div class="homeWalletStat"><span>⭐ Nível</span><b id="homeLevel">Nível 1</b></div>
+          <div class="homeWalletStat"><span>🏆 Liga</span><b id="homeLeague">🥉 Bronze</b></div>
+        </section>
+        <section class="homeSetupCard">
+          <div class="homeCardHead">
+            <div><b>🎮 Próxima partida</b><small>Veja as configurações principais antes de jogar.</small></div>
+            <span id="homeHunterStatus" class="homeStatusBadge">☠️ Inimiga ativa</span>
+          </div>
+          <div id="homeMatchSummary" class="homeMatchSummary">1 jogador • Clássico • Normal</div>
+          <div class="homeHunterChoices" role="group" aria-label="Escolha rápida da Minhoca Inimiga">
+            <button id="hunterHomeOffBtn" class="homeHunterChoice" data-hunter-choice="off" type="button"><strong>✅ Sem inimiga</strong><small>Partida mais tranquila</small></button>
+            <button id="hunterHomeOnBtn" class="homeHunterChoice active" data-hunter-choice="on" type="button"><strong>☠️ Com inimiga</strong><small>Desafio com a Caçadora</small></button>
+          </div>
+        </section>
+        <div class="homeFeatureGrid">
+          <article class="homeFeatureCard homeDailyCard">
+            <span>📅 DESAFIO DO DIA</span>
+            <div id="dailyChallengeMenu" class="homeDailyTitle" aria-live="polite">🎯 Carregando desafio do dia...</div>
+            <strong id="homeDailyDesc">Prepare-se para o desafio de hoje.</strong>
+            <small id="homeDailyProgress">0/0 • recompensa</small>
+          </article>
+          <article class="homeFeatureCard homeStreakCard">
+            <span>🔥 SEQUÊNCIA</span>
+            <strong id="homeStreakValue">Comece hoje</strong>
+            <small id="homeStreakReward">🎁 Dia 1: recompensa</small>
+          </article>
+        </div>
+        <section class="homeWideCard homeMapCard">
+          <div class="homeCardHead">
+            <div><b>🗺️ Mapa da partida</b><small id="homeMapSub">Tema e tamanho escolhidos para a próxima partida.</small></div>
+            <button id="homeOpenShopBtn" class="homeMiniBtn" type="button">🛒 Loja</button>
+          </div>
+          <div id="homeMapPreview" class="homeMapPreview" aria-label="Prévia do mapa selecionado"></div>
+          <div id="homePremiumMaps" class="homePremiumMaps" aria-label="Mapas especiais"></div>
+        </section>
+        <div class="homeTwoCol">
+          <section class="homeWideCard homeSnakeCard">
+            <div class="homeCardHead">
+              <div><b>🎭 Minha Mioquinha</b><small>Veja como sua minhoca está configurada.</small></div>
+              <button id="homeOpenPersonalizeBtn" class="homeMiniBtn" type="button">🎨 Personalizar</button>
+            </div>
+            <div id="homeSnakeVisual" class="homeSnakeVisual" aria-label="Prévia da sua minhoca"></div>
+            <div id="homeSnakeLabel" class="homeSnakeLabel">🐍 Jhon</div>
+            <small id="homeSnakeMeta">Cabeça arredondada • Lisa</small>
+          </section>
+          <section class="homeWideCard homeAchievementCard">
+            <div class="homeCardHead">
+              <div><b>🏆 Próxima conquista</b><small>Continue avançando na progressão.</small></div>
+              <span id="homeAchievementCount" class="homeCountBadge">0/0</span>
+            </div>
+            <strong id="homeNextAchievement">🎯 Primeira conquista</strong>
+            <small id="homeAchievementDesc">Desbloqueie seu primeiro objetivo.</small>
+          </section>
+        </div>
+        <section class="homeProgressStrip" aria-label="Seu progresso">
+          <div><b>📈 Seu progresso</b><small id="homeProgressSummary">0 partidas • recorde 0 • 0 conquistas</small></div>
+          <button id="homeOpenProgressBtn" class="homeMiniBtn" type="button">📊 Ver progresso</button>
+        </section>
+      </div>
       <div class="menuHighlights" aria-label="Recursos da Mioquinha">
         <div class="menuHighlight"><span>🌐</span><div><b>Multiplayer fácil</b><small>Crie uma sala e mande o link</small></div></div>
         <div class="menuHighlight"><span>🏆</span><div><b>Desafios e recordes</b><small>Cresça, pontue e desbloqueie conquistas</small></div></div>
@@ -104,6 +165,7 @@
         <button class="tabBtn active" data-tab="jogar" type="button" role="tab" aria-selected="true">🏠 <span>Jogar</span></button>
         <button class="tabBtn" data-tab="online" type="button" role="tab" aria-selected="false">🌐 <span>Online</span></button>
         <button class="tabBtn" data-tab="progresso" type="button" role="tab" aria-selected="false">📊 <span>Progresso</span></button>
+        <button class="tabBtn" data-tab="loja" type="button" role="tab" aria-selected="false">🛒 <span>Loja</span></button>
         <button class="tabBtn" data-tab="personalizar" type="button" role="tab" aria-selected="false">⚙️ <span>Config.</span></button>
       </div>
       <div class="tabPanel" data-panel="jogar">
@@ -667,7 +729,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '4.3.0';
+  const VERSION = '4.4.0';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');

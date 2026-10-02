@@ -555,6 +555,11 @@ export function refreshProgressionUI() {
       if(type==='map')buyMap(id);else if(type==='skin')buySkin(id);else buyCosmetic(id);
     }));
   }
+
+  // A tela inicial lê este mesmo estado para atualizar a carteira e os destaques.
+  if (typeof document !== 'undefined') {
+    document.dispatchEvent(new CustomEvent('progressionUpdated'));
+  }
 }
 
 export function initProgressionUI() {

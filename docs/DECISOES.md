@@ -1,3 +1,8 @@
+## v4.4.0 — central da partida e Loja na navegação principal
+**Decisão:** a Loja passa a ser uma área principal da navegação, mas continua apontando para a mesma seção `shop` do painel de Progresso.
+**Por quê:** isso deixa a compra fácil de encontrar em PC e celular sem criar um segundo sistema de moedas ou inventário.
+**Cuidados:** a tela inicial é somente uma visão rápida dos dados já existentes. Compras, progressão e escolhas continuam sendo feitas pelos mesmos módulos e permanecem salvas no navegador.
+
 ## v4.3.0 — conquistas ligadas à nova progressão
 **Decisão:** usar as conquistas como uma camada de longo prazo sobre os recursos já existentes, sem criar moedas separadas nem exigir mudanças no multiplayer para o progresso pessoal.
 
