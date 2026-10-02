@@ -323,7 +323,7 @@ function createOnlineRoom() {
       $('hostPanel').classList.remove('hidden');
       $('roomCode').textContent = code;
       $('hostRoomCodeInput').value = code;
-      $('roomStatus').textContent = '👥 Sala pronta! Copie o link e mande para seus amigos. A entrada acontece automaticamente.';
+      $('roomStatus').textContent = '👥 Sala pronta! Copie o link e mande para seus amigos. Ele toca em ENTRAR NO JOGO — sem PIN.';
       updateOnlineLobbyUI();
       $('count').disabled = true;
       state.count = 1;
