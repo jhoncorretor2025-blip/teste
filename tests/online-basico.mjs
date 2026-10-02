@@ -1,5 +1,5 @@
 // Fluxo online de ponta a ponta com DOIS participantes isolados (anfitrião + amigo), em partida de Times,
-// usando a tela de verdade: criar sala, link com os tamanhos, escolha de time, aprovação, jogo rodando.
+// usando a tela de verdade: criar sala, gerar link, abrir o link e entrar automaticamente.
 import { RAIZ, novoRelatorio, criarJanela, ativar, importarDe, esperar, copiarProjeto, criarRedeFalsa } from './_ambiente.mjs';
 const { FakePeer } = criarRedeFalsa();
 const pastaAmigo = copiarProjeto(); // o amigo precisa da SUA cópia dos arquivos (módulos isolados)
@@ -21,7 +21,7 @@ await importarDe(pastaAmigo)('js/main.js');
 const as = (await importarDe(pastaAmigo)('js/state.js')).state;
 await esperar(300);
 ativar(host); await esperar(30);
-r.check('anfitrião aceitou a entrada automaticamente', (await importarDe(RAIZ)('js/net.js')).connectedCount?.() >= 1 || true, 'entrada automática');
+r.check('anfitrião aceitou a entrada automaticamente', /2 \/ 2/.test($(host, 'roomCapacityText').textContent), $(host, 'roomCapacityText').textContent);
 ativar(A); await esperar(20);
 r.check('amigo entrou: painel 🩺 abriu sozinho enquanto espera os dados', !$(A, 'diagPanel').classList.contains('hidden') && as.diagAutoShown === true);
 r.check('amigo entrou e recebeu o time (🔴 Vermelho)', /Time Vermelho/.test($(A, 'clientReadyOverlay').querySelector('h2').textContent));
