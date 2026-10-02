@@ -747,9 +747,8 @@ if (urlAction.get('quickplay') === '1') {
 if (roomFromUrl) {
   $('joinCode').value = roomFromUrl;
   refreshJoinTeamChoice(lerInfoDeTimes(location.search));
-  // Convite por link: basta abrir o endereço. O botão entra sozinho para o jogador,
-  // sem código manual, PIN ou aprovação do anfitrião.
-  setTimeout(() => $('joinBtn')?.click(), 350);
+  // Convite por link: o código já fica preenchido. O convidado só precisa tocar em
+  // "ENTRAR NO JOGO"; não há PIN nem aprovação manual.
 }
 
 // Prévia da sala — se o link já veio com as configurações embutidas, mostra o que a
