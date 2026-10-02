@@ -93,6 +93,12 @@ O jogo nasceu em **30/08/2026** como um "Snake" (cobrinha) num único arquivo HT
 *(mudanças que não trocam a versão do jogo: só documentação, ferramentas e testes)*
 _(nada por enquanto)_
 
+## [3.6.10] — 2026-10-01
+- **Salas online:** removido o PIN. Agora a sala é criada com um código automático de 4 números e o convite usa um link direto.
+- **Entrada por link:** ao abrir o link de convite, o jogo preenche a sala e entra automaticamente, sem precisar digitar código/PIN.
+- **Entrada automática:** novas salas aceitam o convidado automaticamente; não há mais pedido de aprovação manual.
+- **Compartilhamento:** o painel da sala agora destaca copiar e enviar o link como forma principal de convite.
+
 ## [3.6.9] — 2026-10-01
 - **Minhoca Caçadora:** agora existem 5 aparições padrão, aos 100, 150, 200, 250 e 300 alimentos.
 - **Primeiras 4 aparições:** ficam bem mais fáceis: a caçadora anda mais devagar, não usa rajada, não antecipa a direção e cresce menos.
