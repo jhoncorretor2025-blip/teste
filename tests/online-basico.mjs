@@ -22,7 +22,8 @@ const as = (await importarDe(pastaAmigo)('js/state.js')).state;
 await esperar(120);
 // O link já preenche a sala; o convidado confirma com um único toque.
 $(A, 'joinBtn').click();
-await esperar(180);
+await esperar(500);
+r.check('botão de entrada não gerou erro no convidado', !$(A, 'joinStatus').textContent.startsWith('❌'), $(A, 'joinStatus').textContent);
 ativar(host); await esperar(30);
 r.check('anfitrião aceitou a entrada automaticamente', /2 \/ 2/.test($(host, 'roomCapacityText').textContent), $(host, 'roomCapacityText').textContent);
 ativar(A); await esperar(20);
