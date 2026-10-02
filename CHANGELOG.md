@@ -95,7 +95,7 @@ _(nada por enquanto)_
 
 ## [3.6.10] — 2026-10-01
 - **Salas online:** removido o PIN. Agora a sala é criada com um código automático de 4 números e o convite usa um link direto.
-- **Entrada por link:** ao abrir o link de convite, o jogo preenche a sala e entra automaticamente, sem precisar digitar código/PIN.
+- **Entrada por link:** ao abrir o link de convite, o jogo cai na aba Online e preenche a sala; o convidado toca em **ENTRAR NO JOGO** e entra sem PIN.
 - **Entrada automática:** novas salas aceitam o convidado automaticamente; não há mais pedido de aprovação manual.
 - **Compartilhamento:** o painel da sala agora destaca copiar e enviar o link como forma principal de convite.
 
