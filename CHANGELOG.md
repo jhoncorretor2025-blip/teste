@@ -1,3 +1,9 @@
+# v4.3.0 — novas conquistas para a progressão
+- Adicionadas 18 conquistas novas ligadas à Minhoca Caçadora, zonas de fuga, moedas, Loja, mapas especiais, fantasias, Liga, sequência, Desafio do Dia e número de partidas.
+- A Loja agora registra moedas ganhas e moedas gastas ao longo do tempo para permitir conquistas cumulativas.
+- As conquistas de loja e progressão são verificadas automaticamente e aparecem no mesmo aviso animado da galeria.
+- Mantidas as conquistas já existentes e todo o progresso salvo anteriormente.
+
 # v4.2.2 — correção final da Loja
 - Corrigido o erro que impedia a Loja de renderizar os itens.
 - Adicionados os arrays persistentes de mapas e fantasias desbloqueados.
