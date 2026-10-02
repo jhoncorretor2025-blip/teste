@@ -1,5 +1,5 @@
 // Fluxo online de ponta a ponta com DOIS participantes isolados (anfitrião + amigo), em partida de Times,
-// usando a tela de verdade: criar sala, gerar link, abrir o link e entrar automaticamente.
+// usando a tela de verdade: criar sala, gerar link, abrir o link, clicar em ENTRAR NO JOGO e entrar sem PIN.
 import { RAIZ, novoRelatorio, criarJanela, ativar, importarDe, esperar, copiarProjeto, criarRedeFalsa } from './_ambiente.mjs';
 const { FakePeer } = criarRedeFalsa();
 const pastaAmigo = copiarProjeto(); // o amigo precisa da SUA cópia dos arquivos (módulos isolados)
@@ -24,7 +24,7 @@ await esperar(120);
 $(A, 'joinBtn').click();
 await esperar(2200);
 if (A.__erros.length || host.__erros.length) console.log('ERROS JS APÓS ENTRADA:', { amigo: A.__erros.slice(0,3), host: host.__erros.slice(0,3) });
-r.check('botão de entrada não gerou erro no convidado', !$(A, 'joinStatus').textContent.startsWith('❌'), $(A, 'joinStatus').textContent);
+r.check('botão ENTRAR NO JOGO não gerou erro', !$(A, 'joinStatus').textContent.startsWith('❌'), $(A, 'joinStatus').textContent);
 ativar(host); await esperar(30);
 r.check('anfitrião aceitou a entrada automaticamente', /2 \/ 2/.test($(host, 'roomCapacityText').textContent), $(host, 'roomCapacityText').textContent);
 ativar(A); await esperar(20);
