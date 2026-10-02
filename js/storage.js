@@ -322,9 +322,16 @@ const PROGRESS_KEY = 'snakeArenaAchievementProgress';
 // nunca muda depois da primeira vez.
 let desbloqueadasCache = null;
 
+const RETIRED_ACHIEVEMENTS_V4_4_1 = ['food_10', 'survive_30', 'length_15', 'food_25'];
+
 export function loadUnlockedAchievements() {
   if (desbloqueadasCache) return desbloqueadasCache;
   try { desbloqueadasCache = JSON.parse(localStorage.getItem(UNLOCKED_KEY)) || []; } catch { desbloqueadasCache = []; }
+  const before = desbloqueadasCache.length;
+  desbloqueadasCache = desbloqueadasCache.filter((id) => !RETIRED_ACHIEVEMENTS_V4_4_1.includes(id));
+  if (desbloqueadasCache.length !== before) {
+    try { localStorage.setItem(UNLOCKED_KEY, JSON.stringify(desbloqueadasCache)); } catch {}
+  }
   return desbloqueadasCache;
 }
 

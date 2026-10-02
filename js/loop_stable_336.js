@@ -296,6 +296,7 @@ export function reset() {
   state.foods = [];
   state.scores = Array(6).fill(0);
   state.foodsEaten = Array(6).fill(0);
+  state.starsCollected = Array(6).fill(0);
   state.grow = Array(6).fill(0);
   state.respawnAt = Array(6).fill(0);
   state.particles = [];
@@ -368,7 +369,7 @@ const SAVE_FIELDS = [
   'mode', 'difficulty', 'mapW', 'mapH', 'mapSize', 'noWalls', 'theme', 'speed',
   'teamMode', 'teams', 'tournamentMode', 'tournamentRound', 'tournamentWins',
   'tournamentRoundScore', 'tournamentRoundEndsAt', 'zoom',
-  'snakes', 'alive', 'dirs', 'nextDirs', 'foods', 'scores', 'foodsEaten', 'grow',
+  'snakes', 'alive', 'dirs', 'nextDirs', 'foods', 'scores', 'foodsEaten', 'starsCollected', 'grow',
   'respawnAt', 'milestones', 'eliminations', 'boosting', 'boostUsedCount', 'mission',
   'hunterActive', 'hunterSnake', 'hunterDir', 'hunterEndsAt', 'hunterMilestoneIndex', 'hunterStartedAt',
   'hunterZones', 'hunterZoneCompleted', 'hunterZoneProgress', 'hunterZoneCurrent', 'hunterZoneEnteredAt', 'hunterZoneHoldProgress',
@@ -658,8 +659,10 @@ function stepMovement(indices) {
         announceAchievement(unlockAchievement('first_food'));
         announceAchievements(trackCumulativeProgress('totalFoods', f.value));
         if (f.kind === 'bonus') {
+          state.starsCollected[i] = (state.starsCollected[i] || 0) + 1;
           announceAchievement(unlockAchievement('first_star'));
           announceAchievements(trackCumulativeProgress('totalStars', 1));
+          if (state.starsCollected[i] >= 10) announceAchievement(unlockAchievement('star_10'));
         }
         if (f.kind === 'secondPlace') {
           state.secondPlaceBonusCollected = (state.secondPlaceBonusCollected || 0) + 1;
@@ -668,7 +671,7 @@ function stepMovement(indices) {
         if (combo >= 5) announceAchievement(unlockAchievement('combo_master'));
         if (combo >= 10) announceAchievement(unlockAchievement('combo_10'));
         if (isOnline()) announceAchievement(unlockAchievement('online_first_food'));
-        if (state.foodsEaten[i] >= 10) announceAchievement(unlockAchievement('food_10'));
+        if (state.foodsEaten[i] >= 20) announceAchievement(unlockAchievement('food_20'));
         if (isOnline() && state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('online_food_25'));
         if (state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('food_25'));
         if (state.scores[i] >= 25) announceAchievement(unlockAchievement('score_25'));
@@ -1258,11 +1261,11 @@ function tick() {
     trackProgressionEvent('survive', Math.floor((Date.now() - state.spawnedAt[mySlot]) / 1000));
     trackProgressionEvent('length', mySnake.length);
     const survivedMs = Date.now() - state.spawnedAt[mySlot];
-    if (survivedMs >= 30000) announceAchievement(unlockAchievement('survive_30'));
+    if (survivedMs >= 45000) announceAchievement(unlockAchievement('survive_45'));
     if (survivedMs >= 120000) announceAchievement(unlockAchievement('survivor'));
     if (isOnline() && survivedMs >= 120000) announceAchievement(unlockAchievement('online_survive_2m'));
     if (survivedMs >= 300000) announceAchievement(unlockAchievement('survive_5m'));
-    if (mySnake.length >= 15) announceAchievement(unlockAchievement('length_15'));
+    if (mySnake.length >= 30) announceAchievement(unlockAchievement('length_30'));
     if (mySnake.length >= 20) announceAchievement(unlockAchievement('length_20'));
     if (mySnake.length >= 25) announceAchievement(unlockAchievement('length_25'));
     if (mySnake.length >= 35) announceAchievement(unlockAchievement('length_35'));

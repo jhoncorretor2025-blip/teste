@@ -1,3 +1,11 @@
+# v4.4.1 — conquistas iniciantes renovadas
+- **Bom Apetite:** agora exige 20 pontos de comida em uma partida.
+- **Aguentou Firme:** agora exige 45 segundos sem morrer.
+- **Crescendo:** agora exige 30 segmentos na mesma partida.
+- **Estrela Cadente:** continua sendo a primeira estrela.
+- **Chuva de Estrelas:** nova conquista iniciante para pegar 10 estrelas na mesma partida.
+- Os antigos objetivos de 10 comidas, 30 segundos, 15 segmentos e 25 comidas foram aposentados para não deixar conquistas antigas marcadas como concluídas com critérios diferentes.
+
 # v4.4.0 — nova tela inicial e Loja direta
 - Adicionada a **🛒 Loja** como opção do menu principal, também na navegação inferior do celular.
 - A tela inicial agora reúne moedas, nível, Liga, Desafio do Dia, sequência de dias e resumo do progresso.

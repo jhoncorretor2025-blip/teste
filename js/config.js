@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '4.4.0';
+export const VERSION = '4.4.1';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -13,15 +13,15 @@ export const ACHIEVEMENTS = [
   { id: 'first_food', name: 'Primeira Mordida', desc: 'Coma sua primeira comidinha', icon: '🍎', category: 'iniciante' },
   { id: 'boost_first', name: 'Primeiro Turbo', desc: 'Use o turbo pela primeira vez', icon: '⚡', category: 'iniciante' },
   { id: 'score_25', name: 'Começo Forte', desc: 'Faça 25 pontos numa partida', icon: '⭐', category: 'iniciante' },
-  { id: 'food_10', name: 'Bom Apetite', desc: 'Coma 10 pontos de comida numa partida', icon: '🥕', category: 'iniciante' },
-  { id: 'survive_30', name: 'Aguentou Firme', desc: 'Sobreviva 30 segundos sem morrer', icon: '🛡️', category: 'iniciante' },
-  { id: 'length_15', name: 'Crescendo', desc: 'Chegue a 15 segmentos numa partida', icon: '🐛', category: 'iniciante' },
+  { id: 'food_20', name: 'Bom Apetite', desc: 'Coma 20 pontos de comida numa partida', icon: '🥕', category: 'iniciante' },
+  { id: 'survive_45', name: 'Aguentou Firme', desc: 'Sobreviva 45 segundos sem morrer', icon: '🛡️', category: 'iniciante' },
+  { id: 'length_30', name: 'Crescendo', desc: 'Chegue a 30 segmentos numa partida', icon: '🐛', category: 'iniciante' },
   { id: 'first_star', name: 'Estrela Cadente', desc: 'Pegue sua primeira estrela', icon: '🌟', category: 'iniciante' },
   { id: 'score_50', name: 'Meio Centenar', desc: 'Faça 50 pontos numa partida', icon: '🏅', category: 'iniciante' },
   { id: 'games_5', name: 'Frequentador', desc: 'Jogue 5 partidas no total', icon: '🎮', category: 'iniciante' },
   { id: 'no_walls', name: 'Sem Limites', desc: 'Jogue uma partida sem paredes', icon: '🌀', category: 'iniciante' },
   { id: 'length_20', name: 'Minhoca Crescida', desc: 'Chegue a 20 segmentos numa partida', icon: '🪱', category: 'iniciante' },
-  { id: 'food_25', name: 'Fome de Vitória', desc: 'Coma 25 pontos de comida numa partida', icon: '🍏', category: 'iniciante' },
+  { id: 'star_10', name: 'Chuva de Estrelas', desc: 'Pegue 10 estrelas numa partida', icon: '🌟', category: 'iniciante' },
   { id: 'games_10', name: 'Ritmo de Jogo', desc: 'Jogue 10 partidas no total', icon: '🎯', category: 'iniciante' },
 
   // 🟡 Intermediário — do mais fácil ao mais difícil

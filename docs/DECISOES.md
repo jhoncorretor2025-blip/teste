@@ -1,3 +1,7 @@
+## v4.4.1 — renovação das conquistas iniciantes
+**Decisão:** objetivos iniciantes com metas mais baixas e repetitivas foram substituídos por metas mais claras e progressivas: 20 comidas, 45 segundos, 30 segmentos e uma sequência de 10 estrelas na mesma partida.
+**Migração:** os IDs antigos `food_10`, `survive_30`, `length_15` e `food_25` são retirados da lista de desbloqueios salvos na primeira leitura da progressão, evitando que uma conquista antiga permaneça marcada como concluída com um critério novo.
+
 ## v4.4.0 — central da partida e Loja na navegação principal
 **Decisão:** a Loja passa a ser uma área principal da navegação, mas continua apontando para a mesma seção `shop` do painel de Progresso.
 **Por quê:** isso deixa a compra fácil de encontrar em PC e celular sem criar um segundo sistema de moedas ou inventário.
