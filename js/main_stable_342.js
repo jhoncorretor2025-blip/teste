@@ -336,7 +336,7 @@ function createOnlineRoom() {
       $('hostBtn').textContent = originalHostText;
       $('hostPanel').classList.remove('hidden');
       $('roomCode').textContent = code;
-      $('hostRoomCodeInput').value = code;
+      if ($('hostRoomCodeInput')) $('hostRoomCodeInput').value = code;
       $('roomStatus').textContent = security
         ? '🔐 Sala protegida! Envie o link e a senha separadamente para seu amigo.'
         : '🔓 Sala aberta! Quem receber o link entra direto no jogo.';
@@ -2240,8 +2240,8 @@ function updateLastRoomButton() {
   const btn = $('lastRoomBtn');
   if (!data?.code) { btn.classList.add('hidden'); return; }
   btn.textContent = data.partnerName
-    ? `🔄 Tentar de novo: sala de ${data.partnerName} (${data.code})`
-    : `🔄 Tentar de novo: última sala (${data.code})`;
+    ? '🔄 Tentar de novo: sala de ' + data.partnerName
+    : '🔄 Tentar de novo: última sala';
   btn.classList.remove('hidden');
   btn.onclick = () => {
     $('joinCode').value = data.code;
