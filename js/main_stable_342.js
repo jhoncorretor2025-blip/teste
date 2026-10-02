@@ -304,14 +304,9 @@ function createOnlineRoom() {
   updateSessionScoreDisplay();
 
   const requestedCode = normalizeRoomNumberUI($('hostRoomCodeInput')?.value);
-  const requestedPin = normalizeRoomNumberUI($('hostRoomPinInput')?.value) || generateRoomNumberUI();
 
   if (requestedCode && requestedCode.length !== 4) {
     $('roomStatus').textContent = '⚠️ O código da sala precisa ter 4 números.';
-    return;
-  }
-  if (requestedPin.length !== 4) {
-    $('roomStatus').textContent = '⚠️ O PIN precisa ter 4 números.';
     return;
   }
 
@@ -327,10 +322,8 @@ function createOnlineRoom() {
       $('hostBtn').textContent = originalHostText;
       $('hostPanel').classList.remove('hidden');
       $('roomCode').textContent = code;
-      $('roomPinDisplay').textContent = requestedPin;
       $('hostRoomCodeInput').value = code;
-      $('hostRoomPinInput').value = requestedPin;
-      $('roomStatus').textContent = '👥 Sala pronta! Passe somente o código e o PIN para seus amigos.';
+      $('roomStatus').textContent = '👥 Sala pronta! Copie o link e mande para seus amigos. A entrada acontece automaticamente.';
       updateOnlineLobbyUI();
       $('count').disabled = true;
       state.count = 1;
@@ -352,7 +345,7 @@ function createOnlineRoom() {
       $('roomStatus').textContent = '❌ Não consegui criar a sala: ' + (err?.message || err);
     },
     peerId,
-    { roomCode: code, roomPin: requestedPin, requirePin: true }
+    { roomCode: code, requirePin: false }
   );
 }
 
@@ -655,7 +648,7 @@ function extractRoomCode(raw) {
 
 $('joinBtn').addEventListener('click', () => {
   const code = extractRoomCode($('joinCode').value);
-  const pin = normalizeRoomNumberUI($('joinPin').value);
+  const pin = '';
 
   if (!code) return;
   if (!navigator.onLine) {
@@ -705,18 +698,16 @@ $('joinBtn').addEventListener('click', () => {
 
       let msg = '❌ Não consegui entrar. ';
       if (err?.type === 'peer-unavailable') msg += 'Essa sala não existe ou já fechou.';
-      else if (err?.message === 'wrongPin') msg += 'PIN incorreto. Confere os 4 números com quem criou a sala.';
       else if (err?.message === 'invalidRoomCode') msg += 'O código precisa ter 4 números.';
-      else if (err?.message === 'invalidRoomPin') msg += 'O PIN precisa ter 4 números.';
       else if (err?.type === 'network' || err?.type === 'server-error' || err?.type === 'disconnected' || err?.type === 'socket-error' || err?.type === 'socket-closed') msg += 'Parece que a internet caiu no meio do caminho.';
       else if (err?.message === 'full') msg += 'Essa sala já está cheia.';
       else if (err?.message === 'timeout') msg += 'A conexão demorou demais. Tenta novamente.';
-      else if (err?.message === 'rejected') msg += 'O dono da sala não aceitou sua entrada.';
-      else msg += 'Confere o código e o PIN.';
+      else if (err?.message === 'rejected') msg += 'A entrada foi recusada.';
+      else msg += 'Confere o link ou o código da sala.';
       $('joinStatus').textContent = msg;
     },
     () => {
-      $('joinStatus').innerHTML = '<span class="spinner"></span>Conectado! Validando o PIN e esperando a autorização do dono...';
+      $('joinStatus').innerHTML = '<span class="spinner"></span>Conectado! Entrando na sala...';
     },
     escolhaDeTime
   );
@@ -753,8 +744,13 @@ if (tabDaUrl && ABAS_VALIDAS.includes(tabDaUrl)) {
 if (urlAction.get('quickplay') === '1') {
   setTimeout(() => $('startHero')?.click(), 300); // um tiquinho de atraso pra tudo terminar de montar
 }
-if (roomFromUrl) $('joinCode').value = roomFromUrl;
-if (roomFromUrl) refreshJoinTeamChoice(lerInfoDeTimes(location.search));
+if (roomFromUrl) {
+  $('joinCode').value = roomFromUrl;
+  refreshJoinTeamChoice(lerInfoDeTimes(location.search));
+  // Convite por link: basta abrir o endereço. O botão entra sozinho para o jogador,
+  // sem código manual, PIN ou aprovação do anfitrião.
+  setTimeout(() => $('joinBtn')?.click(), 350);
+}
 
 // Prévia da sala — se o link já veio com as configurações embutidas, mostra o que a
 // pessoa vai encontrar ANTES de precisar clicar em entrar de verdade
