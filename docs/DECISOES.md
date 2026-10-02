@@ -87,3 +87,10 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 - Moedas, XP, nível, desafios e cosméticos ficam no `localStorage` por jogador.
 - O multiplayer não transmite esses dados pessoais: isso mantém os pacotes menores e evita que a progressão de um aparelho altere a de outro.
 - O Combo já existia; a decisão foi integrá-lo à progressão em vez de criar um segundo sistema concorrente.
+
+## 19. Progressão diária e Liga v4.1.0
+**Decisão:** o Desafio do Dia usa a data local como semente, a sequência diária dá uma recompensa única por dia e a Liga acumula pontos localmente.
+
+**Por quê:** o projeto é estático e não possui servidor próprio. A solução entrega progressão recorrente sem depender de banco ou serviço externo.
+
+**Cuidados:** o desafio diário e a Liga são dados locais ao aparelho e não representam um ranking global. O progresso pessoal não deve entrar no pacote de estado do multiplayer.

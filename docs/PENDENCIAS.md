@@ -61,7 +61,7 @@ Quando o ambiente de trabalho foi reiniciado, estes testes sumiram (só existiam
 - **Ping e indicador de sinal 📶** no placar.
 
 ## 🟡 Ideias pedidas que **não** foram feitas
-- **Do começo do desenvolvimento:** Modo Cooperativo; Desafio do Dia; Lista de amigos favoritos; algumas melhorias específicas de Android/iPhone (só parcialmente feitas).
+- **Do começo do desenvolvimento:** Modo Cooperativo; Lista de amigos favoritos; algumas melhorias específicas de Android/iPhone (só parcialmente feitas).
 - **Das 15 melhorias online propostas** (feitas: sinal 📶, ping, aviso de conexão instável e reconexão automática): animação de entrada de minhoca nova; contorno piscando quando alguém entra/sai; coroa ou brilho no anfitrião; compactar os pacotes com nomes de campo curtos; enviar menos vezes quando ninguém se move; interpolação entre pacotes; priorizar a posição das minhocas no envio; histórico detalhado de partidas online (já existem o placar da sessão e o histórico de confrontos); botão de convidar mais gente durante a partida; trocar de anfitrião manualmente.
 
 ## 🔵 Nunca conferido em aparelho de verdade

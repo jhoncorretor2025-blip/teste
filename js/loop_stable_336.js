@@ -13,10 +13,11 @@ import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
 import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
-import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone } from './progression.js';
+import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
-let clientReadyFallbackTimer = null; // rede de segurança pra nunca deixar o cliente preso na tela de espera
+let clientReadyFallbackTimer = null;
+let remoteProgressSnapshot = { alive:false, score:0, food:0, length:0, runStartedAt:0 }; // rede de segurança pra nunca deixar o cliente preso na tela de espera
 
 
 // 🌟 Desafio das 50 comidas: uma inimiga exclusiva para cada Mioquinha que atingir 50.
@@ -418,7 +419,9 @@ export function startGame() {
   if (totalGames >= 5) announceAchievement(unlockAchievement('games_5'));
   if (totalGames >= 10) announceAchievement(unlockAchievement('games_10'));
   updateSessionStatsDisplay(incrementSessionGames());
-  updateStreakAndLastPlayed();
+  const streakInfo = updateStreakAndLastPlayed();
+  window.__mioquinhaStreak = streakInfo.streak;
+  claimStreakReward(streakInfo.streak);
   clearSavedGame();
 
   announceAchievement(unlockAchievement('first_game'));
@@ -532,6 +535,12 @@ export function tryBoost(i) {
 export function kill(i) {
   trackDeathForMission(i);
   if (state.hunterActive) state.hunterVictims.add(i);
+  if (i === mySlot) {
+    const runScore = state.scores[i] || 0;
+    const runLength = state.snakes[i]?.length || 0;
+    const survivedSec = Math.floor((Date.now() - (state.spawnedAt[i] || Date.now())) / 1000);
+    awardLeagueRun({ score: runScore, length: runLength, survivedSec });
+  }
   saveBest(state.scores[i]);
   saveBestByMode(state.mode, state.tournamentMode, state.scores[i]);
   state.best = Math.max(state.best, state.scores[i]);
@@ -728,6 +737,7 @@ function endTournamentRound() {
       names: [...state.names].slice(0, state.count),
     };
     if (isHost()) broadcastRaw({ type: 'onlineMatchResult', result });
+    if (!isOnline()) addLeaguePoints(champion === mySlot ? 25 : 8, 'resultado do torneio');
     document.dispatchEvent(new CustomEvent('tournamentOver', { detail: result }));
     return;
   }
@@ -1250,6 +1260,7 @@ export function startClientGame() {
   state.paused = false;
   state.receivedFirstState = false;
   state.debugCountdownRecebidoAt = 0;
+  remoteProgressSnapshot = { alive:false, score:0, food:0, length:0, runStartedAt:Date.now() };
   state.debugJoinedAt = Date.now(); // quando terminou de entrar de vez — base pra detectar se NADA chegar depois
   // Temporário: mostra o diagnóstico técnico automaticamente pra quem ENTRA numa sala,
   // sem precisar tocar em nenhum botão — facilita muito mandar um print de ajuda
@@ -1262,6 +1273,11 @@ export function startClientGame() {
   $('clientReadyBtn').textContent = '✅ Estou Pronto!';
   $('clientReadyBtn').disabled = false;
   updateSessionStatsDisplay(incrementSessionGames());
+  const streakInfo = updateStreakAndLastPlayed();
+  window.__mioquinhaStreak = streakInfo.streak;
+  claimStreakReward(streakInfo.streak);
+  rewardMatchStart();
+  startProgressionChallenge();
   announceAchievement(unlockAchievement('social'));
   announceAchievement(unlockAchievement('online_first'));
   announceAchievements(trackCumulativeProgress('onlineGames', 1));
@@ -1338,6 +1354,31 @@ export function applyRemoteState(msg) {
   state.mapH = msg.mapH || state.mapH;
   state.teamMode = msg.teamMode ?? state.teamMode;
   state.teams = msg.teams || state.teams;
+  const my = mySlot;
+  const previousAlive = remoteProgressSnapshot.alive;
+  const previousScore = remoteProgressSnapshot.score;
+  const previousFood = remoteProgressSnapshot.food;
+  const previousLength = remoteProgressSnapshot.length;
+  if (!previousAlive && state.alive[my]) remoteProgressSnapshot.runStartedAt = Date.now();
+  if (state.alive[my]) {
+    trackProgressionEvent('foods', Math.max(0, (state.foodsEaten[my] || 0) - previousFood));
+    trackProgressionEvent('score', state.scores[my] || 0);
+    trackProgressionEvent('length', state.snakes[my]?.length || 0);
+    trackProgressionEvent('survive', Math.floor((Date.now() - remoteProgressSnapshot.runStartedAt) / 1000));
+  } else if (previousAlive && previousScore > 0) {
+    awardLeagueRun({
+      score: previousScore,
+      length: previousLength,
+      survivedSec: Math.floor((Date.now() - remoteProgressSnapshot.runStartedAt) / 1000)
+    });
+  }
+  remoteProgressSnapshot = {
+    alive:!!state.alive[my],
+    score:state.scores[my] || 0,
+    food:state.foodsEaten[my] || 0,
+    length:state.snakes[my]?.length || 0,
+    runStartedAt:remoteProgressSnapshot.runStartedAt,
+  };
   state.toast = msg.toast || null;
   renderMission();
   $('badge').textContent = '🌐 ONLINE';

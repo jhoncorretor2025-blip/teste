@@ -1,3 +1,13 @@
+# v4.1.0 — desafio do dia, sequência e Liga da Mioquinha
+- Adicionado **Desafio do Dia**, escolhido de forma determinística pela data local e renovado automaticamente à meia-noite.
+- O Desafio do Dia tem progresso e recompensa próprios, separado do desafio aleatório de cada partida.
+- A sequência de dias agora entrega uma recompensa diária de moedas e XP, com bônus maiores nos marcos de 3, 7, 14 e 30 dias.
+- Adicionada a **Liga da Mioquinha** com Bronze, Prata, Ouro, Platina, Diamante e Lenda.
+- Corridas com bom desempenho rendem pontos de Liga; resultados de torneio também rendem pontos.
+- No online, cada jogador acompanha seu próprio desafio, sequência e Liga a partir dos dados que já recebe, sem enviar progresso pessoal pela rede.
+- A aba Progresso ganhou cards dedicados para desafio diário, sequência e Liga.
+- Mantidos moedas, XP, cosméticos, conquistas, desafio de partida, gameplay e multiplayer.
+
 # v4.0.0 — progressão, moedas e desafios
 - Mantido o Combo existente e integrado à nova progressão: combos rápidos dão XP e moedas extras.
 - Adicionadas moedas 🪙 persistentes no navegador para recompensar comida, combos e marcos.

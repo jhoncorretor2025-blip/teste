@@ -4643,3 +4643,30 @@ main,
 .progressionToast{position:fixed;left:50%;bottom:22px;z-index:9999;transform:translate(-50%,18px);opacity:0;pointer-events:none;padding:10px 15px;border:1px solid #5b7ca7;border-radius:999px;background:rgba(7,16,29,.94);color:#fff;font-weight:900;box-shadow:0 14px 35px rgba(0,0,0,.35);transition:opacity .2s ease,transform .2s ease}.progressionToast.show{opacity:1;transform:translate(-50%,0)}
 .lightMode .challengeDisplay{background:#fff7d8;border-color:#e4cf7f;color:#4b3d10}.lightMode .progressionXpBox,.lightMode .progressionChallengeCard{background:#f4f8fc;border-color:#c7d5e5;color:#19324a}.lightMode .progressionXpTrack{background:#dce6f0}.lightMode .cosmeticItem{background:#f5f9fd;color:#19324a;border-color:#c5d4e4}.lightMode .cosmeticItem small{color:#5d748d}.lightMode .progressionToast{background:rgba(255,255,255,.96);color:#17304a;border-color:#9bb3cd}
 @media(max-width:700px){.cosmeticShop{grid-template-columns:1fr}.progressionChallengeCard{align-items:flex-start}.challengeDisplay{font-size:.78rem}}@media(prefers-reduced-motion:reduce){.progressionXpBar,.progressionToast{transition:none}}
+/* v4.1.0 — Desafio do Dia, Sequência de Dias e Liga */
+.dailyChallengeMenu{margin:0 0 10px;padding:10px 12px;border:1px solid rgba(255,215,90,.28);border-radius:13px;background:linear-gradient(145deg,rgba(67,53,16,.72),rgba(25,23,12,.88));color:#ffe59a;font-weight:900;text-align:center;box-shadow:0 8px 20px rgba(0,0,0,.16)}
+.dailyChallengeCard{margin-top:9px;padding:13px;border:1px solid rgba(255,215,90,.34);border-radius:14px;background:radial-gradient(circle at 100% 0,rgba(255,215,90,.12),transparent 38%),linear-gradient(145deg,#2b2410,#12130e);box-shadow:0 10px 25px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.04)}
+.dailyChallengeHeader,.leagueCardTop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dailyChallengeHeader span{color:#ffd75a;font-size:.72rem;font-weight:950;letter-spacing:.06em}
+.dailyChallengeHeader b{color:#aebed5;font-size:.68rem}
+.dailyChallengeCard>strong{display:block;margin-top:5px;font-size:1.05rem}
+.dailyChallengeDesc{display:block;margin-top:3px;color:#a9b8ce;font-size:.78rem}
+.dailyChallengeMeta{margin-top:9px;padding:7px 9px;border-radius:9px;background:#0b1522;border:1px solid #3c4251;color:#ffe7a1;font-weight:900;font-size:.76rem}
+.streakLeagueGrid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:8px;margin-top:9px}
+.streakCard,.leagueCard{padding:11px;border:1px solid #30486b;border-radius:13px;background:linear-gradient(145deg,#0d1b2e,#091321);box-shadow:0 8px 20px rgba(0,0,0,.17)}
+.streakCard{border-color:#704b17;background:linear-gradient(145deg,#2c220e,#11130e)}
+.miniLabel{display:block;color:#96a8c2;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.streakCard>b,.leagueCard>strong{display:block;margin-top:4px;color:#fff;font-size:1rem}
+.streakCard small{display:block;margin-top:4px;color:#d6bc72;line-height:1.35}
+.leagueCardTop b{color:#dce8f7;font-size:.8rem}
+.leagueProgressTrack{height:8px;margin-top:8px;border-radius:999px;overflow:hidden;background:#1b2a3e}
+.leagueProgressTrack i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#67ef8a,#70e7ff,#b38cff,#ffd75a);transition:width .35s ease}
+.lightMode .dailyChallengeMenu{background:#fff7da;border-color:#dfc875;color:#4c3b08}
+.lightMode .dailyChallengeCard{background:linear-gradient(145deg,#fffdf3,#fff7dc);border-color:#ddca7b}
+.lightMode .dailyChallengeDesc,.lightMode .dailyChallengeHeader b{color:#65758a}
+.lightMode .dailyChallengeMeta{background:#f4f7fb;border-color:#d3ddea;color:#5a4b14}
+.lightMode .streakCard,.lightMode .leagueCard{background:linear-gradient(145deg,#fff,#f0f5fa);border-color:#cad7e6}
+.lightMode .streakCard{border-color:#dfc27c;background:linear-gradient(145deg,#fffaf0,#fff5dd)}
+.lightMode .streakCard>b,.lightMode .leagueCard>strong{color:#20364d}
+@media(max-width:700px){.dailyChallengeMenu{font-size:.78rem;padding:9px 10px}.streakLeagueGrid{grid-template-columns:1fr}.dailyChallengeCard{padding:11px}}
+@media(prefers-reduced-motion:reduce){.leagueProgressTrack i{transition:none}}

@@ -17,7 +17,7 @@ import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net_stable_360.js';
-import { initProgressionUI } from './progression.js';
+import { initProgressionUI, addLeaguePoints } from './progression.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
 // Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
@@ -966,6 +966,7 @@ document.addEventListener('onlineMatchResult', (e) => {
     });
     showMatchHistory(opponentName);
   }
+  addLeaguePoints(champion === net.mySlot ? 25 : 8, 'resultado do torneio');
   if (net.isOnline()) {
     sessionWins[champion] = (sessionWins[champion] || 0) + 1;
     updateSessionScoreDisplay();
