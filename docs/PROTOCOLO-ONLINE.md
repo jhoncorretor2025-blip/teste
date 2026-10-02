@@ -17,7 +17,7 @@ Todas têm `type`. O lado que recebe trata em `net.js` (`configurarHostConnHandl
 **Cliente → anfitrião**
 | type | campos | para quê |
 |---|---|---|
-| `joinRequest` | `name`, `teamPref` (`'mine'`/`'other'`) | pedir para entrar; o anfitrião aprova na mão (popup) |
+| `joinRequest` | `name`, `teamPref` (`'mine'`/`'other'`) | entrar na sala; em salas novas a entrada é automática |
 | `reconnectRequest` | `name`, `teamPref` | voltar depois de uma queda; **entra direto, sem aprovação** |
 | `ping` / `pong` | `ts` | medir latência |
 | `dir` | `dir` | direção pedida |
@@ -39,10 +39,12 @@ Todas têm `type`. O lado que recebe trata em `net.js` (`configurarHostConnHandl
 | `ping` / `pong` | `ts` | latência (o anfitrião mede a de cada cliente) |
 
 ## Fluxo de entrada
-1. O cliente abre uma conexão. Se `slot >= maxPlayers` o anfitrião responde `full` e fecha.
-2. O anfitrião guarda a conexão como "pendente" e espera o `joinRequest`. (Se em **6 s** nenhum pedido chegar — versão muito antiga do jogo em cache —, aprova sozinho.)
-3. Ele mostra o popup ("X quer entrar… e jogar no SEU time / ADVERSÁRIO"). Ao aprovar, `finalizeJoin` faz, **nesta ordem**: `onAssignTeam` (decide o time) → `welcome` → `peerlist` → `onPeerJoined`.
-4. Recusar manda `rejected`.
+1. O cliente abre uma conexão. Se a sala estiver cheia, o anfitrião responde `full` e fecha.
+2. O cliente envia `joinRequest` com o nome e a preferência de time.
+3. Em salas novas sem PIN, o anfitrião aceita automaticamente e `finalizeJoin` faz, **nesta ordem**: `onAssignTeam` (decide o time) → `welcome` → `peerlist` → `onPeerJoined`.
+4. O cliente recebe `welcome`, inicia a tela online e pode começar a jogar assim que o anfitrião iniciar a partida.
+
+> 🔗 O link de convite contém o código da sala e as configurações da partida. O cliente pode entrar automaticamente ao abrir o link.
 
 ## Reconexão, migração e ping
 - **Queda passageira:** o cliente espera 1,5 s e tenta reconectar no **mesmo** anfitrião com `reconnectRequest` (timeout de 4 s). Se falhar, parte para a migração.

@@ -1,5 +1,5 @@
 // Fluxo online de ponta a ponta com DOIS participantes isolados (anfitrião + amigo), em partida de Times,
-// usando a tela de verdade: criar sala, link com os tamanhos, escolha de time, aprovação, jogo rodando.
+// usando a tela de verdade: criar sala, gerar link, abrir o link, clicar em ENTRAR NO JOGO e entrar sem PIN.
 import { RAIZ, novoRelatorio, criarJanela, ativar, importarDe, esperar, copiarProjeto, criarRedeFalsa } from './_ambiente.mjs';
 const { FakePeer } = criarRedeFalsa();
 const pastaAmigo = copiarProjeto(); // o amigo precisa da SUA cópia dos arquivos (módulos isolados)
@@ -8,7 +8,7 @@ const mudar = (w, id, v) => { $(w, id).value = v; $(w, id).dispatchEvent(new w.E
 const r = novoRelatorio();
 
 const host = criarJanela({ Peer: FakePeer }); ativar(host);
-await importarDe(RAIZ)('js/main.js');
+await importarDe(RAIZ)('js/main_stable_342.js');
 const hs = (await importarDe(RAIZ)('js/state.js')).state;
 mudar(host, 'onlineFormat', 'teams'); mudar(host, 'teamSizeMine', '1'); mudar(host, 'teamSizeOther', '1');
 $(host, 'hostBtn').click(); await esperar(60);
@@ -17,16 +17,27 @@ const link = host.__copiado[0];
 r.check('o link da sala leva o formato e os tamanhos', /fmt=teams/.test(link) && /ta=1/.test(link) && /tb=1/.test(link), link);
 
 const A = criarJanela({ pasta: pastaAmigo, url: link, Peer: FakePeer }); ativar(A);
-await importarDe(pastaAmigo)('js/main.js');
+await importarDe(pastaAmigo)('js/main_stable_342.js');
 const as = (await importarDe(pastaAmigo)('js/state.js')).state;
-$(A, 'joinTeamChoice').value = 'other';
-$(A, 'joinBtn').click(); await esperar(150);
+await esperar(120);
+// O link já preenche a sala; o convidado confirma com um único toque. ✅
+// O bootstrap do index.html carrega PeerJS da CDN; no teste, reafirmamos o FakePeer
+// imediatamente antes do clique para não deixar a CDN substituir o simulador.
+A.Peer = FakePeer;
+$(A, 'joinBtn').click();
+await esperar(2200);
+const netHostDebug = await importarDe(RAIZ)('js/net_stable_360.js?debug');
+const netFriendDebug = await importarDe(pastaAmigo)('js/net_stable_360.js?debug');
+console.log('NET_STATE_DEBUG', JSON.stringify({
+  hostRole: netHostDebug.role, hostConns: netHostDebug.connectedCount(), hostStatus: $(host, 'roomStatus').textContent,
+  friendRole: netFriendDebug.role, friendOnline: netFriendDebug.isOnline(), friendStatus: $(A, 'joinStatus').textContent
+}));
+r.check('botão ENTRAR NO JOGO não gerou erro', !$(A, 'joinStatus').textContent.startsWith('❌'), $(A, 'joinStatus').textContent);
 ativar(host); await esperar(30);
-r.check('anfitrião recebe o pedido, com a escolha de time', /ADVERSÁRIO/.test($(host, 'joinApprovalText').textContent), $(host, 'joinApprovalText').textContent);
-$(host, 'joinApproveBtn').click(); await esperar(150);
+r.check('anfitrião aceitou a entrada automaticamente', /2 \/ 2/.test($(host, 'roomCapacityText').textContent), $(host, 'roomCapacityText').textContent);
 ativar(A); await esperar(20);
 r.check('amigo entrou: painel 🩺 abriu sozinho enquanto espera os dados', !$(A, 'diagPanel').classList.contains('hidden') && as.diagAutoShown === true);
-r.check('amigo foi avisado do time (🔴 Vermelho)', /Time Vermelho/.test($(A, 'clientReadyOverlay').querySelector('h2').textContent));
+r.check('amigo entrou e recebeu o time (🔴 Vermelho)', /Time Vermelho/.test($(A, 'clientReadyOverlay').querySelector('h2').textContent));
 
 ativar(host);
 $(host, 'startFromHostPanel').click();

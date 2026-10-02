@@ -22,7 +22,7 @@ O `index.html` carrega o CSS, o PeerJS (CDN) e o `js/main.js` como **módulo** (
 ## 2. Telas e links
 - Duas telas no HTML, `menu` e `game`; `switchScreen` (em `loop.js`) alterna.
 - O menu tem 5 abas (Jogar, Personalizar, Online, Ranking, Conquistas). **Cada aba tem seu link** (`?tab=online`) e o botão "voltar" do navegador troca de aba (`switchToTab`, em `main.js`).
-- **Link de convite de sala:** `?room=CÓDIGO&mode=…&map=…&diff=…&theme=…&noWalls=…` (e `&fmt=teams&ta=N&tb=N` em partida de times). Quem abre cai direto na aba Online, com o código preenchido.
+- **Link de convite de sala:** `?room=CÓDIGO&mode=…&map=…&diff=…&theme=…&noWalls=…` (e `&fmt=teams&ta=N&tb=N` em partida de times). Quem abre cai direto na aba Online, com o código preenchido; toca em **ENTRAR NO JOGO** para entrar, sem PIN.
 
 ## 3. Partida local
 `startGame` → `syncSettings` (lê o menu e joga no `state`) → `reset` (cria as minhocas com `spawn`) → contagem regressiva → `setInterval(tick)`.
@@ -32,7 +32,7 @@ O `index.html` carrega o CSS, o PeerJS (CDN) e o `js/main.js` como **módulo** (
 
 ## 5. Online
 - O **anfitrião é a fonte da verdade**: cria a sala (o código da sala é o id do Peer dele), roda o `tick` e manda o estado.
-- O **cliente** chama `joinRoom`, pede entrada, o anfitrião aprova (popup em `main.js`), o cliente recebe `welcome` (posição + time) e passa a mandar **só entradas** (`dir`, `boost`…). Ele **não roda `tick`**: `applyRemoteState` copia o que chegou para o `state` local e chama `render`.
+- O **cliente** usa o código do link para chamar `joinRoomByCode`; salas novas sem PIN aceitam o pedido automaticamente. O cliente recebe `welcome` (posição + time) e passa a mandar **só entradas** (`dir`, `boost`…). Ele **não roda `tick`**: `applyRemoteState` copia o que chegou para o `state` local e chama `render`.
 - Capacidade da sala: `setMaxPlayers` (6, ou a soma dos dois lados no modo Times).
 - Robustez: reconexão automática, migração de anfitrião, ping, e detecção de "dados parados" com reconexão forçada (em `main.js`).
 - Mensagens e fluxo completo: `PROTOCOLO-ONLINE.md`.

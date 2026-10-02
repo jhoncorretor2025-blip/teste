@@ -120,8 +120,10 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
   const Peer = getPeerCtor();
   const requestedId = forcedId || options.peerId || null;
   currentRoomCode = options.roomCode || currentRoomCode || null;
-  currentRoomPin = options.roomPin || currentRoomPin || null;
-  roomPinRequired = !!options.requirePin || !!currentRoomPin;
+  // As salas novas usam apenas o link/código. PIN fica desativado neste fluxo.
+  // Mantemos o campo internamente só para compatibilidade com versões antigas.
+  currentRoomPin = options.roomPin ? normalizeRoomNumber(options.roomPin) : null;
+  roomPinRequired = !!options.requirePin && !!currentRoomPin;
   peer = requestedId ? new Peer(requestedId) : new Peer();
   let firstOpen = true;
 
@@ -185,10 +187,16 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
         gotJoinRequest = true;
         clearTimeout(compatTimer);
 
-        // Salas novas exigem PIN válido antes de chegar ao pedido de aprovação.
         if (roomPinRequired && msg.roomPin !== currentRoomPin) {
           try { conn.send({ type: 'wrongPin' }); } catch {}
           setTimeout(() => { try { conn.close(); } catch {} }, 80);
+          return;
+        }
+
+        // No modo atual não existe PIN nem aprovação manual: receber o convite já
+        // autoriza a entrada e manda o jogador direto para a sala.
+        if (!roomPinRequired) {
+          approveJoinRequest({ conn, slot, name: msg.name, teamPref: msg.teamPref });
           return;
         }
 
@@ -262,14 +270,14 @@ export function rejectJoinRequest(request) {
   request.conn.close();
 }
 
-// Entra numa sala existente usando o código do anfitrião.
+// Entra numa sala existente usando o código do anfitrião. O PIN é opcional para compatibilidade.
 export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval, teamPref = 'mine', roomPin = null) {
   role = 'client';
   deliberateDisconnect = false;
   myName = name;
   myTeamPref = teamPref === 'other' ? 'other' : 'mine';
-  currentRoomPin = roomPin ? normalizeRoomNumber(roomPin) : currentRoomPin;
-  roomPinRequired = !!currentRoomPin;
+  currentRoomPin = roomPin ? normalizeRoomNumber(roomPin) : null;
+  roomPinRequired = false;
   onJoinedCb = onJoined;
   onFailCb = onFail;
   if (!migrating) originalRoomId = hostId; // se já tá migrando, mantém o id ORIGINAL guardado
@@ -318,11 +326,6 @@ export function joinRoomByCode(roomCode, roomPin, name, onJoined, onFail, onWait
     onFail && onFail(new Error('invalidRoomCode'));
     return;
   }
-  if (pin.length !== 4) {
-    onFail && onFail(new Error('invalidRoomPin'));
-    return;
-  }
-
   const baseId = roomPeerIdFromCode(code);
   const migrationId = migratedRoomId(baseId);
 
@@ -341,7 +344,9 @@ export function joinRoomByCode(roomCode, roomPin, name, onJoined, onFail, onWait
       onJoined && onJoined(slot, team);
     },
     (err) => {
-      // Se a sala principal não existe, tenta o ID de migração.
+      // Se a sala principal não existe, tenta o ID de migração. O PIN é opcional;
+      // salas novas entram apenas pelo link/código.
+
       if (err?.type === 'peer-unavailable' && !finished) {
         joinRoom(migrationId, name,
           (slot, team) => {
