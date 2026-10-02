@@ -1,3 +1,15 @@
+# v4.5.0 — Conquistas e acessibilidade
+- Filtros rápidos na galeria: **Todas, Concluídas e Em andamento**.
+- Barra visual geral com percentual e contagem dinâmica das conquistas.
+- Novo agrupamento de dicas/avisos no cabeçalho por meio de botão de informações.
+- XP agora aparece também na tela inicial com barra preenchível.
+- Sequência ativa ganhou destaque visual com brilho/animação.
+- Loja mostra miniaturas dos mapas especiais, inclusive quando bloqueados.
+- Adicionado **Alto contraste** persistente nas configurações, com reforço visual da arena e canvas.
+- Adicionados indicadores de teclado na tela da partida no PC.
+- Comer comida comum agora também fornece feedback tátil curto; o feedback de dano/morte existente foi preservado.
+- Navegação móvel mantém cinco áreas na ordem **Jogar, Loja, Progresso, Online e Config.**
+
 # v4.4.1 — conquistas iniciantes renovadas
 - **Bom Apetite:** agora exige 20 pontos de comida em uma partida.
 - **Aguentou Firme:** agora exige 45 segundos sem morrer.

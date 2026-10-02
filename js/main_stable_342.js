@@ -17,7 +17,7 @@ import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net_stable_360.js';
-import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, SHOP_MAPS } from './progression.js';
+import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, xpForNextLevel, SHOP_MAPS } from './progression.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
 // Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
@@ -845,6 +845,15 @@ function refreshHomeDashboard() {
   const set = (id, value) => { const el = $(id); if (el) el.textContent = value; };
   set('homeCoins', String(data.coins || 0));
   set('homeLevel', `Nível ${data.level || 1}`);
+  {
+    let base = 0;
+    for (let n = 1; n < (data.level || 1); n++) base += xpForNextLevel(n);
+    const nextXp = xpForNextLevel(data.level || 1);
+    const currentXp = Math.max(0, (data.xp || 0) - base);
+    set('homeXpLabel', `${currentXp}/${nextXp} XP`);
+    const homeBar = $('homeXpBar');
+    if (homeBar) homeBar.style.width = Math.min(100, Math.round(currentXp / nextXp * 100)) + '%';
+  }
   set('homeLeague', `${league.current.icon} ${league.current.name}`);
 
   const daily = data.dailyChallenge;
@@ -855,6 +864,7 @@ function refreshHomeDashboard() {
 
   const streak = loadStreakDays();
   set('homeStreakValue', streak > 0 ? `🔥 ${streak} dias` : 'Comece hoje');
+  $('homeStreakValue')?.closest('.homeStreakCard')?.classList.toggle('streakActive', streak > 0);
   const streakReward = getNextStreakReward(streak);
   set('homeStreakReward', `🎁 Dia ${streakReward.day}: +${streakReward.coins} 🪙 +${streakReward.xp} XP`);
 
@@ -1305,6 +1315,10 @@ window.addEventListener('popstate', (e) => {
   switchToTab(e.state?.tab || params.get('tab') || 'jogar', 'none', e.state?.section || params.get('section') || 'stats');
 });
 
+$('headerInfoBtn')?.addEventListener('click', () => $('headerInfoOverlay')?.classList.remove('hidden'));
+$('headerInfoCloseBtn')?.addEventListener('click', () => $('headerInfoOverlay')?.classList.add('hidden'));
+$('headerInfoOverlay')?.addEventListener('click', (e) => { if (e.target.id === 'headerInfoOverlay') e.currentTarget.classList.add('hidden'); });
+
 $('refresh').addEventListener('click', () => {
   location.href = location.pathname + '?v=' + VERSION + '&t=' + Date.now();
 });
@@ -1633,6 +1647,16 @@ $('amoledMode').addEventListener('change', (e) => {
   if (state.amoledMode) { state.lightMode = false; $('lightMode').checked = false; document.querySelector('.app').classList.remove('lightMode'); }
   persistComfortSettings();
 });
+$('highContrast').addEventListener('change', (e) => {
+  state.highContrast = e.target.checked;
+  document.querySelector('.app').classList.toggle('highContrast', state.highContrast);
+  if (state.highContrast) {
+    state.lightMode = false;
+    $('lightMode').checked = false;
+    document.querySelector('.app').classList.remove('lightMode');
+  }
+  persistComfortSettings();
+});
 
 function persistComfortSettings() {
   try {
@@ -1643,6 +1667,7 @@ function persistComfortSettings() {
       bigTextMode: state.bigTextMode,
       lightMode: state.lightMode,
       amoledMode: state.amoledMode,
+      highContrast: state.highContrast,
     }));
   } catch {}
 }
@@ -1656,6 +1681,7 @@ function applyComfortSettings() {
   if (typeof saved.bigTextMode === 'boolean') state.bigTextMode = saved.bigTextMode;
   if (typeof saved.lightMode === 'boolean') state.lightMode = saved.lightMode;
   if (typeof saved.amoledMode === 'boolean') state.amoledMode = saved.amoledMode;
+  if (typeof saved.highContrast === 'boolean') state.highContrast = saved.highContrast;
 
   $('controlSize').value = state.controlSize;
   document.documentElement.style.setProperty('--ctrl-scale', state.controlSize / 100);
@@ -1669,6 +1695,8 @@ function applyComfortSettings() {
   document.querySelector('.app').classList.toggle('lightMode', state.lightMode);
   $('amoledMode').checked = state.amoledMode;
   document.querySelector('.app').classList.toggle('amoledMode', state.amoledMode);
+  $('highContrast').checked = state.highContrast;
+  document.querySelector('.app').classList.toggle('highContrast', state.highContrast);
 }
 
 // Convidar pelo WhatsApp — já abre com o link da sala preenchido, sem precisar copiar/colar
@@ -2437,13 +2465,25 @@ if (savedGame) {
   });
 }
 
-// Galeria de Conquistas — mostra cada uma com destaque se já foi desbloqueada, ou
-// esmaecida com "?" no lugar da descrição se ainda não
+// Galeria de Conquistas — filtros rápidos + progresso geral.
+let achievementFilter = 'all';
+
 function renderAchievementsGallery() {
   const grid = $('achievementsGrid');
   if (!grid) return;
   const unlocked = loadUnlockedAchievements();
-  $('achievementsProgress').textContent = `${unlocked.length} de ${ACHIEVEMENTS.length} conquistas desbloqueadas`;
+  const total = ACHIEVEMENTS.length;
+  const unlockedCount = unlocked.length;
+  const percent = total ? Math.round((unlockedCount / total) * 100) : 0;
+  $('achievementsProgress').textContent = `${unlockedCount} de ${total} conquistas desbloqueadas`;
+  $('achievementsPercent').textContent = percent + '%';
+  $('achievementsOverallBar').style.width = percent + '%';
+
+  document.querySelectorAll('[data-achievement-filter]').forEach((btn) => {
+    const active = btn.dataset.achievementFilter === achievementFilter;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
 
   const groups = [
     { key: 'iniciante', title: '🟢 Iniciante', subtitle: 'Primeiros objetivos para pegar o jeito' },
@@ -2452,14 +2492,17 @@ function renderAchievementsGallery() {
     { key: 'online', title: '🌐 Online', subtitle: 'Desafios exclusivos para partidas multiplayer' },
   ];
 
-  grid.innerHTML = groups.map((group) => {
+  const chunks = [];
+  for (const group of groups) {
     const items = ACHIEVEMENTS
       .filter((a) => a.category === group.key)
-      // O config.js já guarda cada categoria do mais fácil ao mais difícil.
-      // Não movemos as desbloqueadas para cima: isso fazia aparecer 1, 2, 4, 9...
-      // na tela. A numeração precisa representar a posição real da dificuldade.
-      .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }));
-    return `
+      .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }))
+      .filter(({ a }) => {
+        const done = unlocked.includes(a.id);
+        return achievementFilter === 'all' || (achievementFilter === 'done' ? done : !done);
+      });
+    if (!items.length) continue;
+    chunks.push(`
       <div style="grid-column:1/-1;margin-top:10px">
         <div style="font-size:1rem;font-weight:800;margin-bottom:2px">${group.title}</div>
         <div class="muted" style="margin-bottom:7px">${group.subtitle}</div>
@@ -2471,14 +2514,23 @@ function renderAchievementsGallery() {
           <span class="aIcon">${a.icon}</span>
           <span class="aName">${a.name}</span>
           <span class="aDesc">${a.desc}</span>
-          <span class="aStatus">${isUnlocked ? '✅ Desbloqueada' : '🔒 Bloqueada'}</span>
+          <span class="aStatus">${isUnlocked ? '✅ Concluída' : '🎯 Em andamento'}</span>
         </div>`;
       }).join('')}
-    `;
-  }).join('');
+    `);
+  }
+
+  grid.innerHTML = chunks.length ? chunks.join('') : '<div class="achievementEmpty">✨ Nenhuma conquista encontrada neste filtro.</div>';
 }
+
 renderAchievementsGallery();
 document.addEventListener('achievementUnlocked', renderAchievementsGallery);
+document.querySelectorAll('[data-achievement-filter]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    achievementFilter = btn.dataset.achievementFilter || 'all';
+    renderAchievementsGallery();
+  });
+});
 document.querySelector('.tabBar')?.addEventListener('click', (e) => {
   if (e.target.closest('.tabBtn')?.dataset.tab === 'conquistas') renderAchievementsGallery();
 });
@@ -2496,6 +2548,13 @@ function updateShortcutButtons() {
     if (span) span.textContent = shortcutKeyLabel(state.shortcuts[action]);
   }
 }
+function updatePcKeyHints() {
+  const turbo = $('keyTurboHint');
+  const pause = $('keyPauseHint');
+  if (turbo) turbo.textContent = 'Espaço';
+  if (pause) pause.textContent = shortcutKeyLabel(state.shortcuts.pause);
+}
+
 let listeningForShortcut = null;
 document.querySelectorAll('.bindShortcut').forEach((btn) => {
   btn.addEventListener('click', () => {
@@ -2513,6 +2572,7 @@ document.addEventListener('keydown', (e) => {
   listeningForShortcut = null;
   document.querySelectorAll('.bindShortcut').forEach((b) => b.classList.remove('active'));
   updateShortcutButtons();
+updatePcKeyHints();
 });
 updateShortcutButtons();
 

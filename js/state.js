@@ -24,6 +24,7 @@ export const state = {
   controlsSwapped: false, // inverter lado dos controles (bom pra canhotos)
   bigTextMode: false, // modo texto grande, interface mais simples
   lightMode: false, // modo claro da interface (menu), separado do tema do tabuleiro
+  highContrast: false, // reforça contraste visual da interface e da arena
   tapVibration: true, // vibração ao tocar nos botões (feedback tátil)
   customKeys: [{}, {}, {}, {}, {}, {}], // teclas personalizadas por jogador (melhoria de mapeamento)
   show: [true, true, true, true, true, true],

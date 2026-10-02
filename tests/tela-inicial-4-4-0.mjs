@@ -1,4 +1,4 @@
-// Testes estruturais da v4.4.0 — central da tela inicial e Loja no menu principal.
+// Testes estruturais da v4.5.0 — central da tela inicial e Loja no menu principal.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -41,8 +41,8 @@ relatorio.check('Clique em Loja/Home realmente abre a Loja', main.includes("home
 relatorio.check('Escolha rápida da inimiga sincroniza a configuração real', main.includes('homeHunterChoice') && main.includes("hunterEnabledStart"));
 
 relatorio.secao('Versão');
-relatorio.check('Versão 4.4.0', versao === '4.4.0');
-relatorio.check('Versão sincronizada no site', index.includes('4.4.0') && version.trim() === '4.4.0');
-relatorio.check('Cache 4.4.0', sw.includes('snake-arena-v4.4.0'));
+relatorio.check('Versão 4.5.0', versao === '4.5.0');
+relatorio.check('Versão sincronizada no site', index.includes('4.5.0') && version.trim() === '4.5.0');
+relatorio.check('Cache 4.5.0', sw.includes('snake-arena-v4.5.0'));
 
 relatorio.fim();

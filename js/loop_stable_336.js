@@ -642,6 +642,7 @@ function stepMovement(indices) {
       burst(h.x, h.y, corComida, f.kind === 'bonus' || f.kind === 'streak' ? 24 : 12);
       sfx[f.kind === 'bonus' ? 'star' : f.kind === 'streak' ? 'star' : f.kind === 'drop' ? 'drop' : 'eat']();
       if (f.kind === 'bonus' || f.kind === 'streak') vibrate(f.kind === 'streak' ? [15, 30, 15] : 20);
+      else vibrate(8);
       if (comboBonus > 0) {
         state.toast = { x: h.x, y: h.y, text: `🔥 Combo x${combo}! +${comboBonus}`, color: '#ff9f4d', until: Date.now() + 900 };
       } else if (f.kind === 'streak') {

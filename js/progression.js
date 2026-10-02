@@ -1,6 +1,7 @@
 // Progressão do jogador — moedas, XP, nível, desafios, desafio diário, sequência e Liga.
 // Tudo fica salvo no navegador. O progresso pessoal não entra no pacote do multiplayer.
 import { unlockAchievement } from './storage.js';
+import { BOARD_THEMES } from './config.js';
 
 const KEY = 'snakeArenaProgressionV1';
 
@@ -483,7 +484,13 @@ function shopButton(item, type) {
       ? document.querySelector('.ppattern[data-i="0"]')?.value === item.id
       : data.selectedCosmetic === item.id;
   const label = selected ? '✅ Equipado' : unlocked ? 'Toque para equipar' : '🪙 ' + item.cost;
-  return '<button type="button" class="shopItem ' + (unlocked ? 'unlocked' : 'locked') + ' ' + (selected ? 'selected' : '') + '" data-shop-type="' + type + '" data-shop-id="' + item.id + '"><span class="shopItemIcon">' + (item.icon || '✨') + '</span><span class="shopItemText"><b>' + item.name + '</b><small>' + label + '</small></span></button>';
+  const theme = type === 'map' ? BOARD_THEMES.find((t) => t.value === item.id) : null;
+  const preview = theme
+    ? `<span class="shopVisualPreview" style="--shop-bg:${theme.bg};--shop-bg2:${theme.bg2};--shop-grid:${theme.grid};--shop-accent:${theme.accent};">${theme.food}</span>`
+    : '';
+  return '<button type="button" aria-label="' + item.name + (unlocked ? '' : ' — item bloqueado') + '" class="shopItem ' + (unlocked ? 'unlocked' : 'locked') + ' ' + (selected ? 'selected' : '') + '" data-shop-type="' + type + '" data-shop-id="' + item.id + '">' +
+    preview +
+    '<span class="shopItemIcon">' + (item.icon || '✨') + '</span><span class="shopItemText"><b>' + item.name + '</b><small>' + label + '</small></span></button>';
 }
 
 export function refreshProgressionUI() {

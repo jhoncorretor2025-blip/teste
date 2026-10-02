@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="4.4.1">
+<html lang="pt-BR" data-theme-version="4.5.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v4.4.1</title>
-<link rel="stylesheet" href="css/style.css?v=4.4.1">
+<title>🐍 Mioquinha v4.5.0</title>
+<link rel="stylesheet" href="css/style.css?v=4.5.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -17,7 +17,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>4.4.1</b></div>
+  <div class="appSplashVersion">VERSÃO <b>4.5.0</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -65,6 +65,19 @@
       <button id="aboutCloseBtn" class="btn" type="button">Entendi!</button>
     </div>
   </div>
+  <div id="headerInfoOverlay" class="overlay hidden">
+    <div class="overlayCard headerInfoCard">
+      <h2>💡 Dicas rápidas</h2>
+      <div class="headerInfoList">
+        <p>☠️ A Minhoca Inimiga pode ser ligada ou desligada direto na tela inicial.</p>
+        <p>📱 Em mapas grandes, vire o celular de lado para enxergar melhor a arena.</p>
+        <p>⌨️ No PC, <b>Espaço</b> usa o Turbo e <b>P</b> pausa a partida.</p>
+        <p>📳 Vibração pode ser ajustada em <b>Config.</b> e o modo <b>Alto contraste</b> melhora a leitura em telas muito claras.</p>
+        <p>🛒 A Loja fica disponível diretamente no menu principal.</p>
+      </div>
+      <button id="headerInfoCloseBtn" class="btn" type="button">Entendi! 👍</button>
+    </div>
+  </div>
   <div id="joinApprovalOverlay" class="overlay hidden">
     <div class="overlayCard">
       <h2>🔔 Pedido pra entrar na sala</h2>
@@ -76,9 +89,12 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v4.4.1</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v4.5.0</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
-    <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
+    <div class="siteHeaderTools">
+      <button id="headerInfoBtn" class="headerInfoBtn" type="button" aria-label="Abrir dicas e avisos da Mioquinha">ℹ️</button>
+      <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
+    </div>
   </header>
   <main>
     <section id="menu" class="panel">
@@ -97,7 +113,7 @@
       <div class="homeDashboard" aria-label="Central da partida">
         <section class="homeWallet" aria-label="Resumo do jogador">
           <div class="homeWalletStat homeWalletCoins"><span>🪙 Moedas</span><b id="homeCoins">0</b></div>
-          <div class="homeWalletStat"><span>⭐ Nível</span><b id="homeLevel">Nível 1</b></div>
+          <div class="homeWalletStat homeLevelStat"><span>⭐ Nível</span><b id="homeLevel">Nível 1</b><div class="homeXpInline"><span id="homeXpLabel">0/100 XP</span><i id="homeXpBar" style="width:0%"></i></div></div>
           <div class="homeWalletStat"><span>🏆 Liga</span><b id="homeLeague">🥉 Bronze</b></div>
         </section>
         <section class="homeSetupCard">
@@ -163,9 +179,9 @@
       </div>
       <div class="tabBar" role="tablist" aria-label="Navegação principal">
         <button class="tabBtn active" data-tab="jogar" type="button" role="tab" aria-selected="true">🏠 <span>Jogar</span></button>
-        <button class="tabBtn" data-tab="online" type="button" role="tab" aria-selected="false">🌐 <span>Online</span></button>
-        <button class="tabBtn" data-tab="progresso" type="button" role="tab" aria-selected="false">📊 <span>Progresso</span></button>
         <button class="tabBtn" data-tab="loja" type="button" role="tab" aria-selected="false">🛒 <span>Loja</span></button>
+        <button class="tabBtn" data-tab="progresso" type="button" role="tab" aria-selected="false">📊 <span>Progresso</span></button>
+        <button class="tabBtn" data-tab="online" type="button" role="tab" aria-selected="false">🌐 <span>Online</span></button>
         <button class="tabBtn" data-tab="personalizar" type="button" role="tab" aria-selected="false">⚙️ <span>Config.</span></button>
       </div>
       <div class="tabPanel" data-panel="jogar">
@@ -315,6 +331,7 @@
           <label class="check"><input id="bigTextMode" type="checkbox"> 🔠 Modo texto grande (mais simples)</label>
           <label class="check"><input id="lightMode" type="checkbox"> ☀️ Modo claro (interface clara)</label>
           <label class="check"><input id="amoledMode" type="checkbox"> ⚫ Modo AMOLED puro (preto de verdade, economiza bateria)</label>
+          <label class="check"><input id="highContrast" type="checkbox"> 🌞 Alto contraste (destaca arena, comida e paredes)</label>
           <label class="check"><input id="customCursorToggle" type="checkbox" checked> 🍎 Cursor personalizado (só no PC)</label>
           <label class="check" style="margin-top:8px;display:block">🔊 Volume dos efeitos: <input id="sfxVolume" type="range" min="0" max="100" value="100" style="width:100%;margin-top:4px"></label>
           <label class="check" style="margin-top:4px;display:block">🎵 Volume da música: <input id="musicVolume" type="range" min="0" max="100" value="60" style="width:100%;margin-top:4px"></label>
@@ -613,7 +630,18 @@
           </div>
 
           <div class="progressSection hidden" data-progress-panel="achievements">
-            <p class="cardDesc" id="achievementsProgress"></p>
+            <div class="achievementsOverview">
+              <div class="achievementsOverviewTop">
+                <div><b>🏆 Galeria de Conquistas</b><small id="achievementsProgress">0 de 0 conquistas desbloqueadas</small></div>
+                <strong id="achievementsPercent">0%</strong>
+              </div>
+              <div class="achievementsOverallTrack"><i id="achievementsOverallBar" style="width:0%"></i></div>
+            </div>
+            <div id="achievementFilterBar" class="achievementFilterBar" role="group" aria-label="Filtro de conquistas">
+              <button type="button" class="achievementFilterBtn active" data-achievement-filter="all" aria-pressed="true">🏆 Todas</button>
+              <button type="button" class="achievementFilterBtn" data-achievement-filter="done" aria-pressed="false">✅ Concluídas</button>
+              <button type="button" class="achievementFilterBtn" data-achievement-filter="pending" aria-pressed="false">🎯 Em andamento</button>
+            </div>
             <div id="achievementsGrid" class="achievementsGrid"></div>
           </div>
 
@@ -679,6 +707,7 @@
           <button id="back" class="btn alt" type="button">🏠 Menu</button>
         </div>
       </div>
+      <div id="pcKeyHints" class="pcKeyHints" aria-label="Atalhos principais do PC"><span><kbd id="keyTurboHint">Espaço</kbd> Turbo</span><span><kbd id="keyPauseHint">P</kbd> Pausar</span></div>
       <div class="status"><b id="badge">🏆 CLÁSSICO</b> <span>☠️ <b id="alive">0</b> vivos</span> <span id="onlineCount" class="hidden">🌐 <b id="onlineCountNum">0</b> online</span> <span id="tournamentStatus" class="hidden">🏆 Rodada <b id="tournamentRoundNum">1</b>/3 • ⏱️ <b id="tournamentSecondsLeft">60</b>s</span> <span id="batteryStatus" class="hidden">🔋 <b id="batteryPercent">100</b>%</span> <span id="boostUsedDisplay"></span></div>
       <div id="diagPanel" class="hidden" style="background:#000;color:#0f0;font-family:monospace;font-size:.65rem;padding:6px;text-align:left;white-space:pre-wrap;word-break:break-all"></div>
       <div id="mission" class="mission"></div>
@@ -729,7 +758,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '4.4.1';
+  const VERSION = '4.5.0';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');
