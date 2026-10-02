@@ -1,3 +1,8 @@
+# v4.1.2 — ajuste no desafio diário
+- Corrigido o desafio diário de sobrevivência para contar apenas o tempo sobrevivido durante a partida.
+- A tela do progresso atualiza o contador de renovação do desafio diário periodicamente.
+- Mantidos Desafio do Dia, sequência de dias, Liga, XP, moedas e desafio de partida.
+
 # v4.1.1 — correção da progressão diária e Liga
 - Corrigida a estrutura do módulo de progressão para manter uma única definição de cada função.
 - Mantidos Desafio do Dia, recompensas de sequência, Liga, XP, moedas, desafio de partida e cosméticos.

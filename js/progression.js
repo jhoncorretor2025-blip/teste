@@ -151,9 +151,8 @@ function applyChallengeProgress(challenge, type, value) {
   } else {
     challenge.progress = (Number(challenge.progress) || 0) + amount;
   }
-  if (challenge.type === 'survive') {
-    challenge.progress = Math.max(challenge.progress, Math.floor((Date.now() - challenge.startedAt) / 1000));
-  }
+  // O loop envia o tempo sobrevivido da vida atual como "value". Isso também faz o
+  // Desafio do Dia funcionar corretamente: ficar com a página aberta não conta como jogo.
   if (challenge.progress >= challenge.target) {
     challenge.progress = challenge.target;
     challenge.completed = true;

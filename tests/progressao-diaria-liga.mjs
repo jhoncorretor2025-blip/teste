@@ -27,6 +27,15 @@ const idHoje = data.dailyChallenge.id;
 const novamente = loadProgression();
 relatorio.check('Mesmo dia mantém o mesmo desafio', novamente.dailyChallenge.id === idHoje);
 
+// O progresso de sobrevivência deve usar o tempo informado pela partida, e não o
+// momento em que o desafio diário foi criado.
+const estadoTeste = loadProgression();
+estadoTeste.dailyChallenge = { ...estadoTeste.dailyChallenge, type:'survive', target:5, progress:0, completed:false, startedAt:Date.now()-3600000 };
+trackProgressionEvent('survive', 3);
+relatorio.check('Sobrevivência diária usa o tempo da partida', loadProgression().dailyChallenge.progress === 3);
+trackProgressionEvent('survive', 5);
+relatorio.check('Desafio diário de sobrevivência pode ser concluído', loadProgression().dailyChallenge.completed === true);
+
 relatorio.secao('Sequência');
 const reward1 = claimStreakReward(1);
 relatorio.check('Primeira recompensa diária pode ser recebida', reward1.claimed === true);
