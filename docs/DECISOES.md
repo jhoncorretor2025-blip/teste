@@ -73,3 +73,11 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 **Por quê:** a interface tinha bons componentes isolados, mas ainda parecia mais um painel de configuração do que um produto de jogo. O novo acabamento aumenta a sensação de identidade sem mexer na mecânica.
 
 **Cuidados:** manter contraste, preservar o Modo Claro e não usar efeitos visuais que cubram o canvas ou prejudiquem os controles.
+
+
+## 19. Direção visual v3.10.0
+**Decisão:** adicionar uma camada de acabamento premium focada em sensação de jogo, feedback e hierarquia, sem alterar regras, controles ou protocolo online.
+
+**Por quê:** a interface já tinha a base visual, mas ainda podia ganhar mais presença no início da partida, placar, raridade das comidas, resultado e lobby.
+
+**Cuidados:** efeitos discretos, respeito à redução de movimento, canvas legível e Modo Claro preservado.

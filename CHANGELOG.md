@@ -1,3 +1,12 @@
+# v3.10.0 — pacote visual premium
+- Reforçada a identidade da tela inicial, com hero, botão Jogar e cartões de destaque mais impactantes.
+- Melhorada a leitura do placar com identidade visual por jogador, hierarquia e destaque do líder.
+- Comidas ganharam tratamento visual por raridade e melhor destaque na legenda.
+- Arena, HUD, missão, resultado e contagem regressiva receberam acabamento mais profundo.
+- Lobby online e convite ganharam mais destaque visual.
+- Controles mobile, reações e botões auxiliares receberam acabamento e feedback de interação.
+- Modo Claro continua adaptado e a mecânica do jogo não foi alterada.
+
 # v3.9.0 — direção visual e acabamento da Mioquinha
 - Reforçada a identidade visual gamer da Mioquinha com hierarquia mais clara e aparência de aplicativo/jogo.
 - Hero inicial ganhou destaque maior para o botão Jogar e melhor separação entre ação principal e Compartilhar.
