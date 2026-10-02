@@ -19,7 +19,10 @@ r.check('o link da sala leva o formato e os tamanhos', /fmt=teams/.test(link) &&
 const A = criarJanela({ pasta: pastaAmigo, url: link, Peer: FakePeer }); ativar(A);
 await importarDe(pastaAmigo)('js/main_stable_342.js');
 const as = (await importarDe(pastaAmigo)('js/state.js')).state;
-await esperar(650);
+await esperar(120);
+// O link já preenche a sala; o convidado confirma com um único toque.
+$(A, 'joinBtn').click();
+await esperar(180);
 ativar(host); await esperar(30);
 r.check('anfitrião aceitou a entrada automaticamente', /2 \/ 2/.test($(host, 'roomCapacityText').textContent), $(host, 'roomCapacityText').textContent);
 ativar(A); await esperar(20);
