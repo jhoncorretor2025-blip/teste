@@ -40,7 +40,7 @@ relatorio.check('Primeira zona desbloqueia conquista', loop.includes("hunter_zon
 relatorio.check('Zona de 3 segundos desbloqueia conquista', loop.includes("hunter_zone_exact") && loop.includes('HUNTER_ZONE_HOLD_MS = 3000'));
 relatorio.check('3 zonas desbloqueiam Fuga Perfeita', loop.includes("hunter_zone_perfect"));
 relatorio.check('Sem Medo usa 10 segundos de Caçadora ativa', loop.includes("hunter_no_fear") && loop.includes('>= 10000'));
-relatorio.check('Início da Caçadora é sincronizado online', loop.includes('hunterStartedAt: state.hunterStartedAt') && state.includes('hunterStartedAt'));
+relatorio.check('Início da Caçadora fica no estado e é enviado pelo anfitrião', loop.includes('hunterStartedAt: state.hunterStartedAt') && state.includes('hunterStartedAt'));
 relatorio.check('Conquistas da Caçadora também funcionam no cliente online', main.includes("unlockOnline('hunter_zone_perfect')") && main.includes("unlockOnline('hunter_no_fear')"));
 
 relatorio.secao('Versão');
