@@ -340,6 +340,9 @@ function createOnlineRoom() {
       $('roomStatus').textContent = security
         ? '🔐 Sala protegida! Envie o link e a senha separadamente para seu amigo.'
         : '🔓 Sala aberta! Quem receber o link entra direto no jogo.';
+      $('roomSecurityBadge').textContent = security
+        ? '🔒 Sala com senha: envie a senha separadamente do link.'
+        : '🔓 Sala sem senha: quem receber o link entra direto.';
       updateOnlineLobbyUI();
       $('count').disabled = true;
       state.count = 1;
