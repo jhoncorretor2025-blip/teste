@@ -1,3 +1,9 @@
+# v4.2.1 — correção da Loja
+- Corrigida a integração entre a Loja e o módulo de progressão: mapas e fantasias agora possuem desbloqueio e compra por moedas.
+- Corrigido o bloqueio visual dos mapas premium no seletor.
+- Corrigida a atualização das fantasias depois da compra.
+- Mantida a escolha da Minhoca Inimiga, as 3 zonas de fuga de 3 segundos e o restante do conteúdo da v4.2.0.
+
 # v4.2.0 — inimiga opcional, zonas de fuga e Loja
 - Adicionada escolha rápida no início da partida para jogar com ou sem a Minhoca Inimiga.
 - A Minhoca Inimiga agora cria 3 zonas vermelhas na arena.

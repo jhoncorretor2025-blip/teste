@@ -10,6 +10,22 @@ export const CHALLENGES = [
   { id:'survive60', title:'🛡️ Aguente Firme', desc:'Sobreviva 60 segundos', target:60, type:'survive', rewardCoins:15, rewardXp:60 },
 ];
 
+// 🛒 Loja: mapas são temas visuais e fantasias são padrões da pele.
+export const SHOP_MAPS = [
+  { id:'cyber', name:'Cyber Neon', cost:80, icon:'🤖', desc:'Arena futurista com luzes ciano.' },
+  { id:'aurora', name:'Aurora Boreal', cost:120, icon:'🌌', desc:'Arena com brilho verde e azul.' },
+  { id:'volcano', name:'Vulcão', cost:150, icon:'🌋', desc:'Arena quente com visual de lava.' },
+  { id:'candy', name:'Mundo Doce', cost:180, icon:'🍭', desc:'Arena colorida de doces.' },
+];
+
+export const SHOP_SKINS = [
+  { id:'neon', name:'Neon', cost:60, icon:'💚', desc:'Fantasia verde neon.' },
+  { id:'fire', name:'Fogo', cost:90, icon:'🔥', desc:'Fantasia com visual de fogo.' },
+  { id:'ice', name:'Gelo', cost:110, icon:'❄️', desc:'Fantasia gelada.' },
+  { id:'galaxy', name:'Galáxia', cost:160, icon:'🌌', desc:'Fantasia inspirada no espaço.' },
+  { id:'venom', name:'Veneno', cost:200, icon:'☣️', desc:'Fantasia tóxica e rara.' },
+];
+
 export const COSMETICS = [
   { id:'goldTrail', name:'✨ Rastro Dourado', cost:30, desc:'Deixa seu rastro com brilho dourado.' },
   { id:'neonHead', name:'💎 Cabeça Neon', cost:50, desc:'Aumenta o brilho da sua cabeça.' },
@@ -382,17 +398,13 @@ export function refreshProgressionUI() {
   if (leagueBar) leagueBar.style.width = league.progress + '%';
 
   const shop = document.getElementById('cosmeticShop');
-  if (shop) {
-    shop.innerHTML = COSMETICS.map(item => {
-      const unlocked = data.unlockedCosmetics.includes(item.id);
-      const selected = data.selectedCosmetic === item.id;
-      return `<button type="button" class="cosmeticItem ${unlocked ? 'unlocked' : ''} ${selected ? 'selected' : ''}" data-cosmetic="${item.id}" title="${item.desc}">${item.name}<small>${selected ? '✅ Equipado' : unlocked ? 'Toque para equipar' : '🪙 ' + item.cost}</small></button>`;
-    }).join('');
-    shop.querySelectorAll('[data-cosmetic]').forEach(btn => btn.addEventListener('click', () => {
-      const id = btn.dataset.cosmetic;
-      const item = COSMETICS.find(c => c.id === id);
-      if (data.unlockedCosmetics.includes(id)) selectCosmetic(id);
-      else buyCosmetic(item?.id);
+  if(shop){
+    shop.innerHTML='<div class="shopSectionLabel">✨ Itens</div>'+COSMETICS.map(x=>shopButton(x,'item')).join('')+
+      '<div class="shopSectionLabel">🗺️ Mapas especiais</div>'+SHOP_MAPS.map(x=>shopButton(x,'map')).join('')+
+      '<div class="shopSectionLabel">🎭 Fantasias da minhoca</div>'+SHOP_SKINS.map(x=>shopButton(x,'skin')).join('');
+    shop.querySelectorAll('[data-shop-type]').forEach(btn=>btn.addEventListener('click',()=>{
+      const type=btn.dataset.shopType,id=btn.dataset.shopId;
+      if(type==='map')buyMap(id);else if(type==='skin')buySkin(id);else buyCosmetic(id);
     }));
   }
 }
