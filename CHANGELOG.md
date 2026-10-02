@@ -1,3 +1,8 @@
+# v4.5.1 — correção visual da v4.5.0
+- Aplicado o acabamento visual das novas funções de Conquistas, incluindo barra geral, filtros e alto contraste.
+- Ativados visualmente o brilho da sequência, a barra de XP da tela inicial, as prévias da Loja e os indicadores de teclado.
+- Mantida a correção de feedback tátil da v4.5.0.
+
 # v4.5.0 — Conquistas e acessibilidade
 - Filtros rápidos na galeria: **Todas, Concluídas e Em andamento**.
 - Barra visual geral com percentual e contagem dinâmica das conquistas.

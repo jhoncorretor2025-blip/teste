@@ -1,3 +1,6 @@
+## v4.5.1 — acabamento visual
+**Decisão:** separar a correção visual das funcionalidades da v4.5.0 em um patch de versão para manter o histórico claro e permitir conferir exatamente o que foi corrigido.
+
 ## v4.5.0 — Conquistas e acessibilidade
 **Decisão:** a galeria de conquistas passa a tratar descoberta como uma tela de acompanhamento, mostrando percentual geral e permitindo filtrar entre concluídas e pendentes.
 **Acessibilidade:** o Alto contraste é salvo junto das preferências do aparelho e aumenta o contraste da interface e da arena.

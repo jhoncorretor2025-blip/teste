@@ -4705,3 +4705,44 @@ main,
 @media(max-width:700px){.homeWallet{gap:6px}.homeWalletStat{padding:9px 8px}.homeWalletStat span{font-size:.62rem}.homeWalletStat b{font-size:1rem}.homeHunterChoices,.homeFeatureGrid,.homeTwoCol{grid-template-columns:1fr}.homeHeroActions{grid-template-columns:1fr}.homeHeroActions .heroPlay,.homeHeroActions #shareHero{min-height:56px}.homeHeroActions .heroPlay{font-size:1.12rem}.homeMapPreview{min-height:68px}.homeSnakeVisual{min-height:54px}.homeSnakeSegment{width:22px;height:22px;flex-basis:22px}.homeSnakeSegment.head{width:30px;height:30px;flex-basis:30px}.tabBar{grid-template-columns:repeat(5,1fr)}.tabBar .tabBtn{min-width:0;padding-left:1px;padding-right:1px;font-size:.6rem}.tabBar .tabBtn span{font-size:.6rem}}
 @media(max-width:420px){.homePremiumMaps{grid-template-columns:1fr}.homeCardHead{align-items:flex-start}}
 .lightMode .homeWalletStat,.lightMode .homeSetupCard,.lightMode .homeWideCard,.lightMode .homeFeatureCard,.lightMode .homeProgressStrip{background:linear-gradient(145deg,#fff,#eef3fb);border-color:#c7d4ea;color:#16233d}.lightMode .homeWalletStat span,.lightMode .homeCardHead small,.lightMode .homeFeatureCard small,.lightMode .homeSnakeMeta,.lightMode .homeProgressStrip small{color:#5a6b8a}.lightMode .homeWalletStat b,.lightMode .homeCardHead b,.lightMode .homeFeatureCard strong,.lightMode .homeSnakeLabel,.lightMode .homeAchievementCard>strong{color:#16233d}.lightMode .homeMatchSummary,.lightMode .homeHunterChoice,.lightMode .homeMapPreview,.lightMode .homeMapChip,.lightMode .homeSnakeVisual{background:#f4f7fd;border-color:#b9c8e2;color:#223751}.lightMode .homeHunterChoice strong,.lightMode .homeMapChip span{color:#16233d}.lightMode .homeDailyCard{background:#fff8dc;border-color:#dfcf8b}.lightMode .homeDailyTitle{color:#7b5b06}.lightMode .homeStreakCard{background:#fff3e6;border-color:#e1be9d}.lightMode .homeStreakCard strong{color:#9b6500}.lightMode .homeAchievementCard{background:#f4efff;border-color:#c7b2e7}.lightMode .homeMapPreview small,.lightMode .homeFeatureCard small{color:#5a6b8a}.lightMode .homeMiniBtn{background:#e4ecf9;color:#223751;border-color:#b9c8e2}
+
+/* v4.5.1 — acabamento visual das melhorias de Conquistas e Acessibilidade */
+.siteHeaderTools{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:6px}
+.headerInfoBtn{width:40px;min-height:40px;border:1px solid #3d587f;border-radius:11px;background:#13233b;color:#fff;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 6px 16px #0004}
+.headerInfoBtn:hover{border-color:#74a2df;box-shadow:0 0 18px #6ee7ff22}
+.headerInfoCard{max-width:520px}.headerInfoList{text-align:left;color:#c7d4e7}.headerInfoList p{margin:8px 0}
+.homeXpInline{display:grid;gap:4px;margin-top:6px}.homeXpInline span{font-size:.62rem;color:#aebed4;font-weight:800;text-align:right}
+.homeXpInline i{display:block;height:6px;border-radius:999px;background:linear-gradient(90deg,#67ef8a,#70e7ff,#b57bff);box-shadow:0 0 12px #67ef8a33}
+.streakCard.streakActive,.homeStreakCard.streakActive{animation:streakGlow 1.7s ease-in-out infinite}
+@keyframes streakGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,178,56,.08),0 8px 20px #0003}50%{box-shadow:0 0 0 4px rgba(255,178,56,.1),0 0 25px rgba(255,178,56,.25)}}
+.achievementsOverview{margin-top:2px;padding:13px;border:1px solid #3b547d;border-radius:14px;background:linear-gradient(145deg,#12213a,#0a1424);box-shadow:0 10px 24px #0003}
+.achievementsOverviewTop{display:flex;align-items:center;justify-content:space-between;gap:10px}.achievementsOverviewTop b{display:block;color:#fff;font-size:.9rem}
+.achievementsOverviewTop small{display:block;margin-top:3px;color:#9fb0c8;font-size:.72rem}.achievementsOverviewTop strong{font-size:1.35rem;color:#ffd75a}
+.achievementsOverallTrack{height:11px;margin-top:10px;border-radius:999px;overflow:hidden;background:#17263b;border:1px solid #31496c}
+.achievementsOverallTrack i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#67ef8a,#70e7ff,#b57bff,#ffd24d);box-shadow:0 0 16px #67ef8a44;transition:width .35s ease}
+.achievementFilterBar{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.achievementFilterBtn{min-height:42px;border:1px solid #334d73;border-radius:10px;background:#0d192d;color:#aebed7;font:inherit;font-size:.72rem;font-weight:900;cursor:pointer}
+.achievementFilterBtn:hover{border-color:#5e82b8}.achievementFilterBtn.active{background:linear-gradient(145deg,#234066,#152743);color:#fff;border-color:#67b1ff;box-shadow:0 0 0 1px #67b1ff22,0 7px 18px #0003}
+.achievementEmpty{grid-column:1/-1;padding:22px 12px;text-align:center;border:1px dashed #40587f;border-radius:12px;color:#aebed3;background:#ffffff04}
+.achievementCard.unlocked{border-color:#ffd24d99;box-shadow:0 4px 14px #ffd24d22,0 0 16px #ffd24d0d}.achievementCard.locked{border-color:#44536d;opacity:.68}.achievementCard.locked .aStatus{color:#9bb3d4}
+.shopVisualPreview{width:44px;height:44px;min-width:44px;display:grid;place-items:center;border:1px solid var(--shop-grid);border-radius:10px;background:radial-gradient(circle at 50% 40%,var(--shop-bg2),var(--shop-bg) 76%);color:var(--shop-accent);font-size:1.25rem;box-shadow:inset 0 0 16px #fff1,0 0 14px var(--shop-grid)44;transition:transform .18s ease,box-shadow .18s ease}
+.shopItem.locked:hover .shopVisualPreview,.shopItem.locked:focus-visible .shopVisualPreview{transform:scale(1.08);box-shadow:inset 0 0 18px #fff2,0 0 24px var(--shop-accent)55}
+.pcKeyHints{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin:5px 0 1px;color:#9fb0c7;font-size:.68rem;font-weight:800}
+.pcKeyHints span{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border:1px solid #30496d;border-radius:999px;background:#0b1728}
+.pcKeyHints kbd{padding:2px 6px;border:1px solid #5c7397;border-bottom-width:2px;border-radius:6px;background:#172842;color:#fff;font:700 .68rem system-ui}
+.app.highContrast .arena{border:3px solid #fff;box-shadow:0 0 0 2px #ffd24d,0 0 34px #70e7ff44,inset 0 0 45px #0005,0 18px 50px #0008}
+.app.highContrast .arena canvas{filter:contrast(1.32) saturate(1.3) brightness(1.06)}
+.app.highContrast .status,.app.highContrast .mission,.app.highContrast .challengeDisplay{border-color:#fff;box-shadow:0 0 0 1px #ffd24d55,0 0 18px #70e7ff18}
+.app.highContrast .score{border-color:#fff}.progressNav{grid-template-columns:repeat(5,1fr)}
+@media(max-width:700px){
+  .siteHeaderTools .refreshBig{max-width:240px}.achievementFilterBar{grid-template-columns:1fr}.achievementsOverviewTop strong{font-size:1.2rem}
+  .pcKeyHints{display:none}.progressNav{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:420px){.siteHeaderTools{align-items:stretch}.headerInfoBtn{width:42px;min-width:42px}}
+@media(prefers-reduced-motion:reduce){.streakCard.streakActive,.homeStreakCard.streakActive{animation:none}.achievementsOverallTrack i,.shopVisualPreview{transition:none}}
+.lightMode .achievementsOverview{background:linear-gradient(145deg,#fff,#eef4fb);border-color:#bfd0e3}
+.lightMode .achievementsOverviewTop b{color:#1d344d}.lightMode .achievementsOverviewTop small{color:#60758d}
+.lightMode .achievementFilterBtn{background:#f3f7fc;color:#51677f;border-color:#c2d1e2}.lightMode .achievementFilterBtn.active{background:#dfeaf8;color:#1d344d;border-color:#7ca5d5}
+.lightMode .achievementEmpty{border-color:#b9c8da;color:#60758d;background:#f7f9fc}
+.lightMode .pcKeyHints span{background:#f1f5fa;border-color:#c3d2e4;color:#50667d}.lightMode .pcKeyHints kbd{background:#fff;border-color:#9fb3ca;color:#263b54}
+.lightMode .shopVisualPreview{box-shadow:inset 0 0 16px #0001,0 0 14px var(--shop-grid)33}

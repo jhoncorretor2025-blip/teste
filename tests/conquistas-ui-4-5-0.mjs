@@ -1,4 +1,4 @@
-// Testes estruturais da v4.5.0 — galeria de conquistas, acessibilidade e UX.
+// Testes estruturais da v4.5.1 — galeria de conquistas, acessibilidade e UX.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -41,6 +41,6 @@ relatorio.check('Header agrupa dicas/avisos', index.includes('headerInfoBtn') &&
 relatorio.check('Bottom navigation com Loja', index.includes('data-tab="loja"') && css.includes('grid-template-columns:repeat(5,1fr)'));
 
 relatorio.secao('Versão');
-relatorio.check('Versão 4.5.0 sincronizada', versao === '4.5.0' && index.includes(versao) && version.trim() === versao && sw.includes('snake-arena-v' + versao));
+relatorio.check('Versão 4.5.1 sincronizada', versao === '4.5.1' && index.includes(versao) && version.trim() === versao && sw.includes('snake-arena-v' + versao));
 
 relatorio.fim();
