@@ -1,3 +1,14 @@
+# v3.7.0 — Redesign visual completo
+- Nova identidade visual gamer moderna em toda a interface.
+- HUD, placar, status, missão e lobby online com maior profundidade visual.
+- Arena com moldura, vinheta e acabamento visual.
+- Tela de resultado e contagem regressiva mais destacadas.
+- Controles mobile redesenhados visualmente.
+- Brilho extra nas cabeças e auras para comidas raras, épicas e lendárias.
+- Corrigido o preenchimento do antigo campo de código removido.
+- Última sala não exibe mais o código para o jogador.
+- Mantidos multiplayer, salas com/sem senha e geração automática do código.
+
 # v3.6.12 — experiência visual e multiplayer
 - Novo destaque visual no menu com os principais recursos.
 - Fluxo de sala mais simples: o código deixa de aparecer para o jogador.
