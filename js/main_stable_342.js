@@ -659,11 +659,6 @@ $('joinBtn').addEventListener('click', () => {
     $('joinStatus').textContent = '⚠️ O código da sala precisa ter 4 números.';
     return;
   }
-  if (pin.length !== 4) {
-    $('joinStatus').textContent = '⚠️ Digite o PIN de 4 números da sala.';
-    return;
-  }
-
   unlockAudio();
   $('joinBtn').disabled = true;
   const originalJoinText = $('joinBtn').textContent;
