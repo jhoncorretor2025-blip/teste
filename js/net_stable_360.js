@@ -225,6 +225,7 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
       }
     });
     conn.on('close', () => {
+      if (typeof window !== 'undefined' && window.__TEST__) console.log('NET_DEBUG host-side close slot=' + slot);
       clearTimeout(compatTimer);
       delete pingStats[slot];
       const pIdx = pendingConns.indexOf(conn);
@@ -237,6 +238,7 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
 
 // Anfitrião aceita o pedido de entrada — só AGORA a pessoa realmente entra na sala
 export function approveJoinRequest(request) {
+  if (typeof window !== 'undefined' && window.__TEST__) console.log('NET_DEBUG host approving join');
   const pIdx = pendingConns.indexOf(request.conn);
   if (pIdx >= 0) pendingConns.splice(pIdx, 1);
   conns.push(request.conn);
@@ -408,6 +410,7 @@ function configurarHostConnHandlers() {
     }
   });
   hostConn.on('close', () => {
+    if (typeof window !== 'undefined' && window.__TEST__) console.log('NET_DEBUG client-side hostConn close deliberate=' + deliberateDisconnect + ' migrating=' + migrating);
     if (deliberateDisconnect || migrating) return; // saída de propósito, ou já migrando — nada a fazer
     tentarReconexaoDireta();
   });
