@@ -1,3 +1,10 @@
+## v4.3.0 — conquistas ligadas à nova progressão
+**Decisão:** usar as conquistas como uma camada de longo prazo sobre os recursos já existentes, sem criar moedas separadas nem exigir mudanças no multiplayer para o progresso pessoal.
+
+**Como funciona:** conquistas de partidas e da Caçadora são disparadas pelo jogo; conquistas de Loja, moedas, Liga e Desafio do Dia são conferidas pelo módulo de progressão. Moedas ganhas e gastas ficam em contadores cumulativos novos, preservando o saldo atual.
+
+**Cuidado:** o progresso pessoal continua local ao navegador. As conquistas online que dependem de estado da partida continuam sendo conferidas no cliente a partir do estado enviado pelo anfitrião.
+
 # Decisões de projeto (e por quê)
 
 Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Cada decisão diz **o que**, **por quê** e **o que cuidar**. Ao tomar uma decisão nova (ou mudar uma), registre aqui. O que foi *feito* mora no `CHANGELOG.md`; o que *falta* mora em `docs/PENDENCIAS.md`.
