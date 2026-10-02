@@ -3420,3 +3420,95 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
     height:calc(100dvh - 8px - env(safe-area-inset-top) - env(safe-area-inset-bottom))
   }
 }
+
+
+/* v3.6.12 — experiência visual / fluxo de entrada */
+.menuHighlights{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin:0 0 12px;
+}
+.menuHighlight{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  padding:10px;
+  border-radius:13px;
+  background:linear-gradient(145deg,#12213a,#0b1527);
+  border:1px solid #2d4368;
+  box-shadow:0 6px 18px #0004;
+}
+.menuHighlight>span{
+  display:grid;
+  place-items:center;
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  border-radius:11px;
+  background:#ffffff08;
+  font-size:1.25rem;
+}
+.menuHighlight b,.menuHighlight small{
+  display:block;
+}
+.menuHighlight b{
+  font-size:.78rem;
+}
+.menuHighlight small{
+  margin-top:2px;
+  color:#91a4c3;
+  font-size:.63rem;
+  line-height:1.25;
+}
+.roomReadyCard{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 11px;
+  margin-bottom:8px;
+  border-radius:13px;
+  background:linear-gradient(135deg,#12351f,#0d1d29);
+  border:1px solid #2e8a52;
+  box-shadow:0 7px 20px #0004;
+}
+.roomReadyIcon{
+  width:40px;
+  height:40px;
+  flex:0 0 40px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:#67ef8a18;
+  font-size:1.25rem;
+}
+.roomReadyCard b,.roomReadyCard span{
+  display:block;
+}
+.roomReadyCard span{
+  margin-top:2px;
+  color:#b9d8c3;
+  font-size:.68rem;
+  line-height:1.3;
+}
+.invitePrimary{
+  min-height:42px;
+  box-shadow:0 7px 20px #0005,0 0 18px #67ef8a18;
+}
+.onlineRoomAccess{
+  box-shadow:0 8px 24px #0005,inset 0 0 0 1px #ffffff05;
+}
+.onlineRoomAccessTitle{
+  font-size:.9rem;
+}
+@media(max-width:700px){
+  .menuHighlights{grid-template-columns:1fr;}
+  .menuHighlight{padding:9px;}
+  .menuHighlight>span{width:34px;height:34px;flex-basis:34px;font-size:1.05rem;}
+  .menuHighlight small{font-size:.61rem;}
+  .roomReadyCard{align-items:flex-start;}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
+}
