@@ -1043,6 +1043,7 @@ function createHunterZones() {
 
 function resetHunterZones() {
   state.hunterZones = [];
+  state.hunterStartedAt = 0;
   state.hunterZoneCompleted = [false, false, false];
   state.hunterZoneProgress = 0;
   state.hunterZoneCurrent = -1;
