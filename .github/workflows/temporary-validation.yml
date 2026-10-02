@@ -1,5 +1,7 @@
 name: Temporary validation
 on:
+  push:
+    branches: [fix/sala-por-link-sem-pin]
   pull_request:
     branches: [main]
 jobs:
