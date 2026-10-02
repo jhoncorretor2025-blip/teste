@@ -20,7 +20,7 @@ const A = criarJanela({ pasta: pastaAmigo, url: link, Peer: FakePeer }); ativar(
 await importarDe(pastaAmigo)('js/main_stable_342.js');
 const as = (await importarDe(pastaAmigo)('js/state.js')).state;
 await esperar(120);
-// O link já preenche a sala; o convidado confirma com um único toque.
+// O link já preenche a sala; o convidado confirma com um único toque. ✅
 // O bootstrap do index.html carrega PeerJS da CDN; no teste, reafirmamos o FakePeer
 // imediatamente antes do clique para não deixar a CDN substituir o simulador.
 A.Peer = FakePeer;
