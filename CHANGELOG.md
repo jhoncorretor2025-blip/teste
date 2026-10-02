@@ -1,3 +1,12 @@
+# v3.9.0 — direção visual e acabamento da Mioquinha
+- Reforçada a identidade visual gamer da Mioquinha com hierarquia mais clara e aparência de aplicativo/jogo.
+- Hero inicial ganhou destaque maior para o botão Jogar e melhor separação entre ação principal e Compartilhar.
+- Menu, abas, cards, campos e botões passaram a seguir uma linguagem visual mais consistente.
+- Placar, status, missão e arena receberam acabamento visual mais forte sem alterar as regras da partida.
+- Tela de resultado e lobby online ganharam superfícies e destaques alinhados ao novo visual.
+- Mantida a versão para celular e o Modo Claro, com contraste adaptado.
+- Mantidos gameplay, multiplayer, salas com/sem senha, controles, temas e personalização.
+
 # v3.8.0 — Refinamento completo do Design System
 - Padronizada a hierarquia visual de botões, campos, cards e estados de foco.
 - Criados tokens de cor, espaçamento, borda e sombra para a interface.

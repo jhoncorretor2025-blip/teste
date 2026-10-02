@@ -66,3 +66,10 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 - A interface passa a usar uma escala curta e consistente de cores, espaçamentos, raios e sombras.
 - **Por quê:** a Mioquinha já tinha muitos componentes funcionando, mas pequenas diferenças entre cards, botões e estados faziam as telas parecerem menos coesas.
 - **Cuidado:** o redesign é visual; não muda as regras do jogo nem o protocolo online. O objetivo é ajustar pesos visuais e legibilidade, não criar uma nova interface do zero.
+
+## 18. Direção visual v3.9.0
+**Decisão:** consolidar a Mioquinha com uma identidade visual de jogo/app, usando superfícies escuras em camadas, verde como ação principal e ciano/violeta como acentos.
+
+**Por quê:** a interface tinha bons componentes isolados, mas ainda parecia mais um painel de configuração do que um produto de jogo. O novo acabamento aumenta a sensação de identidade sem mexer na mecânica.
+
+**Cuidados:** manter contraste, preservar o Modo Claro e não usar efeitos visuais que cubram o canvas ou prejudiquem os controles.
