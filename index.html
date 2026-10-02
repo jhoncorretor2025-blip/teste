@@ -392,32 +392,26 @@
         </div>
         <button id="genericInviteBtn" class="refresh" type="button" style="margin-bottom:8px">📤 Chamar um amigo pra jogar (sem criar sala ainda)</button>
         <div class="onlineRoomAccess">
-          <div class="onlineRoomAccessTitle">🔐 Acesso fácil por código e PIN</div>
+          <div class="onlineRoomAccessTitle">🔗 Sala por link</div>
           <div class="onlineRoomAccessGrid">
             <label>
               <span>🔢 Código da sala</span>
               <input id="hostRoomCodeInput" class="input roomNumberInput" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Automático" aria-label="Código da sala, 4 números">
             </label>
-            <label>
-              <span>🔑 PIN da sala</span>
-              <input id="hostRoomPinInput" class="input roomNumberInput" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Ex.: 1010" aria-label="PIN da sala, 4 números">
-            </label>
           </div>
-          <small>Você pode usar, por exemplo, <b>1010</b> como código e <b>1010</b> como PIN.</small>
+          <small>O código é criado automaticamente. Depois é só <b>copiar o link</b> e mandar para quem vai jogar.</small>
         </div>
         <div class="row">
           <button id="hostBtn" class="btn alt" type="button">🏠 Criar sala</button>
         </div>
         <div id="hostPanel" class="hidden tip" style="margin-top:9px">
           <div class="roomCredentialDisplay">
-            <div>🔢 Código da sala: <b id="roomCode">...</b></div>
-            <div>🔑 PIN: <b id="roomPinDisplay">...</b></div>
+            <div>🔗 Sala criada: <b id="roomCode">...</b></div>
           </div>
-          <div class="roomCredentialHint">Passe <b>código + PIN</b> para o amigo. Não precisa enviar o link.</div>
+          <div class="roomCredentialHint">📤 Copie o link abaixo e mande para o amigo. Ele abre o link e entra na sua sala automaticamente.</div>
           <button id="copyRoom" class="refresh" type="button" style="margin-top:6px">Copiar link</button>
           <button id="copyRoomCode" class="refresh" type="button" style="margin-top:6px;margin-left:6px">Copiar só o código</button>
-          <button id="copyRoomPin" class="refresh" type="button" style="margin-top:6px;margin-left:6px">Copiar PIN</button>
-          <button id="whatsappInvite" class="refresh" type="button" style="margin-top:6px;margin-left:6px;background:#1f8a4c;color:#fff">📱 Convidar pelo WhatsApp</button>
+                    <button id="whatsappInvite" class="refresh" type="button" style="margin-top:6px;margin-left:6px;background:#1f8a4c;color:#fff">📱 Convidar pelo WhatsApp</button>
           <button id="nativeShareRoom" class="refresh" type="button" style="margin-top:6px;margin-left:6px">📤 Outras formas de compartilhar</button>
           <div id="roomStatus" class="muted" style="margin-top:6px"></div>
           <div class="lobbyCapacity">
@@ -443,19 +437,15 @@
           </select>
         </div>
         <div class="onlineRoomJoin">
-          <div class="onlineRoomAccessTitle">🚀 Entrar sem link</div>
+          <div class="onlineRoomAccessTitle">🚀 Entrar na sala</div>
           <div class="onlineRoomAccessGrid">
             <label>
-              <span>🔢 Código da sala</span>
-              <input id="joinCode" class="input roomNumberInput" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Ex.: 1010" aria-label="Código da sala">
-            </label>
-            <label>
-              <span>🔑 PIN</span>
-              <input id="joinPin" class="input roomNumberInput" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Ex.: 1010" aria-label="PIN da sala">
+              <span>🔢 Código ou link da sala</span>
+              <input id="joinCode" class="input roomNumberInput" inputmode="text" autocomplete="off" maxlength="200" placeholder="Cole o link ou o código" aria-label="Código ou link da sala">
             </label>
           </div>
-          <button id="joinBtn" class="btn alt onlineJoinButton" type="button">🚀 Entrar na sala</button>
-          <small>Digite os dois números que o criador da sala passou para você.</small>
+          <button id="joinBtn" class="btn alt onlineJoinButton" type="button">🚀 ENTRAR NO JOGO</button>
+          <small>🔗 Normalmente você nem precisa preencher: ao abrir o link de convite, o jogo entra sozinho.</small>
         </div>
         <div id="joinStatus" class="muted" style="margin-top:6px"></div>
         <div id="onlineClientLobby" class="onlineLobbyCard hidden"><div class="onlineLobbyHeader"><b>🌐 Lobby da partida</b><span id="onlineClientLobbyStatus" class="onlineLobbyStatus">Aguardando...</span></div><div id="onlineClientLobbyPlayers" class="onlineLobbyPlayers"></div><div id="onlineClientLobbyConfig" class="onlineLobbyConfig"></div></div>
