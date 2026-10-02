@@ -86,6 +86,7 @@ export function criarJanela({ pasta = RAIZ, url = 'http://localhost/index.html',
   // que carregasse main.js até esse ponto quebrava com "getRegistrations is not a function"
   w.navigator.serviceWorker = { register: async () => ({ addEventListener() {}, update: async () => {} }), getRegistrations: async () => [] };
   w.fetch = async () => ({ ok: false });
+  w.__TEST__ = true;
   w.__copiado = [];
   w.navigator.clipboard = { writeText: async (t) => { w.__copiado.push(t); } }; // o que a pessoa "copiou" (ex: link da sala)
   if (Peer) w.Peer = Peer;
