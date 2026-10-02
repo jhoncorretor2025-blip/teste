@@ -313,6 +313,7 @@ export function reset() {
   state.hunterDistractedTarget = -1;
   state.hunterNearMiss = Array(6).fill(false);
   state.hunterCloseToAnyone = false;
+  resetHunterZones();
   state.boostUsedCount = Array(6).fill(0);
   state.lastTurnAt = Array(6).fill(Date.now());
   fiftyFeature.enemies = [];
@@ -985,6 +986,12 @@ function spawnHunter(durationSec, appearance = 1) {
   state.hunterDistractedUntil = 0;
   state.hunterDistractedTarget = -1;
   state.hunterNearMiss = Array(6).fill(false);
+  state.hunterZones = createHunterZones();
+  state.hunterZoneCompleted = [false, false, false];
+  state.hunterZoneProgress = 0;
+  state.hunterZoneCurrent = -1;
+  state.hunterZoneEnteredAt = 0;
+  state.hunterZoneHoldProgress = 0;
   state.toast = { x: p.x, y: p.y, text: '☠️ Minhoca Caçadora apareceu!', color: '#ff2222', until: Date.now() + 2800 };
   sfx.hunterArrives();
   vibrate([40, 60, 40, 60, 40]);
@@ -996,6 +1003,113 @@ const RAIO_DISTRACAO = 6; // valores padrão; a aba de configuração pode sobre
 const DURACAO_DISTRACAO_MS = 3000;
 const DURACAO_RAJADA_MS = 2500;
 const INTERVALO_ENTRE_RAJADAS_MS = 8000;
+
+const HUNTER_ZONE_COUNT = 3;
+const HUNTER_ZONE_RADIUS = 2;
+const HUNTER_ZONE_HOLD_MS = 3000;
+
+function hunterZoneDistance(a, b) {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+function createHunterZones() {
+  const zones = [];
+  const playerHeads = [];
+  for (let i = 0; i < state.count; i++) {
+    if (state.alive[i] && state.snakes[i]?.[0]) playerHeads.push(state.snakes[i][0]);
+  }
+  for (let z = 0; z < HUNTER_ZONE_COUNT; z++) {
+    let found = null;
+    for (let attempt = 0; attempt < 350; attempt++) {
+      const p = { x: Math.floor(Math.random() * state.mapW), y: Math.floor(Math.random() * state.mapH) };
+      if (wall(p.x, p.y)) continue;
+      if (playerHeads.some(h => hunterZoneDistance(p, h) < 8)) continue;
+      if (state.hunterSnake?.[0] && hunterZoneDistance(p, state.hunterSnake[0]) < 8) continue;
+      if (zones.some(other => hunterZoneDistance(p, other) < 9)) continue;
+      found = p;
+      break;
+    }
+    if (!found) found = freeCell();
+    zones.push({ ...found, radius: HUNTER_ZONE_RADIUS });
+  }
+  return zones;
+}
+
+function resetHunterZones() {
+  state.hunterZones = [];
+  state.hunterZoneCompleted = [false, false, false];
+  state.hunterZoneProgress = 0;
+  state.hunterZoneCurrent = -1;
+  state.hunterZoneEnteredAt = 0;
+  state.hunterZoneHoldProgress = 0;
+}
+
+function finishHunterByZones() {
+  state.hunterActive = false;
+  state.hunterEndsAt = Date.now();
+  state.hunterSnake = [];
+  state.hunterCloseToAnyone = false;
+  state.hunterZoneCurrent = -1;
+  state.hunterZoneEnteredAt = 0;
+  state.hunterZoneHoldProgress = 0;
+  state.toast = {
+    x: Math.floor(state.mapW / 2),
+    y: Math.floor(state.mapH / 2),
+    text: '✅ 3/3 zonas! A Caçadora desapareceu!',
+    color: '#ff5b78',
+    until: Date.now() + 2600,
+  };
+  sfx.star();
+  vibrate([30, 50, 30, 50, 120]);
+}
+
+function updateHunterZones() {
+  if (!state.hunterActive || !state.hunterSnake[0] || !state.hunterZones?.length) return;
+  const head = state.hunterSnake[0];
+  const now = Date.now();
+  let inside = -1;
+  for (let i = 0; i < state.hunterZones.length; i++) {
+    if (state.hunterZoneCompleted[i]) continue;
+    const radius = state.hunterZones[i].radius || HUNTER_ZONE_RADIUS;
+    if (hunterZoneDistance(head, state.hunterZones[i]) <= radius) {
+      inside = i;
+      break;
+    }
+  }
+  if (inside === -1) {
+    state.hunterZoneCurrent = -1;
+    state.hunterZoneEnteredAt = 0;
+    state.hunterZoneHoldProgress = 0;
+    return;
+  }
+  if (inside !== state.hunterZoneCurrent) {
+    state.hunterZoneCurrent = inside;
+    state.hunterZoneEnteredAt = now;
+    state.hunterZoneHoldProgress = 0;
+  }
+  const elapsed = now - state.hunterZoneEnteredAt;
+  state.hunterZoneHoldProgress = Math.min(1, elapsed / HUNTER_ZONE_HOLD_MS);
+  if (elapsed < HUNTER_ZONE_HOLD_MS) return;
+
+  state.hunterZoneCompleted[inside] = true;
+  state.hunterZoneProgress = state.hunterZoneCompleted.filter(Boolean).length;
+  state.toast = {
+    x: head.x,
+    y: head.y,
+    text: state.hunterZoneProgress >= 3
+      ? '✅ 3/3! Salva!'
+      : '🛑 Zona ' + (inside + 1) + ' concluída! ' + state.hunterZoneProgress + '/3',
+    color: '#ff5b78',
+    until: Date.now() + 1600,
+  };
+  sfx.star();
+  vibrate([20, 40, 20]);
+  state.hunterZoneCurrent = -1;
+  state.hunterZoneEnteredAt = 0;
+  state.hunterZoneHoldProgress = 0;
+  if (state.hunterZoneProgress >= HUNTER_ZONE_COUNT) finishHunterByZones();
+}
+
 export function updateHunter() {
   if (!state.hunterActive) return;
   if (Date.now() >= state.hunterEndsAt) {
@@ -1003,10 +1117,13 @@ export function updateHunter() {
     if (!state.hunterVictims.has(mySlot)) announceAchievement(unlockAchievement('hunter_escape'));
     state.hunterSnake = [];
     state.hunterCloseToAnyone = false;
+    resetHunterZones();
     return;
   }
 
   const head = state.hunterSnake[0];
+  updateHunterZones();
+  if (!state.hunterActive) return;
   const appearance = Math.max(1, state.hunterMilestoneIndex);
   const behavior = hunterBehaviorForAppearance(appearance, state.hunterConfig || {});
   state.hunterMoveTick = (state.hunterMoveTick || 0) + 1;
@@ -1222,6 +1339,11 @@ function tick() {
       hunterActive: state.hunterActive, hunterSnake: state.hunterSnake,
       fiftyFoodEnemies: fiftyFeature.enemies,
       boostReadyAt: state.boostReadyAt,
+      hunterZones: state.hunterZones,
+      hunterZoneCompleted: state.hunterZoneCompleted,
+      hunterZoneProgress: state.hunterZoneProgress,
+      hunterZoneCurrent: state.hunterZoneCurrent,
+      hunterZoneHoldProgress: state.hunterZoneHoldProgress,
     });
   }
 }
@@ -1348,6 +1470,11 @@ export function applyRemoteState(msg) {
   state.trailColors = msg.trailColors || state.trailColors;
   state.hunterActive = msg.hunterActive ?? state.hunterActive;
   state.hunterSnake = msg.hunterSnake || state.hunterSnake;
+  if (Array.isArray(msg.hunterZones)) state.hunterZones = msg.hunterZones;
+  if (Array.isArray(msg.hunterZoneCompleted)) state.hunterZoneCompleted = msg.hunterZoneCompleted;
+  state.hunterZoneProgress = msg.hunterZoneProgress ?? state.hunterZoneProgress;
+  state.hunterZoneCurrent = msg.hunterZoneCurrent ?? state.hunterZoneCurrent;
+  state.hunterZoneHoldProgress = msg.hunterZoneHoldProgress ?? state.hunterZoneHoldProgress;
   state.palettes = msg.palettes || state.palettes;
   state.mapW = msg.mapW || state.mapW;
   state.theme = msg.theme || state.theme;

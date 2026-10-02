@@ -1383,6 +1383,66 @@ function drawFiftyFoodEnemies() {
   }
 }
 
+
+function drawHunterZones() {
+  const zones = state.hunterZones || [];
+  if (!state.hunterActive || !zones.length) return;
+  const completed = state.hunterZoneCompleted || [];
+  const now = Date.now();
+  for (let i = 0; i < zones.length; i++) {
+    const z = zones[i];
+    const x = sx(z.x) + cell / 2;
+    const y = sy(z.y) + cell / 2;
+    if (x < -cell * 3 || x > canvas.width + cell * 3 || y < -cell * 3 || y > canvas.height + cell * 3) continue;
+    const done = !!completed[i];
+    const current = state.hunterZoneCurrent === i && !done;
+    const radius = (z.radius || 2) * cell;
+    const pulse = 1 + Math.sin(now / 180 + i) * .06;
+
+    ctx.save();
+    ctx.globalAlpha = done ? .16 : .46;
+    ctx.fillStyle = '#ff243f';
+    ctx.shadowColor = '#ff243f';
+    ctx.shadowBlur = cell * (current ? 1.15 : .55);
+    ctx.beginPath();
+    ctx.arc(x, y, radius * pulse, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalAlpha = .92;
+    ctx.strokeStyle = done ? '#83ffab' : '#ff4d5f';
+    ctx.lineWidth = Math.max(2, cell * .10);
+    ctx.setLineDash(done ? [] : [cell * .26, cell * .17]);
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (current) {
+      const progress = Math.max(0, Math.min(1, Number(state.hunterZoneHoldProgress) || 0));
+      ctx.strokeStyle = '#ffd75a';
+      ctx.lineWidth = Math.max(3, cell * .17);
+      ctx.beginPath();
+      ctx.arc(x, y, radius + cell * .22, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress);
+      ctx.stroke();
+    }
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 ' + Math.max(10, cell * .62) + 'px system-ui,sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = '#25060b';
+    ctx.shadowBlur = 5;
+    ctx.fillText(done ? '✓' : String(i + 1), x, y);
+
+    if (current) {
+      ctx.font = '800 ' + Math.max(8, cell * .29) + 'px system-ui,sans-serif';
+      ctx.fillStyle = '#ffd75a';
+      ctx.fillText(Math.max(0, Math.ceil(3 - (state.hunterZoneHoldProgress || 0) * 3)) + 's', x, y + cell * .75);
+    }
+    ctx.restore();
+  }
+}
+
 function drawHunter() {
   if (!state.hunterActive || !state.hunterSnake.length) return;
   const pulse = 0.5 + Math.sin(Date.now() / 150) * 0.5;
@@ -2202,6 +2262,7 @@ function draw() {
     drawFoodGraphicAccent(f);
     drawFoodRarityAura(f);
   }
+  drawHunterZones();
   drawFiftyFoodEnemies();
 
     for (let i = 0; i < state.count; i++) if (state.alive[i]) {

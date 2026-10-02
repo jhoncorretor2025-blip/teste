@@ -94,3 +94,8 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 **Por quê:** o projeto é estático e não possui servidor próprio. A solução entrega progressão recorrente sem depender de banco ou serviço externo.
 
 **Cuidados:** o desafio diário e a Liga são dados locais ao aparelho e não representam um ranking global. O progresso pessoal não deve entrar no pacote de estado do multiplayer.
+## 20. Inimiga opcional, zonas de fuga e Loja v4.2.0
+**Decisão:** a Caçadora pode ser desligada antes da partida. Quando ligada, três zonas vermelhas aparecem no mapa; a Caçadora precisa permanecer três segundos em cada zona para desaparecer.
+**Por quê:** a pressão da inimiga passa a ter uma estratégia de fuga clara e previsível.
+**Loja:** mapas especiais e fantasias premium usam somente moedas virtuais já existentes; não há pagamento real.
+**Online:** as zonas são criadas pelo anfitrião e entram no pacote de estado frequente para todos desenharem a mesma situação.

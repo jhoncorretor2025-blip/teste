@@ -17,7 +17,7 @@ import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net_stable_360.js';
-import { initProgressionUI, addLeaguePoints } from './progression.js';
+import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI } from './progression.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
 // Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
@@ -1128,7 +1128,7 @@ function updateTopRecordDisplay() {
 }
 
 function activateProgressSection(section = 'stats') {
-  const valid = ['stats', 'ranking', 'achievements', 'history'];
+  const valid = ['stats', 'ranking', 'achievements', 'history', 'shop'];
   const target = valid.includes(section) ? section : 'stats';
   document.querySelectorAll('.progressNavBtn').forEach((b) => {
     const active = b.dataset.progressSection === target;
@@ -1277,7 +1277,7 @@ function updateThemePreview(theme) {
   el.style.color = theme.accent || '#fff';
   el.textContent = `${theme.food}  ${ICONES_DECORACAO[theme.deco] || ''}  ${theme.food}`;
 }
-$('boardTheme').addEventListener('change', e => { state.theme = e.target.value; updateStatusBarColor(); });
+$('boardTheme').addEventListener('change', e => { if (!isMapUnlocked(e.target.value)) { e.target.value = state.theme; announce('🛒 Esse mapa está bloqueado. Abra a Loja para desbloquear.'); refreshProgressionUI(); return; } state.theme = e.target.value; updateStatusBarColor(); });
 $('vibrationOn').addEventListener('change', e => {
   state.vibrationOn = e.target.checked;
   setVibrationEnabled(state.vibrationOn);
@@ -1627,6 +1627,7 @@ function persistProfile() {
 function applyHunterSettingsToUI() {
   const h = state.hunterConfig || HUNTER_DEFAULTS;
   $('hunterEnabled').checked = h.enabled !== false;
+  $('hunterEnabledStart').checked = h.enabled !== false;
   $('hunterThreshold1').value = h.milestones?.[0]?.foodThreshold ?? 100;
   $('hunterDuration1').value = h.milestones?.[0]?.durationSec ?? 15;
   $('hunterThreshold2').value = h.milestones?.[1]?.foodThreshold ?? 150;
@@ -2553,3 +2554,9 @@ setInterval(() => {
     net.forcarReconexaoPorDadosParados();
   }
 }, 2000);
+
+
+document.addEventListener('shopSkinUnlocked', () => {
+  makePlayers();
+  refreshProgressionUI();
+});

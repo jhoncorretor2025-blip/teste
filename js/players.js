@@ -4,6 +4,7 @@ import { $, safe } from './utils.js';
 import { ICONS, SNAKE_COLORS, HEAD_SHAPES, SKIN_PATTERNS, MAP_SIZES, TEAMS, TRICOLOR_PALETTES } from './config.js';
 import { state } from './state.js';
 import { isOnline, isHost } from './net.js';
+import { isSkinUnlocked } from './progression.js';
 
 export function label(i) {
   return safe(state.names[i], `Jogador ${i + 1}`);
@@ -31,7 +32,7 @@ export function makePlayers() {
   const patternCategories = ['classic', 'themed'];
   const patternOptions = patternCategories.map(category => {
     const items = SKIN_PATTERNS.filter(p => (p.category || 'classic') === category);
-    return `<optgroup label="${patternCategoryLabels[category]}">${items.map(p => `<option value="${p.value}">${p.name}</option>`).join('')}</optgroup>`;
+    return `<optgroup label="${patternCategoryLabels[category]}">${items.map(p => `<option value="${p.value}" ${isSkinUnlocked(p.value) ? '' : 'disabled'}>${isSkinUnlocked(p.value) ? '' : '🔒 '}${p.name}</option>`).join('')}</optgroup>`;
   }).join('');
   const paletteOptions = TRICOLOR_PALETTES.map(p => `<option value="${p.value}">${p.name}</option>`).join('');
   const teamOptions = TEAMS.map(t => `<option value="${t.value}">${t.label}</option>`).join('');

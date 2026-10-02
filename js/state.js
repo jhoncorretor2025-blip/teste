@@ -82,6 +82,13 @@ export const state = {
   hunterDistractedTarget: -1, // o slot de quem a distraiu com o turbo (-1 = ninguém)
   hunterNearMiss: [false, false, false, false, false, false], // por jogador: tá "por pouco" perto da caçadora agora?
   hunterCloseToAnyone: false, // pra piscar no minimapa quando ela chega perto de QUALQUER jogador
+  // Três zonas vermelhas que a Caçadora precisa visitar; em cada uma, ela fica 3 segundos.
+  hunterZones: [],
+  hunterZoneCompleted: [false, false, false],
+  hunterZoneProgress: 0,
+  hunterZoneCurrent: -1,
+  hunterZoneEnteredAt: 0,
+  hunterZoneHoldProgress: 0,
   boostUsedCount: [0, 0, 0, 0, 0, 0], // quantas vezes cada um usou o turbo nessa partida
   spawnedAt: [0, 0, 0, 0, 0, 0], // quando cada minhoca nasceu por último — pra conquista de sobreviver
   hunterVictims: new Set(), // quem morreu enquanto a Minhoca Caçadora estava ativa nessa aparição

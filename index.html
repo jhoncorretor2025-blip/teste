@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="4.1.2">
+<html lang="pt-BR" data-theme-version="4.2.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v4.1.2</title>
-<link rel="stylesheet" href="css/style.css?v=4.1.2">
+<title>🐍 Mioquinha v4.2.0</title>
+<link rel="stylesheet" href="css/style.css?v=4.2.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -17,7 +17,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>4.1.2</b></div>
+  <div class="appSplashVersion">VERSÃO <b>4.2.0</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -76,7 +76,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v4.1.2</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v4.2.0</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
   </header>
@@ -152,8 +152,8 @@
               <option value="space">🌌 Tema Espacial</option>
               <option value="night">🟣 Tema Roxo Noite</option>
               <option value="void">⚫ Tema Vazio</option>
-              <option value="cyber">🤖 Tema Cyber Neon</option>
-              <option value="aurora">🌌 Tema Aurora Boreal</option>
+              <option value="cyber" data-shop-map="cyber">🤖 Tema Cyber Neon</option>
+              <option value="aurora" data-shop-map="aurora">🌌 Tema Aurora Boreal</option>
             </optgroup>
             <optgroup label="🌿 Natureza">
               <option value="forest">🌲 Tema Floresta</option>
@@ -170,12 +170,12 @@
             </optgroup>
             <optgroup label="🏜️ Aventura">
               <option value="desert">🏜️ Tema Deserto</option>
-              <option value="volcano">🌋 Tema Vulcão</option>
+              <option value="volcano" data-shop-map="volcano">🌋 Tema Vulcão</option>
               <option value="canyon">🏞️ Tema Cânion</option>
               <option value="sunset">🌅 Tema Pôr do Sol</option>
             </optgroup>
             <optgroup label="🎪 Divertidos & Especiais">
-              <option value="candy">🍭 Tema Mundo Doce</option>
+              <option value="candy" data-shop-map="candy">🍭 Tema Mundo Doce</option>
               <option value="city">🏙️ Tema Cidade Neon</option>
               <option value="autumn">🍂 Tema Outono</option>
             </optgroup>
@@ -188,7 +188,11 @@
             <option value="hardmid">😈 CPU Médio+</option>
             <option value="hard">💀 CPU Difícil</option>
           </select>
-          <label class="check" style="margin-top:8px"><input type="checkbox" id="noWalls"> 🌀 Sem paredes (atravessa pro outro lado)</label>
+          <div class="enemyChoice">
+              <div><b>☠️ Minhoca Inimiga</b><small>Escolha antes de começar se quer a Caçadora nesta partida.</small></div>
+              <label class="enemySwitch"><input id="hunterEnabledStart" type="checkbox" checked> <span>Quero a inimiga</span></label>
+            </div>
+            <label class="check" style="margin-top:8px"><input type="checkbox" id="noWalls"> 🌀 Sem paredes (atravessa pro outro lado)</label>
           <label class="check teamModeBox"><input type="checkbox" id="teamMode"> 🤝 <b>Jogar em Equipe</b> — aliados não se matam entre si!</label>
           <label class="check tournamentBox"><input type="checkbox" id="tournamentMode"> 🏆 <b>Modo Torneio</b> — melhor de 3 rodadas de 1 minuto!</label>
           <div class="row" style="margin-top:8px">
@@ -495,6 +499,7 @@
             <button type="button" class="progressNavBtn" data-progress-section="ranking">🏆 Ranking</button>
             <button type="button" class="progressNavBtn" data-progress-section="achievements">🏅 Conquistas</button>
             <button type="button" class="progressNavBtn" data-progress-section="history">⚔️ Histórico</button>
+            <button type="button" class="progressNavBtn" data-progress-section="shop">🛒 Loja</button>
           </div>
 
           <div class="progressSection" data-progress-panel="stats">
@@ -530,9 +535,13 @@
               </div>
             </div>
             <div class="progressionChallengeCard"><div><b>🎯 Desafio da partida</b><div id="progressChallengeValue" class="muted">Nenhum</div></div><button id="newChallengeBtn" class="refresh" type="button">🎲 Novo</button></div>
-            <div class="progressionShopTitle">✨ Cosméticos</div><div id="cosmeticShop" class="cosmeticShop"></div>
             <div id="sessionStatsDisplay" class="muted" style="margin-top:4px"></div>
             <button id="copyStatsBtn" class="refresh" type="button" style="margin-top:8px;width:100%">📋 Copiar minhas estatísticas</button>
+          </div>
+
+          <div class="progressSection hidden" data-progress-panel="shop">
+            <div class="shopHero"><div><b>🛒 Loja da Mioquinha</b><small>Use moedas 🪙 para desbloquear mapas especiais e fantasias.</small></div><strong id="shopCoinsLabel">🪙 0</strong></div>
+            <div id="cosmeticShop" class="cosmeticShop"></div>
           </div>
 
           <div class="progressSection hidden" data-progress-panel="ranking">
@@ -658,7 +667,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '4.1.2';
+  const VERSION = '4.2.0';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');

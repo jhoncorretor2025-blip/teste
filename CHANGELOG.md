@@ -1,3 +1,16 @@
+# v4.2.0 — inimiga opcional, zonas de fuga e Loja
+- Adicionada escolha rápida no início da partida para jogar com ou sem a Minhoca Inimiga.
+- A Minhoca Inimiga agora cria 3 zonas vermelhas na arena.
+- Para desaparecer, a inimiga precisa entrar em cada zona e permanecer 3 segundos.
+- As zonas mostram número, contagem de 3 segundos e progresso 0/3 → 3/3.
+- As zonas são sincronizadas no multiplayer pelo anfitrião.
+- Criada a Loja da Mioquinha usando somente moedas virtuais.
+- Adicionados 4 mapas especiais compráveis: Cyber Neon, Aurora Boreal, Vulcão e Mundo Doce.
+- Adicionadas 5 fantasias compráveis: Neon, Fogo, Gelo, Galáxia e Veneno.
+- Conteúdos premium ficam bloqueados até a compra; conteúdos clássicos continuam livres.
+- Compras e desbloqueios ficam salvos no navegador do jogador.
+- Mantidos XP, moedas, desafio do dia, sequência, Liga, conquistas, multiplayer e controles.
+
 # v4.1.2 — ajuste no desafio diário
 - Corrigido o desafio diário de sobrevivência para contar apenas o tempo sobrevivido durante a partida.
 - A tela do progresso atualiza o contador de renovação do desafio diário periodicamente.
