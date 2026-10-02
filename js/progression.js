@@ -1,5 +1,7 @@
 // Progressão do jogador — moedas, XP, nível, desafios, desafio diário, sequência e Liga.
 // Tudo fica salvo no navegador. O progresso pessoal não entra no pacote do multiplayer.
+import { unlockAchievement } from './storage.js';
+
 const KEY = 'snakeArenaProgressionV1';
 
 export const CHALLENGES = [
@@ -86,6 +88,8 @@ function syncDailyChallenge(data) {
 function defaults() {
   return {
     coins:0,
+    coinsEarned:0,
+    coinsSpent:0,
     xp:0,
     level:1,
     completedChallenges:0,
@@ -121,8 +125,8 @@ export function loadProgression() {
   }
   if (!Array.isArray(cachedProgression.unlockedMaps)) cachedProgression.unlockedMaps = [];
   if (!Array.isArray(cachedProgression.unlockedSkins)) cachedProgression.unlockedSkins = [];
-  if (!Array.isArray(cachedProgression.unlockedMaps)) cachedProgression.unlockedMaps = [];
-  if (!Array.isArray(cachedProgression.unlockedSkins)) cachedProgression.unlockedSkins = [];
+  cachedProgression.coinsEarned = Number(cachedProgression.coinsEarned) || 0;
+  cachedProgression.coinsSpent = Number(cachedProgression.coinsSpent) || 0;
   if (syncDailyChallenge(cachedProgression)) saveProgression(cachedProgression);
   return cachedProgression;
 }
@@ -141,13 +145,47 @@ export function calculateLevel(totalXp) {
   return level;
 }
 
+function announceProgressionAchievement(id) {
+  const achievement = unlockAchievement(id);
+  if (achievement && typeof document !== 'undefined') {
+    document.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: achievement }));
+  }
+  return achievement;
+}
+
+export function checkProgressionAchievements(data = loadProgression()) {
+  const unlocked = [];
+  const unlock = (id) => {
+    const achievement = announceProgressionAchievement(id);
+    if (achievement) unlocked.push(achievement);
+  };
+  const unlockedItems =
+    data.unlockedMaps.length + data.unlockedSkins.length + data.unlockedCosmetics.length;
+
+  if (data.coinsEarned >= 100) unlock('coins_earned_100');
+  if (data.coins >= 500) unlock('coins_wallet_500');
+  if (data.coinsSpent >= 500) unlock('coins_spent_500');
+  if (unlockedItems >= 1) unlock('shop_first_purchase');
+  if (data.unlockedSkins.length >= 1) unlock('skin_first');
+  if (data.unlockedSkins.length >= 3) unlock('skins_3');
+  if (data.unlockedSkins.length >= 5) unlock('skins_5');
+  if (data.unlockedMaps.length >= 2) unlock('maps_2');
+  if (data.unlockedMaps.length >= SHOP_MAPS.length) unlock('maps_all');
+  if (data.leaguePoints >= 2200) unlock('league_legend');
+  if (data.dailyCompletedCount >= 10) unlock('daily_10');
+  return unlocked;
+}
+
 export function addProgressionReward({ xp = 0, coins = 0 } = {}) {
   const data = loadProgression();
   const oldLevel = Number(data.level) || 1;
+  const gainedCoins = Math.max(0, Number(coins) || 0);
   data.xp = Math.max(0, Number(data.xp) || 0) + Math.max(0, Number(xp) || 0);
-  data.coins = Math.max(0, Number(data.coins) || 0) + Math.max(0, Number(coins) || 0);
+  data.coins = Math.max(0, Number(data.coins) || 0) + gainedCoins;
+  data.coinsEarned = (Number(data.coinsEarned) || 0) + gainedCoins;
   data.level = calculateLevel(data.xp);
   saveProgression(data);
+  checkProgressionAchievements(data);
   if (data.level > oldLevel) showProgressionToast(`🎉 Nível ${data.level} alcançado!`);
   refreshProgressionUI();
   return data;
@@ -315,9 +353,11 @@ export function buyMap(id) {
     return data;
   }
   data.coins -= item.cost;
+  data.coinsSpent = (Number(data.coinsSpent) || 0) + item.cost;
   data.unlockedMaps.push(id);
   saveProgression(data);
   showProgressionToast('🗺️ ' + item.name + ' desbloqueado!');
+  checkProgressionAchievements(data);
   equipMap(id);
   refreshProgressionUI();
   return data;
@@ -343,9 +383,11 @@ export function buySkin(id) {
     return data;
   }
   data.coins -= item.cost;
+  data.coinsSpent = (Number(data.coinsSpent) || 0) + item.cost;
   data.unlockedSkins.push(id);
   saveProgression(data);
   showProgressionToast('🎭 ' + item.name + ' desbloqueada!');
+  checkProgressionAchievements(data);
   equipSkin(id);
   document.dispatchEvent(new CustomEvent('shopSkinUnlocked', { detail:id }));
   refreshProgressionUI();
@@ -382,6 +424,7 @@ export function buyCosmetic(id) {
   if (data.unlockedCosmetics.includes(id)) {
     data.selectedCosmetic = id;
     saveProgression(data);
+    checkProgressionAchievements(data);
     refreshProgressionUI();
     return data;
   }
@@ -390,10 +433,12 @@ export function buyCosmetic(id) {
     return data;
   }
   data.coins -= item.cost;
+  data.coinsSpent = (Number(data.coinsSpent) || 0) + item.cost;
   data.unlockedCosmetics.push(id);
   data.selectedCosmetic = id;
   saveProgression(data);
   showProgressionToast(`✨ ${item.name} desbloqueado!`);
+  checkProgressionAchievements(data);
   refreshProgressionUI();
   return data;
 }
@@ -443,6 +488,7 @@ function shopButton(item, type) {
 
 export function refreshProgressionUI() {
   const data = loadProgression();
+  checkProgressionAchievements(data);
   syncLockedShopOptions();
   syncLockedShopOptions();
   const next = xpForNextLevel(data.level);
