@@ -1,3 +1,11 @@
+# v4.2.1 — correção da Loja e desbloqueios
+- Corrigida a integração da Loja com a progressão do jogador.
+- Mapas e fantasias agora podem ser comprados com moedas e ficam desbloqueados no navegador.
+- Mapas premium ficam bloqueados no seletor até a compra.
+- Fantasias premium ficam bloqueadas na personalização até a compra.
+- Após comprar uma fantasia, a personalização é atualizada automaticamente.
+- Mantidos a Minhoca Inimiga opcional e as 3 zonas vermelhas de 3 segundos.
+
 # v4.2.1 — correção da Loja
 - Corrigida a integração entre a Loja e o módulo de progressão: mapas e fantasias agora possuem desbloqueio e compra por moedas.
 - Corrigido o bloqueio visual dos mapas premium no seletor.

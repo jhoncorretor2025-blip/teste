@@ -98,6 +98,8 @@ function defaults() {
     lastStreakRewardDate:null,
     leaguePoints:0,
     leaguePeakPoints:0,
+    unlockedMaps:[],
+    unlockedSkins:[],
   };
 }
 
@@ -117,6 +119,8 @@ export function loadProgression() {
       cachedProgression = defaults();
     }
   }
+  if (!Array.isArray(cachedProgression.unlockedMaps)) cachedProgression.unlockedMaps = [];
+  if (!Array.isArray(cachedProgression.unlockedSkins)) cachedProgression.unlockedSkins = [];
   if (syncDailyChallenge(cachedProgression)) saveProgression(cachedProgression);
   return cachedProgression;
 }
@@ -288,6 +292,83 @@ export function awardLeagueRun({ score = 0, length = 0, survivedSec = 0 } = {}) 
   return points;
 }
 
+const FREE_MAPS = new Set(['space','night','void','forest','garden','sunflower','jungle','swamp','deep','ice','ocean','glacier','desert','canyon','sunset','city','autumn']);
+const FREE_SKINS = new Set(['solid','stripes','dots','tricolor']);
+
+export function isMapUnlocked(id) {
+  return FREE_MAPS.has(id) || loadProgression().unlockedMaps.includes(id);
+}
+
+export function isSkinUnlocked(id) {
+  return FREE_SKINS.has(id) || loadProgression().unlockedSkins.includes(id);
+}
+
+export function buyMap(id) {
+  const item = SHOP_MAPS.find(x => x.id === id);
+  const data = loadProgression();
+  if (!item) return data;
+  if (isMapUnlocked(id)) { equipMap(id); return data; }
+  if (data.coins < item.cost) {
+    showProgressionToast('🪙 Faltam ' + (item.cost - data.coins) + ' moedas');
+    return data;
+  }
+  data.coins -= item.cost;
+  data.unlockedMaps.push(id);
+  saveProgression(data);
+  showProgressionToast('🗺️ ' + item.name + ' desbloqueado!');
+  equipMap(id);
+  refreshProgressionUI();
+  return data;
+}
+
+export function equipMap(id) {
+  if (!isMapUnlocked(id)) return false;
+  const select = document.getElementById('boardTheme');
+  if (select) {
+    select.value = id;
+    select.dispatchEvent(new Event('change', { bubbles:true }));
+  }
+  return true;
+}
+
+export function buySkin(id) {
+  const item = SHOP_SKINS.find(x => x.id === id);
+  const data = loadProgression();
+  if (!item) return data;
+  if (isSkinUnlocked(id)) { equipSkin(id); return data; }
+  if (data.coins < item.cost) {
+    showProgressionToast('🪙 Faltam ' + (item.cost - data.coins) + ' moedas');
+    return data;
+  }
+  data.coins -= item.cost;
+  data.unlockedSkins.push(id);
+  saveProgression(data);
+  showProgressionToast('🎭 ' + item.name + ' desbloqueada!');
+  equipSkin(id);
+  document.dispatchEvent(new CustomEvent('shopSkinUnlocked', { detail:id }));
+  refreshProgressionUI();
+  return data;
+}
+
+export function equipSkin(id) {
+  if (!isSkinUnlocked(id)) return false;
+  const select = document.querySelector('.ppattern[data-i="0"]');
+  if (select) {
+    select.value = id;
+    select.dispatchEvent(new Event('change', { bubbles:true }));
+  }
+  return true;
+}
+
+function syncLockedShopOptions() {
+  document.querySelectorAll('#boardTheme option[data-shop-map]').forEach(option => {
+    if (!option.dataset.shopOriginal) option.dataset.shopOriginal = option.textContent;
+    const unlocked = isMapUnlocked(option.value);
+    option.disabled = !unlocked;
+    option.textContent = unlocked ? option.dataset.shopOriginal : '🔒 ' + option.dataset.shopOriginal;
+  });
+}
+
 export function getSelectedCosmetic() {
   return loadProgression().selectedCosmetic || null;
 }
@@ -344,6 +425,7 @@ function timeUntilNextDay() {
 
 export function refreshProgressionUI() {
   const data = loadProgression();
+  syncLockedShopOptions();
   const next = xpForNextLevel(data.level);
   let base = 0;
   for (let n = 1; n < data.level; n++) base += xpForNextLevel(n);
@@ -355,6 +437,7 @@ export function refreshProgressionUI() {
   };
 
   set('progressCoinsValue', `🪙 ${data.coins}`);
+  set('shopCoinsLabel', `🪙 ${data.coins}`);
   set('progressLevelValue', `Nível ${data.level}`);
   set('progressXpValue', `${current}/${next} XP`);
   set('progressChallengeValue', data.challenge ? `${data.challenge.title} • ${data.challenge.progress}/${data.challenge.target}` : 'Nenhum');
