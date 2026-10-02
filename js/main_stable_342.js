@@ -26,6 +26,8 @@ let onlineLobbyPlayers = [];
 let onlineLobbyConfig = null;
 const disconnectedOnline = {};
 const onlineDisconnectTimers = {};
+let currentRoomProtected = false;
+let currentRoomPin = '';
 function updateReadyDisplay() {
   const box = $('readyStatusDisplay');
   if (!box) return;
@@ -303,6 +305,18 @@ function createOnlineRoom() {
   renderOnlineLobby();
   updateSessionScoreDisplay();
 
+  const security = $('hostRoomSecurity')?.value === 'pin';
+  const pin = normalizeRoomNumberUI($('hostRoomPin')?.value);
+
+  if (security && pin.length !== 4) {
+    $('roomStatus').textContent = '⚠️ A senha da sala precisa ter exatamente 4 números.';
+    $('hostRoomPin')?.focus();
+    return;
+  }
+
+  currentRoomProtected = security;
+  currentRoomPin = security ? pin : '';
+
   const requestedCode = normalizeRoomNumberUI($('hostRoomCodeInput')?.value);
 
   if (requestedCode && requestedCode.length !== 4) {
@@ -323,7 +337,9 @@ function createOnlineRoom() {
       $('hostPanel').classList.remove('hidden');
       $('roomCode').textContent = code;
       $('hostRoomCodeInput').value = code;
-      $('roomStatus').textContent = '👥 Sala pronta! Copie o link e mande para seus amigos. Ele toca em ENTRAR NO JOGO — sem PIN.';
+      $('roomStatus').textContent = security
+        ? '🔐 Sala protegida! Envie o link e a senha separadamente para seu amigo.'
+        : '🔓 Sala aberta! Quem receber o link entra direto no jogo.';
       updateOnlineLobbyUI();
       $('count').disabled = true;
       state.count = 1;
@@ -345,11 +361,20 @@ function createOnlineRoom() {
       $('roomStatus').textContent = '❌ Não consegui criar a sala: ' + (err?.message || err);
     },
     peerId,
-    { roomCode: code, requirePin: false }
+    { roomCode: code, requirePin: security, roomPin: pin }
   );
 }
 
 $('hostBtn').addEventListener('click', createOnlineRoom);
+
+$('hostRoomSecurity')?.addEventListener('change', () => {
+  const protectedRoom = $('hostRoomSecurity').value === 'pin';
+  $('hostRoomPinRow')?.classList.toggle('hidden', !protectedRoom);
+  $('hostRoomSecurityHint').textContent = protectedRoom
+    ? '🔒 Com senha: escolha uma senha de 4 números e envie a senha separadamente do link.'
+    : '🔓 Sem senha: quem receber o link entra direto.';
+  if (!protectedRoom && $('hostRoomPin')) $('hostRoomPin').value = '';
+});
 
 $('copyRoom').addEventListener('click', async () => {
   const link = buildRoomLink();
@@ -557,6 +582,9 @@ function leaveOnlineLobby() {
   $('hostPanel').classList.add('hidden');
   $('roomCode').textContent = '...';
   $('roomStatus').textContent = '';
+  $('roomSecurityBadge').textContent = '🔓 Sala sem senha: quem receber o link entra direto.';
+  currentRoomProtected = false;
+  currentRoomPin = '';
   $('joinStatus').textContent = '';
   $('hostBtn').disabled = false;
   $('joinBtn').disabled = false;
@@ -577,6 +605,7 @@ function buildRoomLink() {
     theme: state.theme,
     noWalls: state.noWalls ? '1' : '0',
   });
+  if (currentRoomProtected) params.set('lock', '1');
   if ($('teamMode').checked) {
     params.set('fmt', 'teams');
     params.set('ta', String(state.teamSizeMine));
@@ -623,6 +652,13 @@ function lerInfoDeTimes(texto) {
 }
 
 // Mostra (ou esconde) a escolha "no time de quem criou / no adversário" pra quem vai entrar
+function refreshJoinSecurityFromUrl() {
+  const locked = new URLSearchParams(location.search).get('lock') === '1';
+  $('joinRoomPinRow')?.classList.toggle('hidden', !locked);
+  if (locked) $('joinStatus').textContent = '🔐 Esta sala tem senha. Digite a senha para entrar.';
+  return locked;
+}
+
 function refreshJoinTeamChoice(info) {
   $('joinTeamRow').classList.toggle('hidden', !info);
   if (!info) return;
@@ -631,7 +667,10 @@ function refreshJoinTeamChoice(info) {
 }
 $('joinCode').addEventListener('input', () => {
   const texto = $('joinCode').value;
-  if (texto.includes('room=')) refreshJoinTeamChoice(lerInfoDeTimes(texto)); // colou um link inteiro
+  if (texto.includes('room=')) {
+    refreshJoinTeamChoice(lerInfoDeTimes(texto));
+    refreshJoinSecurityFromUrl();
+  } // colou um link inteiro
 });
 
 function extractRoomCode(raw) {
@@ -648,7 +687,15 @@ function extractRoomCode(raw) {
 
 $('joinBtn').addEventListener('click', () => {
   const code = extractRoomCode($('joinCode').value);
-  const pin = '';
+  const pin = normalizeRoomNumberUI($('joinRoomPin')?.value);
+  const linkRequiresPin = new URLSearchParams(location.search).get('lock') === '1';
+
+  if (linkRequiresPin && pin.length !== 4) {
+    $('joinRoomPinRow')?.classList.remove('hidden');
+    $('joinStatus').textContent = '🔐 Digite a senha de 4 números para entrar nesta sala.';
+    $('joinRoomPin')?.focus();
+    return;
+  }
 
   if (!code) return;
   if (!navigator.onLine) {
@@ -697,6 +744,11 @@ $('joinBtn').addEventListener('click', () => {
       else if (err?.type === 'network' || err?.type === 'server-error' || err?.type === 'disconnected' || err?.type === 'socket-error' || err?.type === 'socket-closed') msg += 'Parece que a internet caiu no meio do caminho.';
       else if (err?.message === 'full') msg += 'Essa sala já está cheia.';
       else if (err?.message === 'timeout') msg += 'A conexão demorou demais. Tenta novamente.';
+      else if (err?.message === 'wrongPin') {
+        msg = '🔑 Senha incorreta. Digite a senha da sala e tente novamente.';
+        $('joinRoomPinRow')?.classList.remove('hidden');
+        $('joinRoomPin')?.focus();
+      }
       else if (err?.message === 'rejected') msg += 'A entrada foi recusada.';
       else msg += 'Confere o link ou o código da sala.';
       $('joinStatus').textContent = msg;
@@ -742,8 +794,12 @@ if (urlAction.get('quickplay') === '1') {
 if (roomFromUrl) {
   $('joinCode').value = roomFromUrl;
   refreshJoinTeamChoice(lerInfoDeTimes(location.search));
-  // Convite por link: o código já fica preenchido. O convidado só precisa tocar em
-  // "ENTRAR NO JOGO"; não há PIN nem aprovação manual.
+  const linkLocked = refreshJoinSecurityFromUrl();
+  if (!linkLocked) {
+    setTimeout(() => $('joinBtn')?.click(), 350);
+  } else {
+    setTimeout(() => $('joinRoomPin')?.focus(), 150);
+  }
 }
 
 // Prévia da sala — se o link já veio com as configurações embutidas, mostra o que a

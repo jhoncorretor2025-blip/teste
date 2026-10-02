@@ -1,3 +1,9 @@
+## [3.6.11] — 2026-10-02
+- **Salas online:** ao criar uma sala, agora é possível escolher entre **sem senha** ou **com senha**.
+- **Sala sem senha:** o link é suficiente e o convidado entra automaticamente ao abrir o convite.
+- **Sala com senha:** a sala exige uma senha numérica de 4 dígitos; a senha não fica exposta no link.
+- **Entrada:** quando a sala é protegida, o convidado vê o campo de senha e só entra com a senha correta.
+
 ## [3.6.6] — 2026-09-30
 - **Dragão:** a cabeça ganhou uma carinha própria, com chifres, olhos de réptil, focinho, narinas, boca, dentes e espinhos laterais. O desenho antigo parecia apenas uma cabeça verde com pontas.
 - **Compatibilidade:** o restante das cabeças de animais continua com o visual anterior.

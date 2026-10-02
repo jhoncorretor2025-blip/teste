@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v3.6.10</title>
-<link rel="stylesheet" href="css/style.css?v=3.6.10">
+<title>🐍 Mioquinha v3.6.11</title>
+<link rel="stylesheet" href="css/style.css?v=3.6.11">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -17,7 +17,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>3.6.10</b></div>
+  <div class="appSplashVersion">VERSÃO <b>3.6.11</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -76,7 +76,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v3.6.10</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v3.6.11</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
   </header>
@@ -398,8 +398,21 @@
               <span>🔢 Código da sala</span>
               <input id="hostRoomCodeInput" class="input roomNumberInput" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Automático" aria-label="Código da sala, 4 números">
             </label>
-          </div>
-          <small>O código é criado automaticamente. Depois é só <b>copiar o link</b> e mandar para quem vai jogar.</small>
+             <label>
+               <span>🔐 Segurança</span>
+               <select id="hostRoomSecurity" class="select" aria-label="Segurança da sala">
+                 <option value="open">🔓 Sem senha</option>
+                 <option value="pin">🔒 Com senha</option>
+               </select>
+             </label>
+           </div>
+           <div id="hostRoomPinRow" class="hidden" style="margin-top:8px">
+             <label>
+               <span>🔑 Senha da sala (4 números)</span>
+               <input id="hostRoomPin" class="input roomNumberInput" inputmode="numeric" autocomplete="new-password" maxlength="4" placeholder="Ex.: 2580" aria-label="Senha da sala, 4 números">
+             </label>
+           </div>
+          <small id="hostRoomSecurityHint">🔓 Sem senha: quem receber o link entra direto. 🔒 Com senha: você envia o link e a senha separadamente.</small>
         </div>
         <div class="row">
           <button id="hostBtn" class="btn alt" type="button">🏠 Criar sala</button>
@@ -408,7 +421,8 @@
           <div class="roomCredentialDisplay">
             <div>🔗 Sala criada: <b id="roomCode">...</b></div>
           </div>
-          <div class="roomCredentialHint">📤 Copie o link abaixo e mande para o amigo. Ele abre o link e entra na sua sala automaticamente.</div>
+          <div id="roomSecurityBadge" class="roomCredentialHint">🔓 Sala sem senha: quem receber o link entra direto.</div>
+           <div class="roomCredentialHint">📤 Copie o link abaixo e mande para o amigo.</div>
           <button id="copyRoom" class="refresh" type="button" style="margin-top:6px">Copiar link</button>
           <button id="copyRoomCode" class="refresh" type="button" style="margin-top:6px;margin-left:6px">Copiar só o código</button>
                     <button id="whatsappInvite" class="refresh" type="button" style="margin-top:6px;margin-left:6px;background:#1f8a4c;color:#fff">📱 Convidar pelo WhatsApp</button>
@@ -444,7 +458,13 @@
               <input id="joinCode" class="input roomNumberInput" inputmode="text" autocomplete="off" maxlength="200" placeholder="Cole o link ou o código" aria-label="Código ou link da sala">
             </label>
           </div>
-          <button id="joinBtn" class="btn alt onlineJoinButton" type="button">🚀 ENTRAR NO JOGO</button>
+           <div id="joinRoomPinRow" class="hidden" style="margin:8px 0">
+             <label>
+               <span>🔑 Senha da sala</span>
+               <input id="joinRoomPin" class="input roomNumberInput" inputmode="numeric" autocomplete="one-time-code" maxlength="4" placeholder="Digite os 4 números" aria-label="Senha da sala">
+             </label>
+           </div>
+           <button id="joinBtn" class="btn alt onlineJoinButton" type="button">🚀 ENTRAR NO JOGO</button>
           <small>🔗 Normalmente você nem precisa preencher: ao abrir o link de convite, o jogo entra sozinho.</small>
         </div>
         <div id="joinStatus" class="muted" style="margin-top:6px"></div>
@@ -602,7 +622,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '3.6.10';
+  const VERSION = '3.6.11';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');
