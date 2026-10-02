@@ -8,7 +8,7 @@ const mudar = (w, id, v) => { $(w, id).value = v; $(w, id).dispatchEvent(new w.E
 const r = novoRelatorio();
 
 const host = criarJanela({ Peer: FakePeer }); ativar(host);
-await importarDe(RAIZ)('js/main.js');
+await importarDe(RAIZ)('js/main_stable_342.js');
 const hs = (await importarDe(RAIZ)('js/state.js')).state;
 mudar(host, 'onlineFormat', 'teams'); mudar(host, 'teamSizeMine', '1'); mudar(host, 'teamSizeOther', '1');
 $(host, 'hostBtn').click(); await esperar(60);
@@ -17,7 +17,7 @@ const link = host.__copiado[0];
 r.check('o link da sala leva o formato e os tamanhos', /fmt=teams/.test(link) && /ta=1/.test(link) && /tb=1/.test(link), link);
 
 const A = criarJanela({ pasta: pastaAmigo, url: link, Peer: FakePeer }); ativar(A);
-await importarDe(pastaAmigo)('js/main.js');
+await importarDe(pastaAmigo)('js/main_stable_342.js');
 const as = (await importarDe(pastaAmigo)('js/state.js')).state;
 await esperar(300);
 ativar(host); await esperar(30);
