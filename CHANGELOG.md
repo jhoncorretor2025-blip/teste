@@ -1,3 +1,8 @@
+# v4.1.1 — correção da progressão diária e Liga
+- Corrigida a estrutura do módulo de progressão para manter uma única definição de cada função.
+- Mantidos Desafio do Dia, recompensas de sequência, Liga, XP, moedas, desafio de partida e cosméticos.
+- Versão/cache sincronizados para evitar carregar a lógica quebrada da 4.1.0.
+
 # v4.1.0 — desafio do dia, sequência e Liga da Mioquinha
 - Adicionado **Desafio do Dia**, escolhido de forma determinística pela data local e renovado automaticamente à meia-noite.
 - O Desafio do Dia tem progresso e recompensa próprios, separado do desafio aleatório de cada partida.
