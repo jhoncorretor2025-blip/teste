@@ -21,7 +21,7 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 **5. Multiplayer ponto a ponto (PeerJS), com o anfitrião como fonte da verdade (v2.5.0).**
 - **Por quê:** não temos servidor. **Consequência:** só o anfitrião roda o `tick`; o cliente só desenha o que recebe (veja `docs/PROTOCOLO-ONLINE.md`).
 
-**6. Salas por link entram automaticamente (v3.6.10)** — sem PIN e sem aprovação manual. O código de 4 dígitos continua identificando a sala, e o link já leva esse código.
+**6. Salas por link simplificam a entrada (v3.6.10)** — sem PIN e sem aprovação manual. O código de 4 dígitos continua identificando a sala; o link já leva esse código e deixa tudo preenchido para o convidado clicar em **ENTRAR NO JOGO**.
 - **Por quê:** o fluxo desejado é simples: criar sala, copiar o link, mandar para o amigo e ele entrar sem etapas extras. **Cuidado:** a sala continua sendo ponto a ponto e depende do anfitrião manter o jogo aberto.
 
 **7. O estado do jogo é enviado em dois pacotes: frequente e raro (v2.68.0).**
