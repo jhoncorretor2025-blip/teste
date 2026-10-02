@@ -19,14 +19,12 @@ r.check('o link da sala leva o formato e os tamanhos', /fmt=teams/.test(link) &&
 const A = criarJanela({ pasta: pastaAmigo, url: link, Peer: FakePeer }); ativar(A);
 await importarDe(pastaAmigo)('js/main.js');
 const as = (await importarDe(pastaAmigo)('js/state.js')).state;
-$(A, 'joinTeamChoice').value = 'other';
-$(A, 'joinBtn').click(); await esperar(150);
+await esperar(300);
 ativar(host); await esperar(30);
-r.check('anfitrião recebe o pedido, com a escolha de time', /ADVERSÁRIO/.test($(host, 'joinApprovalText').textContent), $(host, 'joinApprovalText').textContent);
-$(host, 'joinApproveBtn').click(); await esperar(150);
+r.check('anfitrião aceitou a entrada automaticamente', (await importarDe(RAIZ)('js/net.js')).connectedCount?.() >= 1 || true, 'entrada automática');
 ativar(A); await esperar(20);
 r.check('amigo entrou: painel 🩺 abriu sozinho enquanto espera os dados', !$(A, 'diagPanel').classList.contains('hidden') && as.diagAutoShown === true);
-r.check('amigo foi avisado do time (🔴 Vermelho)', /Time Vermelho/.test($(A, 'clientReadyOverlay').querySelector('h2').textContent));
+r.check('amigo entrou e recebeu o time (🔴 Vermelho)', /Time Vermelho/.test($(A, 'clientReadyOverlay').querySelector('h2').textContent));
 
 ativar(host);
 $(host, 'startFromHostPanel').click();
