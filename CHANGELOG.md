@@ -1,3 +1,10 @@
+# v4.2.2 — correção final da Loja
+- Corrigido o erro que impedia a Loja de renderizar os itens.
+- Adicionados os arrays persistentes de mapas e fantasias desbloqueados.
+- Corrigida a exibição dos itens bloqueados/desbloqueados na Loja.
+- Corrigado o bloqueio dos mapas premium no seletor.
+- Mantidos a Minhoca Inimiga opcional e as 3 zonas de fuga de 3 segundos.
+
 # v4.2.1 — correção da Loja e desbloqueios
 - Corrigida a integração da Loja com a progressão do jogador.
 - Mapas e fantasias agora podem ser comprados com moedas e ficam desbloqueados no navegador.

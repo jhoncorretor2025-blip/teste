@@ -121,6 +121,8 @@ export function loadProgression() {
   }
   if (!Array.isArray(cachedProgression.unlockedMaps)) cachedProgression.unlockedMaps = [];
   if (!Array.isArray(cachedProgression.unlockedSkins)) cachedProgression.unlockedSkins = [];
+  if (!Array.isArray(cachedProgression.unlockedMaps)) cachedProgression.unlockedMaps = [];
+  if (!Array.isArray(cachedProgression.unlockedSkins)) cachedProgression.unlockedSkins = [];
   if (syncDailyChallenge(cachedProgression)) saveProgression(cachedProgression);
   return cachedProgression;
 }
@@ -423,8 +425,25 @@ function timeUntilNextDay() {
     String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0') + 'min';
 }
 
+function shopButton(item, type) {
+  const data = loadProgression();
+  const unlocked = type === 'map'
+    ? isMapUnlocked(item.id)
+    : type === 'skin'
+      ? isSkinUnlocked(item.id)
+      : data.unlockedCosmetics.includes(item.id);
+  const selected = type === 'map'
+    ? document.getElementById('boardTheme')?.value === item.id
+    : type === 'skin'
+      ? document.querySelector('.ppattern[data-i="0"]')?.value === item.id
+      : data.selectedCosmetic === item.id;
+  const label = selected ? '✅ Equipado' : unlocked ? 'Toque para equipar' : '🪙 ' + item.cost;
+  return '<button type="button" class="shopItem ' + (unlocked ? 'unlocked' : 'locked') + ' ' + (selected ? 'selected' : '') + '" data-shop-type="' + type + '" data-shop-id="' + item.id + '"><span class="shopItemIcon">' + (item.icon || '✨') + '</span><span class="shopItemText"><b>' + item.name + '</b><small>' + label + '</small></span></button>';
+}
+
 export function refreshProgressionUI() {
   const data = loadProgression();
+  syncLockedShopOptions();
   syncLockedShopOptions();
   const next = xpForNextLevel(data.level);
   let base = 0;
