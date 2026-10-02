@@ -13,4 +13,4 @@ jobs:
         with:
           node-version: 24
       - run: npm install
-      - run: node tests/debug-online-link.mjs
+      - run: node tests/online-basico.mjs
