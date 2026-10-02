@@ -1,3 +1,14 @@
+# v3.8.0 — Refinamento completo do Design System
+- Padronizada a hierarquia visual de botões, campos, cards e estados de foco.
+- Criados tokens de cor, espaçamento, borda e sombra para a interface.
+- Grid de configuração do jogo corrigido para não deixar coluna vazia no desktop.
+- Melhorada a legibilidade de textos auxiliares e tamanhos mínimos de controles.
+- Foco visível padronizado para teclado e acessibilidade.
+- Navegação mobile respeita a área segura do aparelho.
+- Removida da interface a apresentação visual do código interno da sala, mantendo a geração automática.
+- Nome da tela Sobre alinhado com a marca Mioquinha.
+- Preservados gameplay, multiplayer, salas com/sem senha, temas e controles.
+
 # v3.7.0 — Redesign visual completo
 - Nova identidade visual gamer moderna em toda a interface.
 - HUD, placar, status, missão e lobby online com maior profundidade visual.

@@ -3831,3 +3831,299 @@ body::before{
 .lightMode .overlayCard{background:linear-gradient(160deg,#ffffff,#edf3fb);border-color:#9bb5d8;color:#16233d;}
 .lightMode #endText{color:#425a79;}
 .lightMode .status{background:linear-gradient(145deg,#f5f8fd,#e6edf7);border-color:#bdcde2;}
+
+
+/* v3.8.0 — grid principal sem coluna vazia */
+.gameAdvancedSettings .grid{
+  grid-template-columns:minmax(220px,.78fr) minmax(0,1.5fr);
+  align-items:start;
+}
+@media(max-width:900px){
+  .gameAdvancedSettings .grid{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* v3.8.0 — Design System Mioquinha: consistência visual sem mudar a mecânica */
+:root{
+  --ui-bg:#07101d;
+  --ui-surface-1:#0b1424;
+  --ui-surface-2:#111b2d;
+  --ui-surface-3:#16233a;
+  --ui-border:#304463;
+  --ui-border-strong:#4c6fa5;
+  --ui-text:#ffffff;
+  --ui-text-soft:#c3cee2;
+  --ui-text-muted:#91a3c0;
+  --ui-primary:#67ef8a;
+  --ui-info:#63b3ff;
+  --ui-reward:#ffd24d;
+  --ui-accent:#b57bff;
+  --ui-danger:#ff5577;
+  --ui-r-1:8px;
+  --ui-r-2:12px;
+  --ui-r-3:16px;
+  --ui-r-4:20px;
+  --ui-shadow-sm:0 4px 14px rgba(0,0,0,.18);
+  --ui-shadow-md:0 10px 26px rgba(0,0,0,.25);
+  --ui-shadow-lg:0 20px 60px rgba(0,0,0,.42);
+  --ui-space-1:4px;
+  --ui-space-2:8px;
+  --ui-space-3:12px;
+  --ui-space-4:16px;
+  --ui-space-5:24px;
+  --ui-space-6:32px;
+}
+html{
+  scroll-behavior:smooth;
+}
+body{
+  color:var(--ui-text);
+}
+main,
+.panel,
+.gameBox{
+  isolation:isolate;
+}
+.btn,
+.refresh,
+.iconBtn,
+.tabBtn,
+.settingsLauncher,
+.settingsJump,
+.progressNavBtn,
+.mobileGameMoreBtn,
+.mobileGameMenuItem,
+.reactionBtn,
+.dpadBtn{
+  -webkit-font-smoothing:antialiased;
+}
+.btn,
+.refresh,
+.iconBtn,
+.tabBtn,
+.settingsLauncher,
+.settingsJump,
+.progressNavBtn,
+.mobileGameMoreBtn,
+.mobileGameMenuItem,
+.reactionBtn,
+.dpadBtn,
+.select,
+.input{
+  border-width:1px;
+}
+.btn:focus-visible,
+.refresh:focus-visible,
+.iconBtn:focus-visible,
+.tabBtn:focus-visible,
+.settingsLauncher:focus-visible,
+.settingsJump:focus-visible,
+.progressNavBtn:focus-visible,
+.mobileGameMoreBtn:focus-visible,
+.mobileGameMenuItem:focus-visible,
+.reactionBtn:focus-visible,
+.dpadBtn:focus-visible,
+.select:focus-visible,
+.input:focus-visible{
+  outline:3px solid var(--ui-info);
+  outline-offset:2px;
+}
+.btn[disabled]:focus-visible,
+.refresh[disabled]:focus-visible{
+  outline-color:#71819c;
+}
+.card,
+.onlineRoomAccess,
+.onlineLobbyCard,
+.hunterSettingsBox,
+.progressStat,
+.progressRecordMini,
+.onlineMatchStats,
+.roomReadyCard{
+  border-radius:var(--ui-r-3);
+}
+.cardDesc{
+  color:var(--ui-text-muted);
+  line-height:1.45;
+}
+.check,
+.tip,
+.roomCredentialHint,
+.onlineLobbySummary,
+.onlineLobbyPlayerMain span,
+.onlineLobbyTeam,
+.onlineLobbyPlayerMeta small{
+  line-height:1.4;
+}
+.select,
+.input,
+.btn{
+  min-height:46px;
+}
+.input,
+.select{
+  background:var(--ui-surface-1);
+  border-color:var(--ui-border);
+  color:var(--ui-text);
+}
+.input::placeholder{
+  color:#8ea0bc;
+  opacity:1;
+}
+.select:hover,
+.input:hover{
+  border-color:#45638f;
+}
+.btn{
+  font-weight:800;
+}
+.btn.alt{
+  color:#f7faff;
+}
+.refresh{
+  min-height:40px;
+  background:var(--ui-surface-3);
+  border-color:#3b557d;
+  color:var(--ui-text-soft);
+}
+.refresh:hover,
+.iconBtn:hover,
+.settingsJump:hover,
+.progressNavBtn:hover{
+  border-color:var(--ui-border-strong);
+}
+.iconBtn{
+  background:var(--ui-surface-3);
+  border-color:#3b557d;
+}
+.settingsLauncher{
+  border-color:#3b557d;
+  background:linear-gradient(145deg,#142541,#0c1729);
+}
+.settingsLauncher.open{
+  box-shadow:0 0 0 1px rgba(110,231,255,.08) inset,var(--ui-shadow-sm);
+}
+.progressNavBtn{
+  border-color:#334c72;
+}
+.progressNavBtn.active{
+  box-shadow:0 6px 18px rgba(0,0,0,.20);
+}
+.score{
+  border-radius:var(--ui-r-2);
+}
+.status{
+  gap:var(--ui-space-2);
+}
+.status>b,
+.status span{
+  white-space:nowrap;
+}
+.mission{
+  line-height:1.4;
+}
+.quickRules{
+  gap:var(--ui-space-2);
+}
+.quickRules span{
+  min-height:32px;
+}
+.foodLegend span{
+  min-height:24px;
+}
+.overlayCard p{
+  line-height:1.5;
+}
+.onlineLobbyPlayer{
+  min-height:48px;
+}
+.roomCredentialDisplay{
+  display:none !important;
+}
+#copyRoomCode{
+  display:none !important;
+}
+.gameMainActions .btn{
+  min-height:46px;
+}
+.arena{
+  border-radius:var(--ui-r-4);
+}
+#game .top{
+  box-shadow:var(--ui-shadow-sm),inset 0 1px 0 rgba(255,255,255,.025);
+}
+#onlineResultStats .onlineResultRow{
+  min-height:48px;
+}
+@media(min-width:901px){
+  .gameAdvancedSettings .card{
+    min-height:100%;
+  }
+  .gameAdvancedSettings .card:first-child{
+    position:sticky;
+    top:76px;
+  }
+}
+@media(max-width:900px){
+  .gameAdvancedSettings .card:first-child{
+    position:static;
+  }
+}
+@media(max-width:700px){
+  body{
+    padding-bottom:calc(72px + env(safe-area-inset-bottom));
+  }
+  .tabBar{
+    left:8px;
+    right:8px;
+    bottom:calc(8px + env(safe-area-inset-bottom));
+  }
+  .tabBar .tabBtn{
+    min-height:52px;
+  }
+  .menuHero #startHero{
+    min-height:48px;
+  }
+  .menuHero #shareHero{
+    min-height:44px;
+  }
+  .status{
+    font-size:.73rem;
+  }
+  .gameBox .arena{
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.05),
+      inset 0 0 42px rgba(0,0,0,.20),
+      0 14px 38px rgba(0,0,0,.42);
+  }
+  .gameBox .joystick,
+  .gameBox .dpad{
+    min-width:92px;
+  }
+}
+@media(max-width:420px){
+  .select,
+  .input{
+    min-height:44px;
+  }
+  .gameMainActions .btn{
+    min-height:44px;
+    padding:8px 5px;
+  }
+  .card{
+    padding:10px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html{
+    scroll-behavior:auto;
+  }
+  *,
+  *::before,
+  *::after{
+    animation:none !important;
+    transition:none !important;
+  }
+}

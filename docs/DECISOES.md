@@ -60,3 +60,9 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 **16. No celular, a janela da câmera acompanha a proporção real da arena; no PC, o zoom antigo continua valendo.**
 - **Por quê:** a janela fixa de 32 × 25 células deixava grandes faixas pretas quando o telefone ficava em retrato ou paisagem.
 - **Cuidado:** a adaptação só é ativada em aparelhos móveis com toque; não altere a regra do PC sem testar o layout desktop.
+
+
+## 17. Design System visual consolidado (v3.8.0)
+- A interface passa a usar uma escala curta e consistente de cores, espaçamentos, raios e sombras.
+- **Por quê:** a Mioquinha já tinha muitos componentes funcionando, mas pequenas diferenças entre cards, botões e estados faziam as telas parecerem menos coesas.
+- **Cuidado:** o redesign é visual; não muda as regras do jogo nem o protocolo online. O objetivo é ajustar pesos visuais e legibilidade, não criar uma nova interface do zero.
