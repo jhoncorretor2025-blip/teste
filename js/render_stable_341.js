@@ -2024,7 +2024,60 @@ function drawEnhancedParticles() {
   }
 }
 
-export function draw() {
+export 
+/* v3.7.0 — brilho e acabamento da criatura local */
+function drawSnakeHeadGloss(x, y, color, dir) {
+  const hx = sx(x) + cell / 2;
+  const hy = sy(y) + cell / 2;
+  const angle = Math.atan2(dir.y, dir.x);
+  ctx.save();
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = color;
+  ctx.shadowBlur = cell * 0.18;
+  ctx.beginPath();
+  ctx.ellipse(hx - Math.cos(angle) * cell * 0.10,hy - Math.sin(angle) * cell * 0.10,cell * 0.18,cell * 0.085,angle,0,Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 0.25;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(1, cell * 0.03);
+  ctx.beginPath();
+  ctx.arc(hx,hy,cell * 0.54,0,Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+function drawFoodRarityAura(f) {
+  if (!f || f.kind === 'bonus' || f.kind === 'secondPlace' || !f.rarity) return;
+  const style = {
+    normal:null,
+    rare:{color:'#63b3ff',radius:.72,alpha:.22},
+    epic:{color:'#b57bff',radius:.82,alpha:.28},
+    legendary:{color:'#ffd24d',radius:.95,alpha:.34},
+  }[String(f.rarity)];
+  if (!style) return;
+  const x=sx(f.x)+cell/2, y=sy(f.y)+cell/2;
+  const pulse=.82 + Math.sin(Date.now()/160 + f.x*2 + f.y)*.18;
+  ctx.save();
+  ctx.globalAlpha=style.alpha*pulse;
+  ctx.strokeStyle=style.color;
+  ctx.shadowColor=style.color;
+  ctx.shadowBlur=cell*.45;
+  ctx.lineWidth=Math.max(1,cell*.035);
+  ctx.beginPath();ctx.arc(x,y,cell*style.radius*pulse,0,Math.PI*2);ctx.stroke();
+  if(String(f.rarity)==='legendary'){
+    for(let i=0;i<4;i++){
+      const a=Date.now()/850+i*Math.PI/2;
+      const px=x+Math.cos(a)*cell*1.02, py=y+Math.sin(a)*cell*1.02;
+      ctx.beginPath();
+      ctx.moveTo(px-cell*.07,py);ctx.lineTo(px+cell*.07,py);
+      ctx.moveTo(px,py-cell*.07);ctx.lineTo(px,py+cell*.07);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function draw() {
   if (
     canvas.parentElement.clientWidth !== canvas._lastW ||
     canvas.parentElement.clientHeight !== canvas._lastH ||
@@ -2146,6 +2199,7 @@ export function draw() {
     }
     ctx.restore();
     drawFoodGraphicAccent(f);
+    drawFoodRarityAura(f);
   }
   drawFiftyFoodEnemies();
 
@@ -2237,6 +2291,8 @@ export function draw() {
     ctx.arc(cx + fx + px, cy + fy + py, cell * 0.1, 0, Math.PI * 2);
     ctx.arc(cx + fx - px, cy + fy - py, cell * 0.1, 0, Math.PI * 2);
     ctx.fill();
+
+    drawSnakeHeadGloss(h.x, h.y, state.colors[i] || '#ffffff', dir);
 
     if (state.teamMode && state.count > 1) desenharMarcadorDeTime(state.teams[i] === 1 ? 1 : 0, sx(h.x) + cell * 0.92, sy(h.y) + cell * 0.1);
 
