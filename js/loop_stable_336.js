@@ -302,6 +302,7 @@ export function reset() {
   state.shake = 0;
   state.hunterActive = false;
   state.hunterSnake = [];
+  state.hunterStartedAt = 0;
   state.hunterMilestoneIndex = 0;
   state.hunterMoveTick = 0;
   state.secondPlaceBonusTarget = -1;
@@ -369,7 +370,8 @@ const SAVE_FIELDS = [
   'tournamentRoundScore', 'tournamentRoundEndsAt', 'zoom',
   'snakes', 'alive', 'dirs', 'nextDirs', 'foods', 'scores', 'foodsEaten', 'grow',
   'respawnAt', 'milestones', 'eliminations', 'boosting', 'boostUsedCount', 'mission',
-  'hunterActive', 'hunterSnake', 'hunterDir', 'hunterEndsAt', 'hunterMilestoneIndex',
+  'hunterActive', 'hunterSnake', 'hunterDir', 'hunterEndsAt', 'hunterMilestoneIndex', 'hunterStartedAt',
+  'hunterZones', 'hunterZoneCompleted', 'hunterZoneProgress', 'hunterZoneCurrent', 'hunterZoneEnteredAt', 'hunterZoneHoldProgress',
   'secondPlaceBonusTarget', 'secondPlaceBonusRemaining', 'secondPlaceBonusCollected',
 ];
 
@@ -419,14 +421,17 @@ export function startGame() {
   updateGamesPlayedBadge(totalGames);
   if (totalGames >= 5) announceAchievement(unlockAchievement('games_5'));
   if (totalGames >= 10) announceAchievement(unlockAchievement('games_10'));
+  if (totalGames >= 50) announceAchievement(unlockAchievement('games_50'));
   updateSessionStatsDisplay(incrementSessionGames());
   const streakInfo = updateStreakAndLastPlayed();
   window.__mioquinhaStreak = streakInfo.streak;
   claimStreakReward(streakInfo.streak);
+  if (streakInfo.streak >= 7) announceAchievement(unlockAchievement('streak_7'));
   clearSavedGame();
 
   announceAchievement(unlockAchievement('first_game'));
   if (state.noWalls) announceAchievement(unlockAchievement('no_walls'));
+  if (state.hunterConfig?.enabled !== false) announceAchievement(unlockAchievement('hunter_accept'));
   announceAchievements(trackCumulativeProgress('themesUsed', state.theme));
   announceAchievements(trackCumulativeProgress('headsUsed', state.heads[0]));
   if (isOnline()) {
@@ -979,6 +984,7 @@ function spawnHunter(durationSec, appearance = 1) {
   state.hunterSnake = corpo;
   state.hunterDir = { x: 1, y: 0 };
   state.hunterActive = true;
+  state.hunterStartedAt = Date.now();
   state.hunterEndsAt = Date.now() + durationSec * 1000;
   state.hunterMoveTick = 0;
   state.hunterBurstUntil = 0;
@@ -1093,6 +1099,9 @@ function updateHunterZones() {
 
   state.hunterZoneCompleted[inside] = true;
   state.hunterZoneProgress = state.hunterZoneCompleted.filter(Boolean).length;
+  if (state.hunterZoneProgress >= 1) announceAchievement(unlockAchievement('hunter_zone_first'));
+  if (state.hunterZoneProgress >= 1) announceAchievement(unlockAchievement('hunter_zone_exact'));
+  if (state.hunterZoneProgress >= HUNTER_ZONE_COUNT) announceAchievement(unlockAchievement('hunter_zone_perfect'));
   state.toast = {
     x: head.x,
     y: head.y,
@@ -1122,6 +1131,9 @@ export function updateHunter() {
   }
 
   const head = state.hunterSnake[0];
+  if (state.hunterStartedAt && state.alive[mySlot] && Date.now() - state.hunterStartedAt >= 10000) {
+    announceAchievement(unlockAchievement('hunter_no_fear'));
+  }
   updateHunterZones();
   if (!state.hunterActive) return;
   const appearance = Math.max(1, state.hunterMilestoneIndex);
@@ -1339,6 +1351,7 @@ function tick() {
       hunterActive: state.hunterActive, hunterSnake: state.hunterSnake,
       fiftyFoodEnemies: fiftyFeature.enemies,
       boostReadyAt: state.boostReadyAt,
+      hunterStartedAt: state.hunterStartedAt,
       hunterZones: state.hunterZones,
       hunterZoneCompleted: state.hunterZoneCompleted,
       hunterZoneProgress: state.hunterZoneProgress,
