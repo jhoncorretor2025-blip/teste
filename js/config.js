@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '4.2.2';
+export const VERSION = '4.3.0';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -71,6 +71,24 @@ export const ACHIEVEMENTS = [
   { id: 'online_kill_3', name: 'Caçador Online', desc: 'Elimine 3 adversários em uma partida online', icon: '☠️', category: 'online' },
   { id: 'online_score_500', name: 'Mestre Online', desc: 'Faça 500 pontos em uma partida online', icon: '🚀', category: 'online' },
   { id: 'online_champion', name: 'Campeão Online', desc: 'Vença um torneio online', icon: '👑', category: 'online' },
+  { id: 'hunter_accept', name: 'Desafio Aceito', desc: 'Jogue uma partida com a Minhoca Caçadora ativada', icon: '☠️', category: 'intermediario' },
+  { id: 'hunter_zone_first', name: 'Caçador de Zonas', desc: 'Complete sua primeira zona vermelha da Caçadora', icon: '🔴', category: 'intermediario' },
+  { id: 'hunter_zone_exact', name: 'No Limite', desc: 'Permaneça 3 segundos dentro de uma zona da Caçadora', icon: '⏱️', category: 'intermediario' },
+  { id: 'hunter_zone_perfect', name: 'Fuga Perfeita', desc: 'Complete as 3 zonas e faça a Caçadora desaparecer', icon: '🔥', category: 'avancado' },
+  { id: 'hunter_no_fear', name: 'Sem Medo', desc: 'Sobreviva 10 segundos enquanto a Caçadora está ativa', icon: '😎', category: 'avancado' },
+  { id: 'coins_earned_100', name: 'Primeiras Moedas', desc: 'Ganhe 100 moedas ao longo do tempo', icon: '🪙', category: 'intermediario' },
+  { id: 'coins_wallet_500', name: 'Cofre Cheio', desc: 'Tenha 500 moedas guardadas ao mesmo tempo', icon: '💰', category: 'avancado' },
+  { id: 'shop_first_purchase', name: 'Primeira Compra', desc: 'Compre seu primeiro item na Loja', icon: '🛒', category: 'iniciante' },
+  { id: 'skin_first', name: 'Estilosa', desc: 'Desbloqueie sua primeira fantasia da minhoca', icon: '🎭', category: 'intermediario' },
+  { id: 'skins_3', name: 'Colecionador', desc: 'Desbloqueie 3 fantasias na Loja', icon: '🎨', category: 'avancado' },
+  { id: 'maps_2', name: 'Explorador', desc: 'Desbloqueie 2 mapas especiais na Loja', icon: '🗺️', category: 'intermediario' },
+  { id: 'maps_all', name: 'Mestre dos Mapas', desc: 'Desbloqueie todos os mapas especiais da Loja', icon: '🌍', category: 'avancado' },
+  { id: 'coins_spent_500', name: 'Magnata da Mioquinha', desc: 'Gaste 500 moedas na Loja ao longo do tempo', icon: '💎', category: 'avancado' },
+  { id: 'skins_5', name: 'Fashionista', desc: 'Desbloqueie 5 fantasias na Loja', icon: '👑', category: 'avancado' },
+  { id: 'league_legend', name: 'Lenda da Liga', desc: 'Chegue à Liga Lenda', icon: '🏆', category: 'avancado' },
+  { id: 'streak_7', name: 'Sequência Imparável', desc: 'Mantenha uma sequência de 7 dias jogando', icon: '🔥', category: 'intermediario' },
+  { id: 'daily_10', name: 'Mestre do Desafio', desc: 'Complete 10 Desafios do Dia', icon: '🎯', category: 'avancado' },
+  { id: 'games_50', name: 'Veterano', desc: 'Jogue 50 partidas no total', icon: '🎮', category: 'intermediario' },
 ];
 
 

@@ -71,6 +71,18 @@ function checkOnlineAchievementsFromState() {
   if (totalPlayers >= 3) unlockOnline('online_trio');
   if (totalPlayers >= 6) unlockOnline('online_full_room');
   if (state.teamMode) unlockOnline('online_team');
+  // Conquistas da Caçadora também precisam funcionar para quem entrou na sala:
+  // o cliente recebe esse progresso pronto do anfitrião e só verifica aqui.
+  if (state.hunterActive) unlockOnline('hunter_accept');
+  if ((state.hunterZoneProgress || 0) >= 1) {
+    unlockOnline('hunter_zone_first');
+    unlockOnline('hunter_zone_exact');
+  }
+  if ((state.hunterZoneProgress || 0) >= 3) unlockOnline('hunter_zone_perfect');
+  if (state.hunterActive && state.hunterStartedAt && state.alive[net.mySlot] &&
+      Date.now() - state.hunterStartedAt >= 10000) {
+    unlockOnline('hunter_no_fear');
+  }
 
   const myFood = state.foodsEaten[net.mySlot] || 0;
   const myScore = state.scores[net.mySlot] || 0;

@@ -70,6 +70,7 @@ export const state = {
   hunterSnake: [], // segmentos dela, no mesmo formato de uma minhoca normal
   hunterDir: { x: 1, y: 0 },
   hunterEndsAt: 0,
+  hunterStartedAt: 0, // quando a Caçadora apareceu nesta partida — usado para conquistas de sobrevivência
   hunterMilestoneIndex: 0, // quantos marcos (100, 150...) já foram usados nessa partida
   diagAutoShown: false, // o painel 🩺 foi aberto sozinho (não pela pessoa) — some sozinho quando os dados chegarem
   diagManual: false, // a pessoa abriu o painel 🩺 de propósito — aí ele NÃO some sozinho
