@@ -23,6 +23,12 @@ await esperar(120);
 // O link já preenche a sala; o convidado confirma com um único toque.
 $(A, 'joinBtn').click();
 await esperar(2200);
+const netHostDebug = await importarDe(RAIZ)('js/net_stable_360.js?debug');
+const netFriendDebug = await importarDe(pastaAmigo)('js/net_stable_360.js?debug');
+console.log('NET_STATE_DEBUG', JSON.stringify({
+  hostRole: netHostDebug.role, hostConns: netHostDebug.connectedCount(), hostStatus: $(host, 'roomStatus').textContent,
+  friendRole: netFriendDebug.role, friendOnline: netFriendDebug.isOnline(), friendStatus: $(A, 'joinStatus').textContent
+}));
 if (A.__erros.length || host.__erros.length) console.log('ERROS JS APÓS ENTRADA:', { amigo: A.__erros.slice(0,3), host: host.__erros.slice(0,3) });
 r.check('botão ENTRAR NO JOGO não gerou erro', !$(A, 'joinStatus').textContent.startsWith('❌'), $(A, 'joinStatus').textContent);
 ativar(host); await esperar(30);
