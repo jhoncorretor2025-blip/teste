@@ -1,3 +1,11 @@
+# v3.6.12 — experiência visual e multiplayer
+- Novo destaque visual no menu com os principais recursos.
+- Fluxo de sala mais simples: o código deixa de aparecer para o jogador.
+- Convite principal passa a destacar a cópia do link.
+- Cartão de sala pronta com instrução clara para compartilhar.
+- Melhorias de responsividade e suporte a redução de movimento.
+- Mantidos o multiplayer, salas com/sem senha e geração automática do código.
+
 ## [3.6.11] — 2026-10-02
 - **Salas online:** ao criar uma sala, agora é possível escolher entre **sem senha** ou **com senha**.
 - **Sala sem senha:** o link é suficiente e o convidado entra automaticamente ao abrir o convite.
