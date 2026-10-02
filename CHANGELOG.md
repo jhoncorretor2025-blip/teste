@@ -1,3 +1,13 @@
+# v4.0.0 — progressão, moedas e desafios
+- Mantido o Combo existente e integrado à nova progressão: combos rápidos dão XP e moedas extras.
+- Adicionadas moedas 🪙 persistentes no navegador para recompensar comida, combos e marcos.
+- Adicionado XP e nível do jogador, com evolução automática e barra de progresso.
+- Adicionados desafios aleatórios por partida, com metas e recompensas de moedas/XP.
+- Adicionados três cosméticos simples compráveis com moedas: Rastro Dourado, Cabeça Neon e Emblema Campeão.
+- Cosméticos ficam salvos no navegador e podem ser equipados pelo painel de Progresso.
+- Mantido o multiplayer sem colocar o progresso pessoal dentro do pacote de estado.
+- Não foram adicionados Power-ups.
+
 # v3.10.0 — pacote visual premium
 - Reforçada a identidade da tela inicial, com hero, botão Jogar e cartões de destaque mais impactantes.
 - Melhorada a leitura do placar com identidade visual por jogador, hierarquia e destaque do líder.

@@ -81,3 +81,9 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 **Por quê:** a interface já tinha a base visual, mas ainda podia ganhar mais presença no início da partida, placar, raridade das comidas, resultado e lobby.
 
 **Cuidados:** efeitos discretos, respeito à redução de movimento, canvas legível e Modo Claro preservado.
+
+
+## v4.0.0 — Progressão pessoal fora do estado de rede
+- Moedas, XP, nível, desafios e cosméticos ficam no `localStorage` por jogador.
+- O multiplayer não transmite esses dados pessoais: isso mantém os pacotes menores e evita que a progressão de um aparelho altere a de outro.
+- O Combo já existia; a decisão foi integrá-lo à progressão em vez de criar um segundo sistema concorrente.

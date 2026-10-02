@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="3.10.0">
+<html lang="pt-BR" data-theme-version="4.0.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v3.10.0</title>
-<link rel="stylesheet" href="css/style.css?v=3.10.0">
+<title>🐍 Mioquinha v4.0.0</title>
+<link rel="stylesheet" href="css/style.css?v=4.0.0">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -17,7 +17,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>3.10.0</b></div>
+  <div class="appSplashVersion">VERSÃO <b>4.0.0</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -76,7 +76,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v3.10.0</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v4.0.0</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <button id="refresh" class="refreshBig" type="button" aria-label="Verificar se existe uma versão mais nova">🔄 Verificar atualização</button>
   </header>
@@ -498,6 +498,9 @@
 
           <div class="progressSection" data-progress-panel="stats">
             <div class="progressStatGrid">
+              <div class="progressStat"><span>🪙 Moedas</span><b id="progressCoinsValue">🪙 0</b></div>
+              <div class="progressStat"><span>⭐ Nível</span><b id="progressLevelValue">Nível 1</b></div>
+              <div class="progressStat"><span>🎯 Desafio</span><b id="progressChallengeValue">Nenhum</b></div>
               <div class="progressStat"><span>🏅 Recorde</span><b id="progressBestValue">0</b></div>
               <div class="progressStat"><span>📏 Maior cobra</span><b id="progressLengthValue">0</b></div>
               <div class="progressStat"><span>🎮 Partidas</span><b id="progressGamesValue">0</b></div>
@@ -505,6 +508,9 @@
             </div>
             <div id="bestByModeDisplay" class="tip" style="margin-top:8px"></div>
             <div id="gamesPlayedBadge" class="muted" style="margin-top:8px"></div>
+            <div class="progressionXpBox"><div class="progressionXpTop"><span>⭐ Experiência</span><b id="progressXpValue">0/100 XP</b></div><div class="progressionXpTrack"><div id="progressXpBar" class="progressionXpBar" style="width:0%"></div></div></div>
+            <div class="progressionChallengeCard"><div><b>🎯 Desafio da partida</b><div id="progressChallengeValue" class="muted">Nenhum</div></div><button id="newChallengeBtn" class="refresh" type="button">🎲 Novo</button></div>
+            <div class="progressionShopTitle">✨ Cosméticos</div><div id="cosmeticShop" class="cosmeticShop"></div>
             <div id="sessionStatsDisplay" class="muted" style="margin-top:4px"></div>
             <button id="copyStatsBtn" class="refresh" type="button" style="margin-top:8px;width:100%">📋 Copiar minhas estatísticas</button>
           </div>
@@ -585,6 +591,7 @@
       <div class="status"><b id="badge">🏆 CLÁSSICO</b> <span>☠️ <b id="alive">0</b> vivos</span> <span id="onlineCount" class="hidden">🌐 <b id="onlineCountNum">0</b> online</span> <span id="tournamentStatus" class="hidden">🏆 Rodada <b id="tournamentRoundNum">1</b>/3 • ⏱️ <b id="tournamentSecondsLeft">60</b>s</span> <span id="batteryStatus" class="hidden">🔋 <b id="batteryPercent">100</b>%</span> <span id="boostUsedDisplay"></span></div>
       <div id="diagPanel" class="hidden" style="background:#000;color:#0f0;font-family:monospace;font-size:.65rem;padding:6px;text-align:left;white-space:pre-wrap;word-break:break-all"></div>
       <div id="mission" class="mission"></div>
+      <div id="challengeDisplay" class="challengeDisplay" aria-live="polite">🎯 Carregando desafio...</div>
       <div class="arena">
         <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Mioquinha 🐍"></canvas>
         <video id="pipVideo" muted playsinline style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video>
@@ -626,11 +633,12 @@
       <div id="sessionScoreDisplay" class="muted hidden" style="text-align:center;margin-top:4px"></div>
       <p class="sub">💻 PC: use o controle escolhido. 📱 Celular: use o joystick.</p>
     </section>
-  </main>
+  <div id="progressionToast" class="progressionToast" role="status" aria-live="polite"></div>
+</main>
 </div>
 <script>
 (function () {
-  const VERSION = '3.10.0';
+  const VERSION = '4.0.0';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');

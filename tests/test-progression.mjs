@@ -1,0 +1,5 @@
+// Testes puros da progressão: regras matemáticas não dependem do navegador.
+import { novoRelatorio } from './_ambiente.mjs';
+import { calculateLevel, xpForNextLevel, CHALLENGES } from '../js/progression.js';
+const r=novoRelatorio();r.secao('Progressão da Mioquinha');
+r.check('nível 1 exige 100 XP',xpForNextLevel(1)===100);r.check('nível 2 exige 150 XP',xpForNextLevel(2)===150);r.check('0 XP começa no nível 1',calculateLevel(0)===1);r.check('99 XP ainda é nível 1',calculateLevel(99)===1);r.check('100 XP chega ao nível 2',calculateLevel(100)===2);r.check('249 XP ainda é nível 2',calculateLevel(249)===2);r.check('250 XP chega ao nível 3',calculateLevel(250)===3);r.check('há pelo menos 5 desafios',CHALLENGES.length>=5);r.check('todos os desafios têm recompensa',CHALLENGES.every(c=>c.rewardCoins>0&&c.rewardXp>0));r.fim();

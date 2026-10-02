@@ -13,6 +13,7 @@ import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
 import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
+import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone } from './progression.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 let clientReadyFallbackTimer = null; // rede de segurança pra nunca deixar o cliente preso na tela de espera
@@ -434,6 +435,8 @@ export function startGame() {
   }
 
   reset();
+  rewardMatchStart();
+  startProgressionChallenge();
   // Aviso do tamanho do mapa logo que a partida começa — trocar de mapa quase não muda o que
   // se vê na tela (a câmera mostra sempre uma "janelinha"), então o jogo avisa qual é o mapa
   const NOME_DO_MAPA = { small: 'Pequeno', medium: 'Médio', large: 'Grande' };
@@ -607,6 +610,12 @@ function stepMovement(indices) {
       state.lastEatAt[i] = eatNow;
       const combo = state.comboCount[i];
       const comboBonus = combo >= 3 ? Math.min(5, combo - 2) : 0;
+      if (i === mySlot) {
+        rewardFood(f.value, combo);
+        trackProgressionEvent('foods', f.value);
+        trackProgressionEvent('combo', combo);
+        trackProgressionEvent('score', state.scores[i] + f.value + comboBonus);
+      }
 
       state.scores[i] += f.value + comboBonus;
       state.foodsEaten[i] += f.value;
@@ -667,6 +676,7 @@ function stepMovement(indices) {
     if (len >= state.milestones[i] + MILESTONE_STEP) {
       state.milestones[i] = Math.floor(len / MILESTONE_STEP) * MILESTONE_STEP;
       const special = SPECIAL_MILESTONES.find(m => m.at === state.milestones[i]);
+      if (i === mySlot) rewardMilestone();
       if (special) {
         burst(h.x, h.y, special.color, 46);
         sfx.mission(); sfx.mission(); // dobro de som pra dar mais destaque
@@ -1105,6 +1115,8 @@ function tick() {
   checkHunterSpawn();
   if (state.alive[mySlot]) {
     const mySnake = state.snakes[mySlot] || [];
+    trackProgressionEvent('survive', Math.floor((Date.now() - state.spawnedAt[mySlot]) / 1000));
+    trackProgressionEvent('length', mySnake.length);
     const survivedMs = Date.now() - state.spawnedAt[mySlot];
     if (survivedMs >= 30000) announceAchievement(unlockAchievement('survive_30'));
     if (survivedMs >= 120000) announceAchievement(unlockAchievement('survivor'));

@@ -13,6 +13,7 @@
 import { $, vibrate } from './utils.js';
 import { ICONS, TRICOLOR_PALETTES, ZOOM_LEVELS, BOARD_THEMES, MILESTONE_STEP } from './config.js';
 import { state } from './state.js';
+import { getSelectedCosmetic } from './progression.js';
 import { label } from './players.js';
 import { mySlot, isOnline, isHost, sendDiag, pingStats, hostLatency } from './net.js';
 import { sfx } from './sound.js';
@@ -2207,6 +2208,7 @@ function draw() {
     const s = state.snakes[i];
     if (!s || !s.length) continue; // proteção: marcada como viva mas sem dados ainda (ex: acabou de entrar) — não trava o resto do desenho
     const boosting = state.boosting[i];
+    const selectedCosmetic = i === mySlot ? getSelectedCosmetic() : null;
 
     if (typeof drawEnergyTrail === 'function') drawEnergyTrail(s, i, boosting);
     drawTurboCinematic(s, i, boosting);
@@ -2219,7 +2221,7 @@ function draw() {
       const p = s[k];
       const fade = Math.max(0, 1 - k / trailReach);
       ctx.shadowBlur = boosting ? cell * 0.8 : cell * (0.15 + 0.35 * fade);
-      ctx.shadowColor = (state.trailColors[i] && state.trailColors[i] !== 'auto') ? state.trailColors[i] : state.colors[i];
+      ctx.shadowColor = selectedCosmetic === 'goldTrail' ? '#ffd24d' : ((state.trailColors[i] && state.trailColors[i] !== 'auto') ? state.trailColors[i] : state.colors[i]);
       ctx.globalAlpha = k === 0 ? 1 : (boosting ? 0.92 : 0.82);
       if (k === 0) {
         // Efeito "squash": achata rapidinho a cabeça bem no instante que vira uma curva,
@@ -2293,6 +2295,8 @@ function draw() {
     ctx.fill();
 
     drawSnakeHeadGloss(h.x, h.y, state.colors[i] || '#ffffff', dir);
+    if (selectedCosmetic === 'neonHead') { ctx.save(); ctx.globalAlpha=.72; ctx.strokeStyle='#70e7ff'; ctx.shadowColor='#70e7ff'; ctx.shadowBlur=cell*.75; ctx.lineWidth=Math.max(2,cell*.07); ctx.beginPath(); ctx.arc(cx,cy,cell*.68,0,Math.PI*2); ctx.stroke(); ctx.restore(); }
+    if (selectedCosmetic === 'championBadge' && i === mySlot) { ctx.save(); ctx.font=`900 ${Math.max(10,cell*.42)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('👑',cx,cy-cell*.95); ctx.restore(); }
 
     if (state.teamMode && state.count > 1) desenharMarcadorDeTime(state.teams[i] === 1 ? 1 : 0, sx(h.x) + cell * 0.92, sy(h.y) + cell * 0.1);
 

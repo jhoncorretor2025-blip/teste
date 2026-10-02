@@ -1,0 +1,34 @@
+// Progressão do jogador — moedas, XP, nível, desafios e cosméticos simples.
+// Tudo fica salvo no navegador. O desafio é local de propósito: no multiplayer cada pessoa acompanha seu próprio progresso.
+
+const KEY = 'snakeArenaProgressionV1';
+export const CHALLENGES = [
+  { id:'eat10',title:'🍎 Bom Apetite',desc:'Coma 10 comidas',target:10,type:'foods',rewardCoins:8,rewardXp:35 },
+  { id:'combo3',title:'🔥 Combo Relâmpago',desc:'Faça um combo x3',target:3,type:'combo',rewardCoins:10,rewardXp:40 },
+  { id:'score200',title:'⭐ Pontuação Forte',desc:'Alcance 200 pontos',target:200,type:'score',rewardCoins:12,rewardXp:50 },
+  { id:'length20',title:'🐍 Cresça Bastante',desc:'Chegue a 20 segmentos',target:20,type:'length',rewardCoins:12,rewardXp:50 },
+  { id:'survive60',title:'🛡️ Aguente Firme',desc:'Sobreviva 60 segundos',target:60,type:'survive',rewardCoins:15,rewardXp:60 },
+];
+export const COSMETICS = [
+  {id:'goldTrail',name:'✨ Rastro Dourado',cost:30,desc:'Deixa seu rastro com brilho dourado.'},
+  {id:'neonHead',name:'💎 Cabeça Neon',cost:50,desc:'Aumenta o brilho da sua cabeça.'},
+  {id:'championBadge',name:'👑 Emblema Campeão',cost:80,desc:'Mostra uma coroa no seu cartão de progresso.'},
+];
+let cachedProgression=null;
+function defaults(){return{coins:0,xp:0,level:1,completedChallenges:0,challenge:null,unlockedCosmetics:[],selectedCosmetic:null,lastChallengeId:null};}
+export function loadProgression(){if(cachedProgression)return cachedProgression;try{cachedProgression={...defaults(),...(JSON.parse(localStorage.getItem(KEY))||{})};}catch{cachedProgression=defaults();}return cachedProgression;}
+function saveProgression(data){cachedProgression=data;try{localStorage.setItem(KEY,JSON.stringify(data));}catch{}return data;}
+export function xpForNextLevel(level){return 100+Math.max(0,level-1)*50;}
+export function calculateLevel(totalXp){let level=1,xp=Math.max(0,Number(totalXp)||0);while(xp>=xpForNextLevel(level)&&level<1000){xp-=xpForNextLevel(level);level++;}return level;}
+export function addProgressionReward({xp=0,coins=0}={}){const data=loadProgression(),oldLevel=Number(data.level)||1;data.xp=Math.max(0,Number(data.xp)||0)+Math.max(0,Number(xp)||0);data.coins=Math.max(0,Number(data.coins)||0)+Math.max(0,Number(coins)||0);data.level=calculateLevel(data.xp);saveProgression(data);if(data.level>oldLevel)showProgressionToast(`🎉 Nível ${data.level} alcançado!`);refreshProgressionUI();return data;}
+export function startProgressionChallenge(){const data=loadProgression(),pool=CHALLENGES.filter(c=>c.id!==data.lastChallengeId),source=pool.length?pool:CHALLENGES,challenge=source[Math.floor(Math.random()*source.length)];data.challenge={...challenge,progress:0,startedAt:Date.now(),completed:false};data.lastChallengeId=challenge.id;saveProgression(data);refreshProgressionUI();return data.challenge;}
+export function trackProgressionEvent(type,value=1){const data=loadProgression(),c=data.challenge;if(!c||c.completed||c.type!==type)return data;const amount=Number(value)||0;c.progress=['combo','score','length'].includes(type)?Math.max(Number(c.progress)||0,amount):(Number(c.progress)||0)+amount;if(c.type==='survive')c.progress=Math.max(c.progress,Math.floor((Date.now()-c.startedAt)/1000));if(c.progress>=c.target){c.progress=c.target;c.completed=true;data.completedChallenges=(Number(data.completedChallenges)||0)+1;saveProgression(data);showProgressionToast(`🎯 Desafio concluído! +${c.rewardCoins} 🪙`);addProgressionReward({xp:c.rewardXp,coins:c.rewardCoins});return loadProgression();}saveProgression(data);refreshProgressionUI();return data;}
+export function rewardFood(value=1,combo=1){const points=Math.max(1,Number(value)||1),comboBonus=combo>=3?Math.min(4,combo-2):0;return addProgressionReward({xp:2*points+comboBonus*2,coins:1+(comboBonus>0?1:0)});}
+export function rewardMatchStart(){return addProgressionReward({xp:10,coins:1});}
+export function rewardMilestone(){return addProgressionReward({xp:8,coins:2});}
+export function getSelectedCosmetic(){return loadProgression().selectedCosmetic||null;}
+export function buyCosmetic(id){const item=COSMETICS.find(c=>c.id===id);if(!item)return loadProgression();const data=loadProgression();if(data.unlockedCosmetics.includes(id)){data.selectedCosmetic=id;saveProgression(data);refreshProgressionUI();return data;}if(data.coins<item.cost){showProgressionToast(`🪙 Faltam ${item.cost-data.coins} moedas`);return data;}data.coins-=item.cost;data.unlockedCosmetics.push(id);data.selectedCosmetic=id;saveProgression(data);showProgressionToast(`✨ ${item.name} desbloqueado!`);refreshProgressionUI();return data;}
+export function selectCosmetic(id){const data=loadProgression();if(id===null||data.unlockedCosmetics.includes(id)){data.selectedCosmetic=id;saveProgression(data);refreshProgressionUI();}return data;}
+export function showProgressionToast(text){const el=document.getElementById('progressionToast');if(!el)return;el.textContent=text;el.classList.add('show');clearTimeout(el._timer);el._timer=setTimeout(()=>el.classList.remove('show'),1800);}
+export function refreshProgressionUI(){const data=loadProgression(),next=xpForNextLevel(data.level);let base=0;for(let n=1;n<data.level;n++)base+=xpForNextLevel(n);const current=Math.max(0,data.xp-base),pct=Math.min(100,Math.round(current/next*100));const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};set('progressCoinsValue',`🪙 ${data.coins}`);set('progressLevelValue',`Nível ${data.level}`);set('progressXpValue',`${current}/${next} XP`);const bar=document.getElementById('progressXpBar');if(bar)bar.style.width=pct+'%';const c=data.challenge;set('challengeDisplay',c?`${c.title} — ${c.desc} • ${c.progress}/${c.target}${c.completed?' ✅':''}`:'🎯 Nenhum desafio ativo');set('progressChallengeValue',c?`${c.title} • ${c.progress}/${c.target}`:'Nenhum');const shop=document.getElementById('cosmeticShop');if(shop){shop.innerHTML=COSMETICS.map(item=>{const unlocked=data.unlockedCosmetics.includes(item.id),selected=data.selectedCosmetic===item.id;return`<button type="button" class="cosmeticItem ${unlocked?'unlocked':''} ${selected?'selected':''}" data-cosmetic="${item.id}" title="${item.desc}">${item.name}<small>${selected?'✅ Equipado':unlocked?'Toque para equipar':'🪙 '+item.cost}</small></button>`;}).join('');shop.querySelectorAll('[data-cosmetic]').forEach(btn=>btn.addEventListener('click',()=>{const id=btn.dataset.cosmetic,item=COSMETICS.find(c=>c.id===id);if(data.unlockedCosmetics.includes(id))selectCosmetic(id);else buyCosmetic(item?.id);}));}}
+export function initProgressionUI(){refreshProgressionUI();const reroll=document.getElementById('newChallengeBtn');if(reroll&&!reroll.dataset.bound){reroll.dataset.bound='1';reroll.addEventListener('click',()=>{startProgressionChallenge();showProgressionToast('🎯 Novo desafio escolhido!');});}}
