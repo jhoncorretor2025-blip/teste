@@ -4975,3 +4975,33 @@ main,
 .homeProgressStrip{padding:7px 9px}
 .homeProgressStrip small{font-size:.65rem}
 .menuHighlights{margin-top:7px}
+
+/* v4.5.13 — painel inicial ultra compacto: mantém o essencial sem ocupar a tela */
+.homeDashboard{gap:5px;margin-top:5px}
+.homeWallet{gap:5px}
+.homeWalletStat{min-height:56px;padding:6px 9px;box-sizing:border-box}
+.homeWalletStat span{font-size:.56rem}
+.homeWalletStat b{font-size:.86rem}
+.homeXpInline{height:4px!important;margin-top:4px!important}
+.homeSetupCard,.homeWideCard{padding:7px 8px;border-radius:10px}
+.homeCardHead{min-height:24px}
+.homeCardHead b{font-size:.78rem}
+.homeMatchSummary{margin-top:4px;padding:5px 7px;font-size:.64rem;line-height:1.15}
+.homeHunterChoices{gap:4px;margin-top:4px}
+.homeHunterChoice{min-height:32px;padding:5px 7px}
+.homeHunterChoice strong{font-size:.68rem}
+.homeFeatureGrid{gap:4px}
+.homeFeatureCard{padding:6px 8px;border-radius:9px;min-height:48px}
+.homeFeatureCard>span{font-size:.52rem}
+.homeFeatureCard strong{margin-top:1px;font-size:.7rem}
+.homeFeatureCard small{font-size:.58rem;margin-top:1px}
+.homeDailyTitle{font-size:.66rem}
+.homeMapPreview{min-height:34px;height:34px;margin-top:3px;padding:4px 7px;gap:6px}
+.homeMapPreviewIcon{width:25px;height:25px;flex-basis:25px;font-size:.82rem;border-radius:7px}
+.homeMapPreview b{font-size:.65rem}
+.homeTwoCol{gap:5px}
+.homeSnakeLabel{margin-top:1px;font-size:.68rem}
+.homeAchievementCard>strong{margin-top:1px;font-size:.7rem}
+.homeCountBadge{font-size:.58rem!important;padding:2px 5px!important}
+.homeMiniBtn{min-height:26px!important;padding:4px 7px!important;font-size:.62rem!important}
+.homeStatusBadge{font-size:.56rem!important;padding:3px 6px!important}
