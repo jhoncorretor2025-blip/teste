@@ -1,3 +1,8 @@
+## v4.5.6 — ordem dinâmica da galeria de conquistas
+**Decisão:** dentro de cada categoria, a galeria usa uma **partição estável por status**: primeiro aparecem as conquistas já concluídas pelo jogador; depois, as pendentes.
+**Motivo:** quem está jogando consegue enxergar primeiro o que já conquistou, enquanto as conquistas que faltam continuam na sequência de dificuldade original. Para um jogador novo, a ordem permanece a progressão padrão.
+**Cuidados:** não reordenar aleatoriamente, não alterar critérios/metas e não modificar o progresso salvo.
+
 ## v4.5.5 — categoria Coleção para conquistas acumulativas
 **Decisão:** separar `Colecionador`, `Camaleão` e `Mestre dos Mapas` em **🏆 Coleção**.
 **Motivo:** são objetivos de longo prazo, que dependem de várias partidas e/ou desbloqueios acumulados.

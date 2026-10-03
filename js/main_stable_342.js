@@ -2633,13 +2633,19 @@ function renderAchievementsGallery() {
 
   const chunks = [];
   for (const group of groups) {
-    const items = ACHIEVEMENTS
+    // A ordem base de cada categoria continua sendo a ordem de dificuldade definida
+    // no config. Para cada jogador, as conquistas já concluídas sobem para o topo,
+    // sem embaralhar nenhuma delas e sem alterar a ordem das que ainda faltam.
+    const categoryItems = ACHIEVEMENTS
       .filter((a) => a.category === group.key)
-      .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }))
-      .filter(({ a }) => {
+      .filter((a) => {
         const done = unlocked.includes(a.id);
         return achievementFilter === 'all' || (achievementFilter === 'done' ? done : !done);
       });
+    const completedItems = categoryItems.filter((a) => unlocked.includes(a.id));
+    const pendingItems = categoryItems.filter((a) => !unlocked.includes(a.id));
+    const items = [...completedItems, ...pendingItems]
+      .map((a, displayIndex) => ({ a, difficultyNumber: displayIndex + 1 }));
     if (!items.length) continue;
     chunks.push(`
       <div style="grid-column:1/-1;margin-top:10px">

@@ -1,3 +1,10 @@
+# v4.5.6 — ordem personalizada das conquistas
+- **Novo:** dentro de cada categoria, as conquistas já **concluídas pelo jogador sobem para o primeiro lugar**.
+- **Ordem preservada:** as concluídas mantêm a ordem original de dificuldade entre si, e as pendentes também mantêm a ordem original.
+- Para um jogador novo, sem conquistas concluídas, a lista continua começando pela conquista mais fácil e seguindo a progressão normal.
+- O número exibido no card acompanha a nova ordem visual.
+- Nenhum critério, meta ou progresso salvo foi alterado.
+
 # v4.5.5 — categoria Coleção para conquistas de longo prazo
 - **Organização:** `Colecionador`, `Camaleão` e `Mestre dos Mapas` agora ficam na categoria **🏆 Coleção**.
 - Essas conquistas exigem progresso acumulado entre partidas e desbloqueios ao longo do tempo, então ficam separadas dos desafios de uma única partida.
