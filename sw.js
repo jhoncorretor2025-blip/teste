@@ -19,6 +19,7 @@ const ASSETS = [
   './js/mission.js',
   './js/sound.js',
   './js/storage.js',
+  './js/storage_v459.js',
   './js/tutorial.js',
   './js/share.js',
   './js/leaderboard.js',
