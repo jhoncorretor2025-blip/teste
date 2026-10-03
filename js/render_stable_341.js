@@ -1756,22 +1756,6 @@ function drawMinimap() {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    if (isOnline()) {
-      const nome = String(state.names[i] || `Jogador ${i + 1}`).slice(0, 12);
-      const pontos = Number(state.scores[i] || 0);
-      const tx = Math.min(mx + mmW - 4, mx + h.x * scale + 8);
-      const ty = Math.max(my + 10, my + h.y * scale - 5);
-      ctx.font = '700 10px system-ui, sans-serif';
-      ctx.textAlign = tx >= mx + mmW - 20 ? 'right' : 'left';
-      ctx.textBaseline = 'middle';
-      const labelTexto = `${nome} • ${pontos}`;
-      const largura = ctx.measureText(labelTexto).width + 6;
-      const bx = ctx.textAlign === 'right' ? tx - largura : tx - 3;
-      ctx.fillStyle = 'rgba(0,0,0,0.72)';
-      ctx.fillRect(bx, ty-7, largura, 14);
-      ctx.fillStyle = '#fff';
-      ctx.fillText(labelTexto, ctx.textAlign === 'right' ? tx-3 : tx, ty);
-    }
   }
 
   // retângulo mostrando a área que a câmera tá vendo agora
@@ -1845,6 +1829,26 @@ function renderOnlineMatchStats(rankOrder) {
       '<div><span>📶 Conexão</span><b>' + quality + '</b></div>' +
       '<div><span>📡 Ping</span><b>' + (ping == null ? '—' : ping + ' ms') + '</b></div>' +
     '</div>';
+}
+
+function updateOnlineScorePanel() {
+  const panel = document.getElementById('onlineScorePanel');
+  if (!panel) return;
+  if (!isOnline()) { panel.classList.add('hidden'); return; }
+  const rows = [];
+  for (let i = 0; i < state.count; i++) {
+    const name = String(state.names[i] || `Jogador ${i + 1}`).slice(0, 24);
+    const score = Number(state.scores[i] || 0);
+    const alive = !!state.alive[i];
+    const you = i === mySlot;
+    rows.push('<div class="onlineScorePanelRow" style="opacity:' + (alive ? '1' : '.55') + '">' +
+      '<span class="onlineScorePanelDot" style="background:' + (state.colors[i] || '#67ef8a') + '"></span>' +
+      '<b>' + name.replace(/[<>&"]/g, '') + (you ? ' • 🫵' : '') + '</b>' +
+      '<span class="onlineScorePanelPoints">⭐ ' + score + '</span>' +
+      (alive ? '' : '<span>☠️</span>') + '</div>');
+  }
+  panel.innerHTML = rows.join('');
+  panel.classList.toggle('hidden', rows.length === 0);
 }
 
 export function renderScores() {
@@ -2513,6 +2517,7 @@ export function render() {
   }
   try {
     renderScores();
+    updateOnlineScorePanel();
     draw();
   } catch (err) {
     // Se o desenho travar por qualquer motivo (navegador antigo, etc.), mostra um aviso

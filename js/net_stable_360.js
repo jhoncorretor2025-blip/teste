@@ -196,6 +196,7 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
         // No modo atual não existe PIN nem aprovação manual: receber o convite já
         // autoriza a entrada e manda o jogador direto para a sala.
         if (!roomPinRequired) {
+          conn.__playerName = msg.name;
           approveJoinRequest({ conn, slot, name: msg.name, teamPref: msg.teamPref });
           return;
         }
@@ -240,13 +241,14 @@ export function approveJoinRequest(request) {
   const pIdx = pendingConns.indexOf(request.conn);
   if (pIdx >= 0) pendingConns.splice(pIdx, 1);
   conns.push(request.conn);
-  finalizeJoin(request.conn, request.slot, request.teamPref);
+  finalizeJoin(request.conn, request.slot, request.teamPref, request.name);
 }
 
 // Caminho ÚNICO pra alguém entrar de vez (aprovado na mão, reconexão ou compatibilidade):
 // o anfitrião decide o time (se for partida em Times) ANTES de responder, pra a pessoa já
 // saber em qual time caiu logo na resposta de boas-vindas.
-function finalizeJoin(conn, slot, teamPref) {
+function finalizeJoin(conn, slot, teamPref, playerName = null) {
+  if (playerName) conn.__playerName = playerName;
   // Guarda o slot também na conexão para que a lista de pares e a migração continuem
   // estáveis mesmo quando alguém sai do meio da sala.
   conn.__slot = slot;
@@ -261,7 +263,7 @@ function finalizeJoin(conn, slot, teamPref) {
     } catch {}
   }
   broadcastPeerList();
-  handlers.onPeerJoined && handlers.onPeerJoined(slot, name);
+  handlers.onPeerJoined && handlers.onPeerJoined(slot, conn.__playerName || playerName || `Jogador ${slot + 1}`);
 }
 
 // Anfitrião recusa o pedido — avisa a pessoa e fecha a conexão

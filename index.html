@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="4.5.10">
+<html lang="pt-BR" data-theme-version="4.5.11">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -11,6 +11,15 @@
 <link id="faviconLink" rel="icon" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.svg">
 
+<style>
+.onlineScorePanel{width:min(100%,1000px);box-sizing:border-box;margin:6px auto 0;padding:7px 9px;border-radius:12px;background:rgba(5,9,17,.30);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);color:#fff}
+.onlineScorePanel.hidden{display:none}
+.onlineScorePanelTitle{font-size:.72rem;font-weight:800;opacity:.7;margin-bottom:4px}
+.onlineScorePanelRow{display:flex;align-items:center;gap:6px;min-height:25px;font-size:.82rem}
+.onlineScorePanelDot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 5px rgba(255,255,255,.35)}
+.onlineScorePanelPoints{margin-left:auto;font-weight:900;opacity:.95}
+@media(max-width:600px){.onlineScorePanel{padding:6px 7px}.onlineScorePanelRow{font-size:.75rem;min-height:23px}}
+</style>
 </head>
 <body>
 <div id="appSplash" class="appSplash" aria-live="polite">
@@ -765,6 +774,9 @@
       <div id="challengeDisplay" class="challengeDisplay" aria-live="polite">🎯 Carregando desafio...</div>
       <div class="arena">
         <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Mioquinha 🐍"></canvas>
+        <div id="onlineScorePanel" class="onlineScorePanel hidden" aria-label="Placar online">
+          <div class="onlineScorePanelTitle">🌐 Placar da partida</div>
+        </div>
         <video id="pipVideo" muted playsinline style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video>
         <div id="renderErrorBanner" class="landscapeHint hidden" style="background:#5a1f2a;border-color:#ff5577"></div>
         <div id="clientReadyOverlay" class="overlay hidden">
