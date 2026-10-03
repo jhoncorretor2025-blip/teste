@@ -2146,10 +2146,25 @@ $('onlineSimpleCreateBtn')?.addEventListener('click', () => {
     $('onlineSimpleStatus').textContent = '📡 Sem internet. Conecte-se e tente novamente.';
     return;
   }
+
+  // Fluxo rápido: não depende de nenhuma opção avançada para criar a sala.
+  // Se o preset tiver algum problema/campo incompatível em uma versão antiga em cache,
+  // a criação ainda segue pelo mesmo botão real "Criar sala" do modo complexo.
   setOnlineMode('simple');
-  applyOnlinePreset('casual');
   $('onlineSimpleStatus').textContent = '⏳ Criando sua sala...';
-  $('hostBtn').click();
+
+  try {
+    applyOnlinePreset('casual');
+  } catch (err) {
+    console.warn('Preset rápido não pôde ser aplicado; criando com as configurações atuais.', err);
+  }
+
+  try {
+    $('hostBtn').click();
+  } catch (err) {
+    console.error('Falha ao acionar a criação da sala rápida:', err);
+    $('onlineSimpleStatus').textContent = '❌ Não consegui iniciar a criação. Toque novamente ou use o Modo complexo.';
+  }
 });
 
 $('onlineSimpleCopyBtn')?.addEventListener('click', async () => {

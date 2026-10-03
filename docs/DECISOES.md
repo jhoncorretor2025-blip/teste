@@ -1,3 +1,8 @@
+## v4.5.3 — criação rápida resiliente
+**Decisão:** o botão **Criar sala rápida** não pode depender do sucesso de um preset visual/configurável para iniciar a sala.
+**Comportamento:** tenta aplicar o preset casual, mas sempre segue para a criação pelo botão real da sala. Se houver erro no preset, a sala ainda pode ser criada.
+**Motivo:** o fluxo simples deve ser o caminho mais direto e tolerante a diferenças de cache/versão.
+
 ## v4.5.2 — online simples por padrão
 **Decisão:** a aba Online passa a ter dois níveis de interface: **Modo simples** para o fluxo mais comum (criar sala → copiar link → jogar) e **Modo complexo** para quem precisa de configurações avançadas.
 **Por quê:** a quantidade de opções da aba Online estava escondendo a ação principal. O modo simples reduz a tela sem remover nenhuma função.

@@ -1,3 +1,9 @@
+# v4.5.3 — correção da criação rápida da sala
+- Corrigido o botão **🏠 Criar sala rápida** do modo simples.
+- A criação agora continua mesmo se o preset casual encontrar algum campo incompatível.
+- O botão rápido usa o mesmo fluxo real de criação de sala do modo complexo, evitando duplicação da lógica.
+- Mantido o Modo complexo e todas as opções existentes.
+
 # v4.5.2 — online simples e convite por link
 - A aba **🌐 Online** agora começa no **Modo simples**, com apenas criar sala rápida, copiar link e entrar por convite.
 - O **Modo complexo** mantém todas as configurações avançadas, times, presets, diagnóstico, segurança e lobby.
