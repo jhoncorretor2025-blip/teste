@@ -108,6 +108,10 @@ Trabalhei numa cópia local baixada no começo de uma investigação, continuei 
 **Prevenção:** baixar o repositório **de novo, na hora**, logo antes de qualquer publicação — nunca reutilizar uma cópia de uma mensagem anterior da conversa, especialmente sabendo que outra IA mexe no mesmo projeto em paralelo. Isso agora é a prática seguida (ver AGENTS.md).
 **Se acontecer de novo:** `git log --oneline <meu-commit-ruim>^..HEAD` no repositório pra ver o estrago, `git checkout <commit-anterior-ao-meu> -- .` numa cópia fresca, conferir com `git diff <commit-anterior> -- .` que bate 100% (zero linhas), e publicar de novo — sem tentar "consertar por cima", só desfazer.
 
+**32. Criar sala "não faz nada" e testes verdes que não provam nada (v4.5.4).**
+No modo simples da aba Online, qualquer falha ao criar a sala (código em uso, servidor de salas inacessível, senha ligada antes, módulo online não carregado) escrevia o aviso num campo que fica ESCONDIDO nesse modo, e a tela ficava eternamente em "Criando sua sala...". Além disso não havia tempo limite nem nova tentativa de código. Os testes que existiam (`online-simples`, `online-criacao-rapida`) só procuravam texto dentro de `js/main.js` — que não é o arquivo que roda — e um deles nem executava (erro de sintaxe no próprio teste), então tudo parecia verde. → Corrigido em `js/main_stable_342.js` (aviso visível, nova tentativa de código, limite de 15 s) e coberto por testes que executam o jogo de verdade.
+**Lição:** teste que só procura texto num arquivo não vale como teste de comportamento, e vale ainda menos se o arquivo nem é o que a página carrega. Antes de confiar num teste, confira que ele importa o mesmo arquivo do `index.html` e que falha quando o comportamento quebra.
+
 ---
 
 # Problema em aberto: multiplayer real no celular

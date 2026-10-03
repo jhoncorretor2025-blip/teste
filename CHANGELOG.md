@@ -1,3 +1,12 @@
+# v4.5.4 — criar sala não trava mais sem avisar
+- **Corrigido:** no modo simples da aba Online, quando algo dava errado ao criar a sala, a tela ficava presa em "⏳ Criando sua sala..." pra sempre, sem mostrar o motivo (os avisos iam pra um campo escondido nesse modo).
+- Agora o aviso aparece onde a pessoa está olhando, em português simples: sem internet, servidor de salas inacessível, módulo online não carregou, etc.
+- Se o código sorteado já estiver em uso, o jogo tenta outro sozinho (até 6 vezes), sem a pessoa perceber.
+- Tempo limite de 15 segundos: se o servidor de salas não responder, avisa e libera o botão de novo (antes travava pra sempre).
+- O modo simples sempre cria sala **aberta** (sem senha) com código novo: uma senha ligada antes no modo completo, ou um código antigo ainda preso no servidor, não quebram mais a criação rápida.
+- Versões acertadas: `config.js` e `sw.js` estavam em 4.5.1 enquanto `version.txt` e `index.html` estavam em 4.5.3 — agora todos em 4.5.4.
+- Novos testes que **executam o jogo de verdade** no arquivo que roda (`js/main_stable_342.js`): `tests/criar-sala-real.mjs` (19 checagens, incluindo falhas) e `tests/online-ponta-a-ponta-real.mjs` (anfitrião cria → amigo abre o link e entra → partida começa → amigo recebe o jogo).
+
 # v4.5.3 — correção da criação rápida da sala
 - Corrigido o botão **🏠 Criar sala rápida** do modo simples.
 - A criação agora continua mesmo se o preset casual encontrar algum campo incompatível.

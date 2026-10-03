@@ -322,7 +322,7 @@ $('onlineSimpleCreateBtn')?.addEventListener('click', () => {
   setOnlineModeStable('simple');
   $('onlineSimpleStatus').textContent = '⏳ Criando sua sala...';
   try {
-    createOnlineRoom();
+    createOnlineRoom({ simples: true });
   } catch (err) {
     console.error('Falha ao criar sala rápida:', err);
     $('onlineSimpleStatus').textContent = '❌ Não consegui criar a sala. Tente novamente ou abra o Modo complexo.';
@@ -373,11 +373,44 @@ function generateRoomNumberUI() {
   return String(Math.floor(1000 + Math.random() * 9000));
 }
 
-function createOnlineRoom() {
+// Escreve o aviso de criação de sala em TODOS os lugares que a pessoa pode estar olhando:
+// no modo completo (roomStatus) e no modo simples (onlineSimpleStatus). Antes, os erros só
+// iam pro roomStatus — que fica ESCONDIDO no modo simples — e a tela ficava presa em
+// "Criando sua sala..." pra sempre, sem a pessoa ter ideia do que deu errado.
+function mostrarStatusCriacao(texto) {
+  if ($('roomStatus')) $('roomStatus').textContent = texto;
+  if ($('onlineSimpleStatus')) $('onlineSimpleStatus').textContent = texto;
+}
+
+function mensagemDeErroDeCriacao(err, codigoEscolhido) {
+  const tipo = err?.type;
+  const texto = String(err?.message || err || '');
+  if (tipo === 'unavailable-id') {
+    return codigoEscolhido
+      ? '⚠️ Esse código já está sendo usado por outra sala. Escolha outro código (ou deixe em branco).'
+      : '⚠️ Não consegui achar um código livre agora. Toque em Criar sala de novo.';
+  }
+  if (['network', 'server-error', 'socket-error', 'socket-closed', 'disconnected'].includes(tipo)) {
+    return '📡 Não consegui falar com o servidor de salas. Confira sua internet (Wi-Fi ou dados móveis) e toque em Criar sala de novo.';
+  }
+  if (/PeerJS|Biblioteca de rede/i.test(texto)) {
+    return '🔌 O módulo online ainda não carregou. Espere uns segundos (ou recarregue a página) e toque em Criar sala de novo.';
+  }
+  return '❌ Não consegui criar a sala: ' + (texto || 'erro desconhecido') + '. Toque em Criar sala de novo.';
+}
+
+let criandoSala = false; // evita dois toques seguidos criarem duas salas ao mesmo tempo
+const TEMPO_LIMITE_CRIAR_SALA_MS = 15000;
+
+// opcoes.simples = true quando vem do botão do modo simples: aí NUNCA usa senha nem reaproveita
+// o código digitado antes no modo completo — sala aberta, código novo, só mandar o link.
+function createOnlineRoom(opcoes = {}) {
+  const simples = opcoes.simples === true;
   if (!navigator.onLine) {
-    $('roomStatus').textContent = '📡 Sem conexão com a internet — o multiplayer online precisa de internet.';
+    mostrarStatusCriacao('📡 Sem conexão com a internet — o multiplayer online precisa de internet.');
     return;
   }
+  if (criandoSala) return;
 
   unlockAudio();
   state.teamPrefs = ['mine'];
@@ -388,11 +421,11 @@ function createOnlineRoom() {
   renderOnlineLobby();
   updateSessionScoreDisplay();
 
-  const security = $('hostRoomSecurity')?.value === 'pin';
-  const pin = normalizeRoomNumberUI($('hostRoomPin')?.value);
+  const security = simples ? false : $('hostRoomSecurity')?.value === 'pin';
+  const pin = simples ? '' : normalizeRoomNumberUI($('hostRoomPin')?.value);
 
   if (security && pin.length !== 4) {
-    $('roomStatus').textContent = '⚠️ A senha da sala precisa ter exatamente 4 números.';
+    mostrarStatusCriacao('⚠️ A senha da sala precisa ter exatamente 4 números.');
     $('hostRoomPin')?.focus();
     return;
   }
@@ -400,62 +433,95 @@ function createOnlineRoom() {
   currentRoomProtected = security;
   currentRoomPin = security ? pin : '';
 
-  const requestedCode = normalizeRoomNumberUI($('hostRoomCodeInput')?.value);
-
-  if (requestedCode && requestedCode.length !== 4) {
-    $('roomStatus').textContent = '⚠️ O código da sala precisa ter 4 números.';
+  // Modo simples sempre sorteia um código novo (um código antigo ainda "preso" no servidor de
+  // salas, de uma sala que a pessoa fechou/recarregou, daria "código em uso" à toa).
+  const codigoDigitado = simples ? '' : normalizeRoomNumberUI($('hostRoomCodeInput')?.value);
+  if (codigoDigitado && codigoDigitado.length !== 4) {
+    mostrarStatusCriacao('⚠️ O código da sala precisa ter 4 números.');
     return;
   }
+  // Código sorteado que já está em uso: tenta outro sozinho (até 6 vezes), a pessoa nem percebe.
+  const maxTentativas = codigoDigitado ? 1 : 6;
 
-  const code = requestedCode || generateRoomNumberUI();
-  const peerId = 'mioquinha-room-' + code;
-
+  criandoSala = true;
   $('hostBtn').disabled = true;
   const originalHostText = $('hostBtn').textContent;
   $('hostBtn').textContent = '⏳ Criando sala...';
 
-  net.hostRoom(
-    (roomId) => {
-      $('hostBtn').textContent = originalHostText;
-      $('hostPanel').classList.remove('hidden');
-      $('roomCode').textContent = code;
-      if ($('hostRoomCodeInput')) $('hostRoomCodeInput').value = code;
-      $('roomStatus').textContent = security
-        ? '🔐 Sala protegida! Envie o link e a senha separadamente para seu amigo.'
-        : '🔓 Sala aberta! Quem receber o link entra direto no jogo.';
-      if ($('onlineSimpleRoomLink')) $('onlineSimpleRoomLink').value = buildRoomLink();
-      $('onlineSimpleRoomPanel')?.classList.remove('hidden');
-      if ($('onlineSimpleStatus')) $('onlineSimpleStatus').textContent = '🎉 Sala criada! Agora copie o link e envie para seu amigo.';
-      if ($('onlineSimpleRoomStatus')) $('onlineSimpleRoomStatus').textContent = '🟢 Sala aberta. Esperando seu amigo entrar...';
-      $('roomSecurityBadge').textContent = security
-        ? '🔒 Sala com senha: envie a senha separadamente do link.'
-        : '🔓 Sala sem senha: quem receber o link entra direto.';
-      updateOnlineLobbyUI();
-      $('count').disabled = true;
-      state.count = 1;
-      makePlayers();
+  let encerrada = false; // já deu certo OU já falhou de vez — depois disso, ignora o resto
+  let timerLimite = null;
 
-      if (window.Notification && window.Notification.permission === 'default') {
-        window.Notification.requestPermission().catch(() => {});
-      }
-    },
-    (err) => {
-      $('hostBtn').disabled = false;
-      $('hostBtn').textContent = originalHostText;
+  const terminarComFalha = (texto) => {
+    if (encerrada) return;
+    encerrada = true;
+    clearTimeout(timerLimite);
+    criandoSala = false;
+    try { net.disconnect(); } catch {}
+    $('hostBtn').disabled = false;
+    $('hostBtn').textContent = originalHostText;
+    mostrarStatusCriacao(texto);
+  };
 
-      if (err?.type === 'unavailable-id') {
-        $('roomStatus').textContent = '⚠️ Esse código já está sendo usado por outra sala. Escolha outro código.';
-        return;
-      }
+  const tentar = (tentativa) => {
+    const code = codigoDigitado || generateRoomNumberUI();
+    const peerId = 'mioquinha-room-' + code;
+    try {
+      net.hostRoom(
+        () => {
+          if (encerrada) return;
+          encerrada = true;
+          clearTimeout(timerLimite);
+          criandoSala = false;
+          $('hostBtn').disabled = false;
+          $('hostBtn').textContent = originalHostText;
+          $('hostPanel').classList.remove('hidden');
+          $('roomCode').textContent = code;
+          if ($('hostRoomCodeInput')) $('hostRoomCodeInput').value = code;
+          $('roomStatus').textContent = security
+            ? '🔐 Sala protegida! Envie o link e a senha separadamente para seu amigo.'
+            : '🔓 Sala aberta! Quem receber o link entra direto no jogo.';
+          if ($('onlineSimpleRoomLink')) $('onlineSimpleRoomLink').value = buildRoomLink();
+          $('onlineSimpleRoomPanel')?.classList.remove('hidden');
+          if ($('onlineSimpleStatus')) $('onlineSimpleStatus').textContent = '🎉 Sala criada! Agora copie o link e envie para seu amigo.';
+          if ($('onlineSimpleRoomStatus')) $('onlineSimpleRoomStatus').textContent = '🟢 Sala aberta. Esperando seu amigo entrar...';
+          $('roomSecurityBadge').textContent = security
+            ? '🔒 Sala com senha: envie a senha separadamente do link.'
+            : '🔓 Sala sem senha: quem receber o link entra direto.';
+          updateOnlineLobbyUI();
+          $('count').disabled = true;
+          state.count = 1;
+          makePlayers();
 
-      $('roomStatus').textContent = '❌ Não consegui criar a sala: ' + (err?.message || err);
-    },
-    peerId,
-    { roomCode: code, requirePin: security, roomPin: pin }
-  );
+          if (window.Notification && window.Notification.permission === 'default') {
+            window.Notification.requestPermission().catch(() => {});
+          }
+        },
+        (err) => {
+          if (encerrada) return; // erro DEPOIS da sala já criada: a rede cuida da reconexão sozinha
+          if (err?.type === 'unavailable-id' && tentativa < maxTentativas) {
+            try { net.disconnect(); } catch {} // solta o pedido que falhou antes de tentar outro código
+            tentar(tentativa + 1);
+            return;
+          }
+          terminarComFalha(mensagemDeErroDeCriacao(err, !!codigoDigitado));
+        },
+        peerId,
+        { roomCode: code, requirePin: security, roomPin: pin }
+      );
+    } catch (err) {
+      terminarComFalha(mensagemDeErroDeCriacao(err, !!codigoDigitado));
+    }
+  };
+
+  // Sem resposta do servidor de salas por muito tempo: avisa e destrava, em vez de ficar preso
+  timerLimite = setTimeout(() => {
+    terminarComFalha('⏱️ O servidor de salas demorou demais pra responder. Confira a internet (tente trocar entre Wi-Fi e dados móveis) e toque em Criar sala de novo.');
+  }, TEMPO_LIMITE_CRIAR_SALA_MS);
+
+  tentar(1);
 }
 
-$('hostBtn').addEventListener('click', createOnlineRoom);
+$('hostBtn').addEventListener('click', () => createOnlineRoom());
 
 $('hostRoomSecurity')?.addEventListener('change', () => {
   const protectedRoom = $('hostRoomSecurity').value === 'pin';

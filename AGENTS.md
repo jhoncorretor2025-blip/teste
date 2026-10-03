@@ -3,6 +3,12 @@
 > ⚠️ **Antes de dizer que terminou qualquer tarefa aqui, rode `npm test` (que já roda o verificador sozinho) e veja "✅ Projeto OK" e "✅ Todos os X arquivos de teste passaram". Sem exceção — nem para "só uma linha".**
 > Já aconteceu de outra IA fazer 129 commits sem isso e o jogo ficar **travado pra sempre** na tela de abertura, dando erro toda vez que a pessoa tentava de novo (duas funções eram chamadas sem existir de verdade no momento certo — caso completo em `docs/ARMADILHAS.md`, casos 26-27). `npm test` roda o jogo de verdade e pegaria isso na hora.
 
+## ⚠️ Quais arquivos rodam DE VERDADE (leia antes de editar qualquer `js/*.js`)
+O `index.html` **não** carrega `js/main.js`. O carregador que fica no fim do `index.html` faz `import('./js/main_stable_342.js?...')`, e dali o jogo usa: `loop_stable_336.js`, `render_stable_341.js` e `net_stable_360.js` (o `net.js` só reexporta o `net_stable_360.js`, pra todo mundo dividir a mesma conexão). **Edite esses arquivos.** Mudança feita em `main.js`, `loop.js` ou `render.js` **não aparece no jogo** (já aconteceu: melhorias inteiras foram parar em arquivo que nenhuma página carrega).
+- Ao criar uma versão nova de um desses arquivos, o carregador do `index.html` e os `import` dos outros precisam apontar pra ela.
+- Os testes antigos que só fazem busca de texto em `js/main.js` **não provam nada** sobre o jogo no ar. Prefira testes que executem o jogo, como `tests/criar-sala-real.mjs` e `tests/online-ponta-a-ponta-real.mjs` (usam `js/main_stable_342.js`).
+- Pendência conhecida: `loop_stable_336.js` desenha com `render_stable_336.js`, enquanto `main_stable_342.js` desenha com `render_stable_341.js` (dois arquivos de desenho diferentes ligados ao mesmo jogo). Não foi investigado se isso causa algum defeito visível.
+
 ## O que é este projeto
 **Snake Arena** (o "jogo da minhoquinha"): jogo de minhocas para navegador, de 1 a 6 jogadores — no mesmo aparelho ou **online** entre aparelhos —, com CPUs, modos de jogo, missões, conquistas, times e uma Minhoca Caçadora.
 
