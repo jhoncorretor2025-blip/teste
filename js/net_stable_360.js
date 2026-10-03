@@ -198,6 +198,7 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
         if (!roomPinRequired) {
           conn.__playerName = msg.name;
           approveJoinRequest({ conn, slot, name: msg.name, teamPref: msg.teamPref });
+          conn.__playerName = msg.name;
           return;
         }
 

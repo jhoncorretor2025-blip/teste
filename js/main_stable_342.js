@@ -428,7 +428,18 @@ const TEMPO_LIMITE_CRIAR_SALA_MS = 15000;
 
 // opcoes.simples = true quando vem do botão do modo simples: aí NUNCA usa senha nem reaproveita
 // o código digitado antes no modo completo — sala aberta, código novo, só mandar o link.
+function syncSavedOnlineName() {
+  const saved = loadProfile();
+  const name = safe(saved.name || state.names[0] || 'Jhon', 'Jhon').trim();
+  if (name) {
+    state.names[0] = name;
+    if ($('myName')) $('myName').value = name;
+  }
+  return name;
+}
+
 function createOnlineRoom(opcoes = {}) {
+  const onlineName = syncSavedOnlineName();
   const simples = opcoes.simples === true;
   if (!navigator.onLine) {
     mostrarStatusCriacao('📡 Sem conexão com a internet — o multiplayer online precisa de internet.');
