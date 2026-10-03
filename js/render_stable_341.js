@@ -826,21 +826,28 @@ function drawHead(x, y, shape, color) {
     ctx.moveTo(cx + size * 0.88, cy + size * 0.2); ctx.lineTo(cx + size * 1.12, cy - size * 0.25); ctx.lineTo(cx + size * 0.65, cy + size * 0.05);
     ctx.closePath(); ctx.fill();
   } else if (shape === 'cat') {
-    // orelhinhas triangulares e pontudas de gato
+    // Gatinho redesenhado: olhos, focinho, boca, orelhas internas e bigodes.
+    ctx.fillStyle = 'rgba(255,190,210,0.95)';
     ctx.beginPath();
-    ctx.moveTo(cx + size * 0.18, cy + size * 0.18); ctx.lineTo(cx - size * 0.06, cy - size * 0.38); ctx.lineTo(cx + size * 0.42, cy + size * 0.02);
-    ctx.closePath(); ctx.fill();
+    ctx.moveTo(cx+size*.18,cy+size*.15);ctx.lineTo(cx+size*.03,cy-size*.22);ctx.lineTo(cx+size*.39,cy+size*.06);ctx.closePath();ctx.fill();
     ctx.beginPath();
-    ctx.moveTo(cx + size * 0.82, cy + size * 0.18); ctx.lineTo(cx + size * 1.06, cy - size * 0.38); ctx.lineTo(cx + size * 0.58, cy + size * 0.02);
-    ctx.closePath(); ctx.fill();
-    // bigodinhos
-    ctx.strokeStyle = 'rgba(255,255,255,0.65)';
-    ctx.lineWidth = Math.max(1, cell * 0.035);
-    ctx.beginPath();
-    ctx.moveTo(cx + size * 0.08, cy + size * 0.62); ctx.lineTo(cx - size * 0.22, cy + size * 0.56);
-    ctx.moveTo(cx + size * 0.08, cy + size * 0.74); ctx.lineTo(cx - size * 0.22, cy + size * 0.78);
-    ctx.moveTo(cx + size * 0.92, cy + size * 0.62); ctx.lineTo(cx + size * 1.22, cy + size * 0.56);
-    ctx.moveTo(cx + size * 0.92, cy + size * 0.74); ctx.lineTo(cx + size * 1.22, cy + size * 0.78);
+    ctx.moveTo(cx+size*.82,cy+size*.15);ctx.lineTo(cx+size*.97,cy-size*.22);ctx.lineTo(cx+size*.61,cy+size*.06);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#fff';
+    for (const ex of [.31,.69]) {
+      ctx.beginPath();ctx.ellipse(cx+size*ex,cy+size*.48,size*.115,size*.13,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#111827';ctx.beginPath();ctx.ellipse(cx+size*ex,cy+size*.49,size*.045,size*.08,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx+size*(ex-.018),cy+size*.46,size*.018,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle='#ff8fa8';ctx.beginPath();ctx.moveTo(cx+size*.5,cy+size*.60);ctx.lineTo(cx+size*.42,cy+size*.54);ctx.lineTo(cx+size*.58,cy+size*.54);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#6b2434';ctx.lineWidth=Math.max(1,cell*.028);ctx.beginPath();
+    ctx.moveTo(cx+size*.5,cy+size*.60);ctx.lineTo(cx+size*.5,cy+size*.68);
+    ctx.moveTo(cx+size*.5,cy+size*.67);ctx.quadraticCurveTo(cx+size*.42,cy+size*.74,cx+size*.36,cy+size*.69);
+    ctx.moveTo(cx+size*.5,cy+size*.67);ctx.quadraticCurveTo(cx+size*.58,cy+size*.74,cx+size*.64,cy+size*.69);ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.82)';ctx.lineWidth=Math.max(1,cell*.03);ctx.beginPath();
+    for (const yy of [.58,.68,.78]) {
+      ctx.moveTo(cx+size*.34,cy+size*yy);ctx.lineTo(cx-size*.22,cy+size*(yy-.04));
+      ctx.moveTo(cx+size*.66,cy+size*yy);ctx.lineTo(cx+size*1.22,cy+size*(yy-.04));
+    }
     ctx.stroke();
   } else if (shape === 'bunny') {
     // orelhas compridas de coelho
@@ -1748,6 +1755,23 @@ function drawMinimap() {
     ctx.strokeStyle = 'rgba(255,255,255,0.9)';
     ctx.lineWidth = 1;
     ctx.stroke();
+
+    if (isOnline()) {
+      const nome = String(state.names[i] || `Jogador ${i + 1}`).slice(0, 12);
+      const pontos = Number(state.scores[i] || 0);
+      const tx = Math.min(mx + mmW - 4, mx + h.x * scale + 8);
+      const ty = Math.max(my + 10, my + h.y * scale - 5);
+      ctx.font = '700 10px system-ui, sans-serif';
+      ctx.textAlign = tx >= mx + mmW - 20 ? 'right' : 'left';
+      ctx.textBaseline = 'middle';
+      const labelTexto = `${nome} • ${pontos}`;
+      const largura = ctx.measureText(labelTexto).width + 6;
+      const bx = ctx.textAlign === 'right' ? tx - largura : tx - 3;
+      ctx.fillStyle = 'rgba(0,0,0,0.72)';
+      ctx.fillRect(bx, ty-7, largura, 14);
+      ctx.fillStyle = '#fff';
+      ctx.fillText(labelTexto, ctx.textAlign === 'right' ? tx-3 : tx, ty);
+    }
   }
 
   // retângulo mostrando a área que a câmera tá vendo agora

@@ -31,6 +31,8 @@ export const state = {
   showOthers: true,
   mode: 'classic',
   mapSize: 'medium', // tamanho do mapa escolhido no menu
+  onlineMapMode: 'random', // no online: sorteio ou escolha manual
+  onlineMapPrepared: false, // controle de rodada online
   mapW: 40, mapH: 31, // dimensões reais do mapa atual (mudam junto com mapSize)
   foodCount: 3,
   speed: 'normal', // velocidade escolhida no menu

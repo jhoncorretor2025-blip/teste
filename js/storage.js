@@ -117,10 +117,10 @@ export function loadLeaderboard() {
   catch { return []; }
 }
 
-export function addToLeaderboard(name, score) {
+export function addToLeaderboard(name, score, durationMs = 0) {
   if (!score || score <= 0) return loadLeaderboard();
   const board = loadLeaderboard();
-  board.push({ name, score, date: Date.now() });
+  board.push({ name, score, date: Date.now(), durationMs: Math.max(0, Number(durationMs) || 0) });
   board.sort((a, b) => b.score - a.score);
   const trimmed = board.slice(0, 20);
   localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(trimmed));
@@ -196,17 +196,45 @@ export function loadSessionGamesToday() {
   return 0;
 }
 
-// Tempo total jogado (soma de todas as partidas) — melhoria #9
+// Tempo total jogado + histórico diário — alimenta ranking e conquistas.
 const PLAYTIME_KEY = 'snakeArenaTotalPlaytimeMs';
-
+const PLAYTIME_DAILY_KEY = 'snakeArenaDailyPlaytimeMs';
+const PLAYTIME_DAILY_MAX_DAYS = 90;
+function localDayKey(ts = Date.now()) {
+  const d = new Date(ts);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function loadDailyPlaytimeRaw() {
+  try { const data = JSON.parse(localStorage.getItem(PLAYTIME_DAILY_KEY)) || {}; return data && typeof data === 'object' ? data : {}; } catch { return {}; }
+}
+function saveDailyPlaytimeRaw(data) {
+  const keys = Object.keys(data).sort(), trimmed = {};
+  keys.slice(-PLAYTIME_DAILY_MAX_DAYS).forEach(k => { trimmed[k] = Math.max(0, Number(data[k]) || 0); });
+  try { localStorage.setItem(PLAYTIME_DAILY_KEY, JSON.stringify(trimmed)); } catch {}
+  return trimmed;
+}
 export function addPlaytime(ms) {
-  const total = (Number(localStorage.getItem(PLAYTIME_KEY)) || 0) + ms;
+  const amount = Math.max(0, Number(ms) || 0);
+  if (!amount) return loadTotalPlaytime();
+  const total = (Number(localStorage.getItem(PLAYTIME_KEY)) || 0) + amount;
+  const daily = loadDailyPlaytimeRaw(), today = localDayKey();
+  daily[today] = (Number(daily[today]) || 0) + amount;
   try { localStorage.setItem(PLAYTIME_KEY, String(total)); } catch {}
+  saveDailyPlaytimeRaw(daily);
+  checkPlaytimeAchievements(total, daily[today]);
+  if (typeof document !== 'undefined') document.dispatchEvent(new CustomEvent('playtimeUpdated', { detail:{ total, today:daily[today] } }));
   return total;
 }
-
-export function loadTotalPlaytime() {
-  return Number(localStorage.getItem(PLAYTIME_KEY)) || 0;
+export function loadTotalPlaytime() { return Number(localStorage.getItem(PLAYTIME_KEY)) || 0; }
+export function loadTodayPlaytime() { const daily = loadDailyPlaytimeRaw(); return daily[localDayKey()] || 0; }
+export function loadPlaytimeHistory(limit = 14) {
+  const daily = loadDailyPlaytimeRaw();
+  return Object.keys(daily).sort().slice(-Math.max(1,Number(limit)||14)).reverse().map(date => ({date,ms:Number(daily[date])||0}));
+}
+function checkPlaytimeAchievements(totalMs, dailyMs) {
+  const ids=[['playtime_10m',600000],['playtime_30m',1800000],['playtime_1h',3600000],['playtime_3h',10800000],['playtime_5h',18000000],['playtime_10h',36000000],['playtime_25h',90000000],['playtime_50h',180000000],['playtime_100h',360000000],['playtime_250h',900000000],['playtime_500h',1800000000],['playtime_1000h',3600000000]];
+  ids.forEach(([id,target])=>{if(totalMs>=target){const a=unlockAchievement(id);if(a&&typeof document!=='undefined')document.dispatchEvent(new CustomEvent('achievementUnlocked',{detail:a}));}});
+  if(dailyMs>=7200000){const a=unlockAchievement('playtime_day_2h');if(a&&typeof document!=='undefined')document.dispatchEvent(new CustomEvent('achievementUnlocked',{detail:a}));}
 }
 
 // Configurações da Minhoca Caçadora — ficam salvas neste navegador.

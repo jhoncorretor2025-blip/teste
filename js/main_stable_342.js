@@ -12,7 +12,7 @@ import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryB
 import { render } from './render_stable_341.js';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadBestLength, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadBestLength, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings, loadTotalPlaytime, loadTodayPlaytime, loadPlaytimeHistory, formatPlaytime } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -51,6 +51,22 @@ $('clientReadyBtn').addEventListener('click', () => {
 // Placar acumulado da sessão online — soma as vitórias de cada torneio enquanto a sala
 // continuar a mesma (usando o botão "Jogar de novo"), reseta se sair ou criar sala nova
 let sessionWins = {};
+function refreshPlaytimeUI() {
+  const total = loadTotalPlaytime(), today = loadTodayPlaytime();
+  const totalEl = $('progressPlaytimeValue'), todayEl = $('progressTodayPlaytimeValue');
+  if (totalEl) totalEl.textContent = formatPlaytime(total);
+  if (todayEl) todayEl.textContent = formatPlaytime(today);
+  const box = $('playtimeHistoryDisplay');
+  if (!box) return;
+  const history = loadPlaytimeHistory(14);
+  box.innerHTML = history.length ? history.map((row) => {
+    const [y,m,d] = row.date.split('-').map(Number);
+    const date = new Date(y,m-1,d);
+    return '<div>📅 ' + date.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}) + ' — <b>' + formatPlaytime(row.ms) + '</b></div>';
+  }).join('') : 'Ainda não há histórico de tempo jogado.';
+}
+document.addEventListener('playtimeUpdated', refreshPlaytimeUI);
+
 function updateSessionScoreDisplay() {
   const box = $('sessionScoreDisplay');
   if (!box) return;
@@ -123,7 +139,8 @@ net.setHandlers({
     state.teams[slot] = plano.teams[slot];
     return plano.teams[slot];
   },
-  onPeerJoined: () => {
+  onPeerJoined: (slot, name) => {
+    if (slot != null && name) state.names[slot] = safe(name, `Jogador ${slot + 1}`);
     state.count = Math.min(6, 1 + net.connectedCount());
     $('roomStatus').textContent = `👥 ${net.connectedCount()} amigo(s) conectado(s). Pode clicar em "Jogar" quando quiser!`;
     updateOnlineLobbyUI();
@@ -190,6 +207,8 @@ net.setHandlers({
     state.teamMode = msg.teamMode ?? state.teamMode;
     state.teams = msg.teams || state.teams;
     state.count = msg.count || state.count;
+    state.onlineMapMode = msg.onlineMapMode || state.onlineMapMode;
+    if ($('onlineMapMode')) $('onlineMapMode').value = state.onlineMapMode;
     render();
   },
   // O host é a fonte oficial desses dados. O net.js pede a configuração sempre que
@@ -207,6 +226,7 @@ net.setHandlers({
     teamMode: state.teamMode,
     teams: state.teams,
     count: state.count,
+    onlineMapMode: state.onlineMapMode,
   }),
   // Aplica de verdade a direção/turbo que o amigo manda — sem isso a minhoca dele
   // nunca virava, só seguia reto na direção que nasceu (bug relatado)
@@ -521,6 +541,11 @@ function createOnlineRoom(opcoes = {}) {
   tentar(1);
 }
 
+$('onlineMapMode')?.addEventListener('change', (e) => {
+  state.onlineMapMode = e.target.value === 'manual' ? 'manual' : 'random';
+  updateRoomSettingsPreview();
+  broadcastOnlineLobby();
+});
 $('hostBtn').addEventListener('click', () => createOnlineRoom());
 
 $('hostRoomSecurity')?.addEventListener('change', () => {
@@ -591,7 +616,7 @@ function getOnlineLobbyConfig() {
     format: $('onlineFormat')?.value || 'ffa',
     mode: text('mode'),
     speed: text('speedSelect'),
-    map: text('mapSize'),
+    map: state.onlineMapMode === 'random' ? '🎲 Aleatório' : text('mapSize'),
     difficulty: text('difficulty'),
     theme: text('boardTheme'),
     noWalls: $('noWalls')?.checked || false,
@@ -755,6 +780,7 @@ function leaveOnlineLobby() {
 function buildRoomLink() {
   const params = new URLSearchParams({
     room: $('roomCode').textContent,
+    mapMode: state.onlineMapMode || 'random',
     mode: state.mode,
     map: $('mapSize').value,
     diff: state.difficulty,
@@ -918,6 +944,11 @@ $('joinBtn').addEventListener('click', () => {
 
 // Se a pessoa abriu um link de convite (?room=CODIGO), já deixa o código preenchido
 const roomFromUrl = new URLSearchParams(location.search).get('room');
+const mapModeFromUrl = new URLSearchParams(location.search).get('mapMode');
+if (mapModeFromUrl === 'random' || mapModeFromUrl === 'manual') {
+  state.onlineMapMode = mapModeFromUrl;
+  if ($('onlineMapMode')) $('onlineMapMode').value = mapModeFromUrl;
+}
 if (new URLSearchParams(location.search).get('diag') === '1') {
   $('diagPanel').classList.remove('hidden');
 }
@@ -2156,6 +2187,7 @@ if (!navigator.vibrate) {
 
 updateGamesPlayedBadge(loadGamesPlayed());
 updateSessionStatsDisplay(loadSessionGamesToday());
+refreshPlaytimeUI();
 updateBestByModeDisplay();
 
 function updateBestByModeDisplay() {

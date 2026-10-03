@@ -1,17 +1,17 @@
 // O "coração" do jogo: nascer, resetar, iniciar partida e o tick (cada passo do jogo).
 
 import { $ } from './utils.js';
-import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP, SPECIAL_MILESTONES, TOURNAMENT_ROUNDS, TOURNAMENT_ROUND_MS, HUNTER_MILESTONES, COLORS } from './config.js';
+import { SPEEDS, TURBO_FACTOR, BOOST_DURATION, BOOST_COOLDOWN, DIFFICULTY, MILESTONE_STEP, SPECIAL_MILESTONES, TOURNAMENT_ROUNDS, TOURNAMENT_ROUND_MS, HUNTER_MILESTONES, COLORS, BOARD_THEMES, MAP_SIZES } from './config.js';
 import { state } from './state.js';
 import { planTeams, unifyTeamColors } from './teams.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall, checkFoodConsolidation, updateFoodConsolidation } from './food.js';
 import { aiDir, hunterDir } from './ai.js';
-import { render } from './render_stable_336.js';
+import { render } from './render_stable_341.js';
 import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
-import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
+import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadSessionGamesToday, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
 import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js';
 
@@ -358,7 +358,10 @@ export function switchScreen(hideId, showId) {
 
 // Soma tempo jogado a cada 3 segundos, só enquanto a partida está rodando de verdade —
 // funciona mesmo se o navegador fechar sem avisar, já que vai salvando aos poucos
-setInterval(() => { if (state.running) addPlaytime(3000); }, 3000);
+setInterval(() => {
+  const contando = state.running && !state.paused && (!isOnline() || state.receivedFirstState) && (state.alive[mySlot] || !isOnline());
+  if (contando) { addPlaytime(3000); updateSessionStatsDisplay(loadSessionGamesToday()); }
+}, 3000);
 
 // Salva e retoma a partida — pra quando o navegador fecha sem querer no meio do jogo.
 // Só faz sentido no LOCAL (offline), já que uma sala online depende da conexão em tempo
@@ -547,7 +550,7 @@ export function tryBoost(i) {
 }
 
 // Mata uma minhoca: derrama comida, faz explosão, som/vibração e guarda o recorde
-export function kill(i) {
+export function kill(i, killer = -1) {
   trackDeathForMission(i);
   if (state.hunterActive) state.hunterVictims.add(i);
   if (i === mySlot) {
@@ -559,7 +562,7 @@ export function kill(i) {
   saveBest(state.scores[i]);
   saveBestByMode(state.mode, state.tournamentMode, state.scores[i]);
   state.best = Math.max(state.best, state.scores[i]);
-  if (state.types[i] === 'human') addToLeaderboard(state.names[i], state.scores[i]);
+  if (state.types[i] === 'human') addToLeaderboard(state.names[i], state.scores[i], survivedSec * 1000);
   dropFood(i);
   const h = state.snakes[i]?.[0];
   if (h) burst(h.x, h.y, state.colors[i], 24);
@@ -577,6 +580,11 @@ export function kill(i) {
   state.respawnAt[i] = Date.now() + 900;
   sfx.death();
   vibrate([80, 40, 160]); // padrão de "derrota" — dois toques curtos e um mais longo
+  if (killer >= 0 && killer < state.count) {
+    const killerName = state.names[killer] || `Jogador ${killer + 1}`;
+    const victimName = state.names[i] || `Jogador ${i + 1}`;
+    state.toast = { x: h?.x ?? Math.floor(state.mapW/2), y: h?.y ?? Math.floor(state.mapH/2), text: `💥 ${killerName} eliminou ${victimName}!`, color: state.colors[killer] || '#ffd24d', until: Date.now()+2200 };
+  }
   if (i === mySlot) {
     state.deathMessage = { text: '💀 Você morreu!', until: Date.now() + 1400 };
   }
@@ -620,7 +628,7 @@ function stepMovement(indices) {
         if (die[i] === mySlot && state.eliminations[die[i]] >= 5) announceAchievement(unlockAchievement('eliminator_5'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 10) announceAchievement(unlockAchievement('eliminator_10'));
       }
-      kill(i);
+      kill(i, die[i]);
       return;
     }
     const h = heads[i];
@@ -1264,6 +1272,7 @@ function tick() {
   checkSurvivalMission();
   if (state.mission?.type === 'survive') renderMission(); // atualiza a contagem regressiva na tela
 
+  expandirMapaOnlineSeNecessario();
   checkHunterSpawn();
   if (state.alive[mySlot]) {
     const mySnake = state.snakes[mySlot] || [];
@@ -1370,13 +1379,45 @@ function tick() {
       hunterZoneProgress: state.hunterZoneProgress,
       hunterZoneCurrent: state.hunterZoneCurrent,
       hunterZoneHoldProgress: state.hunterZoneHoldProgress,
+      mapW: state.mapW, mapH: state.mapH, onlineMapMode: state.onlineMapMode,
     });
+  }
+}
+
+function sortearMapaOnline() {
+  const tamanhos = MAP_SIZES.filter((m) => m.value !== 'small');
+  const tamanho = tamanhos[Math.floor(Math.random() * tamanhos.length)] || MAP_SIZES[2];
+  const temasGratis = BOARD_THEMES.filter((t) => !['cyber','aurora','volcano','candy'].includes(t.value));
+  const tema = temasGratis[Math.floor(Math.random() * temasGratis.length)] || BOARD_THEMES[0];
+  state.mapSize = tamanho.value;
+  state.mapW = tamanho.w;
+  state.mapH = tamanho.h;
+  state.foodCount = tamanho.foods;
+  state.theme = tema.value;
+  if ($('mapSize')) $('mapSize').value = tamanho.value;
+  if ($('boardTheme')) $('boardTheme').value = tema.value;
+}
+
+function expandirMapaOnlineSeNecessario() {
+  if (!isOnline() || !isHost()) return;
+  let maior = 0;
+  for (let i=0; i<state.count; i++) maior = Math.max(maior, state.snakes[i]?.length || 0);
+  if (maior < 50) return;
+  const degraus = Math.floor((maior - 50) / 25) + 1;
+  const larguraAlvo = Math.min(120, 56 + degraus * 8);
+  const alturaAlvo = Math.min(90, 44 + degraus * 6);
+  if (larguraAlvo > state.mapW || alturaAlvo > state.mapH) {
+    state.mapW = Math.max(state.mapW, larguraAlvo);
+    state.mapH = Math.max(state.mapH, alturaAlvo);
+    state.mapSize = 'large';
+    ensureFoods();
   }
 }
 
 // Prepara e inicia uma partida ONLINE como anfitrião — o total de jogadores vira
 // "você + quantos amigos estão conectados agora", todos humanos (sem CPU no online).
 export function startOnlineHostGame() {
+  if (state.onlineMapMode === 'random') sortearMapaOnline();
   const humanos = Math.min(6, 1 + connectedCount());
   if ($('teamMode').checked) {
     // Partida em Times: os tamanhos de cada lado vêm do anfitrião, cada amigo entra no lado

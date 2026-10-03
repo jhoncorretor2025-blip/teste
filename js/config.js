@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '4.5.7';
+export const VERSION = '4.5.9';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -55,6 +55,21 @@ export const ACHIEVEMENTS = [
   { id: 'length_75', name: 'Colosso', desc: 'Chegue a 75 segmentos numa partida', icon: '🦖', category: 'avancado' },
   { id: 'eliminator_10', name: 'Destruidor', desc: 'Elimine 10 adversários numa partida', icon: '💀', category: 'avancado' },
   { id: 'score_1500', name: 'Mestre da Arena', desc: 'Alcance 1.500 pontos numa partida', icon: '🏆', category: 'avancado' },
+
+  // ⏱️ Tempo de jogo — progressão distribuída por dificuldade
+  { id: 'playtime_10m', name: 'Primeiros Minutos', desc: 'Acumule 10 minutos de jogo', icon: '⏱️', cumulative: 'playtimeMs', target: 600000, category: 'iniciante' },
+  { id: 'playtime_30m', name: 'Pegando o Jeito', desc: 'Acumule 30 minutos de jogo', icon: '🪱', cumulative: 'playtimeMs', target: 1800000, category: 'iniciante' },
+  { id: 'playtime_1h', name: 'Primeira Hora', desc: 'Acumule 1 hora de jogo', icon: '🎮', cumulative: 'playtimeMs', target: 3600000, category: 'iniciante' },
+  { id: 'playtime_3h', name: 'Jogador Frequente', desc: 'Acumule 3 horas de jogo', icon: '🔥', cumulative: 'playtimeMs', target: 10800000, category: 'intermediario' },
+  { id: 'playtime_5h', name: 'Viciado em Minhoca', desc: 'Acumule 5 horas de jogo', icon: '🪱', cumulative: 'playtimeMs', target: 18000000, category: 'intermediario' },
+  { id: 'playtime_10h', name: 'Dedicado', desc: 'Acumule 10 horas de jogo', icon: '⭐', cumulative: 'playtimeMs', target: 36000000, category: 'intermediario' },
+  { id: 'playtime_25h', name: 'Veterano', desc: 'Acumule 25 horas de jogo', icon: '💪', cumulative: 'playtimeMs', target: 90000000, category: 'avancado' },
+  { id: 'playtime_50h', name: 'Mestre da Minhoca', desc: 'Acumule 50 horas de jogo', icon: '👑', cumulative: 'playtimeMs', target: 180000000, category: 'avancado' },
+  { id: 'playtime_100h', name: 'Lenda', desc: 'Acumule 100 horas de jogo', icon: '🏆', cumulative: 'playtimeMs', target: 360000000, category: 'avancado' },
+  { id: 'playtime_250h', name: 'Maratonista', desc: 'Acumule 250 horas de jogo', icon: '💎', cumulative: 'playtimeMs', target: 900000000, category: 'colecao' },
+  { id: 'playtime_500h', name: 'Imortal', desc: 'Acumule 500 horas de jogo', icon: '🐉', cumulative: 'playtimeMs', target: 1800000000, category: 'colecao' },
+  { id: 'playtime_1000h', name: 'Rei da Mioquinha', desc: 'Acumule 1.000 horas de jogo', icon: '👑', cumulative: 'playtimeMs', target: 3600000000, category: 'colecao' },
+  { id: 'playtime_day_2h', name: 'Maratona do Dia', desc: 'Jogue 2 horas no mesmo dia', icon: '📅', cumulative: 'dailyPlaytimeMs', target: 7200000, category: 'avancado' },
 
   // 🌐 Online — do mais fácil ao mais difícil
   { id: 'online_first', name: 'Primeira Conexão', desc: 'Jogue sua primeira partida online', icon: '🌐', category: 'online' },

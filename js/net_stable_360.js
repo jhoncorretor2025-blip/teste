@@ -261,7 +261,7 @@ function finalizeJoin(conn, slot, teamPref) {
     } catch {}
   }
   broadcastPeerList();
-  handlers.onPeerJoined && handlers.onPeerJoined(slot);
+  handlers.onPeerJoined && handlers.onPeerJoined(slot, name);
 }
 
 // Anfitrião recusa o pedido — avisa a pessoa e fecha a conexão

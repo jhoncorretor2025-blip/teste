@@ -66,3 +66,9 @@ Dois formatos, ambos com `type: 'state'`, tratados por `applyRemoteState` (`loop
 - **Mensagem nova:** trate nos **dois** lados e atualize esta página.
 - **Nunca** deixe `catch {}` vazio em envio de rede: `broadcastRaw` guarda tentativas/falhas em `sendDiag`, que aparece no painel 🩺 do anfitrião.
 - Lembre: o `render.js` roda nos dois lados; se algo depende só de dados que o anfitrião calcula no `tick`, o cliente não vê.
+
+
+## V4.5.9
+- `onlineMapMode` identifica sorteio ou escolha manual do mapa.
+- `mapW` e `mapH` seguem também nos estados frequentes porque podem crescer durante a partida.
+- O nome do convidado é repassado no callback de entrada para manter o nome real no lobby e no placar.

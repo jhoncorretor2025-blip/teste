@@ -1,3 +1,15 @@
+# v4.5.9 — melhorias completas do online e tempo de jogo
+- **Online:** mapa aleatório ou mapa escolhido.
+- **Online:** mapa inicial maior e expansão automática conforme a maior minhoca cresce.
+- **Online:** radar com nome + pontuação.
+- **Online:** nomes reais dos convidados passam a ser propagados ao anfitrião/lobby.
+- **Online:** aviso sincronizado quando um jogador elimina outro.
+- **Visual:** gatinho redesenhado para ficar claramente reconhecível.
+- **Tempo:** total, hoje e histórico diário.
+- **Ranking:** data completa e duração da partida.
+- **Conquistas:** progressão de 10 minutos até 1.000 horas + 2h no mesmo dia.
+- **Versão/cache:** tudo alinhado em V4.5.9 para evitar ficar preso na V4.5.5.
+
 # v4.5.8 — tela inicial compacta
 - **Novo:** painel inicial da partida ficou **minimizado**, mostrando somente as informações necessárias para começar.
 - Configurações detalhadas continuam disponíveis em **⚙️ Configurar partida**.

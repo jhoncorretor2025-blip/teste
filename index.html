@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="4.5.5">
+<html lang="pt-BR" data-theme-version="4.5.9">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v4.5.5</title>
-<link rel="stylesheet" href="css/style.css?v=4.5.5">
+<title>🐍 Mioquinha v4.5.9</title>
+<link rel="stylesheet" href="css/style.css?v=4.5.9">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -17,7 +17,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>4.5.5</b></div>
+  <div class="appSplashVersion">VERSÃO <b>4.5.9</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -89,7 +89,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v4.5.5</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v4.5.9</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <div class="siteHeaderTools">
       <button id="headerInfoBtn" class="headerInfoBtn" type="button" aria-label="Abrir dicas e avisos da Mioquinha">ℹ️</button>
@@ -466,6 +466,14 @@
 
         <div id="onlineComplexMode" class="hidden">
         <div class="tip" style="margin-bottom:9px">
+          <b>🗺️ Mapa da partida online</b>
+          <select id="onlineMapMode" class="select" style="margin-top:6px;width:100%" aria-label="Mapa da partida online">
+            <option value="random" selected>🎲 Mapa aleatório — muda a cada nova partida</option>
+            <option value="manual">🗺️ Usar o mapa escolhido abaixo</option>
+          </select>
+          <small class="muted">No modo aleatório, o anfitrião sorteia o tema e começa com mapa grande; o mapa também cresce se uma minhoca ficar muito grande.</small>
+        </div>
+        <div class="tip" style="margin-bottom:9px">
           <b>⚔️ Formato da partida</b>
           <select id="onlineFormat" class="select" style="margin-top:6px;width:100%">
             <option value="ffa">⚔️ Todos contra Todos</option>
@@ -631,6 +639,8 @@
               <div class="progressStat"><span>📏 Maior cobra</span><b id="progressLengthValue">0</b></div>
               <div class="progressStat"><span>🎮 Partidas</span><b id="progressGamesValue">0</b></div>
               <div class="progressStat"><span>🔥 Sessão</span><b id="progressSessionValue">0</b></div>
+              <div class="progressStat"><span>⏱️ Tempo total</span><b id="progressPlaytimeValue">0min</b></div>
+              <div class="progressStat"><span>📅 Hoje</span><b id="progressTodayPlaytimeValue">0min</b></div>
             </div>
             <div id="bestByModeDisplay" class="tip" style="margin-top:8px"></div>
             <div id="gamesPlayedBadge" class="muted" style="margin-top:8px"></div>
@@ -656,6 +666,7 @@
             <div class="progressionChallengeCard"><div><b>🎯 Desafio da partida</b><div id="progressChallengeValue" class="muted">Nenhum</div></div><button id="newChallengeBtn" class="refresh" type="button">🎲 Novo</button></div>
             <div id="sessionStatsDisplay" class="muted" style="margin-top:4px"></div>
             <button id="copyStatsBtn" class="refresh" type="button" style="margin-top:8px;width:100%">📋 Copiar minhas estatísticas</button>
+            <div class="tip" style="margin-top:8px"><b>⏱️ Tempo de jogo</b><div id="playtimeHistoryDisplay" class="muted" style="margin-top:5px">Carregando...</div></div>
           </div>
 
           <div class="progressSection hidden" data-progress-panel="shop">
@@ -798,7 +809,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '4.5.8';
+  const VERSION = '4.5.9';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');

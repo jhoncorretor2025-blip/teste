@@ -4,7 +4,7 @@
 // completo" expande de 5 pra até 20 posições, com data de quando cada um jogou.
 
 import { $ } from './utils.js';
-import { loadLeaderboard } from './storage.js';
+import { loadLeaderboard, formatPlaytime } from './storage.js'
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 let expanded = false;
@@ -16,7 +16,7 @@ function escapeHtml(s) {
 function formatDate(ts) {
   if (!ts) return '';
   const d = new Date(ts);
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  return d.toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'2-digit', year:'numeric' });
 }
 
 export function renderLeaderboard() {
@@ -34,7 +34,7 @@ export function renderLeaderboard() {
   const limit = expanded ? 20 : 5;
   box.innerHTML = board
     .slice(0, limit)
-    .map((e, i) => `<div>${MEDALS[i] || `${i + 1}.`} <b>${escapeHtml(e.name)}</b> — ${e.score} pts <span style="opacity:.6">(${formatDate(e.date)})</span></div>`)
+    .map((e, i) => `<div>${MEDALS[i] || `${i + 1}.`} <b>${escapeHtml(e.name)}</b> — ${e.score} pts <span style="opacity:.6">(${formatDate(e.date)}${e.durationMs ? ` • ⏱️ ${formatPlaytime(e.durationMs)}` : ''})</span></div>`)
     .join('');
 
   if (toggleBtn) {
