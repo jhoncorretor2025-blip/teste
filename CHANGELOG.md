@@ -1,3 +1,9 @@
+# v4.5.2 — online simples e convite por link
+- A aba **🌐 Online** agora começa no **Modo simples**, com apenas criar sala rápida, copiar link e entrar por convite.
+- O **Modo complexo** mantém todas as configurações avançadas, times, presets, diagnóstico, segurança e lobby.
+- Links de sala agora iniciam automaticamente a entrada do convidado, sem exigir que ele procure a aba Online e clique manualmente.
+- Mantido o fluxo existente de salas e a compatibilidade com as opções avançadas.
+
 # v4.5.1 — correção visual da v4.5.0
 - Aplicado o acabamento visual das novas funções de Conquistas, incluindo barra geral, filtros e alto contraste.
 - Ativados visualmente o brilho da sequência, a barra de XP da tela inicial, as prévias da Loja e os indicadores de teclado.

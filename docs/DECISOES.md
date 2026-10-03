@@ -1,3 +1,8 @@
+## v4.5.2 — online simples por padrão
+**Decisão:** a aba Online passa a ter dois níveis de interface: **Modo simples** para o fluxo mais comum (criar sala → copiar link → jogar) e **Modo complexo** para quem precisa de configurações avançadas.
+**Por quê:** a quantidade de opções da aba Online estava escondendo a ação principal. O modo simples reduz a tela sem remover nenhuma função.
+**Cuidados:** o modo complexo continua contendo as configurações existentes. Links de convite abertos pelo navegador iniciam automaticamente a entrada na sala; salas sem senha continuam sendo o caminho rápido.
+
 ## v4.5.1 — acabamento visual
 **Decisão:** separar a correção visual das funcionalidades da v4.5.0 em um patch de versão para manter o histórico claro e permitir conferir exatamente o que foi corrigido.
 

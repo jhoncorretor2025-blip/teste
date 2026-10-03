@@ -1910,6 +1910,182 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
 }
 
 /* v2.87.0 — nova central de ferramentas da aba Online */
+/* v4.5.2 — online em dois níveis: simples por padrão, complexo sob demanda */
+.onlineModeSwitch {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin:10px 0;
+  padding:4px;
+  border:1px solid #30476d;
+  border-radius:12px;
+  background:#0a1424;
+}
+
+.onlineModeBtn {
+  min-height:40px;
+  border:1px solid transparent;
+  border-radius:9px;
+  background:transparent;
+  color:#9fb0ca;
+  font:800 .78rem system-ui;
+  cursor:pointer;
+}
+
+.onlineModeBtn.active {
+  background:linear-gradient(160deg,#1d3558,#12233b);
+  border-color:#5e82b8;
+  color:#fff;
+}
+
+.onlineSimpleMode {
+  padding:10px;
+  border:1px solid #35527d;
+  border-radius:14px;
+  background:linear-gradient(160deg,#0d1c31,#091423);
+}
+
+.onlineSimpleHero {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.onlineSimpleIcon {
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  display:grid;
+  place-items:center;
+  border-radius:14px;
+  background:#102846;
+  border:1px solid #42628d;
+  font-size:1.7rem;
+}
+
+.onlineSimpleHero h3 {
+  margin:0 0 3px;
+  font-size:.95rem;
+}
+
+.onlineSimpleHero p {
+  margin:0;
+  color:#91a3c0;
+  font-size:.72rem;
+  line-height:1.45;
+}
+
+.onlineSimpleCreateBtn,
+.onlineSimpleStartBtn {
+  width:100%;
+  min-height:46px;
+}
+
+.onlineSimpleRoomPanel {
+  margin-top:9px;
+  padding:9px;
+  border-radius:12px;
+  background:#0a1728;
+  border:1px solid #31527c;
+}
+
+.onlineSimpleReady {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  margin-bottom:7px;
+}
+
+.onlineSimpleReady b {
+  color:#67ef8a;
+}
+
+.onlineSimpleReady span,
+.onlineSimpleJoin small {
+  color:#91a3c0;
+  font-size:.68rem;
+}
+
+.onlineSimpleLinkRow {
+  display:flex;
+  gap:6px;
+  align-items:stretch;
+}
+
+.onlineSimpleLinkRow .input {
+  flex:1;
+  min-width:0;
+}
+
+.onlineSimpleLinkRow .btn {
+  flex:0 0 auto;
+  min-width:108px;
+}
+
+.onlineSimpleStartBtn {
+  margin-top:7px;
+}
+
+.onlineSimpleRoomStatus,
+.onlineSimpleStatus {
+  margin-top:6px;
+  font-size:.7rem;
+}
+
+.onlineSimpleJoin {
+  margin-top:9px;
+  padding-top:9px;
+  border-top:1px solid #ffffff10;
+}
+
+.onlineSimpleJoinTitle {
+  font-weight:900;
+  margin-bottom:5px;
+}
+
+#onlineComplexMode.hidden {
+  display:none;
+}
+
+.lightMode .onlineModeSwitch,
+.lightMode .onlineSimpleMode {
+  background:#eef3fb;
+  border-color:#c7d4ea;
+}
+
+.lightMode .onlineModeBtn {
+  color:#5a6b8a;
+}
+
+.lightMode .onlineModeBtn.active {
+  background:#fff;
+  color:#16233d;
+  border-color:#7ea3d6;
+}
+
+.lightMode .onlineSimpleHero p,
+.lightMode .onlineSimpleReady span,
+.lightMode .onlineSimpleJoin small {
+  color:#5a6b8a;
+}
+
+.lightMode .onlineSimpleIcon,
+.lightMode .onlineSimpleRoomPanel {
+  background:#e4ecf9;
+  border-color:#b9c8e2;
+}
+
+@media(max-width:600px) {
+  .onlineSimpleLinkRow {
+    flex-direction:column;
+  }
+  .onlineSimpleLinkRow .btn {
+    width:100%;
+    min-height:42px;
+  }
+}
+
 .onlineTools {
   margin:8px 0 10px;
   padding:10px 11px;

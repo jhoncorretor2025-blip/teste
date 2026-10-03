@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="4.5.1">
+<html lang="pt-BR" data-theme-version="4.5.2">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v4.5.1</title>
-<link rel="stylesheet" href="css/style.css?v=4.5.1">
+<title>🐍 Mioquinha v4.5.2</title>
+<link rel="stylesheet" href="css/style.css?v=4.5.2">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -17,7 +17,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>4.5.1</b></div>
+  <div class="appSplashVersion">VERSÃO <b>4.5.2</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -89,7 +89,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v4.5.1</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v4.5.2</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <div class="siteHeaderTools">
       <button id="headerInfoBtn" class="headerInfoBtn" type="button" aria-label="Abrir dicas e avisos da Mioquinha">ℹ️</button>
@@ -426,6 +426,45 @@
         <section class="card" style="margin-top:14px">
         <h2>🌐 Jogar Online</h2>
         <p class="cardDesc">Jogue com amigos em aparelhos diferentes, cada um no seu.</p>
+        <div class="onlineModeSwitch" role="tablist" aria-label="Modo do online">
+          <button type="button" class="onlineModeBtn active" data-online-mode="simple" role="tab" aria-selected="true">⚡ Modo simples</button>
+          <button type="button" class="onlineModeBtn" data-online-mode="complex" role="tab" aria-selected="false">⚙️ Modo complexo</button>
+        </div>
+
+        <div id="onlineSimpleMode" class="onlineSimpleMode">
+          <div class="onlineSimpleHero">
+            <div class="onlineSimpleIcon">🪱</div>
+            <div>
+              <h3>⚡ Jogar online sem complicação</h3>
+              <p>Crie a sala, copie o link e mande para seu amigo. Quem abrir o convite entra automaticamente.</p>
+            </div>
+          </div>
+
+          <button id="onlineSimpleCreateBtn" class="btn onlineSimpleCreateBtn" type="button">🏠 Criar sala rápida</button>
+
+          <div id="onlineSimpleRoomPanel" class="onlineSimpleRoomPanel hidden">
+            <div class="onlineSimpleReady"><b>🎉 Sala pronta!</b><span>Agora é só copiar o link e mandar.</span></div>
+            <div class="onlineSimpleLinkRow">
+              <input id="onlineSimpleRoomLink" class="input" type="text" readonly aria-label="Link da sala online">
+              <button id="onlineSimpleCopyBtn" class="btn" type="button">🔗 Copiar link</button>
+            </div>
+            <button id="onlineSimpleStartBtn" class="btn onlineSimpleStartBtn" type="button">🚀 Jogar</button>
+            <div id="onlineSimpleRoomStatus" class="muted" aria-live="polite">🟢 Esperando seu amigo entrar...</div>
+          </div>
+
+          <div class="onlineSimpleJoin">
+            <div class="onlineSimpleJoinTitle">🔗 Recebeu um convite?</div>
+            <div class="onlineSimpleLinkRow">
+              <input id="onlineSimpleJoinCode" class="input" type="text" placeholder="Cole o link da sala aqui" aria-label="Link ou código da sala">
+              <button id="onlineSimpleJoinBtn" class="btn alt" type="button">🚀 Entrar</button>
+            </div>
+            <small>Se você abriu o link recebido, não precisa fazer nada: a entrada é iniciada automaticamente.</small>
+          </div>
+
+          <div id="onlineSimpleStatus" class="onlineSimpleStatus muted" aria-live="polite"></div>
+        </div>
+
+        <div id="onlineComplexMode" class="hidden">
         <div class="tip" style="margin-bottom:9px">
           <b>⚔️ Formato da partida</b>
           <select id="onlineFormat" class="select" style="margin-top:6px;width:100%">
@@ -562,6 +601,7 @@
         <div id="joinStatus" class="muted" style="margin-top:6px"></div>
         <div id="onlineClientLobby" class="onlineLobbyCard hidden"><div class="onlineLobbyHeader"><b>🌐 Lobby da partida</b><span id="onlineClientLobbyStatus" class="onlineLobbyStatus">Aguardando...</span></div><div id="onlineClientLobbyPlayers" class="onlineLobbyPlayers"></div><div id="onlineClientLobbyConfig" class="onlineLobbyConfig"></div></div>
         <button id="lastRoomBtn" class="refresh hidden" type="button" style="margin-top:6px"></button>
+        </div>
       </section>
       </div>
       <div class="tabPanel hidden" data-panel="progresso">
@@ -758,7 +798,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '4.5.1';
+  const VERSION = '4.5.2';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');

@@ -286,6 +286,10 @@ $('hostBtn').addEventListener('click', () => {
       $('hostBtn').textContent = originalHostText;
       $('hostPanel').classList.remove('hidden');
       $('roomCode').textContent = roomId;
+      const simpleLinkBox = $('onlineSimpleRoomLink');
+      if (simpleLinkBox) simpleLinkBox.value = buildRoomLink();
+      $('onlineSimpleRoomPanel')?.classList.remove('hidden');
+      if ($('onlineSimpleRoomStatus')) $('onlineSimpleRoomStatus').textContent = '🟢 Sala aberta. Mande o link e espere seu amigo entrar.';
       $('roomStatus').textContent = '👥 0 amigo(s) conectado(s). Compartilha o link e espera a galera entrar!';
       updateOnlineLobbyUI();
       $('count').disabled = true;
@@ -510,6 +514,7 @@ function leaveOnlineLobby() {
   releaseWakeLock();
   $('hostPanel').classList.add('hidden');
   $('roomCode').textContent = '...';
+  $('onlineSimpleRoomPanel')?.classList.add('hidden');
   $('roomStatus').textContent = '';
   $('joinStatus').textContent = '';
   $('hostBtn').disabled = false;
@@ -680,8 +685,15 @@ if (tabDaUrl && ABAS_VALIDAS.includes(tabDaUrl)) {
 if (urlAction.get('quickplay') === '1') {
   setTimeout(() => $('startHero')?.click(), 300); // um tiquinho de atraso pra tudo terminar de montar
 }
-if (roomFromUrl) $('joinCode').value = roomFromUrl;
-if (roomFromUrl) refreshJoinTeamChoice(lerInfoDeTimes(location.search));
+if (roomFromUrl) {
+  $('joinCode').value = roomFromUrl;
+  $('onlineSimpleJoinCode').value = location.href;
+  refreshJoinTeamChoice(lerInfoDeTimes(location.search));
+  setOnlineMode('simple');
+  setTimeout(() => {
+    if (!net.isOnline() && !state.running && $('joinCode').value) $('joinBtn').click();
+  }, 350);
+}
 
 // Prévia da sala — se o link já veio com as configurações embutidas, mostra o que a
 // pessoa vai encontrar ANTES de precisar clicar em entrar de verdade
@@ -2114,6 +2126,64 @@ if (previousLastPlayed) {
 }
 
 // Convite genérico pra chamar alguém sem precisar já ter criado uma sala (melhoria #12)
+function setOnlineMode(mode = 'simple') {
+  const simple = mode !== 'complex';
+  $('onlineSimpleMode')?.classList.toggle('hidden', !simple);
+  $('onlineComplexMode')?.classList.toggle('hidden', simple);
+  document.querySelectorAll('.onlineModeBtn').forEach((btn) => {
+    const ativo = btn.dataset.onlineMode === (simple ? 'simple' : 'complex');
+    btn.classList.toggle('active', ativo);
+    btn.setAttribute('aria-selected', ativo ? 'true' : 'false');
+  });
+}
+
+document.querySelectorAll('.onlineModeBtn').forEach((btn) => {
+  btn.addEventListener('click', () => setOnlineMode(btn.dataset.onlineMode));
+});
+
+$('onlineSimpleCreateBtn')?.addEventListener('click', () => {
+  if (!navigator.onLine) {
+    $('onlineSimpleStatus').textContent = '📡 Sem internet. Conecte-se e tente novamente.';
+    return;
+  }
+  setOnlineMode('simple');
+  applyOnlinePreset('casual');
+  $('onlineSimpleStatus').textContent = '⏳ Criando sua sala...';
+  $('hostBtn').click();
+});
+
+$('onlineSimpleCopyBtn')?.addEventListener('click', async () => {
+  const link = $('onlineSimpleRoomLink')?.value || buildRoomLink();
+  try {
+    await navigator.clipboard.writeText(link);
+    $('onlineSimpleCopyBtn').textContent = 'Copiado! ✅';
+    setTimeout(() => { $('onlineSimpleCopyBtn').textContent = '🔗 Copiar link'; }, 1600);
+  } catch {
+    if ($('onlineSimpleRoomLink')) $('onlineSimpleRoomLink').select();
+    $('onlineSimpleStatus').textContent = link;
+  }
+});
+
+$('onlineSimpleStartBtn')?.addEventListener('click', () => $('startFromHostPanel')?.click());
+
+$('onlineSimpleJoinCode')?.addEventListener('input', (e) => {
+  $('joinCode').value = e.target.value;
+  $('joinCode').dispatchEvent(new window.Event('input', { bubbles: true }));
+});
+
+$('onlineSimpleJoinBtn')?.addEventListener('click', () => {
+  const value = $('onlineSimpleJoinCode')?.value.trim();
+  if (!value) {
+    $('onlineSimpleStatus').textContent = '🔗 Cole o link ou o código da sala primeiro.';
+    return;
+  }
+  $('joinCode').value = value;
+  $('joinCode').dispatchEvent(new window.Event('input', { bubbles: true }));
+  $('joinBtn').click();
+});
+
+setOnlineMode('simple');
+
 $('genericInviteBtn').addEventListener('click', shareLink);
 
 // Aviso gentil de "ainda aí?" — se a SUA minhoca ficar muito tempo sem virar de jeito
