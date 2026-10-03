@@ -1,3 +1,8 @@
+## v4.5.5 — categoria Coleção para conquistas acumulativas
+**Decisão:** separar `Colecionador`, `Camaleão` e `Mestre dos Mapas` em **🏆 Coleção**.
+**Motivo:** são objetivos de longo prazo, que dependem de várias partidas e/ou desbloqueios acumulados.
+**Cuidados:** alterar somente a categoria visual; manter intactos os critérios e os dados salvos.
+
 ## v4.5.5 — notificações de conquista discretas no celular
 **Decisão:** em telas de até 700px, o aviso de conquista fica menor e deslocado para a parte superior central, com transparência.
 **Motivo:** a conquista precisa ser percebida sem bloquear a região central da arena, que é justamente onde a pessoa precisa enxergar para jogar.

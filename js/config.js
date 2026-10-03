@@ -42,8 +42,8 @@ export const ACHIEVEMENTS = [
 
   // 🔴 Avançado — do mais fácil ao mais difícil
   { id: 'social', name: 'Sociável', desc: 'Jogue uma partida online com um amigo', icon: '👥', category: 'avancado' },
-  { id: 'collector', name: 'Colecionador', desc: 'Experimente todos os formatos de cabeça', icon: '🐍', cumulative: 'headsUsed', target: 'ALL_HEADS', category: 'avancado' },
-  { id: 'chameleon', name: 'Camaleão', desc: 'Jogue em todos os temas de tabuleiro', icon: '🌈', cumulative: 'themesUsed', target: 'ALL_THEMES', category: 'avancado' },
+  { id: 'collector', name: 'Colecionador', desc: 'Experimente todos os formatos de cabeça', icon: '🐍', cumulative: 'headsUsed', target: 'ALL_HEADS', category: 'colecao' },
+  { id: 'chameleon', name: 'Camaleão', desc: 'Jogue em todos os temas de tabuleiro', icon: '🌈', cumulative: 'themesUsed', target: 'ALL_THEMES', category: 'colecao' },
   { id: 'star_hunter', name: 'Caçador de Estrelas', desc: 'Pegue 10 estrelas no total', icon: '⭐', cumulative: 'totalStars', target: 10, category: 'avancado' },
   { id: 'mission_master', name: 'Missão Cumprida', desc: 'Complete 10 missões no total', icon: '🎯', cumulative: 'totalMissions', target: 10, category: 'avancado' },
   { id: 'score_500', name: 'Imparável', desc: 'Faça 500 pontos numa partida', icon: '🚀', category: 'avancado' },
@@ -82,7 +82,7 @@ export const ACHIEVEMENTS = [
   { id: 'skin_first', name: 'Estilosa', desc: 'Desbloqueie sua primeira fantasia da minhoca', icon: '🎭', category: 'intermediario' },
   { id: 'skins_3', name: 'Colecionador', desc: 'Desbloqueie 3 fantasias na Loja', icon: '🎨', category: 'avancado' },
   { id: 'maps_2', name: 'Explorador', desc: 'Desbloqueie 2 mapas especiais na Loja', icon: '🗺️', category: 'intermediario' },
-  { id: 'maps_all', name: 'Mestre dos Mapas', desc: 'Desbloqueie todos os mapas especiais da Loja', icon: '🌍', category: 'avancado' },
+  { id: 'maps_all', name: 'Mestre dos Mapas', desc: 'Desbloqueie todos os mapas especiais da Loja', icon: '🌍', category: 'colecao' },
   { id: 'coins_spent_500', name: 'Magnata da Mioquinha', desc: 'Gaste 500 moedas na Loja ao longo do tempo', icon: '💎', category: 'avancado' },
   { id: 'skins_5', name: 'Fashionista', desc: 'Desbloqueie 5 fantasias na Loja', icon: '👑', category: 'avancado' },
   { id: 'league_legend', name: 'Lenda da Liga', desc: 'Chegue à Liga Lenda', icon: '🏆', category: 'avancado' },

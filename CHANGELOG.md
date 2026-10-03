@@ -1,3 +1,8 @@
+# v4.5.5 — categoria Coleção para conquistas de longo prazo
+- **Organização:** `Colecionador`, `Camaleão` e `Mestre dos Mapas` agora ficam na categoria **🏆 Coleção**.
+- Essas conquistas exigem progresso acumulado entre partidas e desbloqueios ao longo do tempo, então ficam separadas dos desafios de uma única partida.
+- Nenhum critério, meta ou progresso salvo foi alterado.
+
 # v4.5.5 — conquista discreta no celular
 - **Corrigido:** o aviso de conquista não fica mais grande e totalmente no meio da partida no celular.
 - No celular, a conquista agora aparece em uma faixa menor, na parte superior central, com transparência e desfoque leves.
