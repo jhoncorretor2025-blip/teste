@@ -1,3 +1,9 @@
+# v4.5.5 — conquista discreta no celular
+- **Corrigido:** o aviso de conquista não fica mais grande e totalmente no meio da partida no celular.
+- No celular, a conquista agora aparece em uma faixa menor, na parte superior central, com transparência e desfoque leves.
+- O jogador continua vendo a conquista, mas consegue enxergar a arena por trás dela e jogar sem ter a área central bloqueada.
+- No computador, o visual existente continua igual.
+
 # v4.5.4 — criar sala não trava mais sem avisar
 - **Corrigido:** no modo simples da aba Online, quando algo dava errado ao criar a sala, a tela ficava presa em "⏳ Criando sua sala..." pra sempre, sem mostrar o motivo (os avisos iam pra um campo escondido nesse modo).
 - Agora o aviso aparece onde a pessoa está olhando, em português simples: sem internet, servidor de salas inacessível, módulo online não carregou, etc.

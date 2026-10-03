@@ -1,3 +1,8 @@
+## v4.5.5 — notificações de conquista discretas no celular
+**Decisão:** em telas de até 700px, o aviso de conquista fica menor e deslocado para a parte superior central, com transparência.
+**Motivo:** a conquista precisa ser percebida sem bloquear a região central da arena, que é justamente onde a pessoa precisa enxergar para jogar.
+**Cuidados:** o aviso continua sem capturar toques (`pointer-events:none`) e o comportamento visual do computador não foi alterado.
+
 ## v4.5.3 — criação rápida resiliente
 **Decisão:** o botão **Criar sala rápida** não pode depender do sucesso de um preset visual/configurável para iniciar a sala.
 **Comportamento:** tenta aplicar o preset casual, mas sempre segue para a criação pelo botão real da sala. Se houver erro no preset, a sala ainda pode ser criada.

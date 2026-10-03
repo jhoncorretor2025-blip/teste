@@ -4922,3 +4922,23 @@ main,
 .lightMode .achievementEmpty{border-color:#b9c8da;color:#60758d;background:#f7f9fc}
 .lightMode .pcKeyHints span{background:#f1f5fa;border-color:#c3d2e4;color:#50667d}.lightMode .pcKeyHints kbd{background:#fff;border-color:#9fb3ca;color:#263b54}
 .lightMode .shopVisualPreview{box-shadow:inset 0 0 16px #0001,0 0 14px var(--shop-grid)33}
+
+/* v4.5.5 — conquista discreta no celular: informa sem cobrir a partida */
+@media (max-width:700px) {
+  .achievementPopup {
+    top:14%;
+    width:min(82vw,360px);
+    max-width:82vw;
+    padding:10px 14px;
+    border:1px solid rgba(255,210,77,.48);
+    border-radius:14px;
+    box-shadow:0 8px 28px rgba(0,0,0,.16),0 0 18px rgba(255,210,77,.10);
+    backdrop-filter:blur(1px);
+    -webkit-backdrop-filter:blur(1px);
+    opacity:.74;
+  }
+  .achievementPopup.show { transform:translate(-50%,-50%) scale(.96); }
+  .achievementEmoji { font-size:2rem; }
+  .achievementText { font-size:.88rem; margin-top:2px; }
+  .achievementSub { font-size:.68rem; margin-top:2px; line-height:1.25; }
+}
