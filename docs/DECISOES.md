@@ -1,3 +1,8 @@
+## v4.5.8 — dashboard inicial compacto
+**Decisão:** reduzir visualmente o painel inicial e deixar detalhes avançados nas áreas próprias.
+**Motivo:** havia informação demais antes do botão de configuração/jogo, especialmente mapa, prévia da minhoca e textos auxiliares. O jogador deve identificar rapidamente a partida e iniciar sem rolar uma tela cheia de detalhes.
+**Cuidados:** manter IDs e funcionalidades existentes, esconder apenas conteúdo redundante/visual e manter a Loja e Configurar partida acessíveis.
+
 ## v4.5.7 — assistência de controle no celular
 **Decisão:** aparelhos com controle por toque recebem uma margem de reação de aproximadamente 15% no intervalo dos passos e controles físicos maiores.
 **Motivo:** em tela pequena, o jogador precisa de mais tempo e de uma resposta mais fácil para virar a minhoca; a mudança reduz mortes causadas por atraso ou dificuldade de toque sem alterar o ritmo do PC.

@@ -1,3 +1,10 @@
+# v4.5.8 — tela inicial compacta
+- **Novo:** painel inicial da partida ficou **minimizado**, mostrando somente as informações necessárias para começar.
+- Configurações detalhadas continuam disponíveis em **⚙️ Configurar partida**.
+- Prévia dos mapas especiais foi compactada e fica disponível pela **Loja**, evitando uma lista grande na tela inicial.
+- Prévia visual da minhoca e textos repetidos foram reduzidos para deixar a navegação mais limpa.
+- Nenhuma função, configuração salva ou progresso foi removido.
+
 # v4.5.7 — assistência para controle no celular
 - **Novo:** no celular/tela de toque, a partida ganha uma margem de resposta de aproximadamente **15%**, dando mais tempo para virar e reduzindo mortes por atraso na reação.
 - **Joystick mais responsivo:** a zona mínima para reconhecer o movimento caiu de 12px para 8px.

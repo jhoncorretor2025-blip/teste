@@ -4942,3 +4942,36 @@ main,
   .achievementText { font-size:.88rem; margin-top:2px; }
   .achievementSub { font-size:.68rem; margin-top:2px; line-height:1.25; }
 }
+
+/* v4.5.8 — dashboard inicial compacto: mostra só o essencial e deixa detalhes para as áreas próprias */
+.homeDashboard{gap:7px;margin-top:7px}
+.homeWallet{gap:6px}
+.homeWalletStat{padding:8px 10px}
+.homeWalletStat span{font-size:.62rem}
+.homeWalletStat b{font-size:1rem}
+.homeSetupCard,.homeWideCard{padding:9px 10px;border-radius:12px}
+.homeCardHead small{display:none}
+.homeMatchSummary{margin-top:5px;padding:7px 9px;font-size:.72rem;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.homeHunterChoices{gap:6px;margin-top:6px}
+.homeHunterChoice{min-height:42px;padding:7px 9px}
+.homeHunterChoice strong{font-size:.76rem}
+.homeHunterChoice small{display:none}
+.homeFeatureGrid{gap:6px}
+.homeFeatureCard{padding:8px 10px;border-radius:11px}
+.homeFeatureCard>span{font-size:.6rem}
+.homeFeatureCard strong{margin-top:3px;font-size:.82rem}
+.homeFeatureCard small{font-size:.66rem;margin-top:2px}
+.homeDailyTitle{margin-top:2px;font-size:.76rem}
+.homeMapPreview{min-height:46px;height:46px;margin-top:5px;padding:6px 9px;gap:8px}
+.homeMapPreviewIcon{width:32px;height:32px;flex-basis:32px;font-size:1.05rem;border-radius:9px}
+.homeMapPreview small{display:none}
+.homeMapPreview b{font-size:.76rem}
+.homePremiumMaps{display:none}
+.homeSnakeVisual{display:none}
+.homeSnakeLabel{margin-top:3px;font-size:.78rem}
+.homeSnakeMeta{display:none}
+.homeAchievementCard>strong{margin-top:3px;font-size:.8rem}
+.homeAchievementCard>small{display:none}
+.homeProgressStrip{padding:7px 9px}
+.homeProgressStrip small{font-size:.65rem}
+.menuHighlights{margin-top:7px}
