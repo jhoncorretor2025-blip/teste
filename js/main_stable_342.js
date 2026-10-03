@@ -297,6 +297,74 @@ setInterval(() => {
 updateOnlineLobbyUI();
 renderOnlineLobby();
 
+function setOnlineModeStable(mode) {
+  const simple = mode !== 'complex';
+  const simplePanel = $('onlineSimpleMode');
+  const complexPanel = $('onlineComplexMode');
+  if (simplePanel) simplePanel.classList.toggle('hidden', !simple);
+  if (complexPanel) complexPanel.classList.toggle('hidden', simple);
+  document.querySelectorAll('.onlineModeBtn').forEach((btn) => {
+    const active = btn.dataset.onlineMode === (simple ? 'simple' : 'complex');
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+}
+
+document.querySelectorAll('.onlineModeBtn').forEach((btn) => {
+  btn.addEventListener('click', () => setOnlineModeStable(btn.dataset.onlineMode));
+});
+
+$('onlineSimpleCreateBtn')?.addEventListener('click', () => {
+  if (!navigator.onLine) {
+    $('onlineSimpleStatus').textContent = '📡 Sem internet. Conecte-se e tente novamente.';
+    return;
+  }
+  setOnlineModeStable('simple');
+  $('onlineSimpleStatus').textContent = '⏳ Criando sua sala...';
+  try {
+    createOnlineRoom();
+  } catch (err) {
+    console.error('Falha ao criar sala rápida:', err);
+    $('onlineSimpleStatus').textContent = '❌ Não consegui criar a sala. Tente novamente ou abra o Modo complexo.';
+  }
+});
+
+$('onlineSimpleCopyBtn')?.addEventListener('click', async () => {
+  const link = buildRoomLink();
+  try {
+    await navigator.clipboard.writeText(link);
+    $('onlineSimpleCopyBtn').textContent = 'Copiado! ✅';
+    setTimeout(() => { $('onlineSimpleCopyBtn').textContent = '🔗 Copiar link'; }, 1600);
+  } catch {
+    alert(link);
+  }
+});
+
+$('onlineSimpleStartBtn')?.addEventListener('click', () => {
+  if (!net.isOnline() || !net.isHost()) {
+    $('onlineSimpleStatus').textContent = '⚠️ Crie a sala primeiro para começar.';
+    return;
+  }
+  $('onlineSimpleRoomStatus').textContent = '🚀 Partida iniciada! Aguarde seu amigo entrar ou começar a jogar.';
+  $('startFromHostPanel')?.click();
+});
+
+$('onlineSimpleJoinBtn')?.addEventListener('click', () => {
+  const value = $('onlineSimpleJoinCode')?.value?.trim();
+  if (!value) {
+    $('onlineSimpleStatus').textContent = '🔗 Cole o link ou o código da sala.';
+    $('onlineSimpleJoinCode')?.focus();
+    return;
+  }
+  const code = extractRoomCode(value);
+  if (!normalizeRoomNumberUI(code) || normalizeRoomNumberUI(code).length !== 4) {
+    $('onlineSimpleStatus').textContent = '⚠️ O código da sala precisa ter 4 números.';
+    return;
+  }
+  $('joinCode').value = code;
+  $('joinBtn').click();
+});
+
 function normalizeRoomNumberUI(value) {
   return String(value ?? '').replace(/\D/g, '').slice(0, 4);
 }
@@ -355,6 +423,10 @@ function createOnlineRoom() {
       $('roomStatus').textContent = security
         ? '🔐 Sala protegida! Envie o link e a senha separadamente para seu amigo.'
         : '🔓 Sala aberta! Quem receber o link entra direto no jogo.';
+      if ($('onlineSimpleRoomLink')) $('onlineSimpleRoomLink').value = buildRoomLink();
+      $('onlineSimpleRoomPanel')?.classList.remove('hidden');
+      if ($('onlineSimpleStatus')) $('onlineSimpleStatus').textContent = '🎉 Sala criada! Agora copie o link e envie para seu amigo.';
+      if ($('onlineSimpleRoomStatus')) $('onlineSimpleRoomStatus').textContent = '🟢 Sala aberta. Esperando seu amigo entrar...';
       $('roomSecurityBadge').textContent = security
         ? '🔒 Sala com senha: envie a senha separadamente do link.'
         : '🔓 Sala sem senha: quem receber o link entra direto.';
