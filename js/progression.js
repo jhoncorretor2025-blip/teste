@@ -19,6 +19,10 @@ export const SHOP_MAPS = [
   { id:'aurora', name:'Aurora Boreal', cost:120, icon:'🌌', desc:'Arena com brilho verde e azul.' },
   { id:'volcano', name:'Vulcão', cost:150, icon:'🌋', desc:'Arena quente com visual de lava.' },
   { id:'candy', name:'Mundo Doce', cost:180, icon:'🍭', desc:'Arena colorida de doces.' },
+  { id:'jungle', name:'Selva Tropical', cost:210, icon:'🌴', desc:'Arena tropical cheia de verde.' },
+  { id:'ocean', name:'Oceano Tropical', cost:240, icon:'🐠', desc:'Arena aquática com clima tropical.' },
+  { id:'desert', name:'Deserto', cost:270, icon:'🏜️', desc:'Arena quente de areia e aventura.' },
+  { id:'city', name:'Cidade Neon', cost:320, icon:'🏙️', desc:'Arena urbana com visual neon.' },
 ];
 
 export const SHOP_SKINS = [
@@ -27,6 +31,7 @@ export const SHOP_SKINS = [
   { id:'ice', name:'Gelo', cost:110, icon:'❄️', desc:'Fantasia gelada.' },
   { id:'galaxy', name:'Galáxia', cost:160, icon:'🌌', desc:'Fantasia inspirada no espaço.' },
   { id:'venom', name:'Veneno', cost:200, icon:'☣️', desc:'Fantasia tóxica e rara.' },
+  { id:'electric', name:'Elétrico', cost:230, icon:'⚡', desc:'Fantasia elétrica com padrão energético.' },
 ];
 
 export const COSMETICS = [
