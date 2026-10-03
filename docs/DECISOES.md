@@ -1,3 +1,8 @@
+## v4.5.7 — assistência de controle no celular
+**Decisão:** aparelhos com controle por toque recebem uma margem de reação de aproximadamente 15% no intervalo dos passos e controles físicos maiores.
+**Motivo:** em tela pequena, o jogador precisa de mais tempo e de uma resposta mais fácil para virar a minhoca; a mudança reduz mortes causadas por atraso ou dificuldade de toque sem alterar o ritmo do PC.
+**Cuidados:** detectar somente pointer: coarse, manter a velocidade configurada no computador e não alterar regras de colisão.
+
 ## v4.5.6 — ordem dinâmica da galeria de conquistas
 **Decisão:** dentro de cada categoria, a galeria usa uma **partição estável por status**: primeiro aparecem as conquistas já concluídas pelo jogador; depois, as pendentes.
 **Motivo:** quem está jogando consegue enxergar primeiro o que já conquistou, enquanto as conquistas que faltam continuam na sequência de dificuldade original. Para um jogador novo, a ordem permanece a progressão padrão.

@@ -587,12 +587,12 @@ h1 {
   .joystick {
     left:10px;
     bottom:10px;
-    width:116px;
-    height:116px
+    width:128px;
+    height:128px
   }
   .stick {
-    left:35px;
-    top:35px
+    left:39px;
+    top:39px
   }
   .stickText {
     left:132px;
@@ -602,8 +602,8 @@ h1 {
   .boostTouch {
     right:10px;
     bottom:10px;
-    width:82px;
-    height:82px
+    width:88px;
+    height:88px
   }
   .gameBox {
     padding-bottom:7px

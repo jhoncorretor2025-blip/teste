@@ -1,3 +1,10 @@
+# v4.5.7 — assistência para controle no celular
+- **Novo:** no celular/tela de toque, a partida ganha uma margem de resposta de aproximadamente **15%**, dando mais tempo para virar e reduzindo mortes por atraso na reação.
+- **Joystick mais responsivo:** a zona mínima para reconhecer o movimento caiu de 12px para 8px.
+- **Controles maiores no celular:** joystick passou de 116px para 128px e turbo de 82px para 88px.
+- **PC preservado:** essas mudanças de ritmo só entram quando o aparelho informa controle por toque; a velocidade escolhida no computador continua igual.
+- Nenhum critério de conquista ou progresso foi alterado.
+
 # v4.5.6 — ordem personalizada das conquistas
 - **Novo:** dentro de cada categoria, as conquistas já **concluídas pelo jogador sobem para o primeiro lugar**.
 - **Ordem preservada:** as concluídas mantêm a ordem original de dificuldade entre si, e as pendentes também mantêm a ordem original.

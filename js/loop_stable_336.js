@@ -407,7 +407,11 @@ export function resumeSavedGame(snap) {
   $('overlay').classList.add('hidden');
   $('badge').textContent = (state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO') + (state.noWalls ? ' 🌀' : '');
   const spd = SPEEDS.find((s) => s.value === state.speed) || SPEEDS[1];
-  currentInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
+  // Assistência mobile: em telas de toque, damos 15% mais tempo entre passos.
+  // Isso melhora a janela para virar sem alterar a velocidade escolhida no PC.
+  const mobileAssist = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)')?.matches;
+  const baseInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
+  currentInterval = mobileAssist ? Math.round(baseInterval * 1.15) : baseInterval;
   state.paused = false;
   state.running = true;
   render();
@@ -472,7 +476,11 @@ export function startGame() {
   render();
   // A velocidade escolhida no menu define o ritmo base; o Turbo Worms roda mais rápido ainda
   const spd = SPEEDS.find(s => s.value === state.speed) || SPEEDS[1];
-  currentInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
+  // Assistência mobile: em telas de toque, damos 15% mais tempo entre passos.
+  // Isso melhora a janela para virar sem alterar a velocidade escolhida no PC.
+  const mobileAssist = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)')?.matches;
+  const baseInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
+  currentInterval = mobileAssist ? Math.round(baseInterval * 1.15) : baseInterval;
 
   // Contagem regressiva "3, 2, 1, VAI!" antes de começar de verdade — melhoria visual #8
   runCountdown(3, () => {

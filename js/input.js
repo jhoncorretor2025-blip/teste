@@ -112,7 +112,9 @@ export function setupInput() {
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const x = e.clientX - cx, y = e.clientY - cy;
     const ax = Math.abs(x), ay = Math.abs(y);
-    if (Math.max(ax, ay) < 12) return;
+    // No celular, uma zona morta muito grande faz a minhoca parecer lenta para responder.
+    // Uma zona menor deixa curvas rápidas sem exigir que a pessoa arraste tanto o dedo.
+    if (Math.max(ax, ay) < 8) return;
     moveMine(ax > ay ? (x > 0 ? D.right : D.left) : (y > 0 ? D.down : D.up));
     const max = r.width * 0.33, m = Math.min(max, Math.hypot(x, y)), a = Math.atan2(y, x);
     $('stick').style.transform = `translate(${Math.cos(a) * m}px,${Math.sin(a) * m}px)`;
