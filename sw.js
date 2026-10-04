@@ -1,7 +1,7 @@
 // Service Worker do Snake Arena — deixa o jogo instalável e jogável offline (modo local).
 // O multiplayer online continua precisando de internet, claro (é conexão em tempo real).
 
-const CACHE = 'snake-arena-v4.5.18';
+const CACHE = 'snake-arena-v4.5.19';
 const ASSETS = [
   './',
   './index.html',
