@@ -978,14 +978,25 @@ if (new URLSearchParams(location.search).get('diag') === '1') {
 // ("Cannot access before initialization"), travando o carregamento. Motivo: quem é
 // declarado com const/let só existe de verdade a partir da linha onde é declarado, mesmo
 // que a função que o usa já exista antes (funções são content içadas; const/let não).
-// Navegação principal: quatro áreas simples. Os nomes antigos "ranking" e "conquistas"
-// continuam aceitos em links antigos e atalhos, mas agora apontam para Progresso.
-const TAB_ALIASES = { ranking: 'progresso', conquistas: 'progresso', loja: 'progresso' };
+// Navegação principal: cada área aparece como uma entrada própria no menu.
+  // Algumas páginas reaproveitam seções já existentes dentro de Progresso para manter
+  // ranking, loja, desafios e histórico sincronizados com os dados reais.
+  // Os nomes antigos continuam aceitos para não quebrar links já salvos.
+  const TAB_ALIASES = {
+    personalizar: 'personalizar',
+    personalizacao: 'personalizar',
+    config: 'personalizar',
+    loja: 'progresso',
+    ranking: 'progresso',
+    desafios: 'progresso',
+    historico: 'progresso',
+    conquistas: 'progresso',
+  };
 
 // Atalhos de app (melhoria #2) — segurar o ícone no Android oferece "Jogar Rápido" e
 // "Ver Conquistas", que chegam aqui como parâmetros na URL
 const urlAction = new URLSearchParams(location.search);
-const ABAS_VALIDAS = ['jogar', 'personalizar', 'online', 'progresso', 'loja', 'ranking', 'conquistas'];
+const ABAS_VALIDAS = ['jogar', 'personalizar', 'config', 'online', 'progresso', 'loja', 'ranking', 'desafios', 'personalizacao', 'historico', 'conquistas'];
 const tabDaUrl = urlAction.get('tab');
 const secaoDaUrl = urlAction.get('section') || 'stats';
 if (tabDaUrl && ABAS_VALIDAS.includes(tabDaUrl)) {
@@ -1458,7 +1469,36 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
 
   const current = document.querySelector('.tabPanel:not(.hidden)');
   if (current) current.classList.add('tabFading');
-  const sectionForTab = requestedTab === 'loja' ? 'shop' : (progressSection || 'stats');
+  const sectionMap = {
+    loja: 'shop',
+    ranking: 'ranking',
+    historico: 'history',
+    desafios: 'stats',
+  };
+  const sectionForTab = sectionMap[requestedTab] || progressSection || 'stats';
+
+  // O menu principal mostra cada área separadamente. As seções internas de Progresso
+  // ficam escondidas quando uma dessas áreas está aberta, deixando a tela limpa.
+  const progressNav = document.querySelector('.progressNav');
+  if (progressNav) progressNav.classList.toggle('hidden', activeTab !== 'progresso');
+
+  // Reaproveitamos o conteúdo real já existente, mas mudamos o título para a área
+  // escolhida, para a pessoa perceber que está numa página própria.
+  if (activeTab === 'progresso') {
+    const title = document.querySelector('[data-panel="progresso"] .progressHero h2');
+    const titles = {
+      progresso: '📊 Meu progresso',
+      ranking: '🏆 Ranking',
+      loja: '🛒 Loja da Mioquinha',
+      desafios: '🎯 Desafios',
+      historico: '📜 Histórico',
+    };
+    if (title) title.textContent = titles[requestedTab] || titles.progresso;
+  }
+  if (activeTab === 'personalizar') {
+    const title = document.querySelector('[data-panel="personalizar"] > section.card > h2');
+    if (title) title.textContent = requestedTab === 'personalizacao' ? '🎨 Personalização' : '⚙️ Config.';
+  }
   setTimeout(() => {
     document.querySelectorAll('.tabPanel').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== activeTab));
     const next = document.querySelector('.tabPanel:not(.hidden)');
@@ -1466,7 +1506,15 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
       next.classList.add('tabFading');
       requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('tabFading')));
     }
-    if (activeTab === 'progresso') activateProgressSection(sectionForTab);
+    if (activeTab === 'progresso') {
+      activateProgressSection(sectionForTab);
+      if (requestedTab === 'desafios') {
+        setTimeout(() => document.querySelector('[data-progress-panel="stats"] .dailyChallengeCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+      }
+    }
+    if (activeTab === 'personalizar' && requestedTab === 'personalizacao') {
+      setTimeout(() => document.querySelector('[data-panel="personalizar"] #settingsSectionAppearance')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+    }
   }, 120);
 
   if (modoUrl === 'push' || modoUrl === 'replace') {
