@@ -2732,6 +2732,9 @@ function renderAchievementsGallery() {
     { key: 'iniciante', title: '🟢 Iniciante', subtitle: 'Primeiros objetivos para pegar o jeito' },
     { key: 'intermediario', title: '🟡 Intermediário', subtitle: 'Desafios que exigem mais consistência' },
     { key: 'avancado', title: '🔴 Avançado', subtitle: 'Conquistas para dominar a arena' },
+    { key: 'extremos', title: '🔥 Desafios Extremos', subtitle: 'Desafios de alto nível para quem domina a arena' },
+    { key: 'lendarias', title: '👑 Lendárias', subtitle: 'Feitos raros reservados aos melhores jogadores' },
+    { key: 'sobrevivencia', title: '🛡️ Sobrevivência', subtitle: 'Conquistas focadas em sobreviver e resistir' },
     { key: 'colecao', title: '🏆 Coleção', subtitle: 'Conquistas de longo prazo — precisam de várias partidas e desbloqueios ao longo do tempo' },
     { key: 'online', title: '🌐 Online', subtitle: 'Desafios exclusivos para partidas multiplayer' },
   ];
