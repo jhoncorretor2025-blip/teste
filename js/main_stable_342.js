@@ -107,8 +107,10 @@ function checkOnlineAchievementsFromState() {
   if (myFood >= 25) unlockOnline('online_food_25');
   if (myScore >= 100) unlockOnline('online_score_100');
   if (myScore >= 500) unlockOnline('online_score_500');
+  if (myScore >= 750) unlockOnline('online_score_750');
   if (myElims >= 1) unlockOnline('online_kill_1');
   if (myElims >= 3) unlockOnline('online_kill_3');
+  if (myElims >= 5) unlockOnline('online_kill_5');
 
   // Só conta tempo a partir do começo desta partida online.
   if (!onlineAchievementStartAt) onlineAchievementStartAt = Date.now();
@@ -1260,8 +1262,10 @@ document.addEventListener('onlineMatchResult', (e) => {
     if ((foodsEaten[my] || 0) >= 25) unlockOnline('online_food_25');
     if ((scores[my] || 0) >= 100) unlockOnline('online_score_100');
     if ((scores[my] || 0) >= 500) unlockOnline('online_score_500');
+    if ((scores[my] || 0) >= 750) unlockOnline('online_score_750');
     if ((eliminations[my] || 0) >= 1) unlockOnline('online_kill_1');
     if ((eliminations[my] || 0) >= 3) unlockOnline('online_kill_3');
+    if ((eliminations[my] || 0) >= 5) unlockOnline('online_kill_5');
     if (champion === my) unlockOnline('online_champion');
   }
 
