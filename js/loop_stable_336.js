@@ -429,6 +429,7 @@ export function startGame() {
   updateGamesPlayedBadge(totalGames);
   if (totalGames >= 5) announceAchievement(unlockAchievement('games_5'));
   if (totalGames >= 10) announceAchievement(unlockAchievement('games_10'));
+  if (totalGames >= 20) announceAchievement(unlockAchievement('games_20'));
   if (totalGames >= 50) announceAchievement(unlockAchievement('games_50'));
   updateSessionStatsDisplay(incrementSessionGames());
   const streakInfo = updateStreakAndLastPlayed();
@@ -539,6 +540,7 @@ export function tryBoost(i) {
   state.boostUsedCount[i] = (state.boostUsedCount[i] || 0) + 1;
   if (i === mySlot) {
     if (state.boostUsedCount[i] >= 1) announceAchievement(unlockAchievement('boost_first'));
+    if (state.boostUsedCount[i] >= 3) announceAchievement(unlockAchievement('boost_3'));
     if (state.boostUsedCount[i] >= 10) announceAchievement(unlockAchievement('boost_10'));
   }
   state.boostUntil[i] = now + BOOST_DURATION;
@@ -625,7 +627,9 @@ function stepMovement(indices) {
         if (die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('eliminator'));
         if (isOnline() && die[i] === mySlot && state.eliminations[die[i]] >= 1) announceAchievement(unlockAchievement('online_kill_1'));
         if (isOnline() && die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('online_kill_3'));
+        if (die[i] === mySlot && state.eliminations[die[i]] >= 1) announceAchievement(unlockAchievement('eliminator_1'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 5) announceAchievement(unlockAchievement('eliminator_5'));
+        if (die[i] === mySlot && state.eliminations[die[i]] >= 7) announceAchievement(unlockAchievement('eliminator_7'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 10) announceAchievement(unlockAchievement('eliminator_10'));
       }
       kill(i, die[i]);
@@ -688,17 +692,24 @@ function stepMovement(indices) {
         if (combo >= 5) announceAchievement(unlockAchievement('combo_master'));
         if (combo >= 10) announceAchievement(unlockAchievement('combo_10'));
         if (isOnline()) announceAchievement(unlockAchievement('online_first_food'));
+        if (state.foodsEaten[i] >= 5) announceAchievement(unlockAchievement('quick_5_food'));
         if (state.foodsEaten[i] >= 20) announceAchievement(unlockAchievement('food_20'));
+        if (state.foodsEaten[i] >= 30) announceAchievement(unlockAchievement('food_30'));
         if (isOnline() && state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('online_food_25'));
         if (state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('food_25'));
+        if (state.scores[i] >= 10) announceAchievement(unlockAchievement('score_10'));
         if (state.scores[i] >= 25) announceAchievement(unlockAchievement('score_25'));
         if (state.scores[i] >= 50) announceAchievement(unlockAchievement('score_50'));
         if (state.scores[i] >= 100) announceAchievement(unlockAchievement('century'));
+        if (state.scores[i] >= 150) announceAchievement(unlockAchievement('score_150'));
+        if (state.scores[i] >= 200) announceAchievement(unlockAchievement('score_200'));
         if (isOnline() && state.scores[i] >= 100) announceAchievement(unlockAchievement('online_score_100'));
         if (state.scores[i] >= 250) announceAchievement(unlockAchievement('score_250'));
         if (state.scores[i] >= 350) announceAchievement(unlockAchievement('score_350'));
         if (state.scores[i] >= 500) announceAchievement(unlockAchievement('score_500'));
+        if (state.scores[i] >= 750) announceAchievement(unlockAchievement('score_750'));
         if (isOnline() && state.scores[i] >= 500) announceAchievement(unlockAchievement('online_score_500'));
+        if (isOnline() && state.scores[i] >= 750) announceAchievement(unlockAchievement('online_score_750'));
         if (state.scores[i] >= 1000) announceAchievement(unlockAchievement('score_1000'));
         if (state.scores[i] >= 1500) announceAchievement(unlockAchievement('score_1500'));
       }
@@ -1279,16 +1290,21 @@ function tick() {
     trackProgressionEvent('survive', Math.floor((Date.now() - state.spawnedAt[mySlot]) / 1000));
     trackProgressionEvent('length', mySnake.length);
     const survivedMs = Date.now() - state.spawnedAt[mySlot];
+    if (survivedMs >= 20000) announceAchievement(unlockAchievement('survive_20'));
     if (survivedMs >= 45000) announceAchievement(unlockAchievement('survive_45'));
+    if (survivedMs >= 90000) announceAchievement(unlockAchievement('survive_90'));
     if (survivedMs >= 120000) announceAchievement(unlockAchievement('survivor'));
     if (isOnline() && survivedMs >= 120000) announceAchievement(unlockAchievement('online_survive_2m'));
     if (survivedMs >= 300000) announceAchievement(unlockAchievement('survive_5m'));
+    if (mySnake.length >= 15) announceAchievement(unlockAchievement('length_15'));
     if (mySnake.length >= 30) announceAchievement(unlockAchievement('length_30'));
+    if (mySnake.length >= 40) announceAchievement(unlockAchievement('length_40'));
     if (mySnake.length >= 20) announceAchievement(unlockAchievement('length_20'));
     if (mySnake.length >= 25) announceAchievement(unlockAchievement('length_25'));
     if (mySnake.length >= 35) announceAchievement(unlockAchievement('length_35'));
     if (mySnake.length >= 50) announceAchievement(unlockAchievement('length_50'));
     if (mySnake.length >= 75) announceAchievement(unlockAchievement('length_75'));
+    if (mySnake.length >= 100) announceAchievement(unlockAchievement('length_100'));
   }
   updateHunter();
   updateSecondPlaceBonusFood();
