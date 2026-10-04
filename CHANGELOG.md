@@ -1,3 +1,9 @@
+# v4.5.16 — menu de conquistas
+- **Menu principal:** adicionada a entrada **🏅 Conquistas** entre Histórico e Online.
+- **Conquistas:** o novo botão abre diretamente a galeria real de conquistas, sem precisar entrar em Progresso e procurar a seção.
+- **Versão/cache:** atualizado para **4.5.16** para forçar a nova navegação nos aparelhos.
+- **Sem remoção:** o sistema existente de conquistas e o restante do jogo foram preservados.
+
 # v4.5.15 — nova navegação principal
 - **Menu:** agora a navegação principal mostra **🏠 Jogar | 🛒 Loja | 🏆 Ranking | 🎯 Desafios | 📊 Progresso | 🎨 Personalização | 📜 Histórico | 🌐 Online | ⚙️ Config.**
 - **Ranking, Loja e Histórico:** passam a abrir diretamente suas áreas correspondentes usando as funções e dados que já existiam no jogo.
