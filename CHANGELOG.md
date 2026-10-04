@@ -5,6 +5,7 @@
 - **Personalização:** abre a área visual/configurável destacando Aparência; **Config.** continua reunindo os ajustes gerais.
 - **Versão/cache:** atualizado para **4.5.15**.
 - **Sem remoção:** as funções anteriores de jogo, multiplayer, loja, conquistas e progresso foram preservadas.
+- **Navegação limpa:** os botões internos de Progresso ficam ocultos quando Ranking, Loja, Desafios ou Histórico estão abertos, deixando cada entrada do menu com aparência de página própria.
 
 # v4.5.9 — melhorias completas do online e tempo de jogo
 - **Online:** mapa aleatório ou mapa escolhido.
