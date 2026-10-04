@@ -1296,6 +1296,10 @@ function tick() {
     if (survivedMs >= 120000) announceAchievement(unlockAchievement('survivor'));
     if (isOnline() && survivedMs >= 120000) announceAchievement(unlockAchievement('online_survive_2m'));
     if (survivedMs >= 300000) announceAchievement(unlockAchievement('survive_5m'));
+    if (survivedMs >= 180000) announceAchievement(unlockAchievement('survival_3m'));
+    if (survivedMs >= 420000) announceAchievement(unlockAchievement('survival_7m'));
+    if (survivedMs >= 600000) announceAchievement(unlockAchievement('extreme_survive_10m'));
+    if (survivedMs >= 900000) announceAchievement(unlockAchievement('survival_15m'));
     if (mySnake.length >= 15) announceAchievement(unlockAchievement('length_15'));
     if (mySnake.length >= 30) announceAchievement(unlockAchievement('length_30'));
     if (mySnake.length >= 40) announceAchievement(unlockAchievement('length_40'));
@@ -1305,6 +1309,10 @@ function tick() {
     if (mySnake.length >= 50) announceAchievement(unlockAchievement('length_50'));
     if (mySnake.length >= 75) announceAchievement(unlockAchievement('length_75'));
     if (mySnake.length >= 100) announceAchievement(unlockAchievement('length_100'));
+    if (mySnake.length >= 120) {
+      announceAchievement(unlockAchievement('legendary_length_120'));
+      announceAchievement(unlockAchievement('extreme_length_120'));
+    }
   }
   updateHunter();
   updateSecondPlaceBonusFood();
