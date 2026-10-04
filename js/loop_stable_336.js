@@ -631,6 +631,7 @@ function stepMovement(indices) {
         if (die[i] === mySlot && state.eliminations[die[i]] >= 5) announceAchievement(unlockAchievement('eliminator_5'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 7) announceAchievement(unlockAchievement('eliminator_7'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 10) announceAchievement(unlockAchievement('eliminator_10'));
+        if (die[i] === mySlot && state.eliminations[die[i]] >= 12) announceAchievement(unlockAchievement('legendary_eliminator_12'));
       }
       kill(i, die[i]);
       return;
@@ -712,6 +713,10 @@ function stepMovement(indices) {
         if (isOnline() && state.scores[i] >= 750) announceAchievement(unlockAchievement('online_score_750'));
         if (state.scores[i] >= 1000) announceAchievement(unlockAchievement('score_1000'));
         if (state.scores[i] >= 1500) announceAchievement(unlockAchievement('score_1500'));
+        if (state.scores[i] >= 2000) {
+          announceAchievement(unlockAchievement('legendary_score_2000'));
+          announceAchievement(unlockAchievement('extreme_score_2000'));
+        }
       }
     }
     if (state.grow[i] > 0) state.grow[i]--;
