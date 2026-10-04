@@ -1,3 +1,7 @@
+## [4.5.19] — 2026-10-04
+- 🏆 Adicionadas as novas categorias de conquistas: 👑 Lendárias, 🔥 Desafios Extremos e 🛡️ Sobrevivência.
+- Adicionadas 9 conquistas novas, com desbloqueio real por pontuação, tamanho, eliminações e tempo sobrevivido.
+
 # v4.5.18 — expansão da galeria de conquistas
 - **🟢 Iniciante:** +6 novas conquistas.
 - **🟡 Intermediário:** +6 novas conquistas.
