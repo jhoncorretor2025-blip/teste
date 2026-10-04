@@ -1480,7 +1480,7 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
   // O menu principal mostra cada área separadamente. As seções internas de Progresso
   // ficam escondidas quando uma dessas áreas está aberta, deixando a tela limpa.
   const progressNav = document.querySelector('.progressNav');
-  if (progressNav) progressNav.classList.toggle('hidden', activeTab !== 'progresso');
+  if (progressNav) progressNav.classList.toggle('hidden', requestedTab !== 'progresso');
 
   // Reaproveitamos o conteúdo real já existente, mas mudamos o título para a área
   // escolhida, para a pessoa perceber que está numa página própria.
