@@ -1,3 +1,11 @@
+# v4.5.15 — nova navegação principal
+- **Menu:** agora a navegação principal mostra **🏠 Jogar | 🛒 Loja | 🏆 Ranking | 🎯 Desafios | 📊 Progresso | 🎨 Personalização | 📜 Histórico | 🌐 Online | ⚙️ Config.**
+- **Ranking, Loja e Histórico:** passam a abrir diretamente suas áreas correspondentes usando as funções e dados que já existiam no jogo.
+- **Desafios:** abre a área de progresso no Desafio do Dia para facilitar o acesso.
+- **Personalização:** abre a área visual/configurável destacando Aparência; **Config.** continua reunindo os ajustes gerais.
+- **Versão/cache:** atualizado para **4.5.15**.
+- **Sem remoção:** as funções anteriores de jogo, multiplayer, loja, conquistas e progresso foram preservadas.
+
 # v4.5.9 — melhorias completas do online e tempo de jogo
 - **Online:** mapa aleatório ou mapa escolhido.
 - **Online:** mapa inicial maior e expansão automática conforme a maior minhoca cresce.
