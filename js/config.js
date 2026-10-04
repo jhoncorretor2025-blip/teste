@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '4.5.18';
+export const VERSION = '4.5.19';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -29,6 +29,18 @@ export const ACHIEVEMENTS = [
   { id: 'length_15', name: 'Minhoca em Crescimento', desc: 'Chegue a 15 segmentos numa partida', icon: '🐛', category: 'iniciante' },
   { id: 'boost_3', name: 'Turbo Treinado', desc: 'Use o turbo 3 vezes numa partida', icon: '⚡', category: 'iniciante' },
   { id: 'games_20', name: 'Maratonista Iniciante', desc: 'Jogue 20 partidas no total', icon: '🎮', category: 'iniciante' },
+  // 👑 Lendárias
+  { id: 'legendary_score_2000', name: 'Rei da Pontuação', desc: 'Faça 2.000 pontos numa partida', icon: '👑', category: 'lendarias' },
+  { id: 'legendary_length_120', name: 'Titã da Arena', desc: 'Chegue a 120 segmentos numa partida', icon: '🐉', category: 'lendarias' },
+  { id: 'legendary_eliminator_12', name: 'Senhor da Arena', desc: 'Elimine 12 adversários numa partida', icon: '👑', category: 'lendarias' },
+  // 🔥 Desafios Extremos
+  { id: 'extreme_survive_10m', name: 'Sem Fim', desc: 'Sobreviva 10 minutos sem morrer', icon: '🔥', category: 'extremos' },
+  { id: 'extreme_score_2000', name: 'Pontuação Insana', desc: 'Faça 2.000 pontos numa partida', icon: '💥', category: 'extremos' },
+  { id: 'extreme_length_120', name: 'Colosso Extremo', desc: 'Chegue a 120 segmentos numa partida', icon: '☠️', category: 'extremos' },
+  // 🛡️ Sobrevivência
+  { id: 'survival_3m', name: 'Sobreviveu 3 Minutos', desc: 'Sobreviva 3 minutos sem morrer', icon: '🛡️', category: 'sobrevivencia' },
+  { id: 'survival_7m', name: 'Muralha Viva', desc: 'Sobreviva 7 minutos sem morrer', icon: '🛡️', category: 'sobrevivencia' },
+  { id: 'survival_15m', name: 'Sobrevivente Supremo', desc: 'Sobreviva 15 minutos sem morrer', icon: '🏆', category: 'sobrevivencia' },
 
   // 🟡 Intermediário — do mais fácil ao mais difícil
   { id: 'appetite', name: 'Grande Apetite', desc: 'Coma 50 pontos de comida no total', icon: '🍎', cumulative: 'totalFoods', target: 50, category: 'intermediario' },
