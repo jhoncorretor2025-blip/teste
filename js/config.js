@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '4.5.19';
+export const VERSION = '4.5.20';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -14,7 +14,7 @@ export const ACHIEVEMENTS = [
   { id: 'boost_first', name: 'Primeiro Turbo', desc: 'Use o turbo pela primeira vez', icon: '⚡', category: 'iniciante' },
   { id: 'score_25', name: 'Começo Forte', desc: 'Faça 25 pontos numa partida', icon: '⭐', category: 'iniciante' },
   { id: 'food_20', name: 'Bom Apetite', desc: 'Coma 20 pontos de comida numa partida', icon: '🥕', category: 'iniciante' },
-  { id: 'survive_45', name: 'Aguentou Firme', desc: 'Sobreviva 45 segundos sem morrer', icon: '🛡️', category: 'iniciante' },
+  { id: 'survive_45', name: 'Aguentou Firme', desc: 'Sobreviva 45 segundos sem morrer', icon: '🛡️', category: 'sobrevivencia' },
   { id: 'length_30', name: 'Crescendo', desc: 'Chegue a 30 segmentos numa partida', icon: '🐛', category: 'iniciante' },
   { id: 'first_star', name: 'Estrela Cadente', desc: 'Pegue sua primeira estrela', icon: '🌟', category: 'iniciante' },
   { id: 'score_50', name: 'Meio Centenar', desc: 'Faça 50 pontos numa partida', icon: '🏅', category: 'iniciante' },
@@ -25,7 +25,7 @@ export const ACHIEVEMENTS = [
   { id: 'games_10', name: 'Ritmo de Jogo', desc: 'Jogue 10 partidas no total', icon: '🎯', category: 'iniciante' },
   { id: 'quick_5_food', name: 'Primeiras 5', desc: 'Coma 5 comidas numa partida', icon: '🍎', category: 'iniciante' },
   { id: 'score_10', name: 'Primeiros Pontos', desc: 'Faça 10 pontos numa partida', icon: '⭐', category: 'iniciante' },
-  { id: 'survive_20', name: 'Fôlego Inicial', desc: 'Sobreviva 20 segundos sem morrer', icon: '🛡️', category: 'iniciante' },
+  { id: 'survive_20', name: 'Fôlego Inicial', desc: 'Sobreviva 20 segundos sem morrer', icon: '🛡️', category: 'sobrevivencia' },
   { id: 'length_15', name: 'Minhoca em Crescimento', desc: 'Chegue a 15 segmentos numa partida', icon: '🐛', category: 'iniciante' },
   { id: 'boost_3', name: 'Turbo Treinado', desc: 'Use o turbo 3 vezes numa partida', icon: '⚡', category: 'iniciante' },
   { id: 'games_20', name: 'Maratonista Iniciante', desc: 'Jogue 20 partidas no total', icon: '🎮', category: 'iniciante' },
@@ -47,27 +47,27 @@ export const ACHIEVEMENTS = [
   { id: 'score_150', name: 'Pontuação de Respeito', desc: 'Faça 150 pontos numa partida', icon: '🏅', category: 'intermediario' },
   { id: 'score_200', name: 'Dupla Centena', desc: 'Faça 200 pontos numa partida', icon: '💯', category: 'intermediario' },
   { id: 'food_30', name: 'Banquete', desc: 'Coma 30 pontos de comida numa partida', icon: '🍽️', category: 'intermediario' },
-  { id: 'survive_90', name: 'Fôlego de Aço', desc: 'Sobreviva 90 segundos sem morrer', icon: '⏱️', category: 'intermediario' },
+  { id: 'survive_90', name: 'Fôlego de Aço', desc: 'Sobreviva 90 segundos sem morrer', icon: '⏱️', category: 'sobrevivencia' },
   { id: 'length_40', name: 'Gigante Quase Lá', desc: 'Chegue a 40 segmentos numa partida', icon: '🐍', category: 'intermediario' },
   { id: 'eliminator_1', name: 'Primeiro Abate', desc: 'Elimine 1 adversário numa partida', icon: '⚔️', category: 'intermediario' },
   { id: 'combo_master', name: 'Combo Mestre', desc: 'Faça um combo de velocidade x5 numa partida', icon: '🔥', category: 'intermediario' },
   { id: 'century', name: 'Century', desc: 'Faça 100 pontos numa única partida', icon: '💯', category: 'intermediario' },
   { id: 'length_25', name: 'Minhoca Robusta', desc: 'Chegue a 25 segmentos numa partida', icon: '🐍', category: 'intermediario' },
   { id: 'boost_10', name: 'Turbo Frequente', desc: 'Use o turbo 10 vezes numa partida', icon: '⚡', category: 'intermediario' },
-  { id: 'survivor', name: 'Sobrevivente', desc: 'Sobreviva 2 minutos numa partida sem morrer', icon: '🛡️', category: 'intermediario' },
+  { id: 'survivor', name: 'Sobrevivente', desc: 'Sobreviva 2 minutos numa partida sem morrer', icon: '🛡️', category: 'sobrevivencia' },
   { id: 'score_250', name: 'Pontuador', desc: 'Faça 250 pontos numa partida', icon: '💎', category: 'intermediario' },
   { id: 'combo_10', name: 'Combo Explosivo', desc: 'Faça um combo de velocidade x10', icon: '💥', category: 'intermediario' },
   { id: 'length_35', name: 'Gigante em Formação', desc: 'Chegue a 35 segmentos numa partida', icon: '🐉', category: 'intermediario' },
   { id: 'score_350', name: 'Alta Pontuação', desc: 'Faça 350 pontos numa partida', icon: '🚀', category: 'intermediario' },
-  { id: 'survive_5m', name: 'Resistência', desc: 'Sobreviva 5 minutos sem morrer', icon: '⏱️', category: 'intermediario' },
+  { id: 'survive_5m', name: 'Resistência', desc: 'Sobreviva 5 minutos sem morrer', icon: '⏱️', category: 'sobrevivencia' },
   { id: 'hunter_escape', name: 'Escapou da Caçadora', desc: 'Sobreviva a uma aparição inteira da Minhoca Caçadora', icon: '💀', category: 'intermediario' },
   { id: 'eliminator', name: 'Eliminador', desc: 'Elimine 3 adversários numa partida só', icon: '⚔️', category: 'intermediario' },
   { id: 'tournament_champion', name: 'Campeão de Torneio', desc: 'Vença um Modo Torneio', icon: '🏆', category: 'intermediario' },
 
   // 🔴 Avançado — do mais fácil ao mais difícil
-  { id: 'score_750', name: 'Fera da Pontuação', desc: 'Faça 750 pontos numa partida', icon: '💎', category: 'avancado' },
-  { id: 'length_100', name: 'Colossal', desc: 'Chegue a 100 segmentos numa partida', icon: '🐲', category: 'avancado' },
-  { id: 'eliminator_7', name: 'Predador da Arena', desc: 'Elimine 7 adversários numa partida', icon: '☠️', category: 'avancado' },
+  { id: 'score_750', name: 'Fera da Pontuação', desc: 'Faça 750 pontos numa partida', icon: '💎', category: 'extremos' },
+  { id: 'length_100', name: 'Colossal', desc: 'Chegue a 100 segmentos numa partida', icon: '🐲', category: 'lendarias' },
+  { id: 'eliminator_7', name: 'Predador da Arena', desc: 'Elimine 7 adversários numa partida', icon: '☠️', category: 'extremos' },
   { id: 'social', name: 'Sociável', desc: 'Jogue uma partida online com um amigo', icon: '👥', category: 'avancado' },
   { id: 'collector', name: 'Colecionador', desc: 'Experimente todos os formatos de cabeça', icon: '🐍', cumulative: 'headsUsed', target: 'ALL_HEADS', category: 'colecao' },
   { id: 'chameleon', name: 'Camaleão', desc: 'Jogue em todos os temas de tabuleiro', icon: '🌈', cumulative: 'themesUsed', target: 'ALL_THEMES', category: 'colecao' },
@@ -78,10 +78,10 @@ export const ACHIEVEMENTS = [
   { id: 'eliminator_5', name: 'Caçador de Inimigos', desc: 'Elimine 5 adversários numa partida', icon: '☠️', category: 'avancado' },
   { id: 'second_bonus_5', name: 'Virada Especial', desc: 'Pegue as 5 comidinhas especiais do 2º lugar', icon: '💎', category: 'avancado' },
   { id: 'tournament_3wins', name: 'Tricampeão', desc: 'Vença 3 rodadas no total de um torneio', icon: '👑', category: 'avancado' },
-  { id: 'score_1000', name: 'Lenda da Arena', desc: 'Alcance 1.000 pontos numa partida', icon: '👑', category: 'avancado' },
-  { id: 'length_75', name: 'Colosso', desc: 'Chegue a 75 segmentos numa partida', icon: '🦖', category: 'avancado' },
-  { id: 'eliminator_10', name: 'Destruidor', desc: 'Elimine 10 adversários numa partida', icon: '💀', category: 'avancado' },
-  { id: 'score_1500', name: 'Mestre da Arena', desc: 'Alcance 1.500 pontos numa partida', icon: '🏆', category: 'avancado' },
+  { id: 'score_1000', name: 'Lenda da Arena', desc: 'Alcance 1.000 pontos numa partida', icon: '👑', category: 'lendarias' },
+  { id: 'length_75', name: 'Colosso', desc: 'Chegue a 75 segmentos numa partida', icon: '🦖', category: 'extremos' },
+  { id: 'eliminator_10', name: 'Destruidor', desc: 'Elimine 10 adversários numa partida', icon: '💀', category: 'lendarias' },
+  { id: 'score_1500', name: 'Mestre da Arena', desc: 'Alcance 1.500 pontos numa partida', icon: '🏆', category: 'lendarias' },
 
   // ⏱️ Tempo de jogo — progressão distribuída por dificuldade
   { id: 'playtime_10m', name: 'Primeiros Minutos', desc: 'Acumule 10 minutos de jogo', icon: '⏱️', cumulative: 'playtimeMs', target: 600000, category: 'iniciante' },
