@@ -1,3 +1,8 @@
+## [4.5.20] — 2026-10-04
+- Corrigida a galeria de conquistas para exibir as novas categorias **🔥 Desafios Extremos**, **👑 Lendárias** e **🛡️ Sobrevivência**.
+- Sincronizada a versão do site, cache e identificadores de atualização para **4.5.20**.
+- Mantida a reorganização das conquistas existentes nas categorias mais adequadas.
+
 ## [4.5.19] — 2026-10-04
 - 🏆 Adicionadas as novas categorias de conquistas: 👑 Lendárias, 🔥 Desafios Extremos e 🛡️ Sobrevivência.
 - Adicionadas 9 conquistas novas, com desbloqueio real por pontuação, tamanho, eliminações e tempo sobrevivido.
