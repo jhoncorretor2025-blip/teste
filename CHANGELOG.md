@@ -1,3 +1,12 @@
+# v4.5.18 — expansão da galeria de conquistas
+- **🟢 Iniciante:** +6 novas conquistas.
+- **🟡 Intermediário:** +6 novas conquistas.
+- **🔴 Avançado:** +3 novas conquistas.
+- **🏆 Coleção:** +2 novas conquistas cumulativas.
+- **🌐 Online:** +2 novas conquistas multiplayer.
+- **Desbloqueio real:** novas metas foram ligadas ao sistema existente de partidas, comida, turbo, sobrevivência, crescimento, eliminações e progresso cumulativo/online.
+- **Versão/cache:** atualizado para **4.5.18**.
+
 # v4.5.17 — menu inicial mais limpo
 - **Menu principal:** removidas as entradas **🎨 Personalização** e **📜 Histórico** da barra inicial.
 - **Acesso preservado:** as funcionalidades de Personalização e Histórico continuam no jogo; apenas deixaram de ocupar espaço no menu principal.
