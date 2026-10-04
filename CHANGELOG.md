@@ -1,3 +1,9 @@
+# v4.5.17 — menu inicial mais limpo
+- **Menu principal:** removidas as entradas **🎨 Personalização** e **📜 Histórico** da barra inicial.
+- **Acesso preservado:** as funcionalidades de Personalização e Histórico continuam no jogo; apenas deixaram de ocupar espaço no menu principal.
+- **Conquistas:** o botão **🏅 Conquistas** continua aparecendo diretamente no menu principal.
+- **Versão/cache:** atualizado para **4.5.17**.
+
 # v4.5.16 — menu de conquistas
 - **Menu principal:** adicionada a entrada **🏅 Conquistas** entre Histórico e Online.
 - **Conquistas:** o novo botão abre diretamente a galeria real de conquistas, sem precisar entrar em Progresso e procurar a seção.
