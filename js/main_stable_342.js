@@ -1472,8 +1472,9 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
   const sectionMap = {
     loja: 'shop',
     ranking: 'ranking',
-    historico: 'history',
     desafios: 'stats',
+    historico: 'history',
+    conquistas: 'achievements',
   };
   const sectionForTab = sectionMap[requestedTab] || progressSection || 'stats';
 
@@ -1492,6 +1493,7 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
       loja: '🛒 Loja da Mioquinha',
       desafios: '🎯 Desafios',
       historico: '📜 Histórico',
+      conquistas: '🏅 Conquistas',
     };
     if (title) title.textContent = titles[requestedTab] || titles.progresso;
   }
