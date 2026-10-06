@@ -1489,6 +1489,15 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
   const progressNav = document.querySelector('.progressNav');
   if (progressNav) progressNav.classList.toggle('hidden', requestedTab !== 'progresso');
 
+  // O dashboard inicial pertence somente à página Jogar. Antes ele continuava visível
+  // acima das outras abas, fazendo parecer que o toque no menu não tinha funcionado.
+  const homeStartContent = document.getElementById('homeStartContent');
+  if (homeStartContent) homeStartContent.classList.toggle('hidden', activeTab !== 'jogar');
+
+  // Toda troca de página começa no topo para não deixar a pessoa presa no ponto
+  // onde tocou na barra de navegação anterior.
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
   // Reaproveitamos o conteúdo real já existente, mas mudamos o título para a área
   // escolhida, para a pessoa perceber que está numa página própria.
   if (activeTab === 'progresso') {
