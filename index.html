@@ -679,6 +679,19 @@
             <div id="sessionStatsDisplay" class="muted" style="margin-top:4px"></div>
             <button id="copyStatsBtn" class="refresh" type="button" style="margin-top:8px;width:100%">📋 Copiar minhas estatísticas</button>
             <div class="tip" style="margin-top:8px"><b>⏱️ Tempo de jogo</b><div id="playtimeHistoryDisplay" class="muted" style="margin-top:5px">Carregando...</div></div>
+            <section class="performanceDashboard" aria-label="Desempenho das partidas">
+              <div class="performanceHead">
+                <div><b>📈 Desempenho</b><small>Veja como suas partidas estão evoluindo.</small></div>
+                <span id="lastPerformanceSummary" class="performanceLast">Ainda não há uma partida registrada.</span>
+              </div>
+              <div id="performanceSummary" class="performanceSummary"></div>
+              <div class="performanceChartCard">
+                <canvas id="performanceScoreChart" aria-label="Gráfico da evolução da pontuação na última partida"></canvas>
+              </div>
+              <div class="performanceChartCard">
+                <canvas id="performanceHistoryChart" aria-label="Gráfico das últimas partidas"></canvas>
+              </div>
+            </section>
           </div>
 
           <div class="progressSection hidden" data-progress-panel="shop">
