@@ -1,3 +1,10 @@
+## [4.5.22] — 2026-10-06
+- 🎨 **Personalizar** passou a ser uma área principal da navegação, imediatamente ao lado de Jogar.
+- 📱 No celular, a navegação deixa de misturar configuração visual com estatísticas/progresso.
+- 🐍 A área Personalizar concentra perfil, controles, som, aparência e Minhoca Inimiga.
+- 📊 Progresso fica dedicado às estatísticas, gráficos, histórico e evolução.
+- 🔗 O alias antigo `config` continua funcionando para não quebrar links existentes.
+
 ## [4.5.21] — 2026-10-06
 - 📈 Adicionado histórico de desempenho das partidas, com pontuação, tamanho máximo, comidas e tempo sobrevivido.
 - 📊 Adicionados gráficos no painel **Progresso**: evolução da pontuação na última vida e comparação das últimas partidas.
