@@ -1,3 +1,9 @@
+## [4.5.21] — 2026-10-06
+- 📈 Adicionado histórico de desempenho das partidas, com pontuação, tamanho máximo, comidas e tempo sobrevivido.
+- 📊 Adicionados gráficos no painel **Progresso**: evolução da pontuação na última vida e comparação das últimas partidas.
+- 🏁 O desempenho é salvo localmente no aparelho e não depende de conta ou servidor.
+- 🐛 A coleta acontece por vida/rodada, preservando o sistema existente de recordes, ranking, conquistas, loja e multiplayer.
+
 ## [4.5.20] — 2026-10-04
 - Corrigida a galeria de conquistas para exibir as novas categorias **🔥 Desafios Extremos**, **👑 Lendárias** e **🛡️ Sobrevivência**.
 - Sincronizada a versão do site, cache e identificadores de atualização para **4.5.20**.
