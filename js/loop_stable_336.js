@@ -14,6 +14,7 @@ import { vibrate, announce, setVibrationEnabled } from './utils.js';
 import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadSessionGamesToday, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage_v4510.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
 import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js';
+import { startPerformanceRun, samplePerformanceRun, finishPerformanceRun } from './performance.js';
 
 let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 let clientReadyFallbackTimer = null;
@@ -285,6 +286,7 @@ export function spawn(i) {
   state.boosting[i] = false;
   state.milestones[i] = 3; // já nasce com 3 partes, não conta como marco de crescimento
   state.spawnedAt[i] = Date.now();
+  if (i === mySlot && state.running) startPerformanceRun({ mode: state.mode, mapSize: state.mapSize });
   burst(p.x, p.y, state.colors[i], 14);
 }
 
@@ -453,6 +455,7 @@ export function startGame() {
   }
 
   reset();
+  startPerformanceRun({ mode: state.mode, mapSize: state.mapSize });
   rewardMatchStart();
   startProgressionChallenge();
   // Aviso do tamanho do mapa logo que a partida começa — trocar de mapa quase não muda o que
@@ -558,7 +561,9 @@ export function kill(i, killer = -1) {
   if (i === mySlot) {
     const runScore = state.scores[i] || 0;
     const runLength = state.snakes[i]?.length || 0;
+    const runFood = state.foodsEaten[i] || 0;
     const survivedSec = Math.floor((Date.now() - (state.spawnedAt[i] || Date.now())) / 1000);
+    finishPerformanceRun({ score: runScore, length: runLength, food: runFood, survivedSec, reason: 'derrota' });
     awardLeagueRun({ score: runScore, length: runLength, survivedSec });
   }
   saveBest(state.scores[i]);
@@ -1294,6 +1299,7 @@ function tick() {
     const mySnake = state.snakes[mySlot] || [];
     trackProgressionEvent('survive', Math.floor((Date.now() - state.spawnedAt[mySlot]) / 1000));
     trackProgressionEvent('length', mySnake.length);
+    samplePerformanceRun({ score: state.scores[mySlot] || 0, length: mySnake.length, food: state.foodsEaten[mySlot] || 0 });
     const survivedMs = Date.now() - state.spawnedAt[mySlot];
     if (survivedMs >= 20000) announceAchievement(unlockAchievement('survive_20'));
     if (survivedMs >= 45000) announceAchievement(unlockAchievement('survive_45'));
