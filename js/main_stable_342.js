@@ -1496,7 +1496,7 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
 
   // Toda troca de página começa no topo para não deixar a pessoa presa no ponto
   // onde tocou na barra de navegação anterior.
-  window.scrollTo({ top: 0, behavior: 'instant' });
+  window.scrollTo({ top: 0, behavior: 'auto' });
 
   // Reaproveitamos o conteúdo real já existente, mas mudamos o título para a área
   // escolhida, para a pessoa perceber que está numa página própria.
