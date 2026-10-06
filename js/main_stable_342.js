@@ -18,6 +18,7 @@ import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net_stable_360.js';
 import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, xpForNextLevel, SHOP_MAPS } from './progression.js';
+import { renderPerformanceDashboard } from './performance.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
 // Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
@@ -1112,6 +1113,7 @@ function refreshHomeDashboard() {
   $('hunterHomeOffBtn')?.classList.toggle('active', !hunterOn);
 }
 document.addEventListener('progressionUpdated', refreshHomeDashboard);
+document.addEventListener('performanceUpdated', () => setTimeout(renderPerformanceDashboard, 80));
 
 function doStart() {
   unlockAudio();
@@ -1513,6 +1515,7 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
       requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('tabFading')));
     }
     if (activeTab === 'progresso') {
+      renderPerformanceDashboard();
       activateProgressSection(sectionForTab);
       if (requestedTab === 'desafios') {
         setTimeout(() => document.querySelector('[data-progress-panel="stats"] .dailyChallengeCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
