@@ -1505,7 +1505,7 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
   }
   if (activeTab === 'personalizar') {
     const title = document.querySelector('[data-panel="personalizar"] > section.card > h2');
-    if (title) title.textContent = requestedTab === 'personalizacao' ? '🎨 Personalização' : '⚙️ Config.';
+    if (title) title.textContent = (requestedTab === 'config') ? '⚙️ Config.' : '🎨 Personalizar';
   }
   setTimeout(() => {
     document.querySelectorAll('.tabPanel').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== activeTab));
@@ -1521,8 +1521,8 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
         setTimeout(() => document.querySelector('[data-progress-panel="stats"] .dailyChallengeCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
       }
     }
-    if (activeTab === 'personalizar' && requestedTab === 'personalizacao') {
-      setTimeout(() => document.querySelector('[data-panel="personalizar"] #settingsSectionAppearance')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+    if (activeTab === 'personalizar' && (requestedTab === 'personalizar' || requestedTab === 'personalizacao')) {
+      setTimeout(() => document.querySelector('[data-panel="personalizar"]')?.scrollTo({ top: 0, behavior: 'smooth' }), 80);
     }
   }, 120);
 
