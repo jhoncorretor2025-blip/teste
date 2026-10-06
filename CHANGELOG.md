@@ -1,3 +1,9 @@
+## [4.5.23] — 2026-10-06
+- 📱 **Navegação corrigida:** ao tocar em Loja, Ranking, Desafios, Progresso, Conquistas, Online ou Personalizar, o dashboard inicial deixa de aparecer acima da página escolhida.
+- 🎯 Cada aba agora mostra somente sua própria área, evitando a sensação de que o toque não funcionou.
+- 🔝 A troca de aba leva a tela para o topo da nova página, inclusive no celular.
+- 🧭 O dashboard inicial continua aparecendo normalmente somente em **Jogar**.
+
 ## [4.5.22] — 2026-10-06
 - 🎨 **Personalizar** passou a ser uma área principal da navegação, imediatamente ao lado de Jogar.
 - 📱 No celular, a navegação deixa de misturar configuração visual com estatísticas/progresso.
