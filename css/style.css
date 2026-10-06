@@ -5005,3 +5005,16 @@ main,
 .homeCountBadge{font-size:.58rem!important;padding:2px 5px!important}
 .homeMiniBtn{min-height:26px!important;padding:4px 7px!important;font-size:.62rem!important}
 .homeStatusBadge{font-size:.56rem!important;padding:3px 6px!important}
+
+/* 📈 Painel de desempenho */
+.performanceDashboard{margin-top:10px;padding:12px;border:1px solid #293852;border-radius:14px;background:#0b1220}
+.performanceHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.performanceHead small{display:block;color:var(--muted);font-size:.74rem;margin-top:2px}
+.performanceLast{color:#9fb0c9;font-size:.72rem;text-align:right}
+.performanceSummary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:8px}
+.performanceSummary>div{min-width:0;padding:8px;border:1px solid #293852;border-radius:10px;background:#101a2c}
+.performanceSummary span{display:block;color:var(--muted);font-size:.68rem}
+.performanceSummary b{display:block;margin-top:2px;font-size:.9rem}
+.performanceChartCard{border:1px solid #293852;border-radius:11px;background:#08101d;padding:4px;margin-top:7px;overflow:hidden}
+.performanceChartCard canvas{display:block;width:100%;max-width:100%}
+@media(max-width:700px){.performanceHead{align-items:flex-start;flex-direction:column}.performanceLast{text-align:left}.performanceSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.performanceSummary>div:last-child{grid-column:1/-1}}
