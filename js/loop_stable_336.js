@@ -8,7 +8,7 @@ import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall, checkF
 import { aiDir, hunterDir } from './ai.js';
 import { render } from './render_stable_341.js';
 import { syncSettings, label } from './players.js';
-import { startMission, trackFoodForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
+import { startMission, trackFoodForMission, trackComboForMission, trackScoreForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
 import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadSessionGamesToday, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
@@ -30,6 +30,17 @@ const fiftyFeature = globalThis[FIFTY_FEATURE_KEY] || {
 globalThis[FIFTY_FEATURE_KEY] = fiftyFeature;
 
 const FIFTY_FOOD_THRESHOLD = 50;
+
+function updateComboDisplay() {
+  const box = $('comboDisplay');
+  if (!box) return;
+  const combo = Number(state.comboCount[mySlot]) || 0;
+  const active = combo >= 2 && Date.now() - (state.lastEatAt[mySlot] || 0) < 2200;
+  if (!active) { box.classList.add('hidden'); return; }
+  const bonus = combo >= 3 ? Math.min(5, combo - 2) : 0;
+  box.classList.remove('hidden');
+  box.textContent = bonus > 0 ? `🔥 COMBO x${combo} • +${bonus} bônus` : `🔥 COMBO x${combo}`;
+}
 const FIFTY_ENEMY_DURATION_MS = 20000;
 const FIFTY_ENEMY_LENGTH = 12;
 const FIFTY_ENEMY_SAFE_DISTANCE = 9;
@@ -1385,6 +1396,7 @@ function tick() {
   });
 
   ensureFoods();
+  updateComboDisplay();
   updateParticles();
   if (state.shake > 0) state.shake = Math.max(0, state.shake - 1);
   if (state.flash > 0) state.flash = Math.max(0, state.flash - 1);

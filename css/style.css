@@ -256,6 +256,33 @@ h1 {
   font-weight:800
 }
 
+.comboDisplay {
+  margin-top:6px;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,159,77,.45);
+  background:linear-gradient(90deg,rgba(92,42,16,.92),rgba(39,25,14,.92));
+  color:#ffd08a;
+  font-weight:900;
+  text-align:center;
+  letter-spacing:.2px;
+  box-shadow:0 6px 18px rgba(255,120,50,.14);
+  animation:comboPulse .55s ease-out
+}
+
+@keyframes comboPulse {
+  0% { transform:scale(.96); opacity:.55 }
+  100% { transform:scale(1); opacity:1 }
+}
+
+.lightMode .comboDisplay {
+  background:#fff1df;
+  color:#8a4615;
+  border-color:#e5ad75
+}
+
+@media(prefers-reduced-motion:reduce){.comboDisplay{animation:none}}
+
 .missionBar {
   height:7px;
   background:#202b42;

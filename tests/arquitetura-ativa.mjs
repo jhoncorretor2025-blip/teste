@@ -24,9 +24,9 @@ check(loop.includes("from './render_stable_341.js'"), 'loop_stable_336.js não u
 check(loop.includes("from './storage.js'"), 'loop_stable_336.js não usa storage.js');
 check(leaderboard.includes("from './storage.js'"), 'leaderboard.js usa storage versionado');
 check(sw.includes('./js/main_stable_342.js') && sw.includes('./js/loop_stable_336.js') && sw.includes('./js/render_stable_341.js') && sw.includes('./js/net_stable_360.js'), 'sw.js não contém todos os módulos ativos');
-check(version === '4.5.24', 'version.txt não está em 4.5.24');
-check(html.includes('4.5.24'), 'index.html não está em 4.5.24');
-check(sw.includes('snake-arena-v4.5.24'), 'sw.js não está em 4.5.24');
+check(version === '4.5.25', 'version.txt não está em 4.5.25');
+check(html.includes('4.5.25'), 'index.html não está em 4.5.25');
+check(sw.includes('snake-arena-v4.5.25'), 'sw.js não está em 4.5.25');
 if (failures.length) {
   for (const f of failures) console.error('❌ ' + f);
   console.log('RESULTADO: ❌ ' + failures.length + ' falha(s)');

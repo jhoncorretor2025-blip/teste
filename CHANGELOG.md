@@ -1,3 +1,9 @@
+## [4.5.25] — 2026-10-07
+- 🔥 **Combo mais visível:** durante a partida, o jogador agora vê o combo ativo e o bônus recebido diretamente abaixo da missão.
+- 🎯 **Missões rápidas ampliadas:** além de comida, estrelas, sobrevivência e eliminações, agora existem missões de combo x5/x10 e pontuação de 100 pontos.
+- 🏆 **Recompensas preservadas:** as missões novas usam o sistema existente de recompensa e progresso, sem criar outro sistema paralelo.
+- 🎨 **Personalização preservada:** o sistema de skins da Loja já existente continua sendo o responsável pelas fantasias desbloqueáveis.
+
 ## [4.5.24] — 2026-10-07
 - 🧹 **Arquitetura ativa organizada:** controles, ranking, loop e entrada principal agora apontam para os módulos realmente usados pelo GitHub Pages.
 - 💾 **Storage centralizado:** o caminho ativo passou a usar js/storage.js, preservando as mesmas funções e chaves salvas no navegador.

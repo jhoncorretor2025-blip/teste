@@ -64,6 +64,22 @@ export function trackFoodForMission(i, food) {
 }
 
 // Chamado quando alguém elimina outro jogador (bateu na cobra de alguém, não na parede)
+export function trackComboForMission(i, combo) {
+  const m = state.mission;
+  if (!m || m.done || m.type !== 'combo') return;
+  m.progress = Math.max(m.progress, Number(combo) || 0);
+  if (m.progress >= m.target) completeMission(i);
+  renderMission();
+}
+
+export function trackScoreForMission(i, score) {
+  const m = state.mission;
+  if (!m || m.done || m.type !== 'score') return;
+  m.progress = Math.max(m.progress, Number(score) || 0);
+  if (m.progress >= m.target) completeMission(i);
+  renderMission();
+}
+
 export function trackEliminationForMission(killerIdx) {
   const m = state.mission;
   if (!m || m.done || m.type !== 'eliminate') return;
