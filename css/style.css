@@ -5057,3 +5057,32 @@ main,
 .lightMode .progressHomeDetails{background:linear-gradient(145deg,#fff,#eef3fb);border-color:#c7d4ea}
 .lightMode .progressHomeDetails summary{color:#16233d}
 .lightMode .progressHomeDetails summary span{color:#60718e}
+
+
+/* v4.5.27 — jogo mobile: paisagem sugerida + retrato aproveitado + controles mais fáceis */
+.landscapeHintTitle{font-weight:950;font-size:1rem}
+.landscapeHintSub{font-size:.76rem;color:#cbd8eb}
+.landscapeHintActions{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.landscapeHintActions button{min-height:44px;padding:9px 13px}
+#landscapeHintBtn{background:#67ef8a!important;color:#06100a!important;border-color:#67ef8a!important}
+#landscapeHintCloseBtn{background:#243653!important;color:#fff!important}
+.portraitMaximizeBtn{display:none;position:absolute;top:10px;left:10px;z-index:31;min-height:44px;padding:8px 12px;border:1px solid rgba(255,255,255,.35);border-radius:12px;background:rgba(7,16,29,.82);color:#fff;font:900 .76rem system-ui,sans-serif;box-shadow:0 8px 20px rgba(0,0,0,.35);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);touch-action:manipulation}
+.portraitMaximizeBtn:active{transform:scale(.96)}
+.joystick{min-width:126px;min-height:126px}
+.stick{width:52px;height:52px;left:37px;top:37px}
+.dpadBtn{min-width:44px;min-height:44px}
+@media screen and (max-width:1000px) and (pointer:coarse) and (orientation:portrait){
+  #game .portraitMaximizeBtn{display:block}
+  #game .arena{height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 12px);min-height:0;max-height:none}
+  #game.compact .arena{height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 12px);min-height:0;max-height:none}
+  #game .joystick{width:132px;height:132px}
+  #game .stick{width:54px;height:54px;left:39px;top:39px}
+  #game .boostTouch{width:92px;height:92px}
+  #game .stickText{left:146px;bottom:52px;max-width:105px;font-size:.62rem}
+}
+@media screen and (max-width:1000px) and (pointer:coarse) and (orientation:landscape){
+  #game .portraitMaximizeBtn{display:none}
+}
+@media screen and (max-width:520px) and (pointer:coarse) and (orientation:portrait){
+  #game .portraitMaximizeBtn{font-size:.7rem;padding:7px 10px}
+}
