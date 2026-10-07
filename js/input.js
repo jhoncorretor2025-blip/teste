@@ -6,7 +6,7 @@
 import { $, tapVibrate } from './utils.js';
 import { CK, KD, D, BOOST_KEYS, BOOST_COOLDOWN } from './config.js';
 import { state } from './state.js';
-import { tryBoost } from './loop.js';
+import { tryBoost } from './loop_stable_336.js';
 import { isOnline, isHost, mySlot, sendInput } from './net.js';
 
 function reverse(a, b) {

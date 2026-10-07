@@ -1,3 +1,8 @@
+## [4.5.24] — 2026-10-07
+- 🧹 **Arquitetura ativa organizada:** controles, ranking, loop e entrada principal agora apontam para os módulos realmente usados pelo GitHub Pages.
+- 💾 **Storage centralizado:** o caminho ativo passou a usar js/storage.js, preservando as mesmas funções e chaves salvas no navegador.
+- 🛡️ **Proteção contra regressões:** adicionado teste estrutural para verificar entrada, loop, renderização, rede, storage e sincronização da versão.
+
 ## [4.5.23] — 2026-10-06
 - 📱 **Navegação corrigida:** ao tocar em Loja, Ranking, Desafios, Progresso, Conquistas, Online ou Personalizar, o dashboard inicial deixa de aparecer acima da página escolhida.
 - 🎯 Cada aba agora mostra somente sua própria área, evitando a sensação de que o toque não funcionou.

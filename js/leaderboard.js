@@ -4,7 +4,7 @@
 // completo" expande de 5 pra até 20 posições, com data de quando cada um jogou.
 
 import { $ } from './utils.js';
-import { loadLeaderboard, formatPlaytime } from './storage_v4510.js'
+import { loadLeaderboard, formatPlaytime } from './storage.js'
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 let expanded = false;

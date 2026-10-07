@@ -7,7 +7,7 @@
 O `index.html` **não** carrega `js/main.js`. O carregador que fica no fim do `index.html` faz `import('./js/main_stable_342.js?...')`, e dali o jogo usa: `loop_stable_336.js`, `render_stable_341.js` e `net_stable_360.js` (o `net.js` só reexporta o `net_stable_360.js`, pra todo mundo dividir a mesma conexão). **Edite esses arquivos.** Mudança feita em `main.js`, `loop.js` ou `render.js` **não aparece no jogo** (já aconteceu: melhorias inteiras foram parar em arquivo que nenhuma página carrega).
 - Ao criar uma versão nova de um desses arquivos, o carregador do `index.html` e os `import` dos outros precisam apontar pra ela.
 - Os testes antigos que só fazem busca de texto em `js/main.js` **não provam nada** sobre o jogo no ar. Prefira testes que executem o jogo, como `tests/criar-sala-real.mjs` e `tests/online-ponta-a-ponta-real.mjs` (usam `js/main_stable_342.js`).
-- Pendência conhecida: `loop_stable_336.js` desenha com `render_stable_336.js`, enquanto `main_stable_342.js` desenha com `render_stable_341.js` (dois arquivos de desenho diferentes ligados ao mesmo jogo). Não foi investigado se isso causa algum defeito visível.
+- O caminho ativo mantém uma única implementação de renderização: `loop_stable_336.js` e `main_stable_342.js` usam `render_stable_341.js`.
 
 ## O que é este projeto
 **Snake Arena** (o "jogo da minhoquinha"): jogo de minhocas para navegador, de 1 a 6 jogadores — no mesmo aparelho ou **online** entre aparelhos —, com CPUs, modos de jogo, missões, conquistas, times e uma Minhoca Caçadora.
@@ -41,7 +41,7 @@ O `index.html` **não** carrega `js/main.js`. O carregador que fica no fim do `i
 ```
 index.html              a tela toda (menu + jogo). Todo id que o JS usa mora aqui
 css/style.css           todo o visual
-js/                     o código — main.js é o ÚNICO carregado pelo HTML; ele importa o resto
+js/                     o código — main_stable_342.js é o ÚNICO carregado pelo HTML; ele importa o resto
 sw.js                   service worker: modo offline + cache (tem a lista ASSETS — veja armadilhas)
 version.txt             número da versão; o jogo consulta e se atualiza sozinho nos aparelhos abertos
 manifest.webmanifest    app instalável (ícone, atalhos)   ·   icon.svg   o ícone
@@ -59,7 +59,7 @@ package.json            só pra rodar os testes
 - **`tick()`** (`js/loop.js`) é um passo do jogo: move, come, mata, decide missões e caçadora, desenha e (online) manda o estado. Roda de tempos em tempos (`setInterval`, ~160 ms no normal).
 - **Quem roda o `tick`:** só a partida **local** ou o **anfitrião** da sala online. Os **clientes online não rodam `tick`**: recebem o estado pronto do anfitrião (`applyRemoteState`) e só desenham.
   - **Consequência prática:** tudo que for novo e existir só dentro do `tick` **não aparece no celular do amigo**, a menos que (a) vá no pacote de estado ou (b) seja calculado no `render.js` a partir do que já vai no pacote. Partículas, por exemplo, só existem no anfitrião.
-- **Desenho:** `js/render.js` desenha num `<canvas>` (fundo por tema, comidas, minhocas, caçadora, minimapa) e monta o placar em HTML.
+- **Desenho:** `js/render_stable_341.js` desenha num `<canvas>` (fundo por tema, comidas, minhocas, caçadora, minimapa) e monta o placar em HTML.
 - **Salvo no aparelho** (`localStorage`): recordes, perfil, conquistas, atalhos, escolhas de time… tudo em `js/storage.js`.
 - Mais detalhes: `docs/ARQUITETURA.md` e `docs/PROTOCOLO-ONLINE.md`.
 
@@ -71,14 +71,14 @@ package.json            só pra rodar os testes
 | Cores das minhocas | `js/config.js` (`COLORS`, `SNAKE_COLORS`) |
 | Nova conquista | `js/config.js` (`ACHIEVEMENTS`) + o gatilho em `js/loop.js`/`js/mission.js`; o que já foi desbloqueado fica em `js/storage.js` |
 | Sons | `js/sound.js` (objeto `sfx`; tudo é gerado na hora, não há arquivo de áudio) |
-| Regras da partida (comer, morrer, turbo) | `js/loop.js` (`tick`, `kill`, `tryBoost`) |
+| Regras da partida (comer, morrer, turbo) | `js/loop_stable_336.js` (`tick`, `kill`, `tryBoost`) |
 | IA das CPUs | `js/ai.js` (`aiDir`) |
-| **Minhoca Caçadora** | `js/loop.js` (`checkHunterSpawn`, `spawnHunter`, `montarCorpoDaCacadora`, `updateHunter`) + `js/ai.js` (`hunterDir`) + `js/render.js` (`drawHunter`, `drawHunterPointer`, `drawHunterVignette`) + `js/sound.js`. Já existiu um `js/hunter.js`: era código morto e foi apagado — a lógica de verdade está no `loop.js` |
-| Comida (nascer, especial de sequência, virar estrela) | `js/food.js` e `js/loop.js` |
-| O que aparece na tela durante o jogo | `js/render.js` (placar: `renderScores`) |
-| Botões, abas e telas do menu | `index.html` + `js/main.js` + `css/style.css` |
-| **Times** | regras em `js/teams.js` (função pura); telas em `js/main.js`; montagem ao começar em `js/loop.js` (`startOnlineHostGame`) |
-| Rede / protocolo online | `js/net.js` + `docs/PROTOCOLO-ONLINE.md`. **Campo novo no pacote de estado:** `js/loop.js` no envio (`broadcastState`) **e** no recebimento (`applyRemoteState`) |
+| **Minhoca Caçadora** | `js/loop_stable_336.js` (`checkHunterSpawn`, `spawnHunter`, `montarCorpoDaCacadora`, `updateHunter`) + `js/ai.js` (`hunterDir`) + `js/render_stable_341.js` (`drawHunter`, `drawHunterPointer`, `drawHunterVignette`) + `js/sound.js`. Já existiu um `js/hunter.js`: era código morto e foi apagado — a lógica de verdade está no `loop.js` |
+| Comida (nascer, especial de sequência, virar estrela) | `js/food.js` e `js/loop_stable_336.js` |
+| O que aparece na tela durante o jogo | `js/render_stable_341.js` (placar: `renderScores`) |
+| Botões, abas e telas do menu | `index.html` + `js/main_stable_342.js` + `css/style.css` |
+| **Times** | regras em `js/teams.js` (função pura); telas em `js/main_stable_342.js`; montagem ao começar em `js/loop_stable_336.js` (`startOnlineHostGame`) |
+| Rede / protocolo online | `js/net_stable_360.js` + `js/net.js` + `docs/PROTOCOLO-ONLINE.md`. **Campo novo no pacote de estado:** `js/loop.js` no envio (`broadcastState`) **e** no recebimento (`applyRemoteState`) |
 | O que fica salvo no aparelho | `js/storage.js` (**não renomeie** as chaves `*_KEY`: todo mundo perderia o que tinha salvo) |
 | Modo offline / cache | `sw.js` (`ASSETS`) |
 
