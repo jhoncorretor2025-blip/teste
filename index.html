@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="4.5.26">
+<html lang="pt-BR" data-theme-version="4.5.27">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v4.5.26</title>
-<link rel="stylesheet" href="css/style.css?v=4.5.26">
+<title>🐍 Mioquinha v4.5.27</title>
+<link rel="stylesheet" href="css/style.css?v=4.5.27">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -26,7 +26,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>4.5.26</b></div>
+  <div class="appSplashVersion">VERSÃO <b>4.5.27</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -43,9 +43,13 @@
     <div id="achievementSub" class="achievementSub"></div>
   </div>
   <div id="srAnnounce" class="sr-only" aria-live="polite" role="status"></div>
-  <div id="landscapeHint" class="landscapeHint">
-    📱↔️ Dica: vire o celular de lado pra ver mais do mapa!
-    <button id="landscapeHintBtn" type="button">🔳 Tela cheia + girar</button>
+  <div id="landscapeHint" class="landscapeHint" role="dialog" aria-live="polite" aria-label="Melhor experiência no celular">
+    <div class="landscapeHintTitle">📱↔️ Para jogar melhor, vire o celular de lado</div>
+    <div class="landscapeHintSub">A arena fica bem maior no modo paisagem.</div>
+    <div class="landscapeHintActions">
+      <button id="landscapeHintBtn" type="button">↔️ Virar + maximizar</button>
+      <button id="landscapeHintCloseBtn" type="button">Continuar vertical</button>
+    </div>
   </div>
   <div id="tutorial" class="overlay hidden">
     <div class="overlayCard">
@@ -98,7 +102,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v4.5.26</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v4.5.27</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <div class="siteHeaderTools">
       <button id="headerInfoBtn" class="headerInfoBtn" type="button" aria-label="Abrir dicas e avisos da Mioquinha">ℹ️</button>
@@ -825,7 +829,8 @@
           </div>
         </div>
         <div id="touch" class="touch">
-          <div id="joystick" class="joystick"><div id="stick" class="stick"></div></div>
+          <button id="portraitMaximizeBtn" class="portraitMaximizeBtn" type="button" aria-label="Maximizar a arena mantendo a orientação atual">⛶ Aproveitar tela</button>
+          <div id="joystick" class="joystick" role="group" aria-label="Joystick para controlar a minhoca"><div id="stick" class="stick"></div></div>
           <div id="dpad" class="dpad hidden">
             <button id="dpadUp" class="dpadBtn dpadUp" type="button" aria-label="Cima"><svg viewBox="0 0 24 24" width="60%" height="60%"><path d="M12 4 L20 16 L4 16 Z" fill="currentColor"/></svg></button>
             <button id="dpadLeft" class="dpadBtn dpadLeft" type="button" aria-label="Esquerda"><svg viewBox="0 0 24 24" width="60%" height="60%"><path d="M4 12 L16 4 L16 20 Z" fill="currentColor"/></svg></button>
@@ -845,7 +850,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '4.5.26';
+  const VERSION = '4.5.27';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');
