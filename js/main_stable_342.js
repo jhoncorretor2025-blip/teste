@@ -1119,6 +1119,7 @@ function doStart() {
   requestWakeLock();
   saveQuickRepeat();
   document.querySelector('.siteHeader').classList.add('hidden');
+  try { sessionStorage.removeItem('snakeArenaLandscapeDismissed'); } catch {}
   maybeSuggestLandscape();
   $('startFromHostPanel').classList.remove('waitingPulse');
   Object.keys(readyStatus).forEach((k) => delete readyStatus[k]);
@@ -2124,24 +2125,32 @@ $('mute').addEventListener('click', () => {
 // parecido) bem em cima dos controles em alguns celulares, atrapalhando o toque.
 // Por isso só pedimos tela cheia quando a pessoa clica no botão de propósito — o modo
 // automático (primeira vez no celular) usa só o modo compacto, sem esse aviso.
+async function requestGameFullscreen(lockLandscape = false) {
+  try {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+    }
+    // A API de orientação normalmente exige uma ação do usuário e, em muitos navegadores,
+    // funciona apenas depois da tela cheia. Se o aparelho/navegador não aceitar, o jogo
+    // continua funcionando e a pessoa pode virar o celular manualmente.
+    if (lockLandscape) {
+      try { await screen.orientation?.lock?.('landscape'); } catch {}
+    }
+    return !!document.fullscreenElement;
+  } catch {
+    return false;
+  }
+}
+
 async function toggleCompactMode(requestFullscreenToo) {
   const on = $('game').classList.toggle('compact');
   $('compactBtn').classList.toggle('active', on);
   if (requestFullscreenToo) {
-    try {
-      if (on && document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen();
-        // Tenta travar a tela na paisagem automaticamente — funciona em vários navegadores
-        // Android assim que entra em tela cheia, sem precisar instalar nada. Se não der
-        // (bem comum no iPhone/Safari), sem problema, a pessoa só gira o aparelho na mão.
-        try { await screen.orientation?.lock?.('landscape'); } catch {}
-      } else if (!on && document.fullscreenElement) {
-        try { screen.orientation?.unlock?.(); } catch {}
-        await document.exitFullscreen();
-      }
-    } catch {
-      // Se o navegador bloquear a tela cheia de verdade, sem problema — o modo compacto
-      // (esconder placar/menus) já funciona sozinho.
+    if (on) {
+      await requestGameFullscreen(true);
+    } else if (document.fullscreenElement) {
+      try { screen.orientation?.unlock?.(); } catch {}
+      try { await document.exitFullscreen(); } catch {}
     }
   }
   render();
@@ -2543,23 +2552,50 @@ $('focusModeBtn').addEventListener('click', () => {
   }
 });
 
-// Sugestão de virar o celular — só aparece uma vez, quando faz sentido (mapa grande ou
-// câmera longe, e o celular tá na vertical), pra não incomodar sempre
+// No celular, se a partida começou em retrato, a pessoa recebe a orientação para virar
+// o aparelho independentemente do tamanho do mapa. O aviso pode ser dispensado naquela
+// partida, mas volta na próxima para não deixar a opção escondida.
 function maybeSuggestLandscape() {
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
   const isPortrait = window.innerWidth < window.innerHeight;
-  const wouldBenefit = $('mapSize').value === 'large' || $('zoomLevel').value === 'far';
-  if (!isPortrait || !wouldBenefit) return;
-  if (localStorage.getItem('snakeArenaLandscapeHintSeen')) return;
-  localStorage.setItem('snakeArenaLandscapeHintSeen', '1');
+  if (!isTouchDevice || !isPortrait) {
+    $('landscapeHint').classList.remove('show');
+    return;
+  }
+  try {
+    if (sessionStorage.getItem('snakeArenaLandscapeDismissed') === '1') return;
+  } catch {}
   $('landscapeHint').classList.add('show');
-  setTimeout(() => $('landscapeHint').classList.remove('show'), 6000);
 }
 
-// Botão de ação na dica de paisagem — tenta tela cheia + travar a orientação de uma vez,
-// funciona tanto no navegador quanto no app instalado (não precisa baixar nada)
 $('landscapeHintBtn').addEventListener('click', async () => {
-  if (!$('game').classList.contains('compact')) await toggleCompactMode(true);
+  if (!$('game').classList.contains('compact')) await toggleCompactMode(false);
+  await requestGameFullscreen(true);
   $('landscapeHint').classList.remove('show');
+});
+
+$('landscapeHintCloseBtn').addEventListener('click', () => {
+  try { sessionStorage.setItem('snakeArenaLandscapeDismissed', '1'); } catch {}
+  $('landscapeHint').classList.remove('show');
+});
+
+$('portraitMaximizeBtn').addEventListener('click', async () => {
+  if (!$('game').classList.contains('compact')) await toggleCompactMode(false);
+  await requestGameFullscreen(false);
+  announce('Arena maximizada. Você pode continuar jogando na vertical ou virar o aparelho.');
+  render();
+  setTimeout(render, 250);
+});
+
+function syncLandscapeHint() {
+  if (window.innerWidth >= window.innerHeight) {
+    $('landscapeHint').classList.remove('show');
+  }
+}
+
+window.addEventListener('orientationchange', () => {
+  syncLandscapeHint();
+  setTimeout(render, 80);
 });
 
 // Indicador de bateria e aviso quando tá acabando — usa a API de Bateria quando o
