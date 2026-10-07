@@ -69,16 +69,16 @@ package.json            só pra rodar os testes
 | Velocidade, tamanho de mapa, dificuldade | `js/config.js` (`SPEEDS`, `MAP_SIZES`, `DIFFICULTY`) |
 | Novo **tema visual** | `js/config.js` (`BOARD_THEMES`) **e** um `<option>` no `<select id="boardTheme">` do `index.html` (o verificador confere os dois) |
 | Cores das minhocas | `js/config.js` (`COLORS`, `SNAKE_COLORS`) |
-| Nova conquista | `js/config.js` (`ACHIEVEMENTS`) + o gatilho em `js/loop.js`/`js/mission.js`; o que já foi desbloqueado fica em `js/storage.js` |
+| Nova conquista | `js/config.js` (`ACHIEVEMENTS`) + o gatilho em `js/loop_stable_336.js`/`js/mission.js`; o que já foi desbloqueado fica em `js/storage.js` |
 | Sons | `js/sound.js` (objeto `sfx`; tudo é gerado na hora, não há arquivo de áudio) |
 | Regras da partida (comer, morrer, turbo) | `js/loop_stable_336.js` (`tick`, `kill`, `tryBoost`) |
 | IA das CPUs | `js/ai.js` (`aiDir`) |
-| **Minhoca Caçadora** | `js/loop_stable_336.js` (`checkHunterSpawn`, `spawnHunter`, `montarCorpoDaCacadora`, `updateHunter`) + `js/ai.js` (`hunterDir`) + `js/render_stable_341.js` (`drawHunter`, `drawHunterPointer`, `drawHunterVignette`) + `js/sound.js`. Já existiu um `js/hunter.js`: era código morto e foi apagado — a lógica de verdade está no `loop.js` |
+| **Minhoca Caçadora** | `js/loop_stable_336.js` (`checkHunterSpawn`, `spawnHunter`, `montarCorpoDaCacadora`, `updateHunter`) + `js/ai.js` (`hunterDir`) + `js/render_stable_341.js` (`drawHunter`, `drawHunterPointer`, `drawHunterVignette`) + `js/sound.js`. Já existiu um `js/hunter.js`: era código morto e foi apagado — a lógica ativa está no `loop_stable_336.js` |
 | Comida (nascer, especial de sequência, virar estrela) | `js/food.js` e `js/loop_stable_336.js` |
 | O que aparece na tela durante o jogo | `js/render_stable_341.js` (placar: `renderScores`) |
 | Botões, abas e telas do menu | `index.html` + `js/main_stable_342.js` + `css/style.css` |
 | **Times** | regras em `js/teams.js` (função pura); telas em `js/main_stable_342.js`; montagem ao começar em `js/loop_stable_336.js` (`startOnlineHostGame`) |
-| Rede / protocolo online | `js/net_stable_360.js` + `js/net.js` + `docs/PROTOCOLO-ONLINE.md`. **Campo novo no pacote de estado:** `js/loop.js` no envio (`broadcastState`) **e** no recebimento (`applyRemoteState`) |
+| Rede / protocolo online | `js/net_stable_360.js` + `js/net.js` + `docs/PROTOCOLO-ONLINE.md`. **Campo novo no pacote de estado:** `js/loop_stable_336.js` no envio (`broadcastState`) **e** no recebimento (`applyRemoteState`) |
 | O que fica salvo no aparelho | `js/storage.js` (**não renomeie** as chaves `*_KEY`: todo mundo perderia o que tinha salvo) |
 | Modo offline / cache | `sw.js` (`ASSETS`) |
 
@@ -129,11 +129,11 @@ O multiplayer **real** no celular ainda tem um bug sem causa confirmada (o celul
 
 ## Módulos (`js/`)
 Detalhes, exports e imports de cada um: `docs/MAPA-DO-CODIGO.md`.
-- `main.js` — ponto de entrada: liga botões, abas (`?tab=`), sala online, aprovação de entrada, times (telas), atualização automática de versão.
+- `main_stable_342.js` — ponto de entrada **ATIVO**: liga botões, abas (`?tab=`), sala online, aprovação de entrada, times (telas), atualização automática de versão. `main.js` é legado.
 - `state.js` — o objeto `state`. · `config.js` — constantes fixas (velocidades, mapas, temas, cores, conquistas).
-- `loop.js` — o coração: iniciar partida, `tick`, caçadora, comida especial, envio/recebimento do estado online.
-- `render.js` — tudo que é desenhado (canvas, minimapa, placar, painel de diagnóstico).
-- `net.js` — multiplayer (PeerJS): salas, aprovação, reconexão, migração de anfitrião, ping.
+- `loop_stable_336.js` — coração **ATIVO**: iniciar partida, `tick`, caçadora, comida especial, envio/recebimento do estado online. `loop.js` é legado.
+- `render_stable_341.js` — renderização **ATIVA**: canvas, minimapa, placar e painel de diagnóstico. `render.js` é legado.
+- `net_stable_360.js` — multiplayer **ATIVO** (PeerJS): salas, aprovação, reconexão, migração de anfitrião e ping. `net.js` é uma ponte de compatibilidade.
 - `teams.js` — montagem dos times (lógica pura). · `players.js` — cartões dos jogadores no menu.
 - `ai.js` — cérebro das CPUs e da caçadora. · `food.js` — comida e partículas. · `mission.js` — missões.
 - `input.js` — teclado, joystick, D-pad, swipe, turbo. · `sound.js` — sons. · `storage.js` — dados salvos.
