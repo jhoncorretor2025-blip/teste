@@ -107,16 +107,30 @@ export function setupInput() {
     btn.addEventListener('pointerdown', (e) => { e.preventDefault(); tapVibrate(); moveMine(dpadDirs[id]); });
   });
 
+  let lastJoystickDir = null;
+
   function joystickMove(e) {
     const r = $('joystick').getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const x = e.clientX - cx, y = e.clientY - cy;
     const ax = Math.abs(x), ay = Math.abs(y);
-    // No celular, uma zona morta muito grande faz a minhoca parecer lenta para responder.
-    // Uma zona menor deixa curvas rápidas sem exigir que a pessoa arraste tanto o dedo.
-    if (Math.max(ax, ay) < 8) return;
-    moveMine(ax > ay ? (x > 0 ? D.right : D.left) : (y > 0 ? D.down : D.up));
-    const max = r.width * 0.33, m = Math.min(max, Math.hypot(x, y)), a = Math.atan2(y, x);
+    // O controle precisa responder com pouco arrasto, mas sem trocar de direção por
+    // pequenos tremores do dedo. O limite de 6 px deixa a curva mais imediata.
+    if (Math.max(ax, ay) < 6) return;
+
+    const dir = ax > ay
+      ? (x > 0 ? D.right : D.left)
+      : (y > 0 ? D.down : D.up);
+
+    // Envia uma direção só quando ela realmente mudou. Isso deixa o toque local mais
+    // estável e evita uma enxurrada de mensagens quando o jogador está online.
+    if (!lastJoystickDir || dir.x !== lastJoystickDir.x || dir.y !== lastJoystickDir.y) {
+      moveMine(dir);
+      lastJoystickDir = dir;
+    }
+
+    const max = Math.max(22, r.width * 0.38);
+    const m = Math.min(max, Math.hypot(x, y)), a = Math.atan2(y, x);
     $('stick').style.transform = `translate(${Math.cos(a) * m}px,${Math.sin(a) * m}px)`;
   }
 
@@ -133,6 +147,7 @@ export function setupInput() {
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev =>
     $('joystick').addEventListener(ev, () => {
       state.joyId = null;
+      lastJoystickDir = null;
       $('stick').style.transform = 'translate(0,0)';
     })
   );
