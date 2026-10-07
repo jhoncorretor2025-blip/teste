@@ -1,3 +1,8 @@
+## [4.5.26] — 2026-10-07
+- 🧹 **Tela Jogar mais limpa:** removido da tela principal o painel de moedas, nível, liga, desafio do dia, sequência, mapa, aparência, próxima conquista e cartões informativos.
+- 📊 **Informações preservadas:** esses dados continuam disponíveis em **Progresso → Resumo**, dentro de um bloco recolhido chamado **Informações extras da tela inicial**.
+- 📱 **Mais foco no celular:** ao abrir Jogar, a prioridade passa a ser configurar a partida e jogar, sem grandes blocos informativos ocupando a tela.
+
 ## [4.5.25] — 2026-10-07
 - 🔥 **Combo mais visível:** durante a partida, o jogador agora vê o combo ativo e o bônus recebido diretamente abaixo da missão.
 - 🎯 **Missões rápidas ampliadas:** além de comida, estrelas, sobrevivência e eliminações, agora existem missões de combo x5/x10 e pontuação de 100 pontos.

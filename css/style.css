@@ -5045,3 +5045,15 @@ main,
 .performanceChartCard{border:1px solid #293852;border-radius:11px;background:#08101d;padding:4px;margin-top:7px;overflow:hidden}
 .performanceChartCard canvas{display:block;width:100%;max-width:100%}
 @media(max-width:700px){.performanceHead{align-items:flex-start;flex-direction:column}.performanceLast{text-align:left}.performanceSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.performanceSummary>div:last-child{grid-column:1/-1}}
+
+/* v4.5.26 — informações secundárias da antiga central inicial ficam somente no Progresso */
+.progressHomeDetails{margin-top:10px;border:1px solid #30486b;border-radius:13px;background:linear-gradient(145deg,#0e1b2e,#091321);overflow:hidden}
+.progressHomeDetails summary{padding:10px 12px;cursor:pointer;color:#dce9ff;font-size:.78rem;font-weight:900;list-style:none}
+.progressHomeDetails summary::-webkit-details-marker{display:none}
+.progressHomeDetails summary::after{content:'＋';float:right;color:#8fa8cd;font-size:1rem;line-height:1}
+.progressHomeDetails[open] summary::after{content:'−'}
+.progressHomeDetails summary span{margin-left:6px;color:#7f93b2;font-size:.68rem;font-weight:700}
+.progressHomeDetailsBody{padding:0 8px 8px}
+.lightMode .progressHomeDetails{background:linear-gradient(145deg,#fff,#eef3fb);border-color:#c7d4ea}
+.lightMode .progressHomeDetails summary{color:#16233d}
+.lightMode .progressHomeDetails summary span{color:#60718e}

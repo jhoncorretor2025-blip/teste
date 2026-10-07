@@ -14,6 +14,9 @@ const loop = read('js/loop_stable_336.js');
 const leaderboard = read('js/leaderboard.js');
 const sw = read('sw.js');
 const version = read('version.txt').trim();
+const jogarStart = html.indexOf('<div class="tabPanel" data-panel="jogar">');
+const personalizarStart = html.indexOf('<div class="tabPanel hidden" data-panel="personalizar">');
+const progressoStart = html.indexOf('<div class="tabPanel hidden" data-panel="progresso">');
 check(html.includes("import('./js/main_stable_342.js?"), 'index.html não aponta para main_stable_342.js');
 check(main.includes("from './loop_stable_336.js'"), 'main_stable_342.js não usa loop_stable_336.js');
 check(main.includes("from './render_stable_341.js'"), 'main_stable_342.js não usa render_stable_341.js');
@@ -24,9 +27,11 @@ check(loop.includes("from './render_stable_341.js'"), 'loop_stable_336.js não u
 check(loop.includes("from './storage.js'"), 'loop_stable_336.js não usa storage.js');
 check(leaderboard.includes("from './storage.js'"), 'leaderboard.js usa storage versionado');
 check(sw.includes('./js/main_stable_342.js') && sw.includes('./js/loop_stable_336.js') && sw.includes('./js/render_stable_341.js') && sw.includes('./js/net_stable_360.js'), 'sw.js não contém todos os módulos ativos');
-check(version === '4.5.25', 'version.txt não está em 4.5.25');
-check(html.includes('4.5.25'), 'index.html não está em 4.5.25');
-check(sw.includes('snake-arena-v4.5.25'), 'sw.js não está em 4.5.25');
+check(jogarStart >= 0 && personalizarStart > jogarStart && !html.slice(jogarStart, personalizarStart).includes('class="homeDashboard"'), 'homeDashboard voltou para a aba Jogar');
+check(progressoStart >= 0 && html.slice(progressoStart).includes('class="progressHomeDetails"'), 'informações extras não estão preservadas em Progresso');
+check(version === '4.5.26', 'version.txt não está em 4.5.26');
+check(html.includes('4.5.26'), 'index.html não está em 4.5.26');
+check(sw.includes('snake-arena-v4.5.26'), 'sw.js não está em 4.5.26');
 if (failures.length) {
   for (const f of failures) console.error('❌ ' + f);
   console.log('RESULTADO: ❌ ' + failures.length + ' falha(s)');
