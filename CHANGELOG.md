@@ -1,9 +1,9 @@
 ## [4.5.27] — 2026-10-07
-- 📱 **Orientação no celular:** ao iniciar uma partida em retrato, o jogo agora sugere virar o aparelho para paisagem e oferece um botão direto para **virar + maximizar**. O navegador só tenta travar a orientação depois do toque do usuário, porque esse recurso depende do suporte do navegador. citeturn1search2turn0search10
+- 📱 **Orientação no celular:** ao iniciar uma partida em retrato, o jogo agora sugere virar o aparelho para paisagem e oferece um botão direto para **virar + maximizar**. O navegador só tenta travar a orientação depois do toque do usuário, porque esse recurso depende do suporte do navegador.
 - ⛶ **Retrato aproveitado:** se o jogador preferir continuar na vertical, existe um botão **Aproveitar tela** e a arena passa a ocupar praticamente toda a altura disponível.
 - 🎮 **Câmera adaptativa no retrato:** a janela visível do mapa se ajusta ao formato vertical para reduzir áreas vazias e aproveitar melhor o espaço sem deformar o tabuleiro.
 - 🕹️ **Joystick mais acessível:** área maior, haste maior, resposta com menos arrasto e troca de direção apenas quando necessário, reduzindo também o excesso de mensagens no modo online.
-- ♿ **Toque:** os controles principais mantêm alvos de toque maiores, seguindo recomendações de acessibilidade para interfaces móveis. citeturn2search1turn2search2
+- ♿ **Toque:** os controles principais mantêm alvos de toque maiores, seguindo recomendações de acessibilidade para interfaces móveis.
 
 ## [4.5.26] — 2026-10-07
 - 🧹 **Tela Jogar mais limpa:** removido da tela principal o painel de moedas, nível, liga, desafio do dia, sequência, mapa, aparência, próxima conquista e cartões informativos.
