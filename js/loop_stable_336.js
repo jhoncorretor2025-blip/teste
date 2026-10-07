@@ -672,6 +672,8 @@ function stepMovement(indices) {
 
       state.scores[i] += f.value + comboBonus;
       state.foodsEaten[i] += f.value;
+      trackComboForMission(i, combo);
+      trackScoreForMission(i, state.scores[i]);
       state.grow[i] += f.value;
       if (state.tournamentMode) state.tournamentRoundScore[i] += f.value + comboBonus;
       state.foods.splice(state.foods.indexOf(f), 1);

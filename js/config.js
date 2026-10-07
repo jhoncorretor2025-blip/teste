@@ -261,6 +261,9 @@ export const MISSIONS = [
   { type: 'star', target: 2, label: '⭐ Pegue 2 estrelas', reward: 10 },
   { type: 'survive', target: 20, label: '🛡️ Sobreviva 20 segundos sem morrer', reward: 10 },
   { type: 'eliminate', target: 1, label: '⚔️ Elimine 1 adversário', reward: 12 },
+  { type: 'combo', target: 5, label: '🔥 Faça um combo x5', reward: 10 },
+  { type: 'combo', target: 10, label: '💥 Faça um combo x10', reward: 18 },
+  { type: 'score', target: 100, label: '⭐ Alcance 100 pontos', reward: 15 },
 ];
 
 // --- Modo Times: jogadores do mesmo time não se eliminam entre si ---
