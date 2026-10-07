@@ -64,6 +64,19 @@ function resizeCanvas() {
   const zoom = getZoomWindow();
   viewW = Math.min(state.mapW, zoom.w);
   viewH = Math.min(state.mapH, zoom.h);
+
+  // Em celular na vertical, uma câmera 32×25 dentro de uma arena estreita deixa
+  // grandes faixas vazias. No modo compacto, ajustamos a janela da câmera ao formato
+  // real da tela: ela mostra menos colunas e mais linhas, usando praticamente toda a
+  // área disponível sem esticar ou deformar o mapa.
+  const gameEl = document.getElementById('game');
+  const portraitCompact = !!gameEl?.classList.contains('compact') && canvas.height > canvas.width * 1.12;
+  if (portraitCompact) {
+    const aspect = canvas.width / canvas.height;
+    viewH = Math.min(state.mapH, Math.max(viewH, Math.round(viewW / aspect)));
+    viewW = Math.min(state.mapW, Math.max(1, Math.round(viewH * aspect)));
+  }
+
   cell = Math.min(canvas.width / viewW, canvas.height / viewH);
   offX = (canvas.width - cell * viewW) / 2;
   offY = (canvas.height - cell * viewH) / 2;
