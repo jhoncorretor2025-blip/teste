@@ -1,3 +1,11 @@
+## [4.5.37] — 2026-10-08
+- 🎨 **Hierarquia visual:** reforçada a ação principal de jogar e a distinção entre ações primárias e secundárias.
+- 📱 **Celular:** navegação principal passa a usar abas horizontais roláveis, evitando espremer as 8 áreas em uma grade pequena.
+- 🧭 **Navegação:** aba ativa ganhou indicador visual mais claro e melhor contraste.
+- 👆 **Toque:** botões de configuração e ações principais mantêm área confortável de toque sem ocupar a arena.
+- ♿ **Acabamento:** foco de teclado mais visível e menos uso de blur em superfícies pesadas no touch para reduzir custo de renderização.
+- 🛡️ **Segurança:** nenhuma regra de jogo, rede online, storage, autenticação, integração ou API foi alterada.
+
 ## [4.5.36] — 2026-10-07
 - 🛡️ **Offline corrigido:** `js/ai.js`, usado pelo motor ativo da partida, agora está no cache do Service Worker. Sem ele, o `cache.addAll()` podia abortar a instalação inteira do cache offline.
 - 🧪 **Proteção adicionada:** o teste da versão verifica que os módulos do caminho ativo também estão presentes no `ASSETS` do Service Worker.
