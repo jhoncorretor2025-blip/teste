@@ -55,8 +55,10 @@ let handlers = {};
 // Isso evita acumular vários snapshots no canal WebRTC quando o celular demora para processar/renderizar.
 let stateSessionId = '';
 let stateSeq = 0;
+let clientExpectedSessionId = '';
 const stateDelivery = new Map();
-const STATE_ACK_WAIT_MS = 420;
+// O cliente pode ser mais lento que o anfitrião. Guardamos somente o último estado.
+const STATE_MIN_SEND_INTERVAL_MS = 80;
 const STATE_STALL_MS = 4500;
 
 // Configuração estável da sala: é pequena e pode ser reenviada sempre que alguém
@@ -125,6 +127,7 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
   role = 'host';
   stateSessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   stateSeq = 0;
+  clientExpectedSessionId = '';
   stateDelivery.clear();
   mySlot = 0;
   deliberateDisconnect = false;
@@ -232,10 +235,11 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
       } else if (msg.type === 'stateAck') {
         const delivery = stateDelivery.get(slot);
         const seq = Number(msg.seq);
-        if (delivery && Number.isFinite(seq) && seq >= delivery.pendingSeq) {
+        if (delivery && Number.isFinite(seq) && seq === delivery.pendingSeq) {
           delivery.pendingSeq = 0;
           delivery.lastAckAt = Date.now();
           delivery.lastAckSeq = seq;
+          enviarEstadoPendente(delivery);
         }
       } else if (msg.type === 'ping') {
         try { conn.send({ type: 'pong', ts: msg.ts }); } catch {}
@@ -272,9 +276,9 @@ function finalizeJoin(conn, slot, teamPref, playerName = null) {
   // Guarda o slot também na conexão para que a lista de pares e a migração continuem
   // estáveis mesmo quando alguém sai do meio da sala.
   conn.__slot = slot;
-  stateDelivery.set(slot, { pendingSeq: 0, lastSentAt: 0, lastAckAt: Date.now(), lastAckSeq: 0, skipped: 0 });
+  stateDelivery.set(slot, { conn, pendingSeq: 0, lastSentAt: 0, lastAckAt: Date.now(), lastAckSeq: 0, latestPayload: null, skipped: 0 });
   const team = handlers.onAssignTeam ? handlers.onAssignTeam(slot, teamPref) : undefined;
-  try { conn.send({ type: 'welcome', slot, team }); } catch {}
+  try { conn.send({ type: 'welcome', slot, team, session: stateSessionId }); } catch {}
   // O pacote de configuração é separado do estado frequente: pequeno, explícito e
   // seguro para reenviar. Também corrige entrada tardia e reconexão após uma queda.
   if (handlers.getRoomConfig) {
@@ -399,6 +403,7 @@ function configurarHostConnHandlers() {
   hostConn.on('data', msg => {
     if (msg.type === 'welcome') {
       mySlot = msg.slot;
+      clientExpectedSessionId = msg.session ? String(msg.session) : '';
       onJoinedCb && onJoinedCb(msg.slot, msg.team);
     } else if (msg.type === 'roomConfig') {
       handlers.onRoomConfig && handlers.onRoomConfig(msg);
@@ -407,11 +412,11 @@ function configurarHostConnHandlers() {
     } else if (msg.type === 'rejected') {
       onFailCb && onFailCb(new Error('rejected'));
     } else if (msg.type === 'state') {
+      // Nunca aceita dados de uma sessão antiga depois de reconectar/migrar.
+      if (clientExpectedSessionId && msg.session && String(msg.session) !== clientExpectedSessionId) return;
       handlers.onStateUpdate && handlers.onStateUpdate(msg);
-      // Confirma o último snapshot recebido mesmo que o render tenha decidido ignorá-lo por ser antigo.
-      // O ACK é minúsculo e evita que o anfitrião enfileire vários estados pesados.
       if (hostConn && hostConn.open && Number.isFinite(Number(msg.seq))) {
-        try { hostConn.send({ type: 'stateAck', seq: Number(msg.seq) }); } catch {}
+        try { hostConn.send({ type: 'stateAck', session: msg.session || clientExpectedSessionId, seq: Number(msg.seq) }); } catch {}
       }
     } else if (msg.type === 'countdown') {
       handlers.onCountdown && handlers.onCountdown(msg.n);
@@ -509,45 +514,53 @@ function attemptHostMigration() {
   }
 }
 
-// Host: manda o estado atual do jogo pra todo mundo conectado.
-// Um canal WebRTC confiável é ótimo para comandos, mas pode acumular snapshots pesados se um
-// aparelho estiver lento. Cada jogador recebe o próximo estado só depois de confirmar o anterior.
+// Envia o estado atual sem criar fila de snapshots. Se o cliente estiver lento,
+// substitui o pendente pelo estado mais recente e manda assim que houver confirmação.
+function enviarEstadoPendente(delivery) {
+  const c = delivery.conn;
+  if (!c || !c.open || !delivery.latestPayload) return false;
+  const now = Date.now();
+  if (delivery.pendingSeq) return false;
+  if (delivery.lastSentAt && now - delivery.lastSentAt < STATE_MIN_SEND_INTERVAL_MS) return false;
+  const seq = ++stateSeq;
+  const message = Object.assign({ type: 'state', session: stateSessionId, seq, sentAt: now }, delivery.latestPayload);
+  sendDiag.tentativas++;
+  try {
+    c.send(message);
+    sendDiag.sucessos++;
+    delivery.pendingSeq = seq;
+    delivery.lastSentAt = now;
+    delivery.latestPayload = null;
+    delivery.skipped = 0;
+    return true;
+  } catch (err) {
+    sendDiag.falhas++;
+    sendDiag.ultimoErro = (err && err.message ? err.message : String(err)) + ' (conexão aberta? ' + c.open + ')';
+    return false;
+  }
+}
+
 export function broadcastState(payload) {
   const now = Date.now();
-  const seq = ++stateSeq;
-  const message = { type: 'state', session: stateSessionId, seq, sentAt: now, ...payload };
   sendDiag.ultimaContagemConns = conns.length;
-
   conns.forEach((c) => {
     if (!c || !c.open) return;
     const slot = c.__slot;
-    const delivery = stateDelivery.get(slot) || { pendingSeq: 0, lastSentAt: 0, lastAckAt: 0, lastAckSeq: 0, skipped: 0 };
+    const delivery = stateDelivery.get(slot) || {
+      conn: c, pendingSeq: 0, lastSentAt: 0, lastAckAt: Date.now(), lastAckSeq: 0, latestPayload: null, skipped: 0
+    };
+    delivery.conn = c;
+    delivery.latestPayload = payload;
     if (delivery.pendingSeq) {
-      if (now - delivery.lastSentAt < STATE_ACK_WAIT_MS) {
-        delivery.skipped++;
-        stateDelivery.set(slot, delivery);
-        return;
-      }
+      delivery.skipped++;
       if (now - delivery.lastSentAt >= STATE_STALL_MS) {
         try { c.close(); } catch {}
-        return;
       }
-      delivery.skipped++;
       stateDelivery.set(slot, delivery);
       return;
     }
-    sendDiag.tentativas++;
-    try {
-      c.send(message);
-      sendDiag.sucessos++;
-      delivery.pendingSeq = seq;
-      delivery.lastSentAt = now;
-      delivery.skipped = 0;
-      stateDelivery.set(slot, delivery);
-    } catch (err) {
-      sendDiag.falhas++;
-      sendDiag.ultimoErro = `${err?.message || err} (conexão aberta? ${c.open})`;
-    }
+    enviarEstadoPendente(delivery);
+    stateDelivery.set(slot, delivery);
   });
 }
 
@@ -602,6 +615,7 @@ export function disconnect() {
   currentRoomPin = null;
   roomPinRequired = false;
   knownPeers = [];
+  clientExpectedSessionId = '';
   stateDelivery.clear();
   conns.forEach(c => { try { c.close(); } catch {} });
   conns = [];
