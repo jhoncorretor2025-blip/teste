@@ -1840,6 +1840,12 @@ function applyTouchControl() {
   $('touchControl').value = mode;
   $('touchControlToggle').textContent = TOUCH_ICONS[mode] || '🕹️';
   $('touchControlToggle').setAttribute('aria-label', `Usando ${TOUCH_LABELS[mode]} — toque pra trocar`);
+  const mobileToggle = $('mobileTouchControlToggle');
+  if (mobileToggle) {
+    mobileToggle.textContent = mode === 'dpad' ? '⬆️' : '🕹️';
+    mobileToggle.setAttribute('aria-label', `Trocar controle — usando ${TOUCH_LABELS[mode]}`);
+    mobileToggle.title = `Trocar para ${mode === 'dpad' ? 'joystick' : 'setas'}`;
+  }
 }
 
 $('touchControl').addEventListener('change', (e) => {
@@ -1979,12 +1985,18 @@ $('nativeShareRoom').addEventListener('click', async () => {
 
 // Mesmo botão de trocar controle, mas direto na tela do jogo — importante porque quem
 // entra numa sala pelo link nunca vê o menu principal, então precisa poder trocar aqui
-$('touchControlToggle').addEventListener('click', () => {
-  const idx = TOUCH_MODES.indexOf(state.touchControl);
-  state.touchControl = TOUCH_MODES[(idx + 1) % TOUCH_MODES.length];
+function cycleTouchControlQuick() {
+  // Botão rápido da partida: alterna apenas entre os dois controles principais.
+  // O modo "arrastar" continua disponível nas configurações.
+  const next = state.touchControl === 'dpad' ? 'joystick' : 'dpad';
+  state.touchControl = next;
   applyTouchControl();
   persistProfile();
-});
+  tapVibrate();
+  announce(next === 'dpad' ? 'Controle: setas.' : 'Controle: joystick.');
+}
+$('touchControlToggle').addEventListener('click', cycleTouchControlQuick);
+$('mobileTouchControlToggle')?.addEventListener('click', cycleTouchControlQuick);
 
 // Botão de trocar o zoom da câmera direto na tela do jogo — cada jogador ajusta o seu
 // (não depende do anfitrião, funciona igual pra quem entrou numa sala pelo link também)
