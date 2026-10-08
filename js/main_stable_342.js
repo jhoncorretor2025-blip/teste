@@ -125,6 +125,11 @@ function unlockOnline(id) {
   if (a) document.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: a }));
 }
 
+document.addEventListener('localInputPredicted', () => {
+  // Feedback imediato só na orientação visual; o host continua sendo a autoridade do jogo.
+  render();
+});
+
 net.setHandlers({
   onJoinRequest: (request) => {
     const name = safe(request.name, 'Alguém');
@@ -3025,10 +3030,10 @@ setInterval(() => {
     return;
   }
 
-  if (semNoticias > 3500 && !avisoInstavelMostrado) {
+  if (semNoticias > 2500 && !avisoInstavelMostrado) {
     avisoInstavelMostrado = true;
-    $('badge').textContent = '⚠️ Conexão instável — o jogo não recebe dados do anfitrião...';
-  } else if (semNoticias < 2000 && avisoInstavelMostrado) {
+    $('badge').textContent = '⚠️ Conexão instável — sem atualização do anfitrião...';
+  } else if (semNoticias < 1200 && avisoInstavelMostrado) {
     avisoInstavelMostrado = false;
     reconexaoForcadaTentada = false;
     $('badge').textContent = '🌐 ONLINE';
