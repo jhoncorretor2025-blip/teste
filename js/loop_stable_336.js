@@ -573,11 +573,11 @@ export function tryBoost(i) {
 export function kill(i, killer = -1) {
   trackDeathForMission(i);
   if (state.hunterActive) state.hunterVictims.add(i);
+  const survivedSec = Math.floor((Date.now() - (state.spawnedAt[i] || Date.now())) / 1000);
   if (i === mySlot) {
     const runScore = state.scores[i] || 0;
     const runLength = state.snakes[i]?.length || 0;
     const runFood = state.foodsEaten[i] || 0;
-    const survivedSec = Math.floor((Date.now() - (state.spawnedAt[i] || Date.now())) / 1000);
     finishPerformanceRun({ score: runScore, length: runLength, food: runFood, survivedSec, reason: 'derrota' });
     awardLeagueRun({ score: runScore, length: runLength, survivedSec });
   }
