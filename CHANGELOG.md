@@ -1,3 +1,10 @@
+# v4.5.32 — Eventos negativos aleatórios
+
+- Adiciona desafios temporários durante partidas locais: controles invertidos, sem virar, controles confusos, arena lenta e neblina.
+- Eventos aparecem automaticamente após o início da partida, com duração curta e intervalo aleatório.
+- Efeitos não são ativados em partidas online para evitar dessincronização entre jogadores.
+- Mantém os controles existentes e pode ser interrompido naturalmente ao terminar o efeito.
+
 ## [4.5.31] — 2026-10-07
 - 🌐 **HUD online no computador:** aproveita melhor o espaço da arena e mostra posição, pontos, tamanho da minhoca, comidas, eliminações, conexão/ping e missão atual.
 - 📡 **Diagnóstico visual da rede:** o painel diferencia anfitrião e cliente e mostra a qualidade aproximada da conexão.
