@@ -15,7 +15,7 @@ let timer = null;
 let confusionTimer = null;
 let lastEffect = '';
 
-function activeForHost(){ return !isOnline() || isHost(); }
+function activeForHost(){ return !isOnline(); }
 function clearTimers(){ if(timer) clearTimeout(timer); timer=null; if(confusionTimer) clearInterval(confusionTimer); confusionTimer=null; }
 function hideOverlay(){ document.getElementById('negativeEventOverlay')?.remove(); }
 function showOverlay(effect){
