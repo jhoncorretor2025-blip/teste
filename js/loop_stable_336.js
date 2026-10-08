@@ -1528,6 +1528,7 @@ export function startClientGame() {
   state.debugCountdownRecebidoAt = 0;
   remoteStateSession = '';
   lastRemoteStateSeq = 0;
+  state.inputPredictionDir = null;
   remoteProgressSnapshot = { alive:false, score:0, food:0, length:0, runStartedAt:Date.now() };
   state.debugJoinedAt = Date.now(); // quando terminou de entrar de vez — base pra detectar se NADA chegar depois
   // Temporário: mostra o diagnóstico técnico automaticamente pra quem ENTRA numa sala,
@@ -1600,6 +1601,8 @@ export function applyRemoteState(msg) {
   }
   state.snakes = msg.snakes || state.snakes;
   state.dirs = msg.dirs || state.dirs;
+  // O host confirmou a direção real; encerramos a previsão visual do cliente.
+  state.inputPredictionDir = null;
   state.foods = msg.foods || state.foods;
   state.scores = msg.scores || state.scores;
   state.foodsEaten = msg.foodsEaten || state.foodsEaten;
