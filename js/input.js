@@ -23,8 +23,14 @@ export function setDir(i, d) {
 
 // Move a "minha" minhoca — local (host/offline) manda direto, cliente online manda pro anfitrião
 function moveMine(d) {
-  if (isOnline() && !isHost()) sendInput({ type: 'dir', dir: d });
-  else setDir(mySlot, d);
+  if (isOnline() && !isHost()) {
+    const previous = state.inputPredictionDir || state.dirs[mySlot];
+    if (reverse(previous, d)) return;
+    state.inputPredictionDir = { x: d.x, y: d.y };
+    sendInput({ type: 'dir', dir: d });
+    // Só muda a orientação visual da cabeça. Posição, colisão e pontuação continuam no host.
+    document.dispatchEvent(new CustomEvent('localInputPredicted'));
+  } else setDir(mySlot, d);
 }
 
 function boostMine() {
