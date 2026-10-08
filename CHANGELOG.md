@@ -1,3 +1,10 @@
+## [4.5.30] — 2026-10-07
+- 🛠️ **Correção importante da paisagem:** corrigido o conflito entre o layout mobile (aspect-ratio 3/4) e a orientação horizontal.
+- 📱 **Arena dimensionada pela viewport:** em paisagem, a arena agora usa a altura real disponível da tela em vez de manter proporção vertical.
+- 🗺️ **Mapa completo visível:** evita que a parte inferior do jogo fique fora da tela depois de virar o celular.
+- 🕹️ **Controles recuperados:** joystick, botão de troca e turbo permanecem ancorados dentro da arena visível.
+- 🚫 **Sem alteração no fluxo:** continua aparecendo a orientação para virar o celular, mas depois da rotação a interface se adapta corretamente.
+
 ## [4.5.29] — 2026-10-07
 - 🛠️ **Correção do controle na paisagem:** o botão rápido de troca não fica mais solto no topo da arena.
 - 🕹️ **Posicionamento:** o botão agora fica imediatamente acima do joystick, tanto em retrato quanto em paisagem.
