@@ -96,6 +96,7 @@ export const state = {
   boostUsedCount: [0, 0, 0, 0, 0, 0], // quantas vezes cada um usou o turbo nessa partida
   spawnedAt: [0, 0, 0, 0, 0, 0], // quando cada minhoca nasceu por último — pra conquista de sobreviver
   hunterVictims: new Set(), // quem morreu enquanto a Minhoca Caçadora estava ativa nessa aparição
+  inputPredictionDir: null, // cliente online: feedback visual imediato até o próximo estado oficial
   receivedFirstState: false, // cliente: já recebeu o primeiro pacote de estado real do anfitrião?
   debugStatesReceived: 0, // diagnóstico: quantos pacotes de estado o cliente já recebeu
   debugLastStateAt: 0, // diagnóstico: timestamp do último pacote de estado recebido
