@@ -1,3 +1,9 @@
+## [4.5.29] — 2026-10-07
+- 🛠️ **Correção do controle na paisagem:** o botão rápido de troca não fica mais solto no topo da arena.
+- 🕹️ **Posicionamento:** o botão agora fica imediatamente acima do joystick, tanto em retrato quanto em paisagem.
+- ⬆️ **Troca funcional:** o botão alterna de forma confiável entre joystick e setas e atualiza o ícone.
+- 📱 **Interface limpa:** não adiciona nova barra nem ocupa espaço útil da arena.
+
 ## [4.5.28] — 2026-10-07
 - 🕹️ **Troca rápida de controle:** adicionado um botão acessível diretamente acima do joystick durante a partida.
 - ⬆️ **Joystick ↔ Setas:** um toque alterna imediatamente entre a bolinha e o D-pad de setas.
