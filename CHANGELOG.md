@@ -1,3 +1,9 @@
+## [4.5.28] — 2026-10-07
+- 🕹️ **Troca rápida de controle:** adicionado um botão acessível diretamente acima do joystick durante a partida.
+- ⬆️ **Joystick ↔ Setas:** um toque alterna imediatamente entre a bolinha e o D-pad de setas.
+- 🔊 **Feedback:** a troca atualiza o ícone/controle e anuncia qual modo foi ativado; o modo arrastar continua disponível nas configurações.
+- ♿ **Acessibilidade:** botão com área de toque de 48×42 px, foco visível e resposta tátil.
+
 ## [4.5.27] — 2026-10-07
 - 📱 **Orientação no celular:** ao iniciar uma partida em retrato, o jogo agora sugere virar o aparelho para paisagem e oferece um botão direto para **virar + maximizar**. O navegador só tenta travar a orientação depois do toque do usuário, porque esse recurso depende do suporte do navegador.
 - ⛶ **Retrato aproveitado:** se o jogador preferir continuar na vertical, existe um botão **Aproveitar tela** e a arena passa a ocupar praticamente toda a altura disponível.
