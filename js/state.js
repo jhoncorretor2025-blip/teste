@@ -52,6 +52,7 @@ export const state = {
   foods: [],
   scores: [],
   foodsEaten: [],
+  starsCollected: [0, 0, 0, 0, 0, 0], // estrelas ⭐ pegas por jogador nesta partida (zera em reset()); declarado aqui pra existir antes da 1ª partida
   grow: [],
   respawnAt: [],
   particles: [],

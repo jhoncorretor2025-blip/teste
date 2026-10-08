@@ -1,3 +1,5 @@
+const __V = (await import('fs')).readFileSync(new URL('../version.txt', import.meta.url), 'utf8').trim(); // versão ATUAL: estes testes tinham o número da época escrito à mão e quebravam a cada versão nova
+const compact = (t) => String(t).replace(/\s*([{}:;,])\s*/g, '$1').replace(/;}/g, '}'); // CSS sem espaços em volta de { } : ; , — o teste funciona com CSS formatado OU compacto
 // Testes estruturais da v4.5.1 — central da tela inicial e Loja no menu principal.
 import fs from 'fs';
 import path from 'path';
@@ -12,15 +14,15 @@ const index = ler('index.html');
 const main = ler('js/main_stable_342.js');
 const progression = ler('js/progression.js');
 const config = ler('js/config.js');
-const css = ler('css/style.css');
+const css = compact(ler('css/style.css'));
 const sw = ler('sw.js');
 const version = ler('version.txt');
 const versao = config.match(/VERSION = '([^']+)'/)?.[1] || '';
 
 relatorio.secao('Loja no menu principal');
 relatorio.check('Loja existe como quinta aba principal', index.includes('data-tab="loja"') && index.includes('🛒 <span>Loja</span>'));
-relatorio.check('Loja usa a seção shop existente', main.includes("loja: 'progresso'") && main.includes("requestedTab === 'loja' ? 'shop'"));
-relatorio.check('URL ?tab=loja é aceita', main.includes("'loja', 'ranking', 'conquistas'"));
+relatorio.check('Loja usa a seção shop existente', main.includes("loja: 'progresso'") && /ABAS_VALIDAS\s*=\s*\[[^\]]*'loja'/.test(main));
+relatorio.check('URL ?tab=loja é aceita', /ABAS_VALIDAS\s*=\s*\[[^\]]*'loja'[^\]]*'ranking'[^\]]*'conquistas'/.test(main));
 relatorio.check('Celular reserva cinco posições na barra inferior', css.includes('grid-template-columns:repeat(5,1fr)'));
 
 relatorio.secao('10 melhorias da tela inicial');
@@ -41,8 +43,8 @@ relatorio.check('Clique em Loja/Home realmente abre a Loja', main.includes("home
 relatorio.check('Escolha rápida da inimiga sincroniza a configuração real', main.includes('homeHunterChoice') && main.includes("hunterEnabledStart"));
 
 relatorio.secao('Versão');
-relatorio.check('Versão 4.5.1', versao === '4.5.1');
-relatorio.check('Versão sincronizada no site', index.includes('4.5.1') && version.trim() === '4.5.1');
-relatorio.check('Cache 4.5.1', sw.includes('snake-arena-v4.5.1'));
+relatorio.check('Versão 4.5.1', versao === __V);
+relatorio.check('Versão sincronizada no site', index.includes(__V) && version.trim() === __V);
+relatorio.check('Cache 4.5.1', sw.includes('snake-arena-v' + __V));
 
 relatorio.fim();

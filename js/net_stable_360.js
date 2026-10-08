@@ -76,6 +76,7 @@ let originalRoomId = null; // guarda o código ORIGINAL da sala, pra calcular o 
 let knownPeers = [];       // [{slot, id}] — quem tá na sala, pra saber quem vira o próximo anfitrião
 let deliberateDisconnect = false; // true quando a própria pessoa clicou em sair (não tenta migrar)
 let migrating = false;
+let joinRefused = false; // true quando o anfitrião RECUSOU a entrada (senha errada, sala cheia...): aí NÃO tenta reconectar sozinho
 
 export function setHandlers(h) {
   handlers = h;
@@ -214,6 +215,7 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
           setTimeout(() => { try { conn.close(); } catch {} }, 80);
           return;
         }
+        conn.__autenticada = true; // provou a senha (ou a sala não tem senha)
 
         // No modo atual não existe PIN nem aprovação manual: receber o convite já
         // autoriza a entrada e manda o jogador direto para a sala.
@@ -232,6 +234,14 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
           authenticated: true
         });
       } else if (msg.type === 'reconnectRequest') {
+        // A reconexão automática TAMBÉM precisa provar a senha: antes ela entrava direto, sem conferir,
+        // então bastava mandar "reconnectRequest" em vez de "joinRequest" pra furar a sala protegida.
+        if (roomPinRequired && msg.roomPin !== currentRoomPin) {
+          try { conn.send({ type: 'wrongPin' }); } catch {}
+          setTimeout(() => { try { conn.close(); } catch {} }, 80);
+          return;
+        }
+        conn.__autenticada = true;
         conn.__look = msg.look || null;
         // Reconexão automática (não é gente nova pedindo pra entrar, é alguém que já
         // tava na sala e a conexão só piscou) — entra direto, SEM esperar aprovação
@@ -254,7 +264,8 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
         try { conn.send({ type: 'pong', ts: msg.ts }); } catch {}
       } else if (msg.type === 'pong') {
         pingStats[slot] = Date.now() - msg.ts;
-      } else {
+      } else if (!roomPinRequired || conn.__autenticada) {
+        // Em sala com senha, comando de jogo só vale de quem já provou a senha
         handlers.onInput && handlers.onInput(slot, msg);
       }
     });
@@ -309,6 +320,7 @@ export function rejectJoinRequest(request) {
 
 // Entra numa sala existente usando o código do anfitrião. O PIN é opcional para compatibilidade.
 export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval, teamPref = 'mine', roomPin = null) {
+  joinRefused = false;
   role = 'client';
   deliberateDisconnect = false;
   myName = name;
@@ -418,8 +430,10 @@ function configurarHostConnHandlers() {
     } else if (msg.type === 'roomConfig') {
       handlers.onRoomConfig && handlers.onRoomConfig(msg);
     } else if (msg.type === 'wrongPin') {
+      joinRefused = true;
       onFailCb && onFailCb(new Error('wrongPin'));
     } else if (msg.type === 'rejected') {
+      joinRefused = true;
       onFailCb && onFailCb(new Error('rejected'));
     } else if (msg.type === 'state') {
       // Nunca aceita dados de uma sessão antiga depois de reconectar/migrar.
@@ -443,6 +457,7 @@ function configurarHostConnHandlers() {
       handlers.onMatchResult && handlers.onMatchResult(msg.result || null);
     } else if (msg.type === 'full') {
       // sala já tava cheia (3 jogadores) — não dá pra entrar
+      joinRefused = true;
       onFailCb && onFailCb(new Error('full'));
     } else if (msg.type === 'ping') {
       try { hostConn.send({ type: 'pong', ts: msg.ts }); } catch {}
@@ -451,7 +466,10 @@ function configurarHostConnHandlers() {
     }
   });
   hostConn.on('close', () => {
-    if (deliberateDisconnect || migrating) return; // saída de propósito, ou já migrando — nada a fazer
+    // Saída de propósito, já migrando, ou RECUSADO pelo anfitrião (senha errada, sala cheia): não reconecta.
+    // Antes, quem errava a senha tinha a conexão fechada e o jogo "reconectava sozinho" — e a reconexão
+    // não pedia a senha, então a sala protegida deixava entrar quem errou.
+    if (deliberateDisconnect || migrating || joinRefused) return;
     tentarReconexaoDireta();
   });
   hostConn.on('error', err => onFailCb && onFailCb(err));
@@ -486,7 +504,7 @@ function tentarReconexaoDireta() {
       hostConn = novaConn;
       // Reaplica os mesmos handlers de dados/fechamento que a conexão original tinha
       configurarHostConnHandlers();
-      hostConn.send({ type: 'reconnectRequest', name: myName, teamPref: myTeamPref, look: myLook }); // reconexão automática — entra direto, sem esperar aprovação manual de novo
+      hostConn.send({ type: 'reconnectRequest', name: myName, teamPref: myTeamPref, look: myLook, roomPin: currentRoomPin || '' }); // reconexão automática — entra direto, sem esperar aprovação manual de novo
       handlers.onConnectionStatus && handlers.onConnectionStatus('connected');
     });
     novaConn.on('error', () => { if (!conectou) { clearTimeout(timeoutReconexao); attemptHostMigration(); } });

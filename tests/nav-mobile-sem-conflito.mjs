@@ -43,8 +43,10 @@ const comTop = doCelular.filter((x) => /(?<!-)\btop\s*:/.test(x.corpo));
 const comBottom = doCelular.filter((x) => /\bbottom\s*:/.test(x.corpo));
 r.check('nenhuma regra de celular define "top" pro .tabBar (a barra é fixa só por "bottom")', comTop.length === 0,
   comTop.map((x) => `@media(${x.media}) tem top`).join('; '));
-r.check('exatamente 1 regra de celular define "bottom" (a barra fixa de verdade)', comBottom.length === 1,
-  `achou ${comBottom.length}: ${comBottom.map((x) => x.media).join(' | ')}`);
+// Pode haver mais de uma regra com "bottom" no celular: uma põe a barra embaixo e outra só soma a área segura do
+// iPhone (env(safe-area-inset-bottom)). O que NÃO pode é existir "top" junto (aí a barra estica a tela inteira).
+r.check('há regra de celular com "bottom" (a barra fixa embaixo) e nenhuma com "top"', comBottom.length >= 1 && comTop.length === 0,
+  `bottom em ${comBottom.length} regra(s), top em ${comTop.length}`);
 
 r.secao('A barra continua com position:fixed e as bordas certas pro celular');
 const fixa = doCelular.find((x) => /position\s*:\s*fixed/.test(x.corpo));

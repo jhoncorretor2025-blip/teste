@@ -1,7 +1,8 @@
+const compact = (t) => String(t).replace(/\s*([{}:;,])\s*/g, '$1').replace(/;}/g, '}'); // CSS sem espaços em volta de { } : ; , — o teste funciona com CSS formatado OU compacto
 import fs from 'fs';
 import path from 'path';
 import { RAIZ, novoRelatorio } from './_ambiente.mjs';
-const css=fs.readFileSync(path.join(RAIZ,'css/style.css'),'utf8');
+const css=compact(fs.readFileSync(path.join(RAIZ,'css/style.css'),'utf8'));
 const index=fs.readFileSync(path.join(RAIZ,'index.html'),'utf8');
 const config=fs.readFileSync(path.join(RAIZ,'js/config.js'),'utf8');
 const sw=fs.readFileSync(path.join(RAIZ,'sw.js'),'utf8');
@@ -14,8 +15,8 @@ r.check('popup sai do centro',/top:14%/.test(b));
 r.check('popup fica menor',/width:min\(82vw,360px\)/.test(b));
 r.check('popup fica translúcido',/opacity:.74/.test(b));
 r.check('toques continuam livres',/pointer-events:none/.test(css));
-r.check('versão index',/4\.5\.5/.test(index));
-r.check('versão config',/VERSION = '4\.5\.5'/.test(config));
-r.check('versão SW',/snake-arena-v4\.5\.5/.test(sw));
-r.check('version.txt',version==='4.5.5');
+r.check('versão index',index.includes(version));
+r.check('versão config',config.includes("VERSION = '"+version+"'"));
+r.check('versão SW',sw.includes('snake-arena-v'+version));
+r.check('version.txt tem o formato X.Y.Z',/^\d+\.\d+\.\d+$/.test(version));
 r.fim();

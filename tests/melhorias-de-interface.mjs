@@ -12,7 +12,7 @@ const r = novoRelatorio();
 
 r.secao('Numeração da galeria de conquistas');
 const mainStableSource = fs.readFileSync(RAIZ + '/js/main_stable_342.js', 'utf8');
-r.check('cada categoria recebe números consecutivos', mainStableSource.includes('.map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }))'));
+r.check('cada categoria recebe números consecutivos', /\.map\(\(a, \w+\) => \(\{ a, difficultyNumber: \w+ \+ 1 \}\)\)/.test(mainStableSource));
 r.check('conquistas desbloqueadas não pulam números', !mainStableSource.includes('xUnlocked !== yUnlocked'));
 r.check('a ordem de dificuldade continua vindo do config.js', mainStableSource.includes('filter((a) => a.category === group.key)'));
 
@@ -64,7 +64,8 @@ function cena({ eu = { x: 28, y: 22 }, hunter = null }) {
 }
 // deixa a câmera assentar (ela desliza entre quadros) antes de medir; senão a contagem da grade oscila
 const desenhar = () => { for (let i = 0; i < 8; i++) renderMod.render(); g.zerar(); renderMod.render(); };
-const seta = () => { const ev = g.eventos; for (let i = 0; i < ev.length - 1; i++) if (ev[i].t === 'translate' && ev[i + 1].t === 'rotate') return { x: ev[i].x, y: ev[i].y, a: ev[i + 1].a }; return null; };
+// (só vale o rotate com ângulo dentro de ±π: outros efeitos da tela também usam translate+rotate)
+const seta = () => { const ev = g.eventos; for (let i = 0; i < ev.length - 1; i++) if (ev[i].t === 'translate' && ev[i + 1].t === 'rotate' && Math.abs(ev[i + 1].a) <= Math.PI + 0.01) return { x: ev[i].x, y: ev[i].y, a: ev[i + 1].a }; return null; };
 const distTxt = () => g.textos.map((t) => t.t.match(/^☠️ (\d+)$/)).find(Boolean);
 
 r.secao('Setinha apontando pra caçadora fora da tela');

@@ -1,3 +1,4 @@
+const __V = (await import('fs')).readFileSync(new URL('../version.txt', import.meta.url), 'utf8').trim(); // versão ATUAL: estes testes tinham o número da época escrito à mão e quebravam a cada versão nova
 // Testes estruturais das conquistas iniciantes renovadas na v4.4.1.
 import fs from 'fs';
 import path from 'path';
@@ -35,6 +36,6 @@ relatorio.secao('Migração');
 relatorio.check('Conquistas antigas aposentadas', storage.includes("RETIRED_ACHIEVEMENTS_V4_4_1") && storage.includes("'food_10'") && storage.includes("'survive_30'") && storage.includes("'length_15'") && storage.includes("'food_25'"));
 
 relatorio.secao('Versão');
-relatorio.check('4.4.1 sincronizada', config.includes("VERSION = '4.4.1'") && index.includes('4.4.1') && version.trim() === '4.4.1' && sw.includes('snake-arena-v4.4.1'));
+relatorio.check('4.4.1 sincronizada', config.includes("VERSION = '" + __V + "'") && index.includes(__V) && version.trim() === __V && sw.includes('snake-arena-v' + __V));
 
 relatorio.fim();

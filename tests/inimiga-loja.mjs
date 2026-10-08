@@ -1,3 +1,4 @@
+const __V = (await import('fs')).readFileSync(new URL('../version.txt', import.meta.url), 'utf8').trim(); // versão ATUAL: estes testes tinham o número da época escrito à mão e quebravam a cada versão nova
 // Testes estruturais da escolha da inimiga, zonas e Loja.
 import fs from 'fs';
 import path from 'path';
@@ -26,6 +27,6 @@ relatorio.check('Loja aparece no progresso',index.includes('data-progress-sectio
 relatorio.check('Mapas premium bloqueados no seletor',index.includes('data-shop-map="cyber"'));
 relatorio.check('Fantasias premium bloqueadas na personalização',players.includes('isSkinUnlocked')&&players.includes('disabled'));
 relatorio.secao('Versão');
-relatorio.check('Versão 4.2.2',ler('version.txt').trim()==='4.2.2');
-relatorio.check('Cache 4.2.2',ler('sw.js').includes('snake-arena-v4.2.2'));
+relatorio.check('Versão 4.2.2',ler('version.txt').trim()===__V);
+relatorio.check('Cache 4.2.2',ler('sw.js').includes('snake-arena-v'+__V));
 relatorio.fim();

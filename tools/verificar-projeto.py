@@ -30,14 +30,32 @@ else:
     falha(f'versões diferentes: config.js={versao}, version.txt={txt}, sw.js={cache}, index.html={sorted(no_html)}',
           'Use `python3 tools/bump-versao.py X.Y.Z` — ele troca nos 4 lugares de uma vez. Se ficar desigual, o jogo pode ficar preso em cache velho ou recarregar em loop.')
 
+# Caminho ATIVO = o que o index.html realmente carrega + tudo que esse arquivo importa (calculado já aqui, porque as
+# checagens 2, 3, 4, 7 e 13 só importam pra ele; os backups antigos em js/ não rodam e dariam falso alarme)
+grafo = {f.name: set(m + '.js' for m in re.findall(r"from\s+'\./([A-Za-z0-9_\-]+)\.js(?:\?[^']*)?'", f.read_text(encoding='utf-8'))) for f in JS.glob('*.js')}
+_html_entrada = re.search(r"import\(\s*['\"]\.?/js/([A-Za-z0-9_\-]+)\.js", ler('index.html'))
+_entrada_ativa = (_html_entrada.group(1) + '.js') if _html_entrada else 'main_stable_342.js'
+ativos, _fila_a = set(), [_entrada_ativa]
+while _fila_a:
+    _n = _fila_a.pop()
+    if _n in ativos or _n not in grafo: continue
+    ativos.add(_n); _fila_a += grafo[_n]
+
 print('2) Todo id usado no JS existe no index.html')
 ids_html = set(re.findall(r'id="([^"]+)"', ler('index.html')))
+js_ativo = {n: (JS / n).read_text(encoding='utf-8') for n in ativos}
+todo_js = '\n'.join(js_ativo.values())
 ids_js = set()
-for f in JS.glob('*.js'):
-    t = f.read_text(encoding='utf-8')
+for t in js_ativo.values():
     ids_js |= set(re.findall(r"\$\('([^']+)'\)", t)) | set(re.findall(r'getElementById\([\'"]([^\'"]+)[\'"]\)', t))
-faltando = sorted(ids_js - ids_html)
-ok(f'{len(ids_js)} ids conferidos') if not faltando else falha(f'ids que o JS usa e o HTML não tem: {faltando}', 'Um `$("x")` nulo derruba o script inteiro na hora de carregar.')
+def id_opcional(i):
+    # criado pelo próprio JS (el.id = 'x') OU só usado de forma protegida ($('x')?. / if ($('x')) / $('x') &&): não derruba nada
+    if re.search(r"\.id\s*=\s*['\"]%s['\"]" % re.escape(i), todo_js): return True
+    for linha in todo_js.split('\n'):
+        if re.search(r"\$\('%s'\)\." % re.escape(i), linha) and not re.search(r"(if\s*\(\s*\$\('%s'\)\s*\)|\$\('%s'\)\s*&&)" % (re.escape(i), re.escape(i)), linha): return False
+    return True
+faltando = sorted(i for i in ids_js - ids_html if not id_opcional(i))
+ok(f'{len(ids_js)} ids conferidos') if not faltando else falha(f'ids que o JS usa SEM proteção e o HTML não tem: {faltando}', 'Um `$("x").algo` com "x" inexistente dá erro na hora. Crie o elemento no HTML, ou use `$("x")?.algo`.')
 
 print('3) Nenhum módulo morto NOVO (a partir do arquivo realmente carregado pelo index.html)')
 grafo = {f.name: set(m + '.js' for m in re.findall(r"from\s+'\./([A-Za-z0-9_\-]+)\.js(?:\?[^']*)?'", f.read_text(encoding='utf-8'))) for f in JS.glob('*.js')}
@@ -66,7 +84,7 @@ else:
 print('4) sw.js (modo offline) lista todos os arquivos do jogo')
 sw = ler('sw.js')
 assets = set(re.findall(r"'\./([^']+)'", sw.split('const ASSETS')[1].split('];')[0]))
-esperados = {f'js/{n}' for n in grafo} | {'index.html', 'css/style.css', 'manifest.webmanifest', 'icon.svg'}
+esperados = {f'js/{n}' for n in ativos} | {'index.html', 'css/style.css', 'manifest.webmanifest', 'icon.svg'}
 sem_cache = sorted(esperados - assets); inexistentes = sorted(a for a in assets if a and not (RAIZ / a).exists())
 ok(f'{len(assets)} arquivos no cache offline') if not sem_cache and not inexistentes else falha(
     f'fora do cache: {sem_cache}; listados mas inexistentes: {inexistentes}',
@@ -93,7 +111,7 @@ ok('mapa igual ao código') if mapa.exists() and mapa.read_text(encoding='utf-8'
 
 print('7) Os guias citam todos os módulos')
 guias = ''.join(ler(p) for p in ('AGENTS.md', 'docs/ARQUITETURA.md') if (RAIZ / p).exists())
-sem_citar = sorted(n for n in grafo if n not in guias)
+sem_citar = sorted(n for n in ativos if n not in guias)
 ok('AGENTS.md/ARQUITETURA.md falam de todos os módulos') if guias and not sem_citar else falha(f'módulos sem menção nos guias: {sem_citar or "(guias não existem)"}', 'Módulo novo? Acrescente uma linha sobre ele em AGENTS.md ou docs/ARQUITETURA.md.')
 
 print('8) Nenhum segredo (token) nos arquivos')

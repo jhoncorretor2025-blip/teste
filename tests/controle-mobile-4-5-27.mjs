@@ -1,3 +1,4 @@
+const compact = (t) => String(t).replace(/\s*([{}:;,])\s*/g, '$1').replace(/;}/g, '}'); // CSS sem espaços em volta de { } : ; , — o teste funciona com CSS formatado OU compacto
 // Teste da experiência mobile v4.5.27: orientação, maximização e joystick.
 import fs from 'fs';
 import assert from 'assert';
@@ -9,7 +10,7 @@ const index = read('index.html');
 const main = read('js/main_stable_342.js');
 const input = read('js/input.js');
 const render = read('js/render_stable_341.js');
-const css = read('css/style.css');
+const css = compact(read('css/style.css'));
 
 assert(index.includes('id="landscapeHintBtn"'), 'faltou botão para virar e maximizar');
 assert(index.includes('id="landscapeHintCloseBtn"'), 'faltou opção de continuar em retrato');

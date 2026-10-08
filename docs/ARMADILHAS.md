@@ -120,6 +120,10 @@ A v4.5.9 anunciava "radar com nome + pontuação", e o minimapa nunca escreveu n
 `main_stable_342.js` chamava `tapVibrate()` sem importar do `utils.js`. A checagem 13 antiga só olhava se o nome existia em QUALQUER arquivo (existia, no `utils.js`), e nenhum teste clicava no botão. → A checagem 13 agora é POR ARQUIVO e só no caminho ativo, e o robô `tests/clicar-em-tudo.mjs` clica em tudo e lista erros.
 **Lição:** "o nome existe no projeto" não basta — em módulo ES cada arquivo precisa importar o que usa. Se o verificador reprovar citando um arquivo e uma função, quase sempre falta uma linha de `import`.
 
+**35. Sala "com senha" que deixava entrar sem senha por um caminho alternativo (v4.5.43).**
+A senha só era conferida no pedido de ENTRADA (`joinRequest`). A reconexão automática (`reconnectRequest`) entrava direto, sem senha — então quem errava a senha era "reconectado" pelo próprio jogo, e um intruso podia pular a checagem mandando a reconexão no lugar da entrada. O teste antigo só procurava uma frase no código e passava sempre. → Toda porta de entrada confere a senha; recusado não reconecta sozinho; conexão sem senha não manda comando. Coberto por `tests/salas-com-senha.mjs` (inclui um intruso).
+**Lição:** em segurança, teste o caminho ALTERNATIVO, não só o caminho feliz — se existe mais de uma forma de entrar, todas precisam da mesma checagem.
+
 ---
 
 # Problema em aberto: multiplayer real no celular

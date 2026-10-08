@@ -1,3 +1,4 @@
+const __V = (await import('fs')).readFileSync(new URL('../version.txt', import.meta.url), 'utf8').trim(); // versão ATUAL: estes testes tinham o número da época escrito à mão e quebravam a cada versão nova
 // Verifica as correções da v4.5.36 no caminho que o jogo realmente executa.
 import fs from 'node:fs';
 const index=fs.readFileSync('index.html','utf8');
@@ -10,10 +11,10 @@ const input=fs.readFileSync('js/input.js','utf8');
 const verifier=fs.readFileSync('tools/verificar-projeto.py','utf8');
 const loop=fs.readFileSync('js/loop_stable_336.js','utf8');
 const checks=[
- ['index',index,'4.5.36'],
- ['config',config,"VERSION = '4.5.36'"],
- ['version.txt',version,'4.5.36'],
- ['service worker',sw,'snake-arena-v4.5.36'],
+ ['index',index,__V],
+ ['config',config,"VERSION = '" + __V + "'"],
+ ['version.txt',version,__V],
+ ['service worker',sw,'snake-arena-v' + __V],
  ['service worker / evento negativo',sw,"./js/negative_events.js"],
  ['service worker / IA ativa',sw,"./js/ai.js"],
  ['entrypoint ativo',index,'main_stable_342.js'],

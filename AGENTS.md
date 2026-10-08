@@ -134,6 +134,9 @@ O multiplayer **real** no celular ainda tem um bug sem causa confirmada (o celul
 Detalhes, exports e imports de cada um: `docs/MAPA-DO-CODIGO.md`.
 - `main_stable_342.js` — ponto de entrada **ATIVO**: liga botões, abas (`?tab=`), sala online, aprovação de entrada, times (telas), atualização automática de versão. `main.js` é legado.
 - `state.js` — o objeto `state`. · `config.js` — constantes fixas (velocidades, mapas, temas, cores, conquistas).
+- `progression.js` — moedas, XP, nível, desafio diário, sequência, Liga, Loja (mapas, skins, cosméticos) e desafios; tudo salvo no navegador, fora do pacote do multiplayer.
+- `performance.js` — histórico de desempenho das últimas partidas e gráficos simples desenhados no próprio navegador (sem biblioteca externa, funciona offline).
+- `negative_events.js` — eventos negativos aleatórios durante a partida (controles invertidos, sem virar, controles confusos, neblina). O de lentidão foi removido de propósito (parecia lag).
 - `loop_stable_336.js` — coração **ATIVO**: iniciar partida, `tick`, caçadora, comida especial, envio/recebimento do estado online. `loop.js` é legado.
 - `render_stable_341.js` — renderização **ATIVA**: canvas, minimapa, placar e painel de diagnóstico. `render.js` é legado.
 - `net_stable_360.js` — multiplayer **ATIVO** (PeerJS): salas, aprovação, reconexão, migração de anfitrião e ping. `net.js` é uma ponte de compatibilidade.

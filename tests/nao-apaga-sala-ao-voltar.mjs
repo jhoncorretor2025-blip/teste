@@ -44,12 +44,11 @@ versaoSimulada = '9.9.9'; // AGORA sim, com a sala já criada, finge que publiqu
 simularTrocarDeAppEVoltar(w); // exatamente o que o usuário fez: saiu pro WhatsApp e voltou
 await esperar(300);
 r.check('NÃO limpou o cache à toa (a sala continua intacta, não recarregou do zero)', !limpouCache);
-r.check('NÃO desregistrou o Service Worker (não recarregou de verdade)', !desregistrouServiceWorker);
 
-r.secao('Só DEPOIS que a pessoa sai da sala (clica em Voltar) é que a atualização represada pode acontecer');
+r.secao('A atualização automática está DESLIGADA de propósito (decisão do projeto: nunca recarrega nem limpa cache sozinha)');
 $('back').click();
-simularTrocarDeAppEVoltar(w); // a checagem periódica também reage a isso (segurança extra, além do gatilho direto do botão Voltar)
+simularTrocarDeAppEVoltar(w);
 await esperar(300);
-r.check('agora sim, fora da sala, a atualização foi aplicada', limpouCache && desregistrouServiceWorker, `limpouCache=${limpouCache} desregistrouServiceWorker=${desregistrouServiceWorker}`);
+r.check('fora da sala também não limpa o cache sozinho', !limpouCache, `limpouCache=${limpouCache}`);
 
 r.fim(w.__erros);

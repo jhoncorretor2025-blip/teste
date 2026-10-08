@@ -11,6 +11,7 @@ const w = dom.window;
 globalThis.window = w;
 globalThis.document = w.document;
 globalThis.localStorage = w.localStorage;
+globalThis.Event = w.Event; globalThis.CustomEvent = w.CustomEvent; // o jogo dispara eventos do navegador
 
 const mod = await import(pathToFileURL(path.join(raiz,'js/progression.js')).href + '?teste-progressao-diaria=' + Date.now());
 const {

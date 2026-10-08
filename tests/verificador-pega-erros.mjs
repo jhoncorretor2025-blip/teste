@@ -9,6 +9,8 @@ import { RAIZ, novoRelatorio } from './_ambiente.mjs';
 function copia() {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'verificador-'));
   fs.cpSync(RAIZ, d, { recursive: true, filter: (o) => !/(^|[\\/])(node_modules|\.git)([\\/]|$)/.test(path.relative(RAIZ, o)) && path.basename(o) !== 'verificador-pega-erros.mjs' });
+  // o guia cita este arquivo: deixa um vazio no lugar (a ideia de tirar o original é só pros nomes dos casos de teste não "cobrirem" mentiras plantadas)
+  fs.writeFileSync(path.join(d, 'tests', 'verificador-pega-erros.mjs'), '// vazio de propósito\n');
   return d;
 }
 // roda o verificador na cópia e devolve { falharam: Set de números de checagem, codigo }

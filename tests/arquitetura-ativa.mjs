@@ -1,3 +1,4 @@
+const __V = (await import('fs')).readFileSync(new URL('../version.txt', import.meta.url), 'utf8').trim(); // versão ATUAL: estes testes tinham o número da época escrito à mão e quebravam a cada versão nova
 // Teste estrutural: garante que o caminho que o GitHub Pages realmente carrega não volte a depender dos legados.
 // Não executa o jogo; protege imports, entrada principal e versionamento contra regressões futuras.
 import fs from 'fs';
@@ -29,9 +30,9 @@ check(leaderboard.includes("from './storage.js'"), 'leaderboard.js usa storage v
 check(sw.includes('./js/main_stable_342.js') && sw.includes('./js/loop_stable_336.js') && sw.includes('./js/render_stable_341.js') && sw.includes('./js/net_stable_360.js'), 'sw.js não contém todos os módulos ativos');
 check(jogarStart >= 0 && personalizarStart > jogarStart && !html.slice(jogarStart, personalizarStart).includes('class="homeDashboard"'), 'homeDashboard voltou para a aba Jogar');
 check(progressoStart >= 0 && html.slice(progressoStart).includes('class="progressHomeDetails"'), 'informações extras não estão preservadas em Progresso');
-check(version === '4.5.26', 'version.txt não está em 4.5.26');
-check(html.includes('4.5.26'), 'index.html não está em 4.5.26');
-check(sw.includes('snake-arena-v4.5.26'), 'sw.js não está em 4.5.26');
+check(version === __V, 'version.txt não bate com a versão atual');
+check(html.includes(__V), 'index.html não bate com a versão atual');
+check(sw.includes('snake-arena-v' + __V), 'sw.js não bate com a versão atual');
 if (failures.length) {
   for (const f of failures) console.error('❌ ' + f);
   console.log('RESULTADO: ❌ ' + failures.length + ' falha(s)');

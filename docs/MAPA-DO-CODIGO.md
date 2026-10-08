@@ -28,7 +28,7 @@ Gerado por `python3 tools/gerar-mapa.py`. Se você mexeu em algum módulo, rode 
 | `mission.js` | 114 | Sistema de missões — melhoria #3. Uma missão fica ativa por vez (aparece na faixa "🎯 ..." acima da arena). Qualquer jogador pode contribuir para completar; quem der o passo final ganha o bônus. Além de "comer" e "pegar estrela", também tem "sobreviver" (tempo) e "eliminar" (só aparece quando tem mais de 1 jogador, já que sozinho não tem quem eliminar). | `config`, `food`, `net`, `sound`, `state`, `storage`, `utils` |
 | `negative_events.js` | 55 | Eventos negativos aleatorios da Mioquinha — desafios curtos e imprevisíveis. | `net`, `state`, `utils` |
 | `net.js` | 4 | Compatibilidade: todos os módulos do jogo compartilham a mesma instância de multiplayer. O ponto de entrada atual usa net_stable_360.js; reexportar daqui evita duas sessões de rede concorrentes quando loop/render/input/players/mission importam "net.js". | `net_stable_360` |
-| `net_stable_360.js` | 651 | Multiplayer ONLINE (aparelhos diferentes), usando PeerJS (WebRTC ponto-a-ponto). Não precisa de servidor nosso: os navegadores se conectam direto um com o outro. Como funciona: - Quem cria a sala vira o "anfitrião" (host) — o jogo de verdade roda só no aparelho dele. - Quem entra na sala é "cliente" — só manda a direção que quer ir, e recebe de volta a posição de todo mundo pra desenhar na tela (n | — |
+| `net_stable_360.js` | 669 | Multiplayer ONLINE (aparelhos diferentes), usando PeerJS (WebRTC ponto-a-ponto). Não precisa de servidor nosso: os navegadores se conectam direto um com o outro. Como funciona: - Quem cria a sala vira o "anfitrião" (host) — o jogo de verdade roda só no aparelho dele. - Quem entra na sala é "cliente" — só manda a direção que quer ir, e recebe de volta a posição de todo mundo pra desenhar na tela (n | — |
 | `performance.js` | 214 | Histórico de desempenho da Mioquinha: guarda as últimas partidas e desenha gráficos simples no próprio navegador. Não depende de biblioteca externa, então continua funcionando offline e no celular. | — |
 | `players.js` | 125 | Tudo relacionado à tela de configuração dos jogadores (menu inicial). | `config`, `net`, `progression`, `state`, `utils` |
 | `progression.js` | 587 | Progressão do jogador — moedas, XP, nível, desafios, desafio diário, sequência e Liga. Tudo fica salvo no navegador. O progresso pessoal não entra no pacote do multiplayer. | `config`, `storage` |
@@ -40,7 +40,7 @@ Gerado por `python3 tools/gerar-mapa.py`. Se você mexeu em algum módulo, rode 
 | `render_stable_341.js` | 2655 | Tudo que é desenhado na tela (canvas): placar, tabuleiro, comidas, minhocas e partículas. O canvas se redimensiona sozinho pro tamanho real da caixa da arena — isso evita tanto distorção quanto sobra de espaço em branco, e deixa o jogo sempre do maior tamanho possível dentro do espaço disponível. CÂMERA: em mapas grandes, mostrar o tabuleiro inteiro deixaria tudo minúsculo. Por isso, se o mapa for | `config`, `net`, `players`, `progression`, `sound`, `state`, `utils` |
 | `share.js` | 97 | Gera um "cartão" de pontuação em imagem e compartilha (ou baixa) — melhoria #11. Não depende de nenhum servidor: desenha tudo num canvas escondido, na hora. | `state` |
 | `sound.js` | 131 | Efeitos sonoros do jogo — não usa nenhum arquivo de áudio: os sons são gerados na hora pelo navegador (Web Audio API), então não precisa baixar nem hospedar nada extra. | — |
-| `state.js` | 132 | Estado do jogo — tudo que muda durante uma partida vive aqui dentro. Todos os outros arquivos importam esse mesmo objeto "state" e leem/alteram ele. Os arrays por jogador vão até 6 posições (você + até 5 adversários). | `config` |
+| `state.js` | 133 | Estado do jogo — tudo que muda durante uma partida vive aqui dentro. Todos os outros arquivos importam esse mesmo objeto "state" e leem/alteram ele. Os arrays por jogador vão até 6 posições (você + até 5 adversários). | `config` |
 | `storage.js` | 488 | Tudo que o jogo guarda no navegador da pessoa (localStorage): recordes, perfil e configurações, conquistas, histórico de partidas, atalhos de teclado, escolhas de time. Cada dado tem seu par salvar/carregar; todos protegidos com try/catch, então se o navegador bloquear o armazenamento (aba anônima, por exemplo) o jogo segue funcionando. As chaves ficam nas constantes *_KEY de cada bloco — mude o N | `config` |
 | `storage_v4510.js` | 488 | Tudo que o jogo guarda no navegador da pessoa (localStorage): recordes, perfil e configurações, conquistas, histórico de partidas, atalhos de teclado, escolhas de time. Cada dado tem seu par salvar/carregar; todos protegidos com try/catch, então se o navegador bloquear o armazenamento (aba anônima, por exemplo) o jogo segue funcionando. As chaves ficam nas constantes *_KEY de cada bloco — mude o N | `config` |
 | `storage_v459.js` | 488 | Tudo que o jogo guarda no navegador da pessoa (localStorage): recordes, perfil e configurações, conquistas, histórico de partidas, atalhos de teclado, escolhas de time. Cada dado tem seu par salvar/carregar; todos protegidos com try/catch, então se o navegador bloquear o armazenamento (aba anônima, por exemplo) o jogo segue funcionando. As chaves ficam nas constantes *_KEY de cada bloco — mude o N | `config` |
@@ -98,7 +98,7 @@ Detalhes de quem manda o quê em `docs/PROTOCOLO-ONLINE.md`.
 
 
 
-## Campos do `state` (`state.js`) — 111 campos
+## Campos do `state` (`state.js`) — 112 campos
 
 Todo o jogo lê e escreve neste objeto único. Comentário = o que está escrito no código.
 
@@ -150,6 +150,7 @@ Todo o jogo lê e escreve neste objeto único. Comentário = o que está escrito
 | `foods` | — |
 | `scores` | — |
 | `foodsEaten` | — |
+| `starsCollected` | estrelas ⭐ pegas por jogador nesta partida (zera em reset()); declarado aqui pra existir antes da 1ª partida |
 | `grow` | — |
 | `respawnAt` | — |
 | `particles` | — |
