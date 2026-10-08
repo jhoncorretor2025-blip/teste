@@ -506,6 +506,7 @@ export function startGame() {
   // Contagem regressiva "3, 2, 1, VAI!" antes de começar de verdade — melhoria visual #8
   runCountdown(3, () => {
     state.running = true;
+    startNegativeEvents();
     if (state.tournamentMode) state.tournamentRoundEndsAt = Date.now() + TOURNAMENT_ROUND_MS;
     // Dados que quase nunca mudam durante a partida (cor, nome, cabeça, tema, tamanho do
     // mapa etc.) — mandados uma vez só aqui, separado do pacote frequente de cada instante,
