@@ -5254,3 +5254,78 @@ main,
 @media(prefers-reduced-motion:reduce){
   .tabBtn.active::after{box-shadow:none;}
 }
+
+
+/* v4.5.38 — segunda rodada: 5 melhorias de uso real */
+@media(min-width:1101px){
+  /* 1) Desktop: aproveita melhor a largura disponível sem alterar o canvas lógico. */
+  #game .gameBox{max-width:1320px;margin-left:auto;margin-right:auto;}
+  #game .arena{width:min(100%,1200px);margin-left:auto;margin-right:auto;}
+}
+
+/* 2) Placar: muitos jogadores continuam legíveis sem empurrar a arena para baixo. */
+#scores{
+  overflow-x:auto;
+  scrollbar-width:thin;
+  overscroll-behavior-x:contain;
+  padding-bottom:2px;
+}
+#scores .score{flex:0 0 auto;min-width:132px;}
+@media(max-width:700px){
+  #scores{display:flex;flex-wrap:nowrap;gap:6px;}
+  #scores .score{min-width:112px;}
+}
+
+/* 3) Informações da partida: missão/desafio ganham prioridade visual sem competir com a arena. */
+#mission:empty,#challengeDisplay:empty{display:none;}
+#mission,#challengeDisplay{
+  border-radius:11px;
+  margin-top:6px;
+}
+#challengeDisplay{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+#mission:empty + #comboDisplay{margin-top:0;}
+
+/* 4) Durante a partida, o menu móvel fica mais fácil de fechar e não bloqueia a visão. */
+.mobileGameMenu{
+  max-height:min(70vh,520px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.mobileGameMenuItem{
+  min-height:48px;
+}
+@media(max-width:700px){
+  .mobileGameMenu{
+    width:min(94vw,420px);
+  }
+}
+
+/* 5) Resultado/final: CTAs mais claros e confortáveis, sem mudar o fluxo existente. */
+#overlay .overlayCard .btn{
+  min-height:48px;
+  font-weight:900;
+}
+#overlay .overlayCard .row{
+  gap:8px;
+}
+@media(max-width:700px){
+  #overlay .overlayCard .row{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  #overlay .overlayCard .btn{
+    width:100%;
+  }
+}
+
+/* Performance: não mantém efeitos caros quando o usuário explicitamente pede menos movimento. */
+@media(prefers-reduced-motion:reduce){
+  #scores .score{transition:none!important;transform:none!important;}
+}
