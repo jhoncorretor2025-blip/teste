@@ -116,6 +116,10 @@ No modo simples da aba Online, qualquer falha ao criar a sala (código em uso, s
 A v4.5.9 anunciava "radar com nome + pontuação", e o minimapa nunca escreveu nenhum texto. Outras duas lacunas do mesmo tipo: o amigo online só mandava o NOME (cor, cabeça e skin nunca chegavam ao anfitrião) e a mensagem "fulano te eliminou" só aparecia pro anfitrião. Também havia duas "bolas pretas" de olhos de direção desenhadas por cima de TODO bichinho, tapando o rosto do dragão. → Tudo corrigido e coberto por testes que EXECUTAM o jogo (`auditoria-16-itens`, `aparencia-online`, `cabecas-com-rosto`).
 **Lição:** não confie no que o CHANGELOG diz que foi feito; confira rodando. Pra visual, **olhe a imagem**: `node tests/_desenhar-cabecas.mjs saida.png cat,dragon` e `node tests/_desenhar-radar.mjs saida.png` geram PNG do jogo de verdade (precisam de `npm i @napi-rs/canvas`, só pra conferir). Rede falsa dos testes agora serializa em JSON como o PeerJS (antes entregava o MESMO objeto e escondia bugs de "antes e depois" no cliente).
 
+**34. Função usada sem importar: passa em todo teste e só quebra ao clicar (v4.5.42).**
+`main_stable_342.js` chamava `tapVibrate()` sem importar do `utils.js`. A checagem 13 antiga só olhava se o nome existia em QUALQUER arquivo (existia, no `utils.js`), e nenhum teste clicava no botão. → A checagem 13 agora é POR ARQUIVO e só no caminho ativo, e o robô `tests/clicar-em-tudo.mjs` clica em tudo e lista erros.
+**Lição:** "o nome existe no projeto" não basta — em módulo ES cada arquivo precisa importar o que usa. Se o verificador reprovar citando um arquivo e uma função, quase sempre falta uma linha de `import`.
+
 ---
 
 # Problema em aberto: multiplayer real no celular

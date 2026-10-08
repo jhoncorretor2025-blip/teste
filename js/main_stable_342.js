@@ -2,7 +2,7 @@
 // Ponto de entrada do jogo: liga os botões da tela e dá o "start" inicial.
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
-import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
+import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate, tapVibrate } from './utils.js';
 import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS, HUNTER_DEFAULTS, HEAD_SHAPES, SKIN_PATTERNS, TRICOLOR_PALETTES } from './config.js';
 import { planTeams } from './teams.js';
 import { state } from './state.js';

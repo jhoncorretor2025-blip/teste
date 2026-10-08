@@ -245,21 +245,33 @@ def coletar_chamados(codigo_limpo):
         nome = m.group(1)
         antes = codigo_limpo[:m.start()]
         if re.search(r'\.\s*$', antes): continue                       # .metodo(
-        depois = codigo_limpo[m.end():].lstrip()
-        if re.match(r'^\)?\s*\{', depois) and not re.search(r'=\s*$|:\s*$|return\s*$', antes):
-            continue  # forma curta de método em objeto: nome() { ... } (não é chamada)
-        linha = antes.count('\n') + 1
-        chamadas.setdefault(nome, linha)
+        # acha o ")" que fecha esta chamada: "nome(...) {" no começo de uma instrução/propriedade é a
+        # DEFINIÇÃO de um método (forma curta em objeto/classe), não uma chamada
+        i, prof = m.end(), 1
+        while i < len(codigo_limpo) and prof:
+            prof += {'(': 1, ')': -1}.get(codigo_limpo[i], 0); i += 1
+        depois = codigo_limpo[i:i + 40].lstrip()
+        if depois.startswith('{') and not re.search(r'(=|:|return|=>|\?|&&|\|\|)\s*$', antes): continue
+        chamadas.setdefault(nome, antes.count('\n') + 1)
     return chamadas
 
 
-limpos_13 = {a.name: remover_texto_e_comentarios(a.read_text(encoding='utf-8')) for a in JS.glob('*.js')}
-definidos_13 = set()
-for _t in limpos_13.values(): definidos_13 |= coletar_definidos(_t)
+# Só os arquivos do caminho ATIVO (o que o index.html realmente carrega, e tudo que ele importa) e
+# POR ARQUIVO: antes bastava o nome existir em QUALQUER arquivo do projeto — assim passou batido
+# um tapVibrate() usado no main_stable_342.js sem ser importado de utils.js (erro só ao clicar).
+_entrada = re.search(r"import\('\./js/([A-Za-z0-9_\-]+)\.js", ler('index.html'))
+_entrada = (_entrada.group(1) + '.js') if _entrada else 'main.js'
+_vistos, _fila = set(), [_entrada]
+while _fila:
+    _n = _fila.pop()
+    if _n in _vistos or _n not in grafo: continue
+    _vistos.add(_n); _fila += grafo[_n]
 fantasmas_13 = []
-for _arq, _t in limpos_13.items():
+for _arq in sorted(_vistos):
+    _t = remover_texto_e_comentarios((JS / _arq).read_text(encoding='utf-8'))
+    _def = coletar_definidos(_t)
     for _nome, _linha in coletar_chamados(_t).items():
-        if _nome not in definidos_13: fantasmas_13.append(f'{_arq}:{_linha} chama `{_nome}(...)`, nunca definida em nenhum js/*.js')
+        if _nome not in _def: fantasmas_13.append(f'{_arq}:{_linha} chama `{_nome}(...)`, que não é definida nem IMPORTADA nesse arquivo')
 ok('nenhuma função-fantasma encontrada') if not fantasmas_13 else falha('; '.join(fantasmas_13),
     'Essa função é chamada mas não existe em NENHUM arquivo (nem local, nem importada). Foi assim que a v2.94.x travou toda vez na tela de carregamento: chamava updateOnlineLobbyUI() sem nunca defini-la. Defina a função, ou corrija o nome se foi só erro de digitação/renomeação.')
 

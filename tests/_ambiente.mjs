@@ -46,7 +46,9 @@ export function criarContexto(g) {
   const conta = (nome, extra) => (...a) => { g.chamadas[nome] = (g.chamadas[nome] || 0) + 1; extra?.(...a); };
   const ctx = {};
   for (const m of ['save', 'restore', 'clearRect', 'fillRect', 'beginPath', 'closePath', 'moveTo', 'lineTo', 'stroke', 'fill', 'arc', 'ellipse',
-    'roundRect', 'arcTo', 'strokeRect', 'strokeText', 'setLineDash', 'rect', 'scale', 'drawImage', 'quadraticCurveTo', 'bezierCurveTo', 'clip']) ctx[m] = conta(m);
+    'roundRect', 'arcTo', 'strokeRect', 'strokeText', 'setLineDash', 'rect', 'scale', 'drawImage', 'quadraticCurveTo', 'bezierCurveTo', 'clip',
+    'setTransform', 'resetTransform', 'transform', 'putImageData']) ctx[m] = conta(m);
+  ctx.getImageData = () => ({ data: new Uint8ClampedArray(4), width: 1, height: 1 }); ctx.createPattern = () => ({});
   ctx.translate = conta('translate', (x, y) => g.eventos.push({ t: 'translate', x, y }));
   ctx.rotate = conta('rotate', (a) => g.eventos.push({ t: 'rotate', a }));
   ctx.fillText = conta('fillText', (t, x, y) => g.textos.push({ t: String(t), x, y }));
@@ -74,6 +76,7 @@ export function criarJanela({ pasta = RAIZ, url = 'http://localhost/index.html',
   Object.defineProperty(w.HTMLElement.prototype, 'clientHeight', { configurable: true, get() { return this.className === 'arena' ? 300 : 0; } });
   const ctx = criarContexto(gravador || criarGravador());
   w.HTMLCanvasElement.prototype.getContext = () => ctx;
+  w.HTMLElement.prototype.scrollTo ||= () => {}; w.HTMLElement.prototype.scrollBy ||= () => {}; w.HTMLElement.prototype.scrollIntoView ||= () => {}; // o jsdom não tem; o navegador tem
   w.AudioContext = function () {
     return {
       currentTime: 0, destination: {}, resume() {},
@@ -105,7 +108,7 @@ export function ativar(w) {
   Object.defineProperty(globalThis, 'navigator', { value: w.navigator, configurable: true });
   Object.defineProperty(globalThis, 'location', { value: w.location, configurable: true });
   Object.defineProperty(globalThis, 'history', { value: w.history, configurable: true });
-  globalThis.CustomEvent = w.CustomEvent; globalThis.fetch = w.fetch; globalThis.confirm = () => true;
+  globalThis.CustomEvent = w.CustomEvent; globalThis.Event = w.Event; globalThis.KeyboardEvent = w.KeyboardEvent; globalThis.MouseEvent = w.MouseEvent; globalThis.alert = () => {}; globalThis.confirm = () => true; // o jogo usa esses do navegador; sem eles dava erro só no simulador globalThis.fetch = w.fetch; globalThis.confirm = () => true;
   globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 16);
 }
 
