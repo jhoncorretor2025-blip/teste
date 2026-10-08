@@ -1384,14 +1384,14 @@ function tick() {
 
   const aliveIdx = [];
   for (let i = 0; i < state.count; i++) if (state.alive[i]) aliveIdx.push(i);
-  if (!shouldSkipMovement(tickCount)) stepMovement(aliveIdx);
+  stepMovement(aliveIdx);
 
   // Quem tá com turbo ativo anda MAIS UMA vez nesse mesmo tick (total 2x mais rápido que o
   // normal). Chegamos a testar 3x, mas isso fazia a virada "atrasar" — a minhoca conseguia
   // escapar várias casas na direção antiga antes de virar de vez. 2x fica rápido e continua
   // respondendo rápido quando você vira.
   const boostedIdx = aliveIdx.filter(i => state.alive[i] && state.boosting[i]);
-  if (boostedIdx.length && !shouldSkipMovement(tickCount)) stepMovement(boostedIdx);
+  if (boostedIdx.length) stepMovement(boostedIdx);
 
   // Desafio das 50 comidas.
   updateFiftyFoodEnemies();
