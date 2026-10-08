@@ -36,4 +36,13 @@ r.check('a partida está rodando no anfitrião com 2 minhocas', hs.running && hs
 ativar(A); await esperar(100);
 r.check('o amigo está recebendo o jogo (pacotes chegando)', as.receivedFirstState === true && as.debugStatesReceived > 5, `pacotes=${as.debugStatesReceived}`);
 r.check('o amigo vê as 2 minhocas, inclusive a própria', as.snakes?.length === 2 && as.snakes.every((s) => s.length > 0));
+
+r.secao('5) Controle do amigo chega ao anfitrião e responde na tela');
+ativar(A);
+A.document.dispatchEvent(new A.KeyboardEvent('keydown', { code: 'ArrowRight', bubbles: true }));
+await esperar(80);
+ativar(host);
+r.check('o anfitrião recebeu a direção do amigo', hs.nextDirs?.[1]?.x === 1 && hs.nextDirs?.[1]?.y === 0, `dir=${JSON.stringify(hs.nextDirs?.[1])}`);
+ativar(A);
+r.check('o cliente mostrou previsão visual imediata', as.inputPredictionDir?.x === 1 && as.inputPredictionDir?.y === 0, `pred=${JSON.stringify(as.inputPredictionDir)}`);
 r.fim(host.__erros, A.__erros);
