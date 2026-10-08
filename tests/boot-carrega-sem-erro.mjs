@@ -1,5 +1,5 @@
 // Reproduz o bug real que travava o jogo pra sempre na telinha de carregamento
-// ("Tentar novamente" repetindo o mesmo erro): importa js/main.js exatamente como o
+// ("Tentar novamente" repetindo o mesmo erro): importa o entrypoint ativo js/main_stable_342.js exatamente como o
 // navegador faz ao abrir a página, em VÁRIOS jeitos reais de entrar (link puro, link de
 // aba, link de convite de sala — o mais comum de todos, já que toda sala compartilhada
 // gera um `?room=`), e garante que NENHUM erro estoura na hora, em nenhum deles.
@@ -26,7 +26,7 @@ for (const [nome, url] of Object.entries(CENARIOS)) {
   const w = criarJanela({ url }); ativar(w);
   let erro = null;
   try {
-    await importarDe(RAIZ)(`js/main.js?cenario${contador}`); // query só pra forçar reimportar, cada cenário isolado
+    await importarDe(RAIZ)(`js/main_stable_342.js?cenario${contador}`); // query só pra forçar reimportar, cada cenário isolado
   } catch (err) {
     erro = err;
   }

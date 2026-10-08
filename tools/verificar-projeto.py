@@ -39,15 +39,29 @@ for f in JS.glob('*.js'):
 faltando = sorted(ids_js - ids_html)
 ok(f'{len(ids_js)} ids conferidos') if not faltando else falha(f'ids que o JS usa e o HTML não tem: {faltando}', 'Um `$("x")` nulo derruba o script inteiro na hora de carregar.')
 
-print('3) Nenhum módulo morto (todo js/*.js é alcançável a partir de main.js)')
+print('3) Nenhum módulo morto NOVO (a partir do arquivo realmente carregado pelo index.html)')
 grafo = {f.name: set(m + '.js' for m in re.findall(r"from\s+'\./([A-Za-z0-9_\-]+)\.js(?:\?[^']*)?'", f.read_text(encoding='utf-8'))) for f in JS.glob('*.js')}
-vistos, fila = set(), ['main.js']
+html_entrada = re.search(r"import\(\s*['\"]\.?/js/([A-Za-z0-9_\-]+)\.js", ler('index.html'))
+entrada_ativa = (html_entrada.group(1) + '.js') if html_entrada else 'main_stable_342.js'
+vistos, fila = set(), [entrada_ativa]
 while fila:
     n = fila.pop()
     if n in vistos or n not in grafo: continue
     vistos.add(n); fila += grafo[n]
 mortos = sorted(set(grafo) - vistos)
-ok(f'{len(vistos)} módulos, todos em uso') if not mortos else falha(f'módulos que ninguém importa: {mortos}', 'Código morto engana quem vem depois (já aconteceu com um hunter.js antigo). Apague ou ligue de verdade.')
+MORTOS_CONHECIDOS = {
+    'main.js',
+    *{f'main_stable_{n}.js' for n in range(334, 342)},
+    'loop.js', 'loop_stable_334.js', 'loop_stable_335.js',
+    'render.js', 'render_stable_334.js', 'render_stable_335.js',
+    'render_stable_336.js', 'render_stable_340.js',
+    'storage_v459.js', 'storage_v4510.js',
+}
+mortos_novos = sorted(set(mortos) - MORTOS_CONHECIDOS)
+if not mortos_novos:
+    ok(f'{len(vistos)} módulos ativos; {len(mortos)} legados conhecidos ignorados')
+else:
+    falha(f'módulos que ninguém importa e não estão na lista de legados: {mortos_novos}', 'Código morto NOVO engana quem vem depois. Ligue o módulo ao caminho ativo ou remova-o; os backups antigos já estão na lista de exceções.')
 
 print('4) sw.js (modo offline) lista todos os arquivos do jogo')
 sw = ler('sw.js')

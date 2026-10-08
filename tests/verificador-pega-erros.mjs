@@ -34,7 +34,7 @@ const CASOS = [
   [4, 'arquivo inexistente listado no ASSETS do sw.js', (d) => gravar(d, 'sw.js', ler(d, 'sw.js').replace("'./js/net.js',", "'./js/net.js',\n  './js/nao-existe.js',"))],
   [5, 'erro de sintaxe num módulo', (d) => gravar(d, 'js/utils.js', ler(d, 'js/utils.js') + '\n}}} isto quebra\n')],
   [6, 'mapa do código desatualizado', (d) => gravar(d, 'docs/MAPA-DO-CODIGO.md', ler(d, 'docs/MAPA-DO-CODIGO.md') + '\nlixo\n')],
-  [6, 'módulo criado sem regenerar o mapa', (d) => { gravar(d, 'js/extra.js', '// extra\nexport const y = 2;\n'); gravar(d, 'js/main.js', "import './extra.js';\n" + ler(d, 'js/main.js')); }],
+  [6, 'módulo criado sem regenerar o mapa', (d) => { gravar(d, 'js/extra.js', '// extra\nexport const y = 2;\n'); gravar(d, 'js/main_stable_342.js', "import './extra.js';\n" + ler(d, 'js/main_stable_342.js')); }],
   [7, 'módulo sem nenhuma menção nos guias', (d) => { for (const g of ['AGENTS.md', 'docs/ARQUITETURA.md']) gravar(d, g, ler(d, g).replaceAll('tutorial.js', 'tutorial-x')); }],
   [8, 'token do GitHub esquecido num arquivo', (d) => gravar(d, 'docs/esquecido.md', 'meu token: github_pat_' + 'A1b2C3d4E5f6G7h8I9j0K1l2M3n4'.repeat(2))],
   [9, 'tema na config sem <option> no HTML', (d) => gravar(d, 'index.html', ler(d, 'index.html').replace(/<option value="garden">[^<]*<\/option>/, ''))],

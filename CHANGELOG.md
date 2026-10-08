@@ -1,3 +1,10 @@
+## [4.5.35] — 2026-10-07
+- 🐛 **Multiplayer no celular:** corrigido o erro `mySlot is not defined` no recebimento da configuração da sala; o convidado volta a receber mapa, tema, nomes, cores e times corretamente.
+- 🕹️ **Controle touch:** mantida a correção do botão de troca/turbo com `tapVibrate`, evitando erro ao tocar nos controles.
+- 🖥️ **Online no computador:** reforçada a largura mínima dos campos e da ação de entrada para impedir estouro horizontal do cartão.
+- 📦 **Offline/cache:** `js/negative_events.js` passou a entrar no cache do Service Worker, pois é um módulo ativo usado pelo jogo.
+- 🛡️ **Verificador:** a checagem de módulos agora parte do arquivo realmente carregado pelo `index.html` e acusa código morto novo, preservando os backups/legados já registrados.
+
 # v4.5.34 — Remoção da lentidão artificial
 
 - Remove o evento negativo “Arena lenta”, que fazia a minhoca pular movimentos e podia ser confundido com lag.

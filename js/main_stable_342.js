@@ -199,9 +199,9 @@ net.setHandlers({
   onRoomConfig: (msg) => {
     state.colors = msg.colors || state.colors;
     state.names = msg.names || state.names;
-    if (mySlot > 0) {
+    if (net.mySlot > 0) {
       const savedLocalProfile = loadProfile();
-      if (savedLocalProfile.name) state.names[mySlot] = safe(savedLocalProfile.name, state.names[mySlot] || `Jogador ${mySlot + 1}`);
+      if (savedLocalProfile.name) state.names[net.mySlot] = safe(savedLocalProfile.name, state.names[net.mySlot] || `Jogador ${net.mySlot + 1}`);
     }
     state.heads = msg.heads || state.heads;
     state.patterns = msg.patterns || state.patterns;
