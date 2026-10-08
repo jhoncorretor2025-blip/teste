@@ -1,3 +1,11 @@
+## [4.5.38] — 2026-10-08
+- 🖥️ **Desktop:** arena pode aproveitar melhor telas largas sem mudar o tamanho lógico do jogo.
+- 🏆 **Placar:** vários jogadores continuam acessíveis horizontalmente sem comprimir a arena.
+- 🎯 **Partida:** missão e desafio recebem hierarquia visual mais consistente.
+- 📱 **Menu móvel:** opções têm rolagem própria e alvos de toque mais confortáveis.
+- 🏁 **Resultado:** ações finais ficam maiores e mais fáceis de tocar no celular.
+- 🛡️ **Segurança:** sem alteração da mecânica, multiplayer, storage, autenticação, APIs ou regras críticas.
+
 ## [4.5.37] — 2026-10-08
 - 🎨 **Hierarquia visual:** reforçada a ação principal de jogar e a distinção entre ações primárias e secundárias.
 - 📱 **Celular:** navegação principal passa a usar abas horizontais roláveis, evitando espremer as 8 áreas em uma grade pequena.
