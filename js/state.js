@@ -127,4 +127,5 @@ export const state = {
   comboCount: [0, 0, 0, 0, 0, 0], // quantas comidas seguidas rápidas — combo de velocidade
   lastEatAt: [0, 0, 0, 0, 0, 0], // timestamp da última comida, pra calcular o combo
   progression: { comboFlashUntil: 0 }, // feedback visual local; dados permanentes ficam no localStorage
+  negativeEvent: null, // desafio negativo temporário: {id, until}
 };
