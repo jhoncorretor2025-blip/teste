@@ -2438,7 +2438,7 @@ function draw() {
 
     // Olhos apontando pra direção que a minhoca tá indo
     const h = s[0];
-    const dir = state.dirs[i] || { x: 1, y: 0 };
+    const dir = (isOnline() && i === mySlot && state.inputPredictionDir) ? state.inputPredictionDir : (state.dirs[i] || { x: 1, y: 0 });
     const cx = sx(h.x) + cell / 2, cy = sy(h.y) + cell / 2;
     const eo = cell * 0.2;
     const fx = dir.x * eo, fy = dir.y * eo;
