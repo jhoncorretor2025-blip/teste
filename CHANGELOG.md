@@ -1,3 +1,11 @@
+## [4.5.40] — 2026-10-08
+- 📱 **Controle online mais responsivo:** quem joga pelo celular recebe retorno visual imediato ao virar, sem assumir a simulação nem a colisão.
+- 🌐 **Rede sem fila:** quando o aparelho convidado está mais lento, o anfitrião mantém somente o estado mais recente em vez de acumular snapshots antigos.
+- 🔐 **Sessão protegida:** estados de uma sessão anterior são recusados depois de reconexão ou migração de anfitrião.
+- 🔄 **Reconexão antecipada:** a tela avisa sobre ausência de atualização mais cedo, facilitando detectar o problema antes de parecer que a partida parou.
+- 🧪 **Teste 2 jogadores:** o teste ponta a ponta agora verifica que uma direção enviada pelo amigo chega ao anfitrião e que a previsão visual é aplicada.
+- 🛡️ **Escopo:** regras de pontuação, colisão e armazenamento permanecem sob autoridade do anfitrião.
+
 ## [4.5.39] — 2026-10-08
 - 🌐 **Multiplayer mais estável:** o anfitrião não acumula vários snapshots pesados do jogo no canal WebRTC enquanto o celular ainda está processando o anterior.
 - 📡 **Reconhecimento de travamento:** cada atualização online recebe uma sequência e confirmação; se o canal parar de entregar por vários segundos, a conexão é fechada e o mecanismo de reconexão assume.
