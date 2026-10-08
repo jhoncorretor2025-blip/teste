@@ -41,6 +41,13 @@ function roomPeerIdFromCode(code) {
   return 'mioquinha-room-' + normalizeRoomNumber(code);
 }
 
+// Aparência (cor, cabeça, skin, paleta, rastro) que ESTE jogador escolheu. Vai junto do pedido de
+// entrada — antes só o nome viajava, e o amigo sempre aparecia com o visual padrão pros outros.
+let myLook = null;
+export function setMyLook(look) {
+  myLook = look && typeof look === 'object' ? look : null;
+}
+
 export function getRoomCredentials() {
   return { code: currentRoomCode, pin: currentRoomPin };
 }
@@ -200,6 +207,7 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
       if (msg.type === 'joinRequest') {
         gotJoinRequest = true;
         clearTimeout(compatTimer);
+        conn.__look = msg.look || null; // aplicada em finalizeJoin, ANTES de mandar a config da sala
 
         if (roomPinRequired && msg.roomPin !== currentRoomPin) {
           try { conn.send({ type: 'wrongPin' }); } catch {}
@@ -224,6 +232,7 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
           authenticated: true
         });
       } else if (msg.type === 'reconnectRequest') {
+        conn.__look = msg.look || null;
         // Reconexão automática (não é gente nova pedindo pra entrar, é alguém que já
         // tava na sala e a conexão só piscou) — entra direto, SEM esperar aprovação
         // manual de novo. Não faria sentido a pessoa reconectar sozinha e o anfitrião
@@ -276,6 +285,7 @@ function finalizeJoin(conn, slot, teamPref, playerName = null) {
   // Guarda o slot também na conexão para que a lista de pares e a migração continuem
   // estáveis mesmo quando alguém sai do meio da sala.
   conn.__slot = slot;
+  if (handlers.onPlayerLook) { try { handlers.onPlayerLook(slot, conn.__look || null); } catch {} }
   stateDelivery.set(slot, { conn, pendingSeq: 0, lastSentAt: 0, lastAckAt: Date.now(), lastAckSeq: 0, latestPayload: null, skipped: 0 });
   const team = handlers.onAssignTeam ? handlers.onAssignTeam(slot, teamPref) : undefined;
   try { conn.send({ type: 'welcome', slot, team, session: stateSessionId }); } catch {}
@@ -335,7 +345,7 @@ export function joinRoom(hostId, name, onJoined, onFail, onWaitingApproval, team
     hostConn.on('open', () => {
       connectionOpened = true;
       clearTimeout(connectTimeoutId);
-      hostConn.send({ type: 'joinRequest', name: myName, teamPref: myTeamPref, roomPin: currentRoomPin || '' });
+      hostConn.send({ type: 'joinRequest', name: myName, teamPref: myTeamPref, roomPin: currentRoomPin || '', look: myLook });
       onWaitingApproval && onWaitingApproval();
       iniciarPingCliente();
     });
@@ -476,7 +486,7 @@ function tentarReconexaoDireta() {
       hostConn = novaConn;
       // Reaplica os mesmos handlers de dados/fechamento que a conexão original tinha
       configurarHostConnHandlers();
-      hostConn.send({ type: 'reconnectRequest', name: myName, teamPref: myTeamPref }); // reconexão automática — entra direto, sem esperar aprovação manual de novo
+      hostConn.send({ type: 'reconnectRequest', name: myName, teamPref: myTeamPref, look: myLook }); // reconexão automática — entra direto, sem esperar aprovação manual de novo
       handlers.onConnectionStatus && handlers.onConnectionStatus('connected');
     });
     novaConn.on('error', () => { if (!conectou) { clearTimeout(timeoutReconexao); attemptHostMigration(); } });

@@ -8,6 +8,9 @@ O `index.html` **não** carrega `js/main.js`. O carregador que fica no fim do `i
 - Ao criar uma versão nova de um desses arquivos, o carregador do `index.html` e os `import` dos outros precisam apontar pra ela.
 - Os testes antigos que só fazem busca de texto em `js/main.js` **não provam nada** sobre o jogo no ar. Prefira testes que executem o jogo, como `tests/criar-sala-real.mjs` e `tests/online-ponta-a-ponta-real.mjs` (usam `js/main_stable_342.js`).
 - O caminho ativo mantém uma única implementação de renderização: `loop_stable_336.js` e `main_stable_342.js` usam `render_stable_341.js`.
+- **Aparência de cada jogador online** (cor, cabeça, skin, paleta, rastro): o cliente manda no pedido de entrada (`net.setMyLook` em `net_stable_360.js`); o anfitrião valida e grava em `aplicarAparenciaDoJogador` (`main_stable_342.js`), ANTES de montar a config da sala. Campo novo de aparência = acrescentar nos dois lugares **e** na validação.
+- **Bichinhos** (`render_stable_341.js`): cabeças da lista `CABECAS_COM_ROSTO_PROPRIO` desenham o próprio rosto; o `render()` NÃO desenha os olhos de direção genéricos nelas. Cabeça nova com rosto próprio entra nessa lista.
+- **Ver o visual de verdade:** `node tests/_desenhar-cabecas.mjs saida.png cat,dragon` e `node tests/_desenhar-radar.mjs saida.png` geram PNG (precisam de `npm i @napi-rs/canvas`).
 
 ## O que é este projeto
 **Snake Arena** (o "jogo da minhoquinha"): jogo de minhocas para navegador, de 1 a 6 jogadores — no mesmo aparelho ou **online** entre aparelhos —, com CPUs, modos de jogo, missões, conquistas, times e uma Minhoca Caçadora.

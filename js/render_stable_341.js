@@ -799,6 +799,11 @@ function drawEnergyTrail(snake, playerIndex, boosting) {
   ctx.restore();
 }
 // Desenha a cabeça da minhoca no formato escolhido pelo jogador
+// Cabeças de bichinho que já desenham o PRÓPRIO rosto (olhos, focinho, boca...). Em cima delas NÃO
+// se desenham os "olhos de direção" genéricos do render() — antes, duas bolas pretas grandes ficavam
+// por cima de TODO bichinho (no dragão tapavam o rosto inteiro; no gatinho viravam olhos a mais).
+const CABECAS_COM_ROSTO_PROPRIO = new Set(['owl', 'cat', 'bunny', 'dragon', 'bear', 'fox', 'shark', 'bee', 'unicorn', 'monkey', 'lion']);
+
 function drawHead(x, y, shape, color) {
   const pad = cell * 0.1, size = cell - pad * 2, r = cell * 0.25;
   const cx = sx(x) + pad, cy = sy(y) + pad;
@@ -1115,7 +1120,7 @@ function drawHead(x, y, shape, color) {
 
   // Carinhas dos animais: olhos + focinho/nariz simples. Antes todos recebiam apenas
   // dois olhos genéricos, então gato, coelho, urso etc. pareciam apenas "cabeças coloridas".
-  const animalFace = ['owl', 'cat', 'bunny', 'dragon', 'bear', 'fox', 'shark', 'bee', 'unicorn', 'monkey', 'lion'].includes(shape);
+  const animalFace = ['owl', 'bunny', 'dragon', 'bear', 'fox', 'shark', 'bee', 'unicorn', 'monkey', 'lion'].includes(shape);
   if (animalFace) {
     const faceY = cy + size * 0.48;
     ctx.save();
@@ -1144,7 +1149,7 @@ function drawHead(x, y, shape, color) {
 
   // Olhinhos em toda cabeça, com uma piscadinha de vez em quando — dá mais vida e é
   // barato de desenhar (só dois pontinhos ou dois tracinhos quando pisca)
-  if (shape === 'dragon') return;
+  if (shape === 'dragon' || shape === 'cat') return; // têm olhos próprios
 
   const eyeY = cy + size * 0.36;
   const eyeR = size * 0.09;
@@ -1779,6 +1784,45 @@ function drawMinimap() {
   ctx.strokeStyle = 'rgba(255,255,255,0.65)';
   ctx.lineWidth = 1.3;
   ctx.strokeRect(mx + camX * scale, my + camY * scale, viewW * scale, viewH * scale);
+
+  // Legenda do radar: NOME + PONTUAÇÃO de cada jogador, do maior pro menor, logo abaixo do
+  // minimapa. Antes o radar só tinha pontinhos coloridos — não dava pra saber quem era quem nem
+  // quem estava ganhando. Pequena e translúcida pra não atrapalhar a arena (principalmente no
+  // celular). Só aparece com 2+ jogadores; quem morreu aparece apagado; "★" marca você.
+  if (state.count > 1) {
+    const linhas = [];
+    for (let i = 0; i < state.count; i++) {
+      linhas.push({ i, nome: String(state.names[i] || `Jogador ${i + 1}`), pontos: state.scores[i] || 0, vivo: !!state.alive[i] });
+    }
+    linhas.sort((a, b) => b.pontos - a.pontos);
+    const mostrar = linhas.slice(0, 6);
+    const fonte = Math.max(9, Math.min(11, mmW * 0.075));
+    const alturaLinha = fonte + 4;
+    const topo = my + mmH + 5;
+    ctx.save();
+    ctx.globalAlpha = 0.88;
+    ctx.fillStyle = 'rgba(5,9,17,0.62)';
+    ctx.beginPath();
+    ctx.roundRect(mx, topo, mmW, mostrar.length * alturaLinha + 6, 6);
+    ctx.fill();
+    ctx.font = `700 ${fonte}px system-ui, sans-serif`;
+    ctx.textBaseline = 'middle';
+    mostrar.forEach((l, k) => {
+      const y = topo + 3 + alturaLinha * k + alturaLinha / 2;
+      ctx.globalAlpha = l.vivo ? 1 : 0.5;
+      ctx.fillStyle = state.colors[l.i] || '#ffffff';
+      ctx.beginPath();
+      ctx.arc(mx + 8, y, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'left';
+      const nome = l.nome.length > 12 ? l.nome.slice(0, 11) + '…' : l.nome;
+      ctx.fillText((l.i === mySlot ? '★ ' : '') + nome, mx + 15, y);
+      ctx.textAlign = 'right';
+      ctx.fillText(String(l.pontos), mx + mmW - 6, y);
+    });
+    ctx.restore();
+  }
 
   // Varredura de radar discreta girando no minimapa.
   const radarT = (Date.now() / 900) % (Math.PI * 2);
@@ -2443,11 +2487,13 @@ function draw() {
     const eo = cell * 0.2;
     const fx = dir.x * eo, fy = dir.y * eo;
     const px = -dir.y * eo, py = dir.x * eo;
-    ctx.fillStyle = '#07110b';
-    ctx.beginPath();
-    ctx.arc(cx + fx + px, cy + fy + py, cell * 0.1, 0, Math.PI * 2);
-    ctx.arc(cx + fx - px, cy + fy - py, cell * 0.1, 0, Math.PI * 2);
-    ctx.fill();
+    if (!CABECAS_COM_ROSTO_PROPRIO.has(state.heads[i] || 'round')) {
+      ctx.fillStyle = '#07110b';
+      ctx.beginPath();
+      ctx.arc(cx + fx + px, cy + fy + py, cell * 0.1, 0, Math.PI * 2);
+      ctx.arc(cx + fx - px, cy + fy - py, cell * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     drawSnakeHeadGloss(h.x, h.y, state.colors[i] || '#ffffff', dir);
     if (selectedCosmetic === 'neonHead') { ctx.save(); ctx.globalAlpha=.72; ctx.strokeStyle='#70e7ff'; ctx.shadowColor='#70e7ff'; ctx.shadowBlur=cell*.75; ctx.lineWidth=Math.max(2,cell*.07); ctx.beginPath(); ctx.arc(cx,cy,cell*.68,0,Math.PI*2); ctx.stroke(); ctx.restore(); }

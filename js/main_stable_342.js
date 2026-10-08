@@ -3,7 +3,7 @@
 // Este é o único arquivo carregado pelo index.html — ele importa todo o resto.
 
 import { $, safe, setVibrationEnabled, setTapVibrationEnabled, announce, vibrate } from './utils.js';
-import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS, HUNTER_DEFAULTS, HEAD_SHAPES, SKIN_PATTERNS } from './config.js';
+import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SNAKE_COLORS, TEAMS, HUNTER_DEFAULTS, HEAD_SHAPES, SKIN_PATTERNS, TRICOLOR_PALETTES } from './config.js';
 import { planTeams } from './teams.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
@@ -130,7 +130,26 @@ document.addEventListener('localInputPredicted', () => {
   render();
 });
 
+// Aplica a aparência que um amigo escolheu no perfil dele, VALIDANDO tudo que chega pela rede:
+// só entram cores no formato #rrggbb e valores que existem de verdade nas listas do jogo —
+// qualquer outra coisa é ignorada e fica o visual padrão do slot. Se a cor escolhida já é
+// de outro jogador, também mantém o padrão (duas minhocas da mesma cor se confundem).
+function aplicarAparenciaDoJogador(slot, look) {
+  if (slot == null || slot < 0 || slot >= 6 || !look || typeof look !== 'object') return;
+  const corOk = (v) => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
+  if (corOk(look.color)) {
+    const cor = look.color.toLowerCase();
+    const usada = state.colors.some((c, i) => i !== slot && i < Math.max(state.count, 2) && String(c).toLowerCase() === cor);
+    if (!usada) state.colors[slot] = look.color;
+  }
+  if (HEAD_SHAPES.some((h) => h.value === look.head)) state.heads[slot] = look.head;
+  if (SKIN_PATTERNS.some((s) => s.value === look.pattern)) state.patterns[slot] = look.pattern;
+  if (TRICOLOR_PALETTES.some((p) => p.value === look.palette)) state.palettes[slot] = look.palette;
+  if (look.trailColor === 'auto' || corOk(look.trailColor)) state.trailColors[slot] = look.trailColor;
+}
+
 net.setHandlers({
+  onPlayerLook: (slot, look) => aplicarAparenciaDoJogador(slot, look),
   onJoinRequest: (request) => {
     const name = safe(request.name, 'Alguém');
     showJoinApprovalPrompt(name, request);
@@ -927,6 +946,7 @@ $('joinBtn').addEventListener('click', () => {
   const onlinePlayerName = safe(savedOnlineProfile.name || state.names[0] || 'Jhon', 'Jhon');
   state.names[0] = onlinePlayerName;
   if ($('myName')) $('myName').value = onlinePlayerName;
+  net.setMyLook({ color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], palette: state.palettes[0], trailColor: state.trailColors[0] });
   net.joinRoomByCode(normalizeRoomNumberUI(code), pin, onlinePlayerName,
     (slot, time) => {
       $('joinStatus').textContent = '✅ Entrada autorizada!';

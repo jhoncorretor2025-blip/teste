@@ -2,6 +2,9 @@
 
 Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por que** é assim), este arquivo diz **o que falta**. Terminou algo daqui? **Apague o item** e registre no `CHANGELOG.md`. Achou algo novo? **Acrescente aqui**, com o que já foi tentado.
 
+## 🟡 Testes antigos com número de versão fixo (21 de 37 arquivos vermelhos na v4.5.40)
+Vários testes de versões anteriores conferem um número de versão escrito à mão ("4.5.26", "4.5.36", "4.4.1 sincronizada"...) e por isso falham em qualquer cópia nova do jogo, mesmo sem nenhum defeito. Outros procuram texto em `js/main.js` (que não é o arquivo ativo). O certo é cada teste ler a versão de `version.txt` e importar `js/main_stable_342.js`. Conferido em 08/10 contra a v4.5.40 intacta: a v4.5.41 não piorou nenhum.
+
 ## 🟡 Suíte de testes desatualizada em relação às mudanças do ChatGPT (30/09)
 Depois de centenas de commits de outra IA no mesmo dia (v2.94.10 → v3.6.6+), alguns testes antigos passaram a falhar — não por bug novo, e sim porque o comportamento que eles verificavam mudou de propósito:
 - `nao-apaga-sala-ao-voltar.mjs`: o commit "Desativa reload automático do Service Worker e verificador de versão" parece ter desligado (ou mudado bastante) o mecanismo de auto-atualização que esse teste cobre. Precisa reler `js/main.js` (função `checarVersaoDeVerdade`) e `docs/ARMADILHAS.md`/`docs/DECISOES.md` (casos 30) pra entender o que ainda vale, e atualizar o teste (ou os documentos) de acordo.

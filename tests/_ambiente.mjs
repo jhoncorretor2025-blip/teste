@@ -36,8 +36,9 @@ export function novoRelatorio() {
 
 // ---------- canvas de mentira que GRAVA o que foi desenhado ----------
 export function criarGravador() {
-  const g = { chamadas: {}, textos: [], eventos: [] };
-  g.zerar = () => { g.chamadas = {}; g.textos = []; g.eventos = []; };
+  const g = { chamadas: {}, textos: [], eventos: [], preenchimentos: [] };
+  g.zerar = () => { g.chamadas = {}; g.textos = []; g.eventos = []; g.preenchimentos = []; };
+  g.preenchimentosCom = (cor) => g.preenchimentos.filter((c) => c === cor).length; // quantos fill() usaram essa cor
   g.n = (metodo) => g.chamadas[metodo] || 0; // quantas vezes o método foi chamado
   return g;
 }
@@ -53,6 +54,7 @@ export function criarContexto(g) {
   ctx.createRadialGradient = () => ({ addColorStop() {} });
   ctx.createLinearGradient = () => ({ addColorStop() {} });
   let fill = '', stroke = '';
+  const fillOriginal = ctx.fill; ctx.fill = (...a) => { g.preenchimentos.push(fill); fillOriginal(...a); }; // lembra a cor de cada fill()
   Object.defineProperty(ctx, 'fillStyle', { get: () => fill, set: (v) => { fill = v; } });
   Object.defineProperty(ctx, 'strokeStyle', { get: () => stroke, set: (v) => { stroke = v; } });
   for (const p of ['globalAlpha', 'shadowBlur', 'shadowColor', 'font', 'textAlign', 'textBaseline', 'lineWidth', 'lineCap', 'lineJoin', 'globalCompositeOperation']) {
@@ -154,7 +156,15 @@ export function criarRedeFalsa() {
     constructor(local, remoto) { this.localId = local; this.remoteId = remoto; this.peer = remoto; this._h = {}; this.open = true; }
     on(ev, cb) { (this._h[ev] ||= []).push(cb); }
     _emit(ev, d) { comDono(registry.get(this.localId)?.owner, () => (this._h[ev] || []).forEach((cb) => cb(d))); }
-    send(dados) { const rp = registry.get(this.remoteId); const rc = rp && rp._connsByRemote.get(this.localId); if (rc) setTimeout(() => rc._emit('data', dados), 0); }
+    send(dados) {
+      // Serializa em JSON igual o PeerJS de verdade (serialization:'json'). Sem isso a rede falsa
+      // entregava o MESMO objeto pro outro lado: o que o anfitrião mudava na própria memória (ex:
+      // state.alive[1] = false) mudava junto na memória do amigo, escondendo bugs e quebrando
+      // qualquer lógica que compara "antes e depois" do lado do cliente.
+      let copia; try { copia = JSON.parse(JSON.stringify(dados)); } catch { copia = dados; }
+      const rp = registry.get(this.remoteId); const rc = rp && rp._connsByRemote.get(this.localId);
+      if (rc) setTimeout(() => rc._emit('data', copia), 0);
+    }
     close() { this._emit('close'); const rp = registry.get(this.remoteId); const c = rp && rp._connsByRemote.get(this.localId); if (c && c !== this) c._emit('close'); }
   }
   class FakePeer {

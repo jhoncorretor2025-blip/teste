@@ -610,7 +610,8 @@ export function kill(i, killer = -1) {
     state.toast = { x: h?.x ?? Math.floor(state.mapW/2), y: h?.y ?? Math.floor(state.mapH/2), text: `💥 ${killerName} eliminou ${victimName}!`, color: state.colors[killer] || '#ffd24d', until: Date.now()+2200 };
   }
   if (i === mySlot) {
-    state.deathMessage = { text: '💀 Você morreu!', until: Date.now() + 1400 };
+    const quemMatou = killer >= 0 && killer < state.count ? (state.names[killer] || `Jogador ${killer + 1}`) : null; // diz QUEM eliminou
+    state.deathMessage = { text: quemMatou ? `💀 ${quemMatou} te eliminou!` : '💀 Você morreu!', until: Date.now() + 1600 };
   }
 }
 
@@ -1607,7 +1608,18 @@ export function applyRemoteState(msg) {
   state.scores = msg.scores || state.scores;
   state.foodsEaten = msg.foodsEaten || state.foodsEaten;
   state.eliminations = msg.eliminations || state.eliminations;
+  const vivoAntes = state.alive[mySlot];
   state.alive = msg.alive || state.alive;
+  // Quem entrou na sala (cliente) NÃO roda o kill() — quem roda é o anfitrião. Então o aviso
+  // "fulano te eliminou" tem que ser montado AQUI, quando o pacote mostra que a SUA minhoca
+  // passou de viva pra morta. O nome vem do aviso "💥 X eliminou Y!" que o anfitrião já manda.
+  if (!isHost() && vivoAntes === true && state.alive[mySlot] === false) {
+    const m = /💥\s*(.+?)\s+eliminou\s+(.+?)!/.exec(msg.toast?.text || '');
+    const quemMatou = m && m[2] === state.names[mySlot] ? m[1] : null;
+    state.deathMessage = { text: quemMatou ? `💀 ${quemMatou} te eliminou!` : '💀 Você morreu!', until: Date.now() + 1600 };
+    sfx.death();
+    vibrate([80, 40, 160]);
+  }
   state.boosting = msg.boosting || state.boosting;
   state.boostReadyAt = msg.boostReadyAt || state.boostReadyAt;
   if (Array.isArray(msg.fiftyFoodEnemies)) {

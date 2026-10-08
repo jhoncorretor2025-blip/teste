@@ -112,6 +112,10 @@ Trabalhei numa cópia local baixada no começo de uma investigação, continuei 
 No modo simples da aba Online, qualquer falha ao criar a sala (código em uso, servidor de salas inacessível, senha ligada antes, módulo online não carregado) escrevia o aviso num campo que fica ESCONDIDO nesse modo, e a tela ficava eternamente em "Criando sua sala...". Além disso não havia tempo limite nem nova tentativa de código. Os testes que existiam (`online-simples`, `online-criacao-rapida`) só procuravam texto dentro de `js/main.js` — que não é o arquivo que roda — e um deles nem executava (erro de sintaxe no próprio teste), então tudo parecia verde. → Corrigido em `js/main_stable_342.js` (aviso visível, nova tentativa de código, limite de 15 s) e coberto por testes que executam o jogo de verdade.
 **Lição:** teste que só procura texto num arquivo não vale como teste de comportamento, e vale ainda menos se o arquivo nem é o que a página carrega. Antes de confiar num teste, confira que ele importa o mesmo arquivo do `index.html` e que falha quando o comportamento quebra.
 
+**33. O CHANGELOG dizia que existia, mas o código não fazia (v4.5.41).**
+A v4.5.9 anunciava "radar com nome + pontuação", e o minimapa nunca escreveu nenhum texto. Outras duas lacunas do mesmo tipo: o amigo online só mandava o NOME (cor, cabeça e skin nunca chegavam ao anfitrião) e a mensagem "fulano te eliminou" só aparecia pro anfitrião. Também havia duas "bolas pretas" de olhos de direção desenhadas por cima de TODO bichinho, tapando o rosto do dragão. → Tudo corrigido e coberto por testes que EXECUTAM o jogo (`auditoria-16-itens`, `aparencia-online`, `cabecas-com-rosto`).
+**Lição:** não confie no que o CHANGELOG diz que foi feito; confira rodando. Pra visual, **olhe a imagem**: `node tests/_desenhar-cabecas.mjs saida.png cat,dragon` e `node tests/_desenhar-radar.mjs saida.png` geram PNG do jogo de verdade (precisam de `npm i @napi-rs/canvas`, só pra conferir). Rede falsa dos testes agora serializa em JSON como o PeerJS (antes entregava o MESMO objeto e escondia bugs de "antes e depois" no cliente).
+
 ---
 
 # Problema em aberto: multiplayer real no celular
