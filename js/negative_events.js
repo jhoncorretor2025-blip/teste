@@ -7,7 +7,6 @@ const EFFECTS = [
   { id:'invert', label:'🔄 CONTROLES INVERTIDOS', duration:5000 },
   { id:'freeze', label:'🧊 SEM VIRAR!', duration:4000 },
   { id:'confusion', label:'🌪️ CONTROLES CONFUSOS', duration:5200 },
-  { id:'slow', label:'🐌 ARENA LENTA', duration:6000 },
   { id:'fog', label:'🌫️ NEBLINA', duration:5500 },
 ];
 
@@ -53,4 +52,4 @@ export function startNegativeEvents(){ clearTimers(); removeEffect(); lastEffect
 export function stopNegativeEvents(){ clearTimers(); removeEffect(); }
 export function transformDirection(d){ const e=state.negativeEvent; return e?.id==='invert' ? {x:-d.x,y:-d.y} : d; }
 export function canTurn(){ return state.negativeEvent?.id!=='freeze'; }
-export function shouldSkipMovement(tickCount){ return state.negativeEvent?.id==='slow' && tickCount%2===0; }
+export function shouldSkipMovement(){ return false; }
