@@ -15,8 +15,10 @@ import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
 import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js';
 import { startPerformanceRun, samplePerformanceRun, finishPerformanceRun } from './performance.js';
+import { startNegativeEvents, stopNegativeEvents, shouldSkipMovement } from './negative_events.js';
 
-let currentInterval = 160; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
+let currentInterval = 160;
+let tickCount = 0; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 let clientReadyFallbackTimer = null;
 let remoteProgressSnapshot = { alive:false, score:0, food:0, length:0, runStartedAt:0 }; // rede de segurança pra nunca deixar o cliente preso na tela de espera
 
@@ -305,6 +307,7 @@ export function spawn(i) {
 // ("eliminations" e "best" NÃO são zerados aqui — eles são o histórico da sessão)
 export function reset() {
   clearInterval(state.timer);
+  stopNegativeEvents();
   state.snakes = []; state.alive = []; state.dirs = []; state.nextDirs = [];
   state.foods = [];
   state.scores = Array(6).fill(0);
@@ -1297,6 +1300,7 @@ export function updateHunter() {
 
 function tick() {
   if (!state.running || state.paused) return;
+  tickCount++;
 
   if (state.tournamentMode && Date.now() >= state.tournamentRoundEndsAt) {
     endTournamentRound();
@@ -1379,14 +1383,14 @@ function tick() {
 
   const aliveIdx = [];
   for (let i = 0; i < state.count; i++) if (state.alive[i]) aliveIdx.push(i);
-  stepMovement(aliveIdx);
+  if (!shouldSkipMovement(tickCount)) stepMovement(aliveIdx);
 
   // Quem tá com turbo ativo anda MAIS UMA vez nesse mesmo tick (total 2x mais rápido que o
   // normal). Chegamos a testar 3x, mas isso fazia a virada "atrasar" — a minhoca conseguia
   // escapar várias casas na direção antiga antes de virar de vez. 2x fica rápido e continua
   // respondendo rápido quando você vira.
   const boostedIdx = aliveIdx.filter(i => state.alive[i] && state.boosting[i]);
-  if (boostedIdx.length) stepMovement(boostedIdx);
+  if (boostedIdx.length && !shouldSkipMovement(tickCount)) stepMovement(boostedIdx);
 
   // Desafio das 50 comidas.
   updateFiftyFoodEnemies();
