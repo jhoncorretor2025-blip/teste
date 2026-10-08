@@ -5203,3 +5203,54 @@ main,
     bottom:154px;
   }
 }
+
+
+/* v4.5.37 — acabamento UX/UI em 5 pontos, sem alterar a mecânica */
+:root{
+  --ux-touch:48px;
+}
+/* 1) Hierarquia visual */
+.menuHero #startHero{min-height:62px;font-size:1.16rem;letter-spacing:.02em;}
+.siteHeaderTools .refreshBig{min-height:42px;opacity:.92;}
+.siteHeaderTools .headerInfoBtn{min-width:var(--ux-touch);min-height:var(--ux-touch);}
+
+/* 2) Celular: navegação rolável, sem espremer as 8 abas */
+@media(max-width:700px){
+  .tabBar{
+    display:flex;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;
+    overscroll-behavior-x:contain;scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:5px;
+  }
+  .tabBar::-webkit-scrollbar{display:none}
+  .tabBar .tabBtn{
+    flex:0 0 auto;min-width:78px;min-height:52px;padding:8px 11px;
+    scroll-snap-align:center;font-size:.72rem;
+  }
+}
+
+/* 3) Navegação: estado ativo inequívoco */
+.tabBtn.active{
+  position:relative;font-weight:900;
+  box-shadow:0 5px 16px rgba(0,0,0,.20),inset 0 0 0 1px rgba(103,239,138,.08);
+}
+.tabBtn.active::after{
+  content:"";position:absolute;left:18%;right:18%;bottom:3px;height:3px;
+  border-radius:999px;background:var(--brand-green,#67ef8a);
+  box-shadow:0 0 10px rgba(103,239,138,.32);
+}
+
+/* 4) Menos atrito no fluxo: áreas de toque confortáveis */
+.settingsLauncher,.gameMainActions .btn{min-height:var(--ux-touch);}
+.settingsLauncher{font-weight:900;}
+.gameMainActions{gap:8px;}
+
+/* 5) Acessibilidade + performance */
+.headerInfoBtn:focus-visible,.refreshBig:focus-visible,.heroPlay:focus-visible{
+  outline:3px solid var(--brand-cyan,#6ee7ff);outline-offset:3px;
+}
+@media(max-width:700px) and (pointer:coarse){
+  .tabBar,.onlineHud{backdrop-filter:none;-webkit-backdrop-filter:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  .tabBtn.active::after{box-shadow:none;}
+}
