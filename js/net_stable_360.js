@@ -51,6 +51,14 @@ let hostConn = null;  // cliente: a conexão com o anfitrião
 
 let handlers = {};
 
+// Entrega de estado em tempo real: mantém no máximo UM pacote de estado pesado em trânsito por jogador.
+// Isso evita acumular vários snapshots no canal WebRTC quando o celular demora para processar/renderizar.
+let stateSessionId = '';
+let stateSeq = 0;
+const stateDelivery = new Map();
+const STATE_ACK_WAIT_MS = 420;
+const STATE_STALL_MS = 4500;
+
 // Configuração estável da sala: é pequena e pode ser reenviada sempre que alguém
 // entra ou reconecta. Isso evita que um cliente tardio fique sem nome, cor, mapa,
 // tema ou times só porque perdeu o pacote raro enviado no início da partida.
@@ -115,6 +123,9 @@ function broadcastPeerList() {
 // um ID PREVISÍVEL que os outros clientes conseguem adivinhar sozinhos.
 export function hostRoom(onReady, onFail, forcedId, options = {}) {
   role = 'host';
+  stateSessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  stateSeq = 0;
+  stateDelivery.clear();
   mySlot = 0;
   deliberateDisconnect = false;
   const Peer = getPeerCtor();
@@ -218,6 +229,14 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
         gotJoinRequest = true;
         clearTimeout(compatTimer);
         approveJoinRequest({ conn, slot, name: msg.name, teamPref: msg.teamPref });
+      } else if (msg.type === 'stateAck') {
+        const delivery = stateDelivery.get(slot);
+        const seq = Number(msg.seq);
+        if (delivery && Number.isFinite(seq) && seq >= delivery.pendingSeq) {
+          delivery.pendingSeq = 0;
+          delivery.lastAckAt = Date.now();
+          delivery.lastAckSeq = seq;
+        }
       } else if (msg.type === 'ping') {
         try { conn.send({ type: 'pong', ts: msg.ts }); } catch {}
       } else if (msg.type === 'pong') {
@@ -232,7 +251,7 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
       const pIdx = pendingConns.indexOf(conn);
       if (pIdx >= 0) pendingConns.splice(pIdx, 1);
       const idx = conns.indexOf(conn);
-      if (idx >= 0) { conns.splice(idx, 1); broadcastPeerList(); handlers.onPeerLeft && handlers.onPeerLeft(slot); }
+      if (idx >= 0) { conns.splice(idx, 1); stateDelivery.delete(slot); broadcastPeerList(); handlers.onPeerLeft && handlers.onPeerLeft(slot); }
     });
   });
 }
@@ -253,6 +272,7 @@ function finalizeJoin(conn, slot, teamPref, playerName = null) {
   // Guarda o slot também na conexão para que a lista de pares e a migração continuem
   // estáveis mesmo quando alguém sai do meio da sala.
   conn.__slot = slot;
+  stateDelivery.set(slot, { pendingSeq: 0, lastSentAt: 0, lastAckAt: Date.now(), lastAckSeq: 0, skipped: 0 });
   const team = handlers.onAssignTeam ? handlers.onAssignTeam(slot, teamPref) : undefined;
   try { conn.send({ type: 'welcome', slot, team }); } catch {}
   // O pacote de configuração é separado do estado frequente: pequeno, explícito e
@@ -388,6 +408,11 @@ function configurarHostConnHandlers() {
       onFailCb && onFailCb(new Error('rejected'));
     } else if (msg.type === 'state') {
       handlers.onStateUpdate && handlers.onStateUpdate(msg);
+      // Confirma o último snapshot recebido mesmo que o render tenha decidido ignorá-lo por ser antigo.
+      // O ACK é minúsculo e evita que o anfitrião enfileire vários estados pesados.
+      if (hostConn && hostConn.open && Number.isFinite(Number(msg.seq))) {
+        try { hostConn.send({ type: 'stateAck', seq: Number(msg.seq) }); } catch {}
+      }
     } else if (msg.type === 'countdown') {
       handlers.onCountdown && handlers.onCountdown(msg.n);
     } else if (msg.type === 'reaction') {
@@ -484,9 +509,46 @@ function attemptHostMigration() {
   }
 }
 
-// Host: manda o estado atual do jogo pra todo mundo conectado
+// Host: manda o estado atual do jogo pra todo mundo conectado.
+// Um canal WebRTC confiável é ótimo para comandos, mas pode acumular snapshots pesados se um
+// aparelho estiver lento. Cada jogador recebe o próximo estado só depois de confirmar o anterior.
 export function broadcastState(payload) {
-  broadcastRaw({ type: 'state', ...payload });
+  const now = Date.now();
+  const seq = ++stateSeq;
+  const message = { type: 'state', session: stateSessionId, seq, sentAt: now, ...payload };
+  sendDiag.ultimaContagemConns = conns.length;
+
+  conns.forEach((c) => {
+    if (!c || !c.open) return;
+    const slot = c.__slot;
+    const delivery = stateDelivery.get(slot) || { pendingSeq: 0, lastSentAt: 0, lastAckAt: 0, lastAckSeq: 0, skipped: 0 };
+    if (delivery.pendingSeq) {
+      if (now - delivery.lastSentAt < STATE_ACK_WAIT_MS) {
+        delivery.skipped++;
+        stateDelivery.set(slot, delivery);
+        return;
+      }
+      if (now - delivery.lastSentAt >= STATE_STALL_MS) {
+        try { c.close(); } catch {}
+        return;
+      }
+      delivery.skipped++;
+      stateDelivery.set(slot, delivery);
+      return;
+    }
+    sendDiag.tentativas++;
+    try {
+      c.send(message);
+      sendDiag.sucessos++;
+      delivery.pendingSeq = seq;
+      delivery.lastSentAt = now;
+      delivery.skipped = 0;
+      stateDelivery.set(slot, delivery);
+    } catch (err) {
+      sendDiag.falhas++;
+      sendDiag.ultimoErro = `${err?.message || err} (conexão aberta? ${c.open})`;
+    }
+  });
 }
 
 // Diagnóstico de envio — pra saber se o anfitrião está REALMENTE conseguindo mandar os
@@ -540,6 +602,7 @@ export function disconnect() {
   currentRoomPin = null;
   roomPinRequired = false;
   knownPeers = [];
+  stateDelivery.clear();
   conns.forEach(c => { try { c.close(); } catch {} });
   conns = [];
   pendingConns.forEach(c => { try { c.close(); } catch {} });

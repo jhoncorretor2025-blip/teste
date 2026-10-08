@@ -190,7 +190,8 @@ net.setHandlers({
     document.dispatchEvent(new CustomEvent('onlineMatchResult', { detail: result }));
   },
   onStateUpdate: (msg) => {
-    applyRemoteState(msg);
+    const aplicado = applyRemoteState(msg);
+    if (!aplicado) return;
     capturePartnerNameOnce(msg.names?.[0]);
     checkOnlineAchievementsFromState();
   },
@@ -1199,6 +1200,7 @@ let achievementHideTimer = null;
 
 // Fim do Modo Torneio: mostra o campeão e o placar de cada rodada, reaproveitando o
 // overlay que já existia na tela (endTitle/endText/continueBtn) sem uso nenhum até agora
+let lastOnlineResultId = null;
 function renderOnlineResultStats(result) {
   const box = $('onlineResultStats');
   if (!box || !result) return;
@@ -1228,18 +1230,23 @@ function renderOnlineResultStats(result) {
 }
 
 document.addEventListener('onlineMatchResult', (e) => {
-  const { champion, wins, scores = [], foodsEaten = [], eliminations = [], teams = [], teamMode = false, names = [] } = e.detail;
-  $('endTitle').textContent = '🏁 Resultado da partida!';
+  const { champion, wins, scores = [], foodsEaten = [], eliminations = [], teams = [], teamMode = false, names = [], draw = false, resultId = null } = e.detail;
+  if (resultId && resultId === lastOnlineResultId) return;
+  if (resultId) lastOnlineResultId = resultId;
+  const hasChampion = Number.isInteger(champion) && champion >= 0 && champion < names.length;
+  $('endTitle').textContent = draw || !hasChampion ? '⚖️ Resultado do torneio' : '🏁 Resultado da partida!';
   const ranking = names.map((name, i) => ({ i, name: name || label(i), score: scores[i] || 0, food: foodsEaten[i] || 0, elim: eliminations[i] || 0, wins: wins[i] || 0 }))
     .sort((a, b) => (b.wins - a.wins) || (b.score - a.score) || (b.food - a.food));
-  const championName = names[champion] || label(champion);
+  const championName = hasChampion ? (names[champion] || label(champion)) : 'Empate';
   renderOnlineResultStats(e.detail);
-  const placar = wins.map((w, i) => `${i === champion ? '👑 ' : ''}${names[i] || label(i)}: ${w} rodada${w === 1 ? '' : 's'}`).join(' • ');
+  const placar = wins.map((w, i) => `${hasChampion && i === champion ? '👑 ' : ''}${names[i] || label(i)}: ${w} rodada${w === 1 ? '' : 's'}`).join(' • ');
   const destaque = ranking.map((p, pos) => `${pos + 1}º ${p.name}: 🏆 ${p.wins} • 🍎 ${p.food} • ☠️ ${p.elim} • ⭐ ${p.score}`).join('\n');
   // Vibração de "vitória" — animada e crescente, bem diferente da de derrota, só pra
   // quem realmente venceu (nos outros dispositivos, seus jogadores não são o campeão)
-  if (champion === net.mySlot) vibrate([40, 30, 40, 30, 40, 30, 200]);
-  $('endText').textContent = `${championName} venceu o torneio!\n\n${destaque}\n\n${placar}`;
+  if (hasChampion && champion === net.mySlot) vibrate([40, 30, 40, 30, 40, 30, 200]);
+  $('endText').textContent = hasChampion
+    ? `${championName} venceu o torneio!\n\n${destaque}\n\n${placar}`
+    : `⚖️ O torneio terminou empatado. Ninguém recebeu vitória automática.\n\n${destaque}\n\n${placar}`;
   $('overlay').classList.remove('hidden');
 
   // Histórico de confrontos (só faz sentido claro no 1x1) e placar acumulado da sessão —
@@ -1254,8 +1261,8 @@ document.addEventListener('onlineMatchResult', (e) => {
     });
     showMatchHistory(opponentName);
   }
-  addLeaguePoints(champion === net.mySlot ? 25 : 8, 'resultado do torneio');
-  if (net.isOnline()) {
+  if (hasChampion) addLeaguePoints(champion === net.mySlot ? 25 : 8, 'resultado do torneio');
+  if (net.isOnline() && hasChampion) {
     sessionWins[champion] = (sessionWins[champion] || 0) + 1;
     updateSessionScoreDisplay();
 
@@ -3018,18 +3025,18 @@ setInterval(() => {
     return;
   }
 
-  if (semNoticias > 5000 && !avisoInstavelMostrado) {
+  if (semNoticias > 3500 && !avisoInstavelMostrado) {
     avisoInstavelMostrado = true;
-    $('badge').textContent = '⚠️ Conexão instável — sem novidades do anfitrião há alguns segundos...';
-  } else if (semNoticias < 3000 && avisoInstavelMostrado) {
+    $('badge').textContent = '⚠️ Conexão instável — o jogo não recebe dados do anfitrião...';
+  } else if (semNoticias < 2000 && avisoInstavelMostrado) {
     avisoInstavelMostrado = false;
     reconexaoForcadaTentada = false;
     $('badge').textContent = '🌐 ONLINE';
   }
 
-  if (semNoticias > 10000 && !reconexaoForcadaTentada) {
+  if (semNoticias > 6500 && !reconexaoForcadaTentada) {
     reconexaoForcadaTentada = true;
-    $('badge').textContent = '🔄 Reconectando de verdade (a conexão travou sem avisar)...';
+    $('badge').textContent = '🔄 Reconectando de verdade — canal sem resposta...';
     net.forcarReconexaoPorDadosParados();
   }
 }, 2000);

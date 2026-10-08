@@ -1,3 +1,12 @@
+## [4.5.39] — 2026-10-08
+- 🌐 **Multiplayer mais estável:** o anfitrião não acumula vários snapshots pesados do jogo no canal WebRTC enquanto o celular ainda está processando o anterior.
+- 📡 **Reconhecimento de travamento:** cada atualização online recebe uma sequência e confirmação; se o canal parar de entregar por vários segundos, a conexão é fechada e o mecanismo de reconexão assume.
+- 🧹 **Menos engasgos:** estados antigos recebidos depois de uma reconexão são ignorados, evitando que uma posição velha sobrescreva uma mais nova.
+- 🏆 **Resultado mais justo:** empate no torneio não escolhe automaticamente o jogador do slot 0; o resultado pode ser empate e não aparece mais uma vitória falsa.
+- 🔁 **Resultado duplicado protegido:** o mesmo resultado online não abre o aviso duas vezes.
+- 🧪 **Regressão coberta:** adicionada verificação automática dos novos mecanismos de entrega de estado e do tratamento de empates.
+- 🛡️ **Escopo:** nenhuma chave de armazenamento, regra normal de colisão ou integração externa foi removida.
+
 ## [4.5.38] — 2026-10-08
 - 🖥️ **Desktop:** arena pode aproveitar melhor telas largas sem mudar o tamanho lógico do jogo.
 - 🏆 **Placar:** vários jogadores continuam acessíveis horizontalmente sem comprimir a arena.

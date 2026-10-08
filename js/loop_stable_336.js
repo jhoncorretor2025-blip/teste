@@ -20,7 +20,9 @@ import { startNegativeEvents, stopNegativeEvents, shouldSkipMovement } from './n
 let currentInterval = 160;
 let tickCount = 0; // guarda o intervalo do tick atual, pra calcular chances por segundo direito
 let clientReadyFallbackTimer = null;
-let remoteProgressSnapshot = { alive:false, score:0, food:0, length:0, runStartedAt:0 }; // rede de segurança pra nunca deixar o cliente preso na tela de espera
+let remoteProgressSnapshot = { alive:false, score:0, food:0, length:0, runStartedAt:0 };
+let remoteStateSession = '';
+let lastRemoteStateSeq = 0; // rede de segurança pra nunca deixar o cliente preso na tela de espera
 
 
 // 🌟 Desafio das 50 comidas: uma inimiga exclusiva para cada Mioquinha que atingir 50.
@@ -768,30 +770,51 @@ function stepMovement(indices) {
 // Fecha a rodada atual do Modo Torneio: descobre quem fez mais pontos NESSA rodada,
 // dá o ponto de rodada vencida pra essa pessoa, e ou começa a próxima rodada ou,
 // se já foi a última (melhor de 3), encerra o torneio e mostra o campeão geral.
+// Escolhe um vencedor de forma justa. Antes, um empate acabava automaticamente no slot 0,
+// o que podia mostrar "você venceu" para uma pessoa que não tinha realmente vencido.
+function escolherVencedorTorneio(ids, primeiro) {
+  const ordenados = ids.slice().sort((a, b) => {
+    const metricas = primeiro === 'round'
+      ? [(i) => state.tournamentRoundScore[i] || 0, (i) => state.scores[i] || 0, (i) => state.foodsEaten[i] || 0, (i) => state.eliminations[i] || 0]
+      : [(i) => state.tournamentWins[i] || 0, (i) => state.scores[i] || 0, (i) => state.foodsEaten[i] || 0, (i) => state.eliminations[i] || 0];
+    for (const get of metricas) {
+      const va = get(a), vb = get(b);
+      if (va !== vb) return vb - va;
+    }
+    return a - b;
+  });
+  if (!ordenados.length) return -1;
+  if (ordenados.length === 1) return ordenados[0];
+  const top = ordenados[0], segundo = ordenados[1];
+  const metricas = primeiro === 'round'
+    ? [(i) => state.tournamentRoundScore[i] || 0, (i) => state.scores[i] || 0, (i) => state.foodsEaten[i] || 0, (i) => state.eliminations[i] || 0]
+    : [(i) => state.tournamentWins[i] || 0, (i) => state.scores[i] || 0, (i) => state.foodsEaten[i] || 0, (i) => state.eliminations[i] || 0];
+  return metricas.every(get => get(top) === get(segundo)) ? -1 : top;
+}
+
 function endTournamentRound() {
-  let winner = 0;
-  for (let i = 1; i < state.count; i++) {
-    if (state.tournamentRoundScore[i] > state.tournamentRoundScore[winner]) winner = i;
-  }
-  state.tournamentWins[winner] = (state.tournamentWins[winner] || 0) + 1;
-  if (winner === mySlot && state.tournamentWins[winner] >= 3) announceAchievement(unlockAchievement('tournament_3wins'));
   const roundJustEnded = state.tournamentRound;
+  const ids = Array.from({ length: state.count }, (_, i) => i);
+  const winner = escolherVencedorTorneio(ids, 'round');
+  if (winner >= 0) {
+    state.tournamentWins[winner] = (state.tournamentWins[winner] || 0) + 1;
+    if (winner === mySlot && state.tournamentWins[winner] >= 3) announceAchievement(unlockAchievement('tournament_3wins'));
+  }
 
   if (roundJustEnded >= TOURNAMENT_ROUNDS) {
-    let champion = 0;
-    for (let i = 1; i < state.count; i++) {
-      if (state.tournamentWins[i] > state.tournamentWins[champion]) champion = i;
-    }
+    const champion = escolherVencedorTorneio(ids, 'final');
     state.tournamentChampion = champion;
-    if (champion === mySlot) announceAchievement(unlockAchievement('tournament_champion'));
-    if (isOnline() && champion === mySlot) {
-      announceAchievement(unlockAchievement('online_champion'));
+    if (champion >= 0) {
+      if (champion === mySlot) announceAchievement(unlockAchievement('tournament_champion'));
+      if (isOnline() && champion === mySlot) announceAchievement(unlockAchievement('online_champion'));
     }
     state.running = false;
     clearSavedGame();
     render();
     const result = {
       champion,
+      draw: champion < 0,
+      resultId: `${Date.now()}-${state.count}-${state.tournamentRound}`,
       wins: [...state.tournamentWins].slice(0, state.count),
       scores: [...state.scores].slice(0, state.count),
       foodsEaten: [...state.foodsEaten].slice(0, state.count),
@@ -801,15 +824,15 @@ function endTournamentRound() {
       names: [...state.names].slice(0, state.count),
     };
     if (isHost()) broadcastRaw({ type: 'onlineMatchResult', result });
-    if (!isOnline()) addLeaguePoints(champion === mySlot ? 25 : 8, 'resultado do torneio');
+    if (!isOnline() && champion >= 0) addLeaguePoints(champion === mySlot ? 25 : 8, 'resultado do torneio');
     document.dispatchEvent(new CustomEvent('tournamentOver', { detail: result }));
     return;
   }
 
   state.toast = {
     x: Math.floor(state.mapW / 2), y: Math.floor(state.mapH / 2),
-    text: `🏁 Rodada ${roundJustEnded} vencida por ${label(winner)}!`,
-    color: state.colors[winner], until: Date.now() + 2200,
+    text: winner >= 0 ? `🏁 Rodada ${roundJustEnded} vencida por ${label(winner)}!` : `⚖️ Rodada ${roundJustEnded} terminou empatada!`,
+    color: winner >= 0 ? state.colors[winner] : '#ffd24d', until: Date.now() + 2200,
   };
   state.tournamentRound++;
   state.tournamentRoundScore = Array(6).fill(0);
@@ -1503,6 +1526,8 @@ export function startClientGame() {
   state.paused = false;
   state.receivedFirstState = false;
   state.debugCountdownRecebidoAt = 0;
+  remoteStateSession = '';
+  lastRemoteStateSeq = 0;
   remoteProgressSnapshot = { alive:false, score:0, food:0, length:0, runStartedAt:Date.now() };
   state.debugJoinedAt = Date.now(); // quando terminou de entrar de vez — base pra detectar se NADA chegar depois
   // Temporário: mostra o diagnóstico técnico automaticamente pra quem ENTRA numa sala,
@@ -1548,6 +1573,14 @@ export function startClientGame() {
 
 // Aplica um pacote de estado recebido do anfitrião (chamado pelo net.js) e redesenha a tela.
 export function applyRemoteState(msg) {
+  const incomingSession = msg?.session ? String(msg.session) : '';
+  const incomingSeq = Number(msg?.seq) || 0;
+  if (incomingSession && incomingSession !== remoteStateSession) {
+    remoteStateSession = incomingSession;
+    lastRemoteStateSeq = 0;
+  }
+  if (incomingSeq && incomingSeq <= lastRemoteStateSeq) return false;
+  if (incomingSeq) lastRemoteStateSeq = incomingSeq;
   state.debugStatesReceived = (state.debugStatesReceived || 0) + 1;
   state.debugLastStateAt = Date.now();
   if (!state.receivedFirstState) {
@@ -1631,4 +1664,5 @@ export function applyRemoteState(msg) {
   renderMission();
   $('badge').textContent = '🌐 ONLINE';
   render();
+  return true;
 }
