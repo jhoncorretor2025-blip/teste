@@ -1,3 +1,9 @@
+# v4.5.33 — Correção de colisão no modo 2 jogadores
+
+- Corrige o travamento do loop quando um jogador elimina outro jogador humano/CPU.
+- O tempo de sobrevivência usado no placar agora é calculado para qualquer jogador antes do registro da eliminação.
+- Mantém morte, pontuação, leaderboard, respawn e mensagens de eliminação funcionando normalmente.
+
 # v4.5.32 — Eventos negativos aleatórios
 
 - Adiciona desafios temporários durante partidas locais: controles invertidos, sem virar, controles confusos, arena lenta e neblina.
