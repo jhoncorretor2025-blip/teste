@@ -8,6 +8,7 @@ import { CK, KD, D, BOOST_KEYS, BOOST_COOLDOWN } from './config.js';
 import { state } from './state.js';
 import { tryBoost } from './loop_stable_336.js';
 import { isOnline, isHost, mySlot, sendInput } from './net.js';
+import { transformDirection, canTurn } from './negative_events.js';
 
 function reverse(a, b) {
   return a && b && a.x === -b.x && a.y === -b.y;
@@ -15,7 +16,9 @@ function reverse(a, b) {
 
 // Muda a direção de uma minhoca LOCAL (não deixa dar meia-volta em cima do próprio corpo)
 export function setDir(i, d) {
-  if (state.alive[i] && !reverse(state.dirs[i], d)) state.nextDirs[i] = { x: d.x, y: d.y };
+  if (!canTurn()) return;
+  const transformed = transformDirection(d);
+  if (state.alive[i] && !reverse(state.dirs[i], transformed)) state.nextDirs[i] = { x: transformed.x, y: transformed.y };
 }
 
 // Move a "minha" minhoca — local (host/offline) manda direto, cliente online manda pro anfitrião
