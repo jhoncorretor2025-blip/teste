@@ -5124,3 +5124,33 @@ main,
 @media screen and (max-width:1000px) and (pointer:coarse) and (orientation:landscape){
   #game .mobileTouchControlToggle{bottom:150px}
 }
+
+
+/* v4.5.29 — botão de troca preso ao conjunto de controle; não invade a arena */
+.mobileTouchControlToggle{
+  left:78px;
+  right:auto;
+  bottom:148px;
+  transform:none;
+  width:42px;
+  height:36px;
+  min-width:42px;
+  min-height:36px;
+  border-radius:10px;
+  font-size:1rem;
+}
+.mobileTouchControlToggle:active{transform:scale(.93)}
+@media screen and (max-width:1000px) and (pointer:coarse) and (orientation:landscape){
+  #game .mobileTouchControlToggle{
+    left:76px;
+    bottom:154px;
+    display:block;
+  }
+}
+@media screen and (max-width:1000px) and (pointer:coarse) and (orientation:portrait){
+  #game .mobileTouchControlToggle{
+    left:74px;
+    bottom:154px;
+    display:block;
+  }
+}
