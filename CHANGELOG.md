@@ -1,3 +1,7 @@
+## [4.5.36] — 2026-10-07
+- 🛡️ **Offline corrigido:** `js/ai.js`, usado pelo motor ativo da partida, agora está no cache do Service Worker. Sem ele, o `cache.addAll()` podia abortar a instalação inteira do cache offline.
+- 🧪 **Proteção adicionada:** o teste da versão verifica que os módulos do caminho ativo também estão presentes no `ASSETS` do Service Worker.
+
 ## [4.5.35] — 2026-10-07
 - 🐛 **Multiplayer no celular:** corrigido o erro `mySlot is not defined` no recebimento da configuração da sala; o convidado volta a receber mapa, tema, nomes, cores e times corretamente.
 - 🕹️ **Controle touch:** mantida a correção do botão de troca/turbo com `tapVibrate`, evitando erro ao tocar nos controles.
