@@ -1,3 +1,9 @@
+## [4.5.31] — 2026-10-07
+- 🌐 **HUD online no computador:** aproveita melhor o espaço da arena e mostra posição, pontos, tamanho da minhoca, comidas, eliminações, conexão/ping e missão atual.
+- 📡 **Diagnóstico visual da rede:** o painel diferencia anfitrião e cliente e mostra a qualidade aproximada da conexão.
+- ⚡ **Online mais leve:** no modo online, a renderização deixa de recalcular iluminação/gradientes animados pesados e reduz partículas decorativas, preservando o mapa e a jogabilidade.
+- 🖥️ **Desktop:** o novo painel fica sobre a arena sem esconder o minimapa; em telas menores ele se compacta automaticamente.
+
 ## [4.5.30] — 2026-10-07
 - 🛠️ **Correção importante da paisagem:** corrigido o conflito entre o layout mobile (aspect-ratio 3/4) e a orientação horizontal.
 - 📱 **Arena dimensionada pela viewport:** em paisagem, a arena agora usa a altura real disponível da tela em vez de manter proporção vertical.

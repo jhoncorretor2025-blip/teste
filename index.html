@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="4.5.30">
+<html lang="pt-BR" data-theme-version="4.5.31">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v4.5.30</title>
-<link rel="stylesheet" href="css/style.css?v=4.5.30">
+<title>🐍 Mioquinha v4.5.31</title>
+<link rel="stylesheet" href="css/style.css?v=4.5.31">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -18,7 +18,18 @@
 .onlineScorePanelRow{display:flex;align-items:center;gap:6px;min-height:25px;font-size:.82rem}
 .onlineScorePanelDot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 5px rgba(255,255,255,.35)}
 .onlineScorePanelPoints{margin-left:auto;font-weight:900;opacity:.95}
-@media(max-width:600px){.onlineScorePanel{padding:6px 7px}.onlineScorePanelRow{font-size:.75rem;min-height:23px}}
+@media(max-width:600px){.onlineScorePanel{padding:6px 7px}.onlineScorePanelRow{font-size:.75rem;min-height:23px}}.onlineHud{position:absolute;left:14px;top:14px;width:min(310px,34vw);box-sizing:border-box;padding:10px 11px;border-radius:14px;background:rgba(5,9,17,.80);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);color:#fff;z-index:8;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.onlineHud.hidden{display:none}
+.onlineHudTitle{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.78rem;font-weight:900;margin-bottom:7px}
+.onlineHudTitle span{font-size:.68rem;opacity:.72;font-weight:700}
+.onlineHudGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.onlineHudStat{min-width:0;padding:5px 6px;border-radius:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.07)}
+.onlineHudStat span{display:block;font-size:.59rem;opacity:.68;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.onlineHudStat b{display:block;margin-top:1px;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.onlineHudMission{margin-top:6px;padding:5px 7px;border-radius:8px;background:rgba(255,210,77,.08);font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:900px){.onlineHud{width:min(260px,38vw);padding:8px}.onlineHudGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.onlineHud{left:8px;top:8px;width:220px;padding:7px 8px;border-radius:11px}.onlineHudTitle{font-size:.68rem;margin-bottom:5px}.onlineHudStat{padding:4px 5px}.onlineHudStat span{font-size:.53rem}.onlineHudStat b{font-size:.68rem}.onlineHudMission{font-size:.58rem}}
+
 </style>
 </head>
 <body>
@@ -26,7 +37,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>4.5.30</b></div>
+  <div class="appSplashVersion">VERSÃO <b>4.5.31</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -102,7 +113,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v4.5.30</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v4.5.31</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <div class="siteHeaderTools">
       <button id="headerInfoBtn" class="headerInfoBtn" type="button" aria-label="Abrir dicas e avisos da Mioquinha">ℹ️</button>
@@ -804,6 +815,17 @@
         <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Mioquinha 🐍"></canvas>
         <div id="onlineScorePanel" class="onlineScorePanel hidden" aria-label="Placar online">
           <div class="onlineScorePanelTitle">🌐 Placar da partida</div>
+        </div><div id="onlineHud" class="onlineHud hidden" aria-label="Informações da partida online">
+          <div class="onlineHudTitle">🌐 Partida online <span id="onlineHudRole">—</span></div>
+          <div class="onlineHudGrid">
+            <div class="onlineHudStat"><span>🏅 Posição</span><b id="onlineHudRank">—</b></div>
+            <div class="onlineHudStat"><span>⭐ Pontos</span><b id="onlineHudScore">0</b></div>
+            <div class="onlineHudStat"><span>🧬 Tamanho</span><b id="onlineHudLength">0</b></div>
+            <div class="onlineHudStat"><span>🍎 Comidas</span><b id="onlineHudFood">0</b></div>
+            <div class="onlineHudStat"><span>☠️ Eliminações</span><b id="onlineHudKills">0</b></div>
+            <div class="onlineHudStat"><span>📡 Rede</span><b id="onlineHudPing">—</b></div>
+          </div>
+          <div id="onlineHudMission" class="onlineHudMission">🎯 —</div>
         </div>
         <video id="pipVideo" muted playsinline style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video>
         <div id="renderErrorBanner" class="landscapeHint hidden" style="background:#5a1f2a;border-color:#ff5577"></div>
@@ -851,7 +873,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '4.5.30';
+  const VERSION = '4.5.31';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');

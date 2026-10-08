@@ -268,8 +268,12 @@ function drawThemeBackdrop(theme) {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
   }
-  if (typeof drawThemeAtmosphere === 'function') drawThemeAtmosphere(theme);
-  drawDynamicGraphicLighting(theme);
+  // No online, priorizamos fluidez: gradientes/iluminação animada custam CPU a cada atualização.
+  // O fundo estático e as estrelas continuam normalmente.
+  if (!isOnline()) {
+    if (typeof drawThemeAtmosphere === 'function') drawThemeAtmosphere(theme);
+    drawDynamicGraphicLighting(theme);
+  }
   if (theme.deco === 'stars') drawStars();
   else if (theme.deco && theme.deco !== 'none') drawThemeDeco(theme);
 }
@@ -1844,6 +1848,54 @@ function renderOnlineMatchStats(rankOrder) {
     '</div>';
 }
 
+function updateOnlineHud() {
+  const hud = document.getElementById('onlineHud');
+  if (!hud) return;
+  if (!isOnline()) { hud.classList.add('hidden'); return; }
+
+  const order = Array.from({ length: state.count }, (_, i) => i).sort((a, b) => {
+    const scoreDiff = (state.scores[b] || 0) - (state.scores[a] || 0);
+    if (scoreDiff) return scoreDiff;
+    return (state.foodsEaten[b] || 0) - (state.foodsEaten[a] || 0);
+  });
+  const rank = order.indexOf(mySlot) + 1;
+  const ping = isHost()
+    ? (Number.isFinite(pingStats[mySlot]) ? pingStats[mySlot] : null)
+    : (Number.isFinite(hostLatency) ? Math.round(hostLatency) : null);
+
+  let network = '📶 Medindo';
+  if (isHost()) {
+    const values = Object.values(pingStats).filter(v => Number.isFinite(v));
+    const avg = values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : null;
+    network = avg == null ? '👑 Host' : (avg < 100 ? '🟢 ' : avg < 250 ? '🟡 ' : '🔴 ') + avg + 'ms';
+  } else if (ping != null) {
+    network = (ping < 100 ? '🟢 ' : ping < 250 ? '🟡 ' : '🔴 ') + ping + 'ms';
+  }
+
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value);
+  };
+  set('onlineHudRole', isHost() ? '👑 Anfitrião' : '🎮 Cliente');
+  set('onlineHudRank', rank > 0 ? rank + 'º / ' + state.count : '—');
+  set('onlineHudScore', state.scores[mySlot] || 0);
+  set('onlineHudLength', state.snakes[mySlot]?.length || 0);
+  set('onlineHudFood', state.foodsEaten[mySlot] || 0);
+  set('onlineHudKills', state.eliminations[mySlot] || 0);
+  set('onlineHudPing', network);
+
+  const mission = state.mission;
+  let missionText = '🎯 Nenhuma missão ativa';
+  if (mission && !mission.done) {
+    const progress = mission.type === 'survive'
+      ? 'em andamento'
+      : String(Math.min(mission.progress || 0, mission.target || 0)) + '/' + String(mission.target || 0);
+    missionText = '🎯 ' + (mission.label || 'Missão') + ' • ' + progress;
+  }
+  set('onlineHudMission', missionText);
+  hud.classList.remove('hidden');
+}
+
 function updateOnlineScorePanel() {
   const panel = document.getElementById('onlineScorePanel');
   if (!panel) return;
@@ -2092,8 +2144,9 @@ function drawLeaderCrown() {
 
 function drawEnhancedParticles() {
   const agora = Date.now();
-  /* v3.5.1 particle cap — mantém o visual rico sem sobrecarregar celular/PC */
-  const start = Math.max(0, state.particles.length - 140);
+  /* No online, partículas são só efeito visual; um limite menor evita picos de CPU quando há várias minhocas. */
+  const particleCap = isOnline() ? 60 : 140;
+  const start = Math.max(0, state.particles.length - particleCap);
   for (let i = start; i < state.particles.length; i++) {
     const p = state.particles[i];
     const x = sx(p.x) + cell / 2, y = sy(p.y) + cell / 2;
@@ -2531,6 +2584,7 @@ export function render() {
   try {
     renderScores();
     updateOnlineScorePanel();
+    updateOnlineHud();
     draw();
   } catch (err) {
     // Se o desenho travar por qualquer motivo (navegador antigo, etc.), mostra um aviso
