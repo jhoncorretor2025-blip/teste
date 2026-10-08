@@ -1,3 +1,9 @@
+# v4.5.34 — Remoção da lentidão artificial
+
+- Remove o evento negativo “Arena lenta”, que fazia a minhoca pular movimentos e podia ser confundido com lag.
+- Desafios negativos continuam, mas nenhum deles reduz a frequência do motor de jogo.
+- Mantém controles invertidos, sem virar, controles confusos e neblina.
+
 # v4.5.33 — Correção de colisão no modo 2 jogadores
 
 - Corrige o travamento do loop quando um jogador elimina outro jogador humano/CPU.
