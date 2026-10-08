@@ -40,9 +40,8 @@ r.check('o amigo vê as 2 minhocas, inclusive a própria', as.snakes?.length ===
 r.secao('5) Controle do amigo chega ao anfitrião e responde na tela');
 ativar(A);
 A.document.dispatchEvent(new A.KeyboardEvent('keydown', { code: 'ArrowRight', bubbles: true }));
+r.check('o cliente mostrou previsão visual imediatamente', as.inputPredictionDir?.x === 1 && as.inputPredictionDir?.y === 0, `pred=${JSON.stringify(as.inputPredictionDir)}`);
 await esperar(80);
 ativar(host);
 r.check('o anfitrião recebeu a direção do amigo', hs.nextDirs?.[1]?.x === 1 && hs.nextDirs?.[1]?.y === 0, `dir=${JSON.stringify(hs.nextDirs?.[1])}`);
-ativar(A);
-r.check('o cliente mostrou previsão visual imediata', as.inputPredictionDir?.x === 1 && as.inputPredictionDir?.y === 0, `pred=${JSON.stringify(as.inputPredictionDir)}`);
 r.fim(host.__erros, A.__erros);
