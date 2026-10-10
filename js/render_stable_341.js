@@ -1809,17 +1809,31 @@ function drawMinimap() {
     ctx.textBaseline = 'middle';
     mostrar.forEach((l, k) => {
       const y = topo + 3 + alturaLinha * k + alturaLinha / 2;
+      const isMe = l.i === mySlot;
+      if (isMe) {
+        // Destaque discreto para encontrar sua minhoca e sua pontuação rapidamente.
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = 'rgba(255,210,77,0.18)';
+        ctx.beginPath();
+        ctx.roundRect(mx + 2, y - alturaLinha / 2 + 1, mmW - 4, alturaLinha - 1, 4);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,210,77,0.72)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
       ctx.globalAlpha = l.vivo ? 1 : 0.5;
       ctx.fillStyle = state.colors[l.i] || '#ffffff';
       ctx.beginPath();
       ctx.arc(mx + 8, y, 3.2, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = isMe ? '#ffe08a' : '#ffffff';
       ctx.textAlign = 'left';
-      const nome = l.nome.length > 12 ? l.nome.slice(0, 11) + '…' : l.nome;
-      ctx.fillText((l.i === mySlot ? '★ ' : '') + nome, mx + 15, y);
+      const nomeBase = l.nome.length > 10 ? l.nome.slice(0, 9) + '…' : l.nome;
+      const nome = isMe ? '★ VOCÊ · ' + nomeBase : nomeBase;
+      ctx.fillText(nome, mx + 15, y);
       ctx.textAlign = 'right';
-      ctx.fillText(String(l.pontos), mx + mmW - 6, y);
+      ctx.fillStyle = isMe ? '#ffe08a' : '#ffffff';
+      ctx.fillText(String(l.pontos) + ' pts', mx + mmW - 6, y);
     });
     ctx.restore();
   }
