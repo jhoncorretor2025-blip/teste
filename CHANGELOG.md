@@ -1,3 +1,10 @@
+## [4.5.47] — 2026-10-10
+- ⭐ **Pontuação sobre a minhoca sincronizada com o placar:** o rótulo agora mostra pontos (⭐) e comidas (🍎) separadamente; a pontuação bate com a do minimapa.
+- 🎯 **Alvo visual da Caçadora corrigido:** o círculo vermelho acompanha quem tem mais comidas, o mesmo critério usado pela lógica de perseguição.
+- 🔴 **Zonas vermelhas corrigidas:** agora contam jogadores dentro da zona, em vez da própria Caçadora; qualquer participante pode ajudar a completar as 3 zonas, inclusive em sala online.
+- ⏱️ **Mais tempo para escapar:** duração da Caçadora aumentada progressivamente para dar tempo de alcançar as três zonas.
+- 💡 **Instrução mais clara:** aviso explica que é preciso permanecer 3 segundos em cada uma das três zonas vermelhas para fazê-la desaparecer.
+
 ## [4.5.46] — 2026-10-10
 - 🛡️ **Evita criar duas salas no mesmo aparelho:** bloqueia uma nova criação se já houver uma sessão online ativa.
 - 👥 **Evita duplicar participante por pedido repetido:** o mesmo pedido de entrada só pode ser finalizado uma vez.
