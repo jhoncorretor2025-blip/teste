@@ -1,3 +1,6 @@
+## [4.5.44] — 2026-10-10
+- 🐍 **Nome correto do convidado online:** o cliente agora preserva o nome do próprio perfil no slot local depois de cada estado recebido do anfitrião. Isso evita que o nome do anfitrião sobrescreva o nome do convidado durante a partida.
+
 ## [4.5.43] — 2026-10-08
 - 🔐 **Falha de segurança nas salas COM SENHA corrigida:** a reconexão automática não conferia a senha. Resultado: quem errava a senha tinha a conexão fechada e, 1,5 s depois, o jogo "reconectava sozinho" e a pessoa **entrava mesmo assim**; e qualquer um que mandasse direto o pedido de reconexão (em vez do pedido de entrada) também furava a sala. Agora a reconexão também exige a senha, quem foi recusado (senha errada, sala cheia) **não tenta reconectar sozinho**, e uma conexão que ainda não provou a senha não consegue mandar comandos de jogo. O aviso "Senha incorreta" também deixou de ser trocado por "reconectando...". Quem TEM a senha continua voltando sozinho depois de uma queda.
 - ⭐ **Contador de estrelas** (`starsCollected`) declarado no estado inicial do jogo (antes só nascia quando a partida começava).
