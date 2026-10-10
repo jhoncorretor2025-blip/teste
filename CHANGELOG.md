@@ -1,3 +1,9 @@
+## [4.5.45] — 2026-10-10
+- 🎨 **Placar do minimapa mais claro:** destaca a linha do jogador local com uma borda dourada, identifica como “VOCÊ” e deixa explícito que o número é a pontuação em pontos.
+- ⚠️ **Desafios negativos progressivos:** o primeiro evento agora começa após 60 segundos ou quando a minhoca chega a 75 segmentos/pontos, em vez de surgir logo no início. Os próximos eventos aparecem em intervalos imprevisíveis.
+- 🕳️ **Novo evento Buraco Negro:** efeito visual animado e gravidade temporária que tenta puxar a minhoca para o centro sem forçar uma virada impossível.
+- ✨ **Alertas com acabamento visual:** animação de entrada, contraste reforçado e ajustes para telas pequenas.
+
 ## [4.5.44] — 2026-10-10
 - 🐍 **Nome correto do convidado online:** o cliente agora preserva o nome do próprio perfil no slot local depois de cada estado recebido do anfitrião. Isso evita que o nome do anfitrião sobrescreva o nome do convidado durante a partida.
 
