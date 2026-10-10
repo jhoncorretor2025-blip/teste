@@ -218,13 +218,6 @@ net.setHandlers({
     const aplicado = applyRemoteState(msg);
     if (!aplicado) return;
 
-    // O anfitrião envia a lista de nomes em cada estado. Preserve o nome do convidado
-    // no próprio slot para que o próximo pacote não o substitua pelo nome do anfitrião.
-    if (net.mySlot > 0 && clientLocalPlayerName) {
-      if (!Array.isArray(state.names)) state.names = [];
-      state.names[net.mySlot] = clientLocalPlayerName;
-    }
-
     capturePartnerNameOnce(msg.names?.[0]);
     checkOnlineAchievementsFromState();
   },
@@ -233,10 +226,9 @@ net.setHandlers({
   onRoomConfig: (msg) => {
     state.colors = msg.colors || state.colors;
     state.names = msg.names || state.names;
-    if (net.mySlot > 0) {
-      const savedLocalProfile = loadProfile();
-      if (savedLocalProfile.name) state.names[net.mySlot] = safe(savedLocalProfile.name, state.names[net.mySlot] || `Jogador ${net.mySlot + 1}`);
-    }
+    // Usa o nome enviado no pedido de entrada; não reaplica o perfil a cada estado,
+    // pois isso impediria o anfitrião de corrigir um nome errado no lobby.
+    if (net.mySlot > 0 && clientLocalPlayerName) state.names[net.mySlot] = clientLocalPlayerName;
     state.heads = msg.heads || state.heads;
     state.patterns = msg.patterns || state.patterns;
     state.palettes = msg.palettes || state.palettes;
@@ -482,6 +474,13 @@ function createOnlineRoom(opcoes = {}) {
     return;
   }
   if (criandoSala) return;
+  // Depois que a sala abriu, o botão não pode criar outro Peer/sala por engano.
+  if (net.isOnline()) {
+    mostrarStatusCriacao(net.isHost()
+      ? '✅ Você já é o anfitrião de uma sala. Use o painel atual ou feche a sala antes de criar outra.'
+      : '⚠️ Você já está conectado a uma sala. Saia dela antes de criar outra.');
+    return;
+  }
 
   unlockAudio();
   state.teamPrefs = ['mine'];
@@ -598,6 +597,39 @@ $('onlineMapMode')?.addEventListener('change', (e) => {
   broadcastOnlineLobby();
 });
 $('hostBtn').addEventListener('click', () => createOnlineRoom());
+
+// O anfitrião pode corrigir o nome de qualquer participante que tenha entrado com um nome errado.
+$('editOnlinePlayerNameBtn')?.addEventListener('click', () => {
+  if (!net.isOnline() || !net.isHost()) {
+    mostrarStatusCriacao('⚠️ Só o anfitrião pode editar os nomes da sala.');
+    return;
+  }
+  const players = Array.from({ length: state.count }, (_, slot) => ({
+    slot,
+    name: String(state.names[slot] || (slot === 0 ? 'Anfitrião' : `Jogador ${slot + 1}`))
+  }));
+  const lista = players.map(p => `${p.slot}: ${p.name}`).join('\\n');
+  const escolha = window.prompt('Qual jogador deseja corrigir? Digite o número do slot:\\n' + lista, '0');
+  if (escolha === null) return;
+  const slot = Number(escolha.trim());
+  if (!Number.isInteger(slot) || slot < 0 || slot >= state.count) {
+    mostrarStatusCriacao('⚠️ Número de jogador inválido.');
+    return;
+  }
+  const nomeAtual = players.find(p => p.slot === slot)?.name || '';
+  const novoNome = window.prompt('Novo nome para esse jogador (máximo 18 caracteres):', nomeAtual);
+  if (novoNome === null) return;
+  const nomeLimpo = safe(novoNome.replace(/[<>]/g, '').trim().slice(0, 18), '').trim();
+  if (!nomeLimpo) {
+    mostrarStatusCriacao('⚠️ O nome não pode ficar vazio.');
+    return;
+  }
+  state.names[slot] = nomeLimpo;
+  if (slot === 0 && $('myName')) $('myName').value = nomeLimpo;
+  broadcastOnlineLobby();
+  mostrarStatusCriacao(`✅ Nome do jogador ${slot} atualizado para “${nomeLimpo}”.`);
+  render();
+});
 
 $('hostRoomSecurity')?.addEventListener('change', () => {
   const protectedRoom = $('hostRoomSecurity').value === 'pin';
