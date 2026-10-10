@@ -31,6 +31,7 @@ const disconnectedOnline = {};
 const onlineDisconnectTimers = {};
 let currentRoomProtected = false;
 let currentRoomPin = '';
+let clientLocalPlayerName = ''; // preserva o nome do convidado entre os estados recebidos do anfitrião
 function updateReadyDisplay() {
   const box = $('readyStatusDisplay');
   if (!box) return;
@@ -216,6 +217,14 @@ net.setHandlers({
   onStateUpdate: (msg) => {
     const aplicado = applyRemoteState(msg);
     if (!aplicado) return;
+
+    // O anfitrião envia a lista de nomes em cada estado. Preserve o nome do convidado
+    // no próprio slot para que o próximo pacote não o substitua pelo nome do anfitrião.
+    if (net.mySlot > 0 && clientLocalPlayerName) {
+      if (!Array.isArray(state.names)) state.names = [];
+      state.names[net.mySlot] = clientLocalPlayerName;
+    }
+
     capturePartnerNameOnce(msg.names?.[0]);
     checkOnlineAchievementsFromState();
   },
@@ -944,6 +953,7 @@ $('joinBtn').addEventListener('click', () => {
 
   const savedOnlineProfile = loadProfile();
   const onlinePlayerName = safe(savedOnlineProfile.name || state.names[0] || 'Jhon', 'Jhon');
+  clientLocalPlayerName = onlinePlayerName;
   state.names[0] = onlinePlayerName;
   if ($('myName')) $('myName').value = onlinePlayerName;
   net.setMyLook({ color: state.colors[0], head: state.heads[0], pattern: state.patterns[0], palette: state.palettes[0], trailColor: state.trailColors[0] });
