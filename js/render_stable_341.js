@@ -1558,8 +1558,8 @@ function drawHunterTargetLock() {
   let leader = -1;
   let top = -1;
   for (let i = 0; i < state.count; i++) {
-    if (state.alive[i] && (state.scores[i] || 0) > top) {
-      top = state.scores[i] || 0;
+    if (state.alive[i] && (state.foodsEaten[i] || 0) > top) {
+      top = state.foodsEaten[i] || 0;
       leader = i;
     }
   }
@@ -2520,7 +2520,7 @@ function draw() {
       ctx.font = `bold ${cell * 0.6}px system-ui`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
-      ctx.fillText(`${label(i)} • 🍎 ${state.foodsEaten[i] || 0}`, sx(h.x) + cell / 2, sy(h.y) - 4);
+      ctx.fillText(`${label(i)} • ⭐ ${state.scores[i] || 0} pts • 🍎 ${state.foodsEaten[i] || 0}`, sx(h.x) + cell / 2, sy(h.y) - 4);
     }
   }
 
