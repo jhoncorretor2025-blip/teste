@@ -1093,7 +1093,7 @@ const DURACAO_RAJADA_MS = 2500;
 const INTERVALO_ENTRE_RAJADAS_MS = 8000;
 
 const HUNTER_ZONE_COUNT = 3;
-const HUNTER_ZONE_RADIUS = 2;
+const HUNTER_ZONE_RADIUS = 4; // zona com o dobro do raio para facilitar o desafio
 const HUNTER_ZONE_HOLD_MS = 3000;
 
 function hunterZoneDistance(a, b) {
