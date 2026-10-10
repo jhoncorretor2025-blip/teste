@@ -282,6 +282,9 @@ export function hostRoom(onReady, onFail, forcedId, options = {}) {
 
 // Anfitrião aceita o pedido de entrada — só AGORA a pessoa realmente entra na sala
 export function approveJoinRequest(request) {
+  // O mesmo pedido pode chegar mais de uma vez em conexões/reenvios; não conte a pessoa duas vezes.
+  if (request.conn.__joinFinalized) return;
+  request.conn.__joinFinalized = true;
   const pIdx = pendingConns.indexOf(request.conn);
   if (pIdx >= 0) pendingConns.splice(pIdx, 1);
   conns.push(request.conn);
