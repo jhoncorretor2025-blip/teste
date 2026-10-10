@@ -1080,7 +1080,7 @@ function spawnHunter(durationSec, appearance = 1) {
   state.hunterZoneCurrent = -1;
   state.hunterZoneEnteredAt = 0;
   state.hunterZoneHoldProgress = 0;
-  state.toast = { x: p.x, y: p.y, text: '☠️ Minhoca Caçadora apareceu!', color: '#ff2222', until: Date.now() + 2800 };
+  state.toast = { x: p.x, y: p.y, text: '☠️ Caçadora! Fique 3s em cada zona vermelha para fazê-la sumir (0/3).', color: '#ff2222', until: Date.now() + 4200 };
   sfx.hunterArrives();
   vibrate([40, 60, 40, 60, 40]);
 }
@@ -1154,14 +1154,19 @@ function finishHunterByZones() {
 
 function updateHunterZones() {
   if (!state.hunterActive || !state.hunterSnake[0] || !state.hunterZones?.length) return;
-  const head = state.hunterSnake[0];
   const now = Date.now();
   let inside = -1;
-  for (let i = 0; i < state.hunterZones.length; i++) {
-    if (state.hunterZoneCompleted[i]) continue;
-    const radius = state.hunterZones[i].radius || HUNTER_ZONE_RADIUS;
-    if (hunterZoneDistance(head, state.hunterZones[i]) <= radius) {
-      inside = i;
+  // A zona vermelha é um refúgio para os JOGADORES, não para a própria Caçadora.
+  // Verifica todos os participantes no estado do anfitrião para funcionar também online.
+  for (let z = 0; z < state.hunterZones.length; z++) {
+    if (state.hunterZoneCompleted[z]) continue;
+    const radius = state.hunterZones[z].radius || HUNTER_ZONE_RADIUS;
+    const jogadorDentro = Array.from({ length: state.count }, (_, i) => i).some(i => {
+      const head = state.snakes[i]?.[0];
+      return state.alive[i] && head && hunterZoneDistance(head, state.hunterZones[z]) <= radius;
+    });
+    if (jogadorDentro) {
+      inside = z;
       break;
     }
   }
