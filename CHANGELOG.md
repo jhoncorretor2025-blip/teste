@@ -1,3 +1,9 @@
+## [4.5.46] — 2026-10-10
+- 🛡️ **Evita criar duas salas no mesmo aparelho:** bloqueia uma nova criação se já houver uma sessão online ativa.
+- 👥 **Evita duplicar participante por pedido repetido:** o mesmo pedido de entrada só pode ser finalizado uma vez.
+- 🏷️ **Nome online mais consistente:** o nome do convidado é aplicado a partir do pedido de entrada/configuração inicial, sem ser forçado novamente a cada atualização de estado.
+- ✏️ **Edição de nomes pelo anfitrião:** o painel da sala ganha uma opção para corrigir o nome de qualquer slot conectado.
+
 ## [4.5.45] — 2026-10-10
 - 🎨 **Placar do minimapa mais claro:** destaca a linha do jogador local com uma borda dourada, identifica como “VOCÊ” e deixa explícito que o número é a pontuação em pontos.
 - ⚠️ **Desafios negativos progressivos:** o primeiro evento agora começa após 60 segundos ou quando a minhoca chega a 75 segmentos/pontos, em vez de surgir logo no início. Os próximos eventos aparecem em intervalos imprevisíveis.
