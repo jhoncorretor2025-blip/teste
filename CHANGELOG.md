@@ -1,3 +1,8 @@
+## [4.5.48] — 2026-10-10
+- ✏️ **Nome do anfitrião corrigido:** botão renomeado para “Alterar meu nome”; agora altera o nome do próprio anfitrião, salva no perfil e atualiza a sala.
+- 🌐 **Sincronização imediata:** o novo nome é enviado aos convidados sem esperar uma nova partida começar.
+- 🔒 **Nomes dos convidados preservados:** a alteração do anfitrião não muda o nome escolhido por cada convidado.
+
 ## [4.5.47] — 2026-10-10
 - ⭐ **Pontuação sobre a minhoca sincronizada com o placar:** o rótulo agora mostra pontos (⭐) e comidas (🍎) separadamente; a pontuação bate com a do minimapa.
 - 🎯 **Alvo visual da Caçadora corrigido:** o círculo vermelho acompanha quem tem mais comidas, o mesmo critério usado pela lógica de perseguição.
