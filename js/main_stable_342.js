@@ -598,39 +598,37 @@ $('onlineMapMode')?.addEventListener('change', (e) => {
 });
 $('hostBtn').addEventListener('click', () => createOnlineRoom());
 
-// O anfitrião pode corrigir o nome de qualquer participante que tenha entrado com um nome errado.
+// O anfitrião pode alterar o PRÓPRIO nome depois de criar a sala.
+// Persiste o perfil e envia o novo nome imediatamente para os convidados, sem
+// sobrescrever o nome que cada convidado escolheu para si.
 $('editOnlinePlayerNameBtn')?.addEventListener('click', () => {
   if (!net.isOnline() || !net.isHost()) {
-    mostrarStatusCriacao('⚠️ Só o anfitrião pode editar os nomes da sala.');
+    mostrarStatusCriacao('⚠️ Entre na sua sala como anfitrião para alterar seu nome por aqui.');
     return;
   }
-  const players = Array.from({ length: state.count }, (_, slot) => ({
-    slot,
-    name: String(state.names[slot] || (slot === 0 ? 'Anfitrião' : `Jogador ${slot + 1}`))
-  }));
-  const lista = players.map(p => `${p.slot}: ${p.name}`).join('\\n');
-  const escolha = window.prompt('Qual jogador deseja corrigir? Digite o número do slot:\\n' + lista, '0');
-  if (escolha === null) return;
-  const slot = Number(escolha.trim());
-  if (!Number.isInteger(slot) || slot < 0 || slot >= state.count) {
-    mostrarStatusCriacao('⚠️ Número de jogador inválido.');
-    return;
-  }
-  const nomeAtual = players.find(p => p.slot === slot)?.name || '';
-  const novoNome = window.prompt('Novo nome para esse jogador (máximo 18 caracteres):', nomeAtual);
+  const nomeAtual = String(state.names[0] || 'Jhon');
+  const novoNome = window.prompt('Digite seu nome (máximo 18 caracteres):', nomeAtual);
   if (novoNome === null) return;
   const nomeLimpo = safe(novoNome.replace(/[<>]/g, '').trim().slice(0, 18), '').trim();
   if (!nomeLimpo) {
     mostrarStatusCriacao('⚠️ O nome não pode ficar vazio.');
     return;
   }
-  state.names[slot] = nomeLimpo;
-  if (slot === 0 && $('myName')) $('myName').value = nomeLimpo;
+  state.names[0] = nomeLimpo;
+  if ($('myName')) $('myName').value = nomeLimpo;
+  persistProfile();
   broadcastOnlineLobby();
-  mostrarStatusCriacao(`✅ Nome do jogador ${slot} atualizado para “${nomeLimpo}”.`);
+  // Atualiza o placar/nome no cliente sem esperar a próxima partida começar.
+  net.broadcastRaw({
+    type: 'state',
+    colors: state.colors, names: state.names, heads: state.heads,
+    patterns: state.patterns, palettes: state.palettes, trailColors: state.trailColors,
+    mapW: state.mapW, mapH: state.mapH, theme: state.theme,
+    teamMode: state.teamMode, teams: state.teams,
+  });
+  mostrarStatusCriacao(`✅ Seu nome foi alterado para “${nomeLimpo}” e salvo.`);
   render();
 });
-
 $('hostRoomSecurity')?.addEventListener('change', () => {
   const protectedRoom = $('hostRoomSecurity').value === 'pin';
   $('hostRoomPinRow')?.classList.toggle('hidden', !protectedRoom);
