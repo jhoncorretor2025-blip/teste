@@ -1,3 +1,6 @@
+## [4.5.49] — 2026-10-10
+- 🔴 **Zonas vermelhas maiores:** raio ampliado de 2 para 4 células, dobrando o diâmetro para facilitar permanecer na zona por 3 segundos.
+
 ## [4.5.48] — 2026-10-10
 - ✏️ **Nome do anfitrião corrigido:** botão renomeado para “Alterar meu nome”; agora altera o nome do próprio anfitrião, salva no perfil e atualiza a sala.
 - 🌐 **Sincronização imediata:** o novo nome é enviado aos convidados sem esperar uma nova partida começar.
