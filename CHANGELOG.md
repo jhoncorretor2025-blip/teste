@@ -1,3 +1,11 @@
+## [4.5.56] — 2026-10-12
+- 📱 **Arena mobile ajustada:** modo maximizado usa a área útil da tela sem rolagem da página.
+- 🎮 **Controles de toque:** joystick, setas, alternador e turbo com alvos maiores e respeitando as áreas seguras do aparelho.
+- ↔️ **Retrato e paisagem:** dimensões da arena adaptadas à orientação, com espaço para HUD e controles.
+- 🧭 **HUD mobile:** ações, placar e status reorganizados para telas estreitas.
+- 🔒 **Compatibilidade:** sem alteração na lógica da partida, pontuação, progresso ou multiplayer.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.56.
+
 ## [4.5.55] — 2026-10-12
 - 🎨 **Acabamento visual geral:** refinados fundo, cabeçalho, painéis, cartões e hierarquia da tela inicial.
 - 🧭 **Navegação mais clara:** abas, estados ativos e foco por teclado com contraste aprimorado.
