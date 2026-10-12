@@ -8436,3 +8436,40 @@ body {
     transition:none!important;
   }
 }
+
+
+/* v4.5.57 — controles mais precisos e feedback imediato */
+#game .joystick {
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:border-color .12s ease,box-shadow .12s ease;
+}
+#game .joystick.is-active {
+  border-color:rgba(110,231,255,.68);
+  box-shadow:0 0 0 3px rgba(110,231,255,.12),0 8px 25px #0005,inset 0 2px 8px rgba(255,255,255,.12);
+}
+#game .joystick.is-active .stick {
+  background:rgba(230,245,255,.42);
+  border-color:rgba(255,255,255,.72);
+}
+#game .dpadBtn {
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+#game .dpadBtn:active {
+  filter:brightness(1.25);
+  transform:scale(.94);
+}
+#game .boostTouch {
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+@media(prefers-reduced-motion:reduce) {
+  #game .joystick { transition:none; }
+}
