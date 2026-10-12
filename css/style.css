@@ -7806,3 +7806,11 @@ main,
 @media(max-width:520px){.shopPreview{grid-template-columns:1fr;gap:10px;padding:10px}.shopPreviewVisual{min-height:90px}.shopPreviewMap{height:90px}.shopPreviewInfo h3{font-size:.95rem}}
 @media(prefers-reduced-motion:reduce){.shopPreviewWorm{animation:none}}
 .lightMode .shopPreview{background:linear-gradient(145deg,#fff,#edf5fb);border-color:#a5d9b7}.lightMode .shopPreviewInfo p{color:#536a80}.lightMode .shopPreviewMeta{color:#344b61}
+
+/* v4.5.50 — som sempre acessível também na tela inicial */
+.headerMuteBtn{display:inline-grid;place-items:center;min-width:42px;min-height:42px;padding:7px 10px;border:1px solid rgba(130,164,205,.28);border-radius:12px;background:rgba(10,22,39,.82);color:#fff;font-size:1.05rem;cursor:pointer;transition:transform .15s ease,border-color .15s ease}
+.headerMuteBtn:hover{transform:translateY(-1px);border-color:#67ef8a}
+.headerMuteBtn[aria-pressed="true"]{border-color:rgba(255,215,90,.5);background:rgba(70,48,12,.35)}
+.siteHeaderTools{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.lightMode .headerMuteBtn{background:#fff;color:#1d344b;border-color:#c8d6e6}
+@media(prefers-reduced-motion:reduce){.headerMuteBtn{transition:none}}
