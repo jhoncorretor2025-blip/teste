@@ -609,15 +609,24 @@ export function refreshProgressionUI() {
     // mantêm a seleção da prévia sem efetuar compras por engano.
     const activePool = activeShopPreview.type === 'map' ? SHOP_MAPS : activeShopPreview.type === 'skin' ? SHOP_SKINS : COSMETICS;
     if (!activePool.some(x => x.id === activeShopPreview.id)) activeShopPreview = { type:'skin', id:'neon' };
-    shop.querySelectorAll('[data-shop-type]').forEach(btn=>btn.addEventListener('click',()=>{
-      activeShopPreview = { type:btn.dataset.shopType, id:btn.dataset.shopId };
-      renderShopPreview(shop);
-    }));
+    if (shop.dataset.shopEventsBound !== '1') {
+      shop.dataset.shopEventsBound = '1';
+      // Delegação mantém o botão de confirmação funcional mesmo quando a prévia
+      // é redesenhada ao selecionar outro item.
+      shop.addEventListener('click', (event) => {
+        const confirm = event.target.closest('[data-shop-confirm]');
+        if (confirm) {
+          const { type, id } = activeShopPreview;
+          if(type==='map')buyMap(id);else if(type==='skin')buySkin(id);else buyCosmetic(id);
+          return;
+        }
+        const btn = event.target.closest('[data-shop-type]');
+        if (!btn || !shop.contains(btn)) return;
+        activeShopPreview = { type:btn.dataset.shopType, id:btn.dataset.shopId };
+        renderShopPreview(shop);
+      });
+    }
     renderShopPreview(shop);
-    shop.querySelector('[data-shop-confirm]')?.addEventListener('click',()=>{
-      const { type, id } = activeShopPreview;
-      if(type==='map')buyMap(id);else if(type==='skin')buySkin(id);else buyCosmetic(id);
-    });
   }
 
   // A tela inicial lê este mesmo estado para atualizar a carteira e os destaques.
