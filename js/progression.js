@@ -2,6 +2,7 @@
 // Tudo fica salvo no navegador. O progresso pessoal não entra no pacote do multiplayer.
 import { unlockAchievement } from './storage.js';
 import { BOARD_THEMES } from './config.js';
+import { sfx } from './sound.js';
 
 const KEY = 'snakeArenaProgressionV1';
 
@@ -192,7 +193,11 @@ export function addProgressionReward({ xp = 0, coins = 0 } = {}) {
   data.level = calculateLevel(data.xp);
   saveProgression(data);
   checkProgressionAchievements(data);
-  if (data.level > oldLevel) showProgressionToast(`🎉 Nível ${data.level} alcançado!`);
+  if (data.level > oldLevel) {
+    showProgressionToast(`🎉 Nível ${data.level} alcançado!`);
+    sfx.levelUp();
+    if (typeof document !== 'undefined') document.dispatchEvent(new CustomEvent('levelUp', { detail:{ level:data.level } }));
+  }
   refreshProgressionUI();
   return data;
 }
