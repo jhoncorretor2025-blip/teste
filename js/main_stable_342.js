@@ -7,16 +7,16 @@ import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SN
 import { planTeams } from './teams.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop_stable_336.js?v=4.5.59';
-import { render } from './render_stable_341.js?v=4.5.59';
-import { setupInput, setDir } from './input.js?v=4.5.59';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop_stable_336.js?v=4.5.60';
+import { render } from './render_stable_341.js?v=4.5.60';
+import { setupInput, setDir } from './input.js?v=4.5.60';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
 import { loadTeamPrefs, saveTeamPrefs, loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadBestLength, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings, loadTotalPlaytime, loadTodayPlaytime, loadPlaytimeHistory, formatPlaytime } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net_stable_360.js';
-import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, xpForNextLevel, SHOP_MAPS, claimStreakReward, hasClaimedStreakRewardToday } from './progression.js?v=4.5.59';
+import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, xpForNextLevel, SHOP_MAPS, claimStreakReward, hasClaimedStreakRewardToday } from './progression.js?v=4.5.60';
 import { renderPerformanceDashboard } from './performance.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
@@ -1747,7 +1747,7 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
       conquistas: '🏅 Conquistas',
     };
     const subtitles = {
-      progresso: 'Recordes, partidas, conquistas e histórico em um só lugar.',
+      progresso: 'Acompanhe suas estatísticas, recordes e evolução como jogador.',
       ranking: 'Compare os recordes de quem já jogou neste aparelho.',
       loja: 'Adquira novos visuais, rastros e mapas utilizando suas moedas.',
       desafios: 'Complete objetivos diários e conquiste recompensas durante suas partidas.',
@@ -1771,8 +1771,9 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
     if (activeTab === 'progresso') {
       renderPerformanceDashboard();
       activateProgressSection(sectionForTab);
-      // Não desloca a página até o card do desafio: isso escondia os primeiros
-      // indicadores (liga, partidas e tempo) atrás da navegação em telas pequenas.
+      // Reposiciona depois de revelar o painel, evitando que a navegação fixa/sticky
+      // deixe os primeiros cartões (nível, liga e recordes) parcialmente encobertos.
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
     if (activeTab === 'personalizar' && (requestedTab === 'personalizar' || requestedTab === 'personalizacao')) {
       setTimeout(() => document.querySelector('[data-panel="personalizar"]')?.scrollTo({ top: 0, behavior: 'smooth' }), 80);
