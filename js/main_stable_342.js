@@ -1733,6 +1733,10 @@ $('silentModeBtn').addEventListener('click', () => {
   state.muted = true;
   setMuted(true);
   $('mute').textContent = '🔇';
+  if ($('headerMuteBtn')) {
+    $('headerMuteBtn').textContent = '🔇';
+    $('headerMuteBtn').setAttribute('aria-pressed', 'true');
+  }
   saveMuted(true);
   state.vibrationOn = true;
   setVibrationEnabled(true);
@@ -2197,12 +2201,18 @@ $('musicBtn').addEventListener('click', () => {
 });
 
 // Botão de mudo — a preferência fica salva no navegador
-$('mute').addEventListener('click', () => {
+function toggleGameMute() {
   state.muted = !state.muted;
   setMuted(state.muted);
   saveMuted(state.muted);
   $('mute').textContent = state.muted ? '🔇' : '🔊';
-});
+  if ($('headerMuteBtn')) {
+    $('headerMuteBtn').textContent = state.muted ? '🔇' : '🔊';
+    $('headerMuteBtn').setAttribute('aria-pressed', state.muted ? 'true' : 'false');
+  }
+}
+$('mute').addEventListener('click', toggleGameMute);
+$('headerMuteBtn')?.addEventListener('click', toggleGameMute);
 
 // Modo compacto: esconde placar/missão/menus e deixa só a arena e os controles,
 // pra jogar com a tela bem maior. Também tenta pedir tela cheia de verdade no navegador.
@@ -2341,6 +2351,10 @@ state.best = loadBest();
 state.muted = loadMuted();
 setMuted(state.muted);
 $('mute').textContent = state.muted ? '🔇' : '🔊';
+if ($('headerMuteBtn')) {
+  $('headerMuteBtn').textContent = state.muted ? '🔇' : '🔊';
+  $('headerMuteBtn').setAttribute('aria-pressed', state.muted ? 'true' : 'false');
+}
 
 state.vibrationOn = loadVibration();
 setVibrationEnabled(state.vibrationOn);
