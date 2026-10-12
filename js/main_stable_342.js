@@ -1589,6 +1589,7 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
   // escolhida, para a pessoa perceber que está numa página própria.
   if (activeTab === 'progresso') {
     const title = document.querySelector('[data-panel="progresso"] .progressHero h2');
+    const subtitle = document.querySelector('[data-panel="progresso"] .progressHero .cardDesc');
     const titles = {
       progresso: '📊 Meu progresso',
       ranking: '🏆 Ranking',
@@ -1597,7 +1598,16 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
       historico: '📜 Histórico',
       conquistas: '🏅 Conquistas',
     };
+    const subtitles = {
+      progresso: 'Recordes, partidas, conquistas e histórico em um só lugar.',
+      ranking: 'Compare os recordes de quem já jogou neste aparelho.',
+      loja: 'Use suas moedas para desbloquear mapas, fantasias e acessórios para sua minhoca.',
+      desafios: 'Complete objetivos diários e conquiste recompensas durante suas partidas.',
+      historico: 'Consulte suas partidas anteriores e acompanhe sua evolução.',
+      conquistas: 'Desbloqueie medalhas cumprindo objetivos e superando seus recordes.',
+    };
     if (title) title.textContent = titles[requestedTab] || titles.progresso;
+    if (subtitle) subtitle.textContent = subtitles[requestedTab] || subtitles.progresso;
   }
   if (activeTab === 'personalizar') {
     const title = document.querySelector('[data-panel="personalizar"] > section.card > h2');
@@ -1613,9 +1623,8 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
     if (activeTab === 'progresso') {
       renderPerformanceDashboard();
       activateProgressSection(sectionForTab);
-      if (requestedTab === 'desafios') {
-        setTimeout(() => document.querySelector('[data-progress-panel="stats"] .dailyChallengeCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
-      }
+      // Não desloca a página até o card do desafio: isso escondia os primeiros
+      // indicadores (liga, partidas e tempo) atrás da navegação em telas pequenas.
     }
     if (activeTab === 'personalizar' && (requestedTab === 'personalizar' || requestedTab === 'personalizacao')) {
       setTimeout(() => document.querySelector('[data-panel="personalizar"]')?.scrollTo({ top: 0, behavior: 'smooth' }), 80);
