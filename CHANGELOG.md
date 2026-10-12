@@ -1,3 +1,9 @@
+## [4.5.52] — 2026-10-12
+- 📱 **Convites online responsivos:** campos de link e código usam a largura disponível sem deixar o botão Entrar/Copiar ocupar a linha inteira.
+- 🎯 **Desafios sem corte no topo:** removida a rolagem automática até o card diário, que escondia os indicadores iniciais em telas pequenas.
+- 🛒 **Loja com contexto correto:** subtítulo atualizado para explicar o desbloqueio de mapas, fantasias e acessórios.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.52.
+
 ## [4.5.51] — 2026-10-12
 - 🛒 **Prévia da loja:** mapas, fantasias e acessórios podem ser selecionados e visualizados antes de confirmar a compra ou equipar.
 - 🔊 **Controles de áudio:** botão de mudo na tela inicial, sincronizado com o controle da partida e preferência salva.
