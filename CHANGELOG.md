@@ -1,3 +1,11 @@
+## [4.5.55] — 2026-10-12
+- 🎨 **Acabamento visual geral:** refinados fundo, cabeçalho, painéis, cartões e hierarquia da tela inicial.
+- 🧭 **Navegação mais clara:** abas, estados ativos e foco por teclado com contraste aprimorado.
+- 🛍️ **Loja e progresso:** cartões e indicadores com acabamento consistente nos temas escuro e claro.
+- 📱 **Responsividade:** espaçamentos refinados para telas pequenas sem alterar controles ou mecânica.
+- ♿ **Acessibilidade:** destaque de foco e respeito à preferência por movimento reduzido.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.55.
+
 ## [4.5.54] — 2026-10-12
 - 📋 **Feedback ao copiar convite:** botão confirma com “✓ Copiado!” por 2 segundos.
 - ⛶ **Tela cheia na arena:** botão rápido para ampliar a área de jogo e sair da tela cheia.
