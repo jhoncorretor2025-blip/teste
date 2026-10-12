@@ -274,6 +274,10 @@ export function rewardMilestone() {
   return addProgressionReward({ xp:8, coins:2 });
 }
 
+export function hasClaimedStreakRewardToday() {
+  return loadProgression().lastStreakRewardDate === localDateKey();
+}
+
 export function claimStreakReward(streak) {
   const data = loadProgression();
   const today = localDateKey();
