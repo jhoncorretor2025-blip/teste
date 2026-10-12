@@ -1,3 +1,9 @@
+## [4.5.54] — 2026-10-12
+- 📋 **Feedback ao copiar convite:** botão confirma com “✓ Copiado!” por 2 segundos.
+- ⛶ **Tela cheia na arena:** botão rápido para ampliar a área de jogo e sair da tela cheia.
+- 💾 **Backup do progresso:** exporta dados locais do jogo em JSON e permite importá-los com validação, confirmação e tentativa de reversão em caso de falha.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.54.
+
 ## [4.5.53] — 2026-10-12
 - 📱 **Convite online refinado:** botão Entrar/Copiar com espaçamento consistente e campo de texto flexível.
 - 🎯 **Desafios com respiro visual:** adiciona espaçamento superior aos indicadores para reduzir risco de ficarem encostados na navegação.
