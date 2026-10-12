@@ -569,6 +569,13 @@ export function refreshProgressionUI() {
   const bar = document.getElementById('progressXpBar');
   if (bar) bar.style.width = pct + '%';
 
+  // A barra compacta acompanha o jogador durante a partida, sem mudar a fórmula de XP.
+  set('gameLevelLabel', `⭐ Nível ${data.level} • ${current}/${next} XP`);
+  const gameLevelBar = document.getElementById('gameLevelXpBar');
+  if (gameLevelBar) gameLevelBar.style.width = pct + '%';
+  const gameLevelTrack = document.getElementById('gameLevelTrack');
+  if (gameLevelTrack) gameLevelTrack.setAttribute('aria-valuenow', String(pct));
+
   const c = data.challenge;
   set('challengeDisplay', c
     ? `${c.title} — ${c.desc} • ${c.progress}/${c.target}${c.completed ? ' ✅' : ''}`
