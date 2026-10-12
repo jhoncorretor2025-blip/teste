@@ -1,3 +1,9 @@
+## [4.5.60] — 2026-10-12
+- 📱 **Convite online responsivo:** campo de link/código mantém espaço para digitação e o botão Entrar fica visível, inclusive em telas estreitas.
+- 🎯 **Desafios sem sobreposição:** reforça o espaçamento e o reposicionamento após a troca de aba para manter os cartões de nível, liga e recordes visíveis.
+- 🧭 **Subtítulos específicos:** remove a frase genérica repetida e mantém descrições distintas para Progresso, Loja, Ranking, Desafios e Conquistas.
+- 🔢 **Versão sincronizada:** HTML, CSS, módulos ativos, configuração, cache e version.txt passam a usar 4.5.60.
+
 ## [4.5.59] — 2026-10-12
 - 🔗 **Convite protegido sem digitar PIN:** o link de uma sala protegida inclui a autorização necessária; ao abrir o convite, o jogo entra automaticamente.
 - 📋 **Colar link completo:** ao colar um convite no modo simples ou completo, preserva os parâmetros de acesso e de times em vez de reduzir o conteúdo ao código.
