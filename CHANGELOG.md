@@ -1,3 +1,11 @@
+## [4.5.58] — 2026-10-12
+- 🏆 **Resumo de partida:** ao morrer, mostra a pontuação final, novo recorde geral ou do modo e comparação com partidas anteriores.
+- 🐍 **Recorde de tamanho corrigido:** passa a salvar o maior comprimento da minhoca e atualiza o indicador correspondente no Progresso.
+- 🌐 **Recordes no online:** cada cliente registra o resultado da própria minhoca ao receber a confirmação de derrota, sem depender do anfitrião para o histórico local.
+- ⭐ **Nível e XP durante a partida:** indicador compacto com barra atualizada, sem alterar a fórmula de pontuação ou a quantidade de XP concedida.
+- 🔄 **Cache de módulos ativos:** imports de loop, renderização, controles e progressão sincronizados com v4.5.58.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache e version.txt passam a usar 4.5.58.
+
 ## [4.5.57] — 2026-10-12
 - 🎮 **Joystick mais previsível:** pequena zona morta e estabilização do eixo perto das diagonais, sem perder as quatro direções.
 - 👆 **Multitoque protegido:** um segundo dedo não interrompe o joystick ativo; captura e cancelamento de toque tratados com segurança.
