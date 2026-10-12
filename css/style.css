@@ -7783,3 +7783,26 @@ main,
   #negativeEventOverlay { top:9%; max-width:calc(100vw - 24px); padding:10px 12px; font-size:12px; }
   #negativeBlackHoleOverlay { width:72px !important; height:72px !important; }
 }
+
+
+/* v4.5.50 — prévia da loja antes de confirmar compra/equipamento */
+.shopPreview{grid-column:1/-1;display:grid;grid-template-columns:minmax(120px,.85fr) minmax(0,1.15fr);gap:14px;align-items:center;padding:14px;margin-bottom:8px;border:1px solid rgba(103,239,138,.28);border-radius:16px;background:radial-gradient(circle at 18% 35%,rgba(103,239,138,.12),transparent 55%),linear-gradient(145deg,#14243a,#08111f);min-width:0}
+.shopPreviewVisual{display:grid;place-items:center;min-height:120px;border-radius:12px;background:rgba(0,0,0,.18);overflow:hidden}
+.shopPreviewMap{width:100%;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(circle at 50% 40%,var(--shop-bg2),var(--shop-bg) 80%);border:1px solid var(--shop-grid);color:var(--shop-accent);font-size:2.3rem}
+.shopPreviewMap small,.shopPreviewAccessory small{font-size:.72rem;font-weight:850}
+.shopPreviewWorm{display:flex;align-items:center;gap:3px;animation:shopWiggle 1.8s ease-in-out infinite alternate}
+.shopPreviewSegment{width:13px;height:13px;border-radius:50%;background:var(--preview-color);box-shadow:0 0 12px color-mix(in srgb,var(--preview-color),transparent 35%);opacity:.7}
+.shopPreviewSegment:nth-child(2n){transform:translateY(5px)}
+.shopPreviewSegment.head{width:19px;height:19px;opacity:1;box-shadow:0 0 18px var(--preview-color)}
+.shopPreviewAccessory{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:2.8rem}
+.shopPreviewEyebrow{font-size:.62rem;letter-spacing:.12em;font-weight:950;color:#67ef8a}
+.shopPreviewInfo h3{margin:4px 0;font-size:1.05rem}
+.shopPreviewInfo p{margin:4px 0 8px;color:#aebed3;font-size:.78rem;line-height:1.45}
+.shopPreviewMeta{font-size:.72rem;color:#d8e3f2;margin-bottom:9px}
+.shopPreviewAction{width:100%;min-height:40px}
+.shopPreviewAction:disabled{opacity:.55;cursor:not-allowed}
+.shopItem.previewing{outline:2px solid #67ef8a;outline-offset:1px;border-color:#67ef8a}
+@keyframes shopWiggle{from{transform:translateX(-4px) rotate(-4deg)}to{transform:translateX(4px) rotate(4deg)}}
+@media(max-width:520px){.shopPreview{grid-template-columns:1fr;gap:10px;padding:10px}.shopPreviewVisual{min-height:90px}.shopPreviewMap{height:90px}.shopPreviewInfo h3{font-size:.95rem}}
+@media(prefers-reduced-motion:reduce){.shopPreviewWorm{animation:none}}
+.lightMode .shopPreview{background:linear-gradient(145deg,#fff,#edf5fb);border-color:#a5d9b7}.lightMode .shopPreviewInfo p{color:#536a80}.lightMode .shopPreviewMeta{color:#344b61}
