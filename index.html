@@ -1,11 +1,11 @@
 <!doctype html>
 <!-- Antes de editar este projeto: leia o AGENTS.md na raiz do repositório e rode `npm test` antes de publicar qualquer mudança. -->
-<html lang="pt-BR" data-theme-version="4.5.57">
+<html lang="pt-BR" data-theme-version="4.5.58">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>🐍 Mioquinha v4.5.57</title>
-<link rel="stylesheet" href="css/style.css?v=4.5.57">
+<title>🐍 Mioquinha v4.5.58</title>
+<link rel="stylesheet" href="css/style.css?v=4.5.58">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07101d" id="metaThemeColor">
 <link id="faviconLink" rel="icon" href="icon.svg">
@@ -37,7 +37,7 @@
   <img src="icon.svg" alt="" width="88" height="88">
   <div class="appSplashTitle">🐍 Mioquinha</div>
   <div class="appSplashTagline">Arena • Estratégia • Multiplayer</div>
-  <div class="appSplashVersion">VERSÃO <b>4.5.57</b></div>
+  <div class="appSplashVersion">VERSÃO <b>4.5.58</b></div>
   <div class="bootProgressWrap" aria-label="Carregando jogo">
     <div class="bootProgressTrack"><div id="bootProgressBar" class="bootProgressBar" style="width:0%"></div></div>
     <div class="bootProgressRow"><b id="bootProgressPercent">0%</b><span id="bootProgressStatus">Iniciando...</span></div>
@@ -113,7 +113,7 @@
     </div>
   </div>
   <header class="siteHeader">
-    <h1>🐍 Mioquinha <span class="version">v4.5.57</span></h1>
+    <h1>🐍 Mioquinha <span class="version">v4.5.58</span></h1>
     <p class="sub">Até 6 jogadores • local e online • CPU • PC e celular</p>
     <div class="siteHeaderTools">
       <button id="headerMuteBtn" class="headerMuteBtn" type="button" aria-label="Ligar/desligar som" title="Ligar/desligar som">🔊</button>
@@ -824,6 +824,10 @@
       <div id="mission" class="mission"></div>
       <div id="comboDisplay" class="comboDisplay hidden" aria-live="polite"></div>
       <div id="challengeDisplay" class="challengeDisplay" aria-live="polite">🎯 Carregando desafio...</div>
+      <div id="gameProgressMini" class="gameProgressMini" aria-label="Nível e experiência do jogador">
+        <span id="gameLevelLabel">⭐ Nível 1 • 0/100 XP</span>
+        <div id="gameLevelTrack" class="gameLevelTrack" role="progressbar" aria-label="Experiência para o próximo nível" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="gameLevelXpBar"></i></div>
+      </div>
       <div class="arena">
         <canvas id="arenaCanvas" width="1000" height="620" role="img" aria-label="Área de jogo do Mioquinha 🐍"></canvas>
         <button id="arenaFullscreenBtn" class="arenaFullscreenBtn" type="button" aria-label="Ativar tela cheia" title="Ativar tela cheia">⛶ Tela cheia</button>
@@ -887,7 +891,7 @@
 </div>
 <script>
 (function () {
-  const VERSION = '4.5.57';
+  const VERSION = '4.5.58';
   const splash = document.getElementById('appSplash');
   const bar = document.getElementById('bootProgressBar');
   const pct = document.getElementById('bootProgressPercent');
