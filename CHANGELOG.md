@@ -1,3 +1,8 @@
+## [4.5.50] — 2026-10-12
+- 🛒 **Prévia da Loja antes da compra:** mapas, fantasias e acessórios agora mostram uma prévia selecionável; a compra/equipamento só ocorre ao confirmar no botão dedicado.
+- 🧭 **Voltar do navegador mais previsível:** trocar entre seções internas de Progresso substitui o estado atual do histórico, evitando uma pilha de entradas para cada subaba.
+- 🧩 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.50.
+
 ## [4.5.49] — 2026-10-10
 - 🔴 **Zonas vermelhas maiores:** raio ampliado de 2 para 4 células, dobrando o diâmetro para facilitar permanecer na zona por 3 segundos.
 
