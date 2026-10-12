@@ -57,7 +57,7 @@ $(hostProtegido, 'hostRoomPin').value = '2580';
 $(hostProtegido, 'hostBtn').click();
 await esperar(250);
 const linkProtegido = $(hostProtegido, 'onlineSimpleRoomLink').value;
-r.check('convite protegido inclui a autorização no link', /room=\\d{4}/.test(linkProtegido) && /lock=1/.test(linkProtegido) && /pin=2580/.test(linkProtegido), linkProtegido);
+r.check('convite protegido inclui a autorização no link', /room=\d{4}/.test(linkProtegido) && /lock=1/.test(linkProtegido) && /pin=2580/.test(linkProtegido), linkProtegido);
 
 r.secao('7) O convidado abre o link protegido e entra sem digitar a senha');
 const pastaConvidadoDireto = copiarProjeto();
