@@ -476,6 +476,8 @@ function timeUntilNextDay() {
     String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0') + 'min';
 }
 
+let activeShopPreview = { type: 'skin', id: 'neon' };
+
 function shopButton(item, type) {
   const data = loadProgression();
   const unlocked = type === 'map'
@@ -488,14 +490,49 @@ function shopButton(item, type) {
     : type === 'skin'
       ? document.querySelector('.ppattern[data-i="0"]')?.value === item.id
       : data.selectedCosmetic === item.id;
-  const label = selected ? '✅ Equipado' : unlocked ? 'Toque para equipar' : '🪙 ' + item.cost;
+  const label = selected ? '✅ Equipado' : unlocked ? '👀 Ver / equipar' : '🪙 ' + item.cost;
   const theme = type === 'map' ? BOARD_THEMES.find((t) => t.value === item.id) : null;
   const preview = theme
     ? `<span class="shopVisualPreview" style="--shop-bg:${theme.bg};--shop-bg2:${theme.bg2};--shop-grid:${theme.grid};--shop-accent:${theme.accent};">${theme.food}</span>`
     : '';
-  return '<button type="button" aria-label="' + item.name + (unlocked ? '' : ' — item bloqueado') + '" class="shopItem ' + (unlocked ? 'unlocked' : 'locked') + ' ' + (selected ? 'selected' : '') + '" data-shop-type="' + type + '" data-shop-id="' + item.id + '">' +
+  return '<button type="button" aria-label="Pré-visualizar ' + item.name + '" class="shopItem ' + (unlocked ? 'unlocked' : 'locked') + ' ' + (selected ? 'selected' : '') + '" data-shop-type="' + type + '" data-shop-id="' + item.id + '">' +
     preview +
     '<span class="shopItemIcon">' + (item.icon || '✨') + '</span><span class="shopItemText"><b>' + item.name + '</b><small>' + label + '</small></span></button>';
+}
+
+function renderShopPreview(shop) {
+  const host = shop.querySelector('#shopPreview');
+  if (!host) return;
+  const type = activeShopPreview.type;
+  const pool = type === 'map' ? SHOP_MAPS : type === 'skin' ? SHOP_SKINS : COSMETICS;
+  const item = pool.find((x) => x.id === activeShopPreview.id) || pool[0];
+  if (!item) return;
+  activeShopPreview = { type, id: item.id };
+  const data = loadProgression();
+  const unlocked = type === 'map' ? isMapUnlocked(item.id) : type === 'skin' ? isSkinUnlocked(item.id) : data.unlockedCosmetics.includes(item.id);
+  const selected = type === 'map'
+    ? document.getElementById('boardTheme')?.value === item.id
+    : type === 'skin'
+      ? document.querySelector('.ppattern[data-i="0"]')?.value === item.id
+      : data.selectedCosmetic === item.id;
+  const theme = type === 'map' ? BOARD_THEMES.find((t) => t.value === item.id) : null;
+  const colors = { neon:'#55ff9a', fire:'#ff743d', ice:'#8deaff', galaxy:'#bb91ff', venom:'#b8f542', electric:'#ffe45e' };
+  const icon = item.icon || item.name.split(' ')[0] || '✨';
+  let visual = '';
+  if (theme) {
+    visual = '<div class="shopPreviewMap" style="--shop-bg:' + theme.bg + ';--shop-bg2:' + (theme.bg2 || theme.bg) + ';--shop-grid:' + theme.grid + ';--shop-accent:' + (theme.accent || '#fff') + '"><span>' + theme.food + '</span><small>' + theme.name + '</small></div>';
+  } else if (type === 'skin') {
+    const color = colors[item.id] || '#67ef8a';
+    visual = '<div class="shopPreviewWorm" style="--preview-color:' + color + '" aria-label="Prévia animada da fantasia">' + Array.from({length:8},(_,i)=>'<i class="shopPreviewSegment' + (i===0?' head':'') + '"></i>').join('') + '</div>';
+  } else {
+    visual = '<div class="shopPreviewAccessory"><span>' + icon + '</span><small>Prévia do acessório</small></div>';
+  }
+  const actionLabel = unlocked ? (selected ? '✅ Já equipado' : '🎮 Equipar') : (data.coins >= item.cost ? '🪙 Comprar por ' + item.cost : '🪙 Faltam ' + (item.cost - data.coins));
+  const disabled = (unlocked && selected) || (!unlocked && data.coins < item.cost);
+  host.innerHTML = '<div class="shopPreviewVisual">' + visual + '</div><div class="shopPreviewInfo"><div class="shopPreviewEyebrow">PRÉ-VISUALIZAÇÃO</div><h3>' + item.name + '</h3><p>' + (item.desc || 'Personalize sua experiência na arena.') + '</p><div class="shopPreviewMeta">' + (unlocked ? '🔓 Desbloqueado' : '🔒 ' + item.cost + ' moedas') + (selected ? ' • Em uso' : '') + '</div><button type="button" class="btn shopPreviewAction" data-shop-confirm="1" ' + (disabled ? 'disabled' : '') + '>' + actionLabel + '</button></div>';
+  shop.querySelectorAll('[data-shop-type]').forEach((btn) => {
+    btn.classList.toggle('previewing', btn.dataset.shopType === type && btn.dataset.shopId === item.id);
+  });
 }
 
 export function refreshProgressionUI() {
@@ -559,13 +596,23 @@ export function refreshProgressionUI() {
 
   const shop = document.getElementById('cosmeticShop');
   if(shop){
-    shop.innerHTML='<div class="shopSectionLabel">✨ Itens</div>'+COSMETICS.map(x=>shopButton(x,'item')).join('')+
+    shop.innerHTML='<div id="shopPreview" class="shopPreview" aria-live="polite"></div>'+
+      '<div class="shopSectionLabel">✨ Itens</div>'+COSMETICS.map(x=>shopButton(x,'item')).join('')+
       '<div class="shopSectionLabel">🗺️ Mapas especiais</div>'+SHOP_MAPS.map(x=>shopButton(x,'map')).join('')+
       '<div class="shopSectionLabel">🎭 Fantasias da minhoca</div>'+SHOP_SKINS.map(x=>shopButton(x,'skin')).join('');
+    // Seleciona o item atualmente equipado na primeira abertura; as próximas atualizações
+    // mantêm a seleção da prévia sem efetuar compras por engano.
+    const activePool = activeShopPreview.type === 'map' ? SHOP_MAPS : activeShopPreview.type === 'skin' ? SHOP_SKINS : COSMETICS;
+    if (!activePool.some(x => x.id === activeShopPreview.id)) activeShopPreview = { type:'skin', id:'neon' };
     shop.querySelectorAll('[data-shop-type]').forEach(btn=>btn.addEventListener('click',()=>{
-      const type=btn.dataset.shopType,id=btn.dataset.shopId;
-      if(type==='map')buyMap(id);else if(type==='skin')buySkin(id);else buyCosmetic(id);
+      activeShopPreview = { type:btn.dataset.shopType, id:btn.dataset.shopId };
+      renderShopPreview(shop);
     }));
+    renderShopPreview(shop);
+    shop.querySelector('[data-shop-confirm]')?.addEventListener('click',()=>{
+      const { type, id } = activeShopPreview;
+      if(type==='map')buyMap(id);else if(type==='skin')buySkin(id);else buyCosmetic(id);
+    });
   }
 
   // A tela inicial lê este mesmo estado para atualizar a carteira e os destaques.
