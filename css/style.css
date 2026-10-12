@@ -7830,3 +7830,53 @@ main,
 /* v4.5.51 — resgate da recompensa diária na tela inicial */
 .homeClaimDailyReward{margin-top:8px;width:100%;min-height:38px;white-space:normal}
 .homeClaimDailyReward:disabled{opacity:.65;cursor:default;border-color:rgba(103,239,138,.3)}
+
+
+/* v4.5.54 — controles de tela cheia e backup do progresso */
+.arenaFullscreenBtn {
+  position:absolute;
+  top:8px;
+  right:8px;
+  z-index:12;
+  width:auto;
+  min-height:36px;
+  padding:7px 10px;
+  border:1px solid #ffffff55;
+  border-radius:10px;
+  background:#07101ddd;
+  color:#fff;
+  font:700 .76rem system-ui,-apple-system,Segoe UI,sans-serif;
+  cursor:pointer;
+  backdrop-filter:blur(6px);
+}
+.arena:fullscreen {
+  width:100vw;
+  height:100vh;
+  max-width:none;
+  aspect-ratio:auto;
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:#050911;
+}
+.arena:fullscreen canvas {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+.backupTools {
+  margin-top:16px;
+  padding:14px;
+  border:1px solid #2a3b59;
+  border-radius:14px;
+  background:#081321;
+}
+.backupTools h3 { margin:0 0 6px; font-size:.95rem; }
+.backupTools p { margin:5px 0 10px; color:#c5cee0; font-size:.8rem; line-height:1.45; }
+.backupToolsActions { margin-top:8px; }
+.backupToolsActions>* { flex:1 1 180px; }
+.backupProgressStatus { min-height:1.2em; margin-bottom:0!important; }
+@media(max-width:480px) {
+  .arenaFullscreenBtn { top:6px; right:6px; min-height:32px; padding:5px 7px; font-size:.68rem; }
+  .backupTools { padding:11px; }
+}
