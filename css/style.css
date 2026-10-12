@@ -2072,13 +2072,20 @@ body,.card,.panel,.gameBox,.select,.input,.tabPanel,.score,.tip {
 }
 
 .onlineSimpleLinkRow .input {
-  flex:1;
+  flex:1 1 0%;
+  width:0;
   min-width:0;
 }
 
 .onlineSimpleLinkRow .btn {
   flex:0 0 auto;
-  min-width:108px;
+  width:auto;
+  min-width:0;
+  max-width:48%;
+  padding-left:10px;
+  padding-right:10px;
+  white-space:nowrap;
+  font-size:.78rem;
 }
 
 .onlineSimpleStartBtn {
