@@ -1631,7 +1631,9 @@ document.querySelectorAll('.progressNavBtn').forEach((btn) => {
     params.set('tab', 'progresso');
     if (btn.dataset.progressSection === 'stats') params.delete('section');
     else params.set('section', btn.dataset.progressSection);
-    history.pushState({ tab: 'progresso', section: btn.dataset.progressSection }, '', location.pathname + '?' + params.toString());
+    // As seções internas da mesma página substituem o estado atual: o botão Voltar
+    // retorna à página anterior, em vez de percorrer cada subaba da Loja/Progresso.
+    history.replaceState({ tab: 'progresso', section: btn.dataset.progressSection }, '', location.pathname + '?' + params.toString());
   });
 });
 
