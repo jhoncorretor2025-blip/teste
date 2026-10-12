@@ -164,3 +164,11 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 - **Decisão:** manter joystick fixo, setas e swipe, melhorando o tratamento de pointer, a estabilidade do eixo perto de diagonais e a limpeza de toques cancelados.
 - **Por quê:** a troca repetida de eixo em diagonais e eventos multitoque podem parecer falta de resposta; um segundo dedo não deve interromper o joystick ativo.
 - **Cuidados:** preservar as quatro direções, as regras contra meia-volta, a velocidade do jogo e o caminho único de entrada online. Durante a pausa, não aceitar novas direções nem turbo.
+
+
+## v4.5.58 — feedback de recordes e progressão durante a partida
+- **Decisão:** manter a fórmula atual de pontos, combos, XP e recompensas; melhorar apenas o registro, a comparação e a apresentação do resultado.
+- **Recordes:** salvar também o maior tamanho da minhoca, além da pontuação geral e por modo. O histórico percentual usa a função existente e só registra a corrida do jogador local.
+- **Online:** quando o cliente detecta que a própria minhoca morreu, usa a última pontuação e tamanho recebidos para salvar os recordes no aparelho dele.
+- **Níveis:** mostrar a barra de XP compacta durante a partida; a barra reutiliza o cálculo e as recompensas já existentes.
+- **Cuidados:** não somar bônus de pontuação novos nem alterar colisões, dificuldade, ritmo ou regras de progressão.
