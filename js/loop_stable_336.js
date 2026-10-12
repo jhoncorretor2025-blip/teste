@@ -6,14 +6,14 @@ import { state } from './state.js';
 import { planTeams, unifyTeamColors } from './teams.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall, checkFoodConsolidation, updateFoodConsolidation } from './food.js';
 import { aiDir, hunterDir } from './ai.js';
-import { render } from './render_stable_341.js?v=4.5.59';
+import { render } from './render_stable_341.js?v=4.5.60';
 import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, trackComboForMission, trackScoreForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
 import { loadBest, saveBest, loadBestByMode, saveBestByMode, loadBestLength, saveBestLength, recordGameScore, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadSessionGamesToday, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
-import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js?v=4.5.59';
+import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js?v=4.5.60';
 import { startPerformanceRun, samplePerformanceRun, finishPerformanceRun } from './performance.js';
 import { startNegativeEvents, stopNegativeEvents, shouldSkipMovement } from './negative_events.js';
 
