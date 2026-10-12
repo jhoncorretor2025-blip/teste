@@ -1066,11 +1066,14 @@ function refreshJoinTeamChoice(info) {
   $('joinTeamChoice').options[1].textContent = `⚔️ No time adversário (time de ${info.tb})`;
 }
 $('joinCode').addEventListener('input', () => {
-  const texto = $('joinCode').value;
+  const texto = $('joinCode').value.trim();
   if (texto.includes('room=')) {
     refreshJoinTeamChoice(lerInfoDeTimes(texto));
     refreshJoinSecurityFromUrl(texto);
-  } // colou um link inteiro
+  } else {
+    refreshJoinTeamChoice(null);
+    refreshJoinSecurityFromUrl('');
+  }
 });
 
 function extractRoomCode(raw) {
@@ -1088,7 +1091,10 @@ function extractRoomCode(raw) {
 $('joinBtn').addEventListener('click', () => {
   const textoConvite = $('joinCode').value.trim();
   const code = extractRoomCode(textoConvite);
-  const parametrosConvite = paramsDoConvite(textoConvite.includes('room=') ? textoConvite : location.search);
+  const parametrosDaPagina = new URLSearchParams(location.search);
+  const eConviteAtual = textoConvite === parametrosDaPagina.get('room');
+  const origemDosParametros = textoConvite.includes('room=') ? textoConvite : (eConviteAtual ? location.search : '');
+  const parametrosConvite = paramsDoConvite(origemDosParametros);
   const linkRequiresPin = parametrosConvite.get('lock') === '1';
   const pinDoLink = normalizeRoomNumberUI(parametrosConvite.get('pin'));
   const pinDigitado = normalizeRoomNumberUI($('joinRoomPin')?.value);
