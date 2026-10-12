@@ -8533,3 +8533,46 @@ body {
 @media(prefers-reduced-motion:reduce) {
   #game .gameLevelTrack i { transition:none; }
 }
+
+
+/* v4.5.60 — correções de layout reportadas no ar */
+.onlineSimpleJoin .onlineSimpleLinkRow {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:stretch;
+  gap:8px;
+  width:100%;
+}
+.onlineSimpleJoin .onlineSimpleLinkRow .input {
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  flex:none;
+}
+.onlineSimpleJoin .onlineSimpleLinkRow .btn {
+  width:auto;
+  min-width:max-content;
+  max-width:none;
+  flex:none;
+  padding-inline:12px;
+}
+.tabPanel[data-panel="progresso"] {
+  scroll-margin-top:calc(92px + env(safe-area-inset-top));
+  padding-top:2px;
+}
+.tabPanel[data-panel="progresso"] > .progressCard {
+  margin-top:18px !important;
+}
+@media(max-width:700px) {
+  .onlineSimpleJoin .onlineSimpleLinkRow {
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:6px;
+  }
+  .onlineSimpleJoin .onlineSimpleLinkRow .btn {
+    font-size:.74rem;
+    padding-inline:9px;
+  }
+  .tabPanel[data-panel="progresso"] {
+    padding-bottom:calc(82px + env(safe-area-inset-bottom));
+  }
+}
