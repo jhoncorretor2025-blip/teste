@@ -1601,7 +1601,7 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
     const subtitles = {
       progresso: 'Recordes, partidas, conquistas e histórico em um só lugar.',
       ranking: 'Compare os recordes de quem já jogou neste aparelho.',
-      loja: 'Use suas moedas para desbloquear mapas, fantasias e acessórios para sua minhoca.',
+      loja: 'Adquira novos visuais, rastros e mapas utilizando suas moedas.',
       desafios: 'Complete objetivos diários e conquiste recompensas durante suas partidas.',
       historico: 'Consulte suas partidas anteriores e acompanhe sua evolução.',
       conquistas: 'Desbloqueie medalhas cumprindo objetivos e superando seus recordes.',
