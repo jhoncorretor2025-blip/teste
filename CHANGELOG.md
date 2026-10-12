@@ -1,3 +1,9 @@
+## [4.5.53] — 2026-10-12
+- 📱 **Convite online refinado:** botão Entrar/Copiar com espaçamento consistente e campo de texto flexível.
+- 🎯 **Desafios com respiro visual:** adiciona espaçamento superior aos indicadores para reduzir risco de ficarem encostados na navegação.
+- 🛒 **Descrição temática da Loja:** texto atualizado para destacar visuais, rastros e mapas comprados com moedas.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.53.
+
 ## [4.5.52] — 2026-10-12
 - 📱 **Convites online responsivos:** campos de link e código usam a largura disponível sem deixar o botão Entrar/Copiar ocupar a linha inteira.
 - 🎯 **Desafios sem corte no topo:** removida a rolagem automática até o card diário, que escondia os indicadores iniciais em telas pequenas.
