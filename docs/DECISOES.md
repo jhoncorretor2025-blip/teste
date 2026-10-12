@@ -180,3 +180,10 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 - **Compatibilidade:** links antigos com `lock=1` sem o parâmetro `pin` continuam pedindo os quatro números. Entrar manualmente pelo código e o modo simples permanecem disponíveis.
 - **Colagem:** ao colar um link completo, preservar seus parâmetros; não reduzir a entrada ao código antes de autenticar o convite.
 - **Cuidados:** manter o anfitrião validando o PIN recebido em `joinRequest`; não desativar a verificação de segurança no módulo de rede.
+
+
+## v4.5.60 — correções de navegação e responsividade
+- **Convite online:** usar uma grade com coluna flexível para o link/código e coluna automática para o botão, evitando que o campo encolha demais em celulares.
+- **Desafios/Progresso:** após trocar de aba, reposicionar a página depois de revelar o painel e reservar espaço para a navegação fixa/sticky.
+- **Subtítulos:** o texto padrão de Progresso deve ser distinto das descrições próprias de Loja, Ranking, Desafios e Conquistas.
+- **Cuidados:** preservar IDs, controles, navegação, dados salvos e regras da partida; validar em celular e desktop antes de mesclar.
