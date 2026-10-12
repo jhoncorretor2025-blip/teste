@@ -172,3 +172,11 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 - **Online:** quando o cliente detecta que a própria minhoca morreu, usa a última pontuação e tamanho recebidos para salvar os recordes no aparelho dele.
 - **Níveis:** mostrar a barra de XP compacta durante a partida; a barra reutiliza o cálculo e as recompensas já existentes.
 - **Cuidados:** não somar bônus de pontuação novos nem alterar colisões, dificuldade, ritmo ou regras de progressão.
+
+
+## v4.5.59 — entrada online pelo link sem PIN manual
+- **Decisão:** o link de convite de uma sala protegida inclui o PIN como autorização de acesso, para que o convidado entre com um clique. Salas abertas continuam sem PIN.
+- **Segurança:** o link protegido funciona como uma chave de acesso. Quem receber esse link poderá entrar sem saber ou digitar o PIN separadamente; compartilhar apenas com as pessoas convidadas.
+- **Compatibilidade:** links antigos com `lock=1` sem o parâmetro `pin` continuam pedindo os quatro números. Entrar manualmente pelo código e o modo simples permanecem disponíveis.
+- **Colagem:** ao colar um link completo, preservar seus parâmetros; não reduzir a entrada ao código antes de autenticar o convite.
+- **Cuidados:** manter o anfitrião validando o PIN recebido em `joinRequest`; não desativar a verificação de segurança no módulo de rede.
