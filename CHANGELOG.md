@@ -1,3 +1,8 @@
+## [4.5.51] — 2026-10-12
+- 🎁 **Recompensa diária resgatável na tela inicial:** botão para receber moedas e XP uma vez por dia, com estado visual de recompensa já resgatada.
+- 🔗 **Convites diretos confirmados:** o jogo já gera links com o código da sala e preenche/aciona a entrada automaticamente ao abrir o convite; mantido esse fluxo existente.
+- 🧭 **Próxima etapa de modos:** Contra o Tempo e Arena Encolhendo exigem integração com o ciclo da partida e sincronização multiplayer; ficam pendentes de implementação e teste, sem adicionar opções que não funcionem.
+
 ## [4.5.50] — 2026-10-12
 - 🛒 **Prévia da Loja antes da compra:** mapas, fantasias e acessórios agora mostram uma prévia selecionável; a compra/equipamento só ocorre ao confirmar no botão dedicado.
 - 🔊 **Som mais acessível:** botão de mudo na tela inicial, sincronizado com o controle de som da partida e com a preferência salva; nível novo recebe uma fanfarra curta, respeitando o mudo.
