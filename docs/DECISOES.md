@@ -158,3 +158,9 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 **Por quê:** a pressão da inimiga passa a ter uma estratégia de fuga clara e previsível.
 **Loja:** mapas especiais e fantasias premium usam somente moedas virtuais já existentes; não há pagamento real.
 **Online:** as zonas são criadas pelo anfitrião e entram no pacote de estado frequente para todos desenharem a mesma situação.
+
+
+## v4.5.57 — precisão e cancelamento seguro dos controles
+- **Decisão:** manter joystick fixo, setas e swipe, melhorando o tratamento de pointer, a estabilidade do eixo perto de diagonais e a limpeza de toques cancelados.
+- **Por quê:** a troca repetida de eixo em diagonais e eventos multitoque podem parecer falta de resposta; um segundo dedo não deve interromper o joystick ativo.
+- **Cuidados:** preservar as quatro direções, as regras contra meia-volta, a velocidade do jogo e o caminho único de entrada online. Durante a pausa, não aceitar novas direções nem turbo.
