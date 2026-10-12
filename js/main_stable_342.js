@@ -22,6 +22,111 @@ import { renderPerformanceDashboard } from './performance.js';
 // --- Multiplayer online (criar/entrar em sala) ---
 // Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
 // já confirmou antes de decidir começar (mas continua podendo começar mesmo sem todos)
+
+// Tela cheia da arena — mantém os controles do jogo dentro da área ampliada.
+const arenaFullscreenBtn = $('arenaFullscreenBtn');
+function refreshArenaFullscreenButton() {
+  if (!arenaFullscreenBtn) return;
+  const active = document.fullscreenElement === document.querySelector('.arena');
+  arenaFullscreenBtn.textContent = active ? '⤢ Sair da tela cheia' : '⛶ Tela cheia';
+  arenaFullscreenBtn.setAttribute('aria-label', active ? 'Sair da tela cheia' : 'Ativar tela cheia');
+  arenaFullscreenBtn.title = active ? 'Sair da tela cheia' : 'Ativar tela cheia';
+}
+arenaFullscreenBtn?.addEventListener('click', async () => {
+  const arena = document.querySelector('.arena');
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (arena?.requestFullscreen) await arena.requestFullscreen();
+    else {
+      $('renderErrorBanner').textContent = 'Seu navegador não oferece tela cheia nesta tela.';
+      $('renderErrorBanner').classList.remove('hidden');
+      return;
+    }
+  } catch {
+    $('renderErrorBanner').textContent = 'Não consegui ativar a tela cheia. Tente pelo navegador.';
+    $('renderErrorBanner').classList.remove('hidden');
+  }
+  refreshArenaFullscreenButton();
+});
+document.addEventListener('fullscreenchange', refreshArenaFullscreenButton);
+
+// Backup portátil do progresso: exporta apenas as chaves próprias do jogo.
+const exportProgressBtn = $('exportProgressBtn');
+const importProgressBtn = $('importProgressBtn');
+const importProgressFile = $('importProgressFile');
+const backupProgressStatus = $('backupProgressStatus');
+const BACKUP_FORMAT = 'mioquinha-progresso';
+function setBackupStatus(message, isError = false) {
+  if (!backupProgressStatus) return;
+  backupProgressStatus.textContent = message;
+  backupProgressStatus.style.color = isError ? '#ff8296' : '';
+}
+exportProgressBtn?.addEventListener('click', () => {
+  try {
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('snakeArena')) data[key] = localStorage.getItem(key);
+    }
+    const backup = { format: BACKUP_FORMAT, formatVersion: 1, exportedAt: new Date().toISOString(), data };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'mioquinha-progresso-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setBackupStatus('✅ Backup exportado! Guarde o arquivo JSON em um local seguro.');
+  } catch (error) {
+    console.error('Falha ao exportar progresso:', error);
+    setBackupStatus('❌ Não consegui exportar o progresso neste navegador.', true);
+  }
+});
+importProgressBtn?.addEventListener('click', () => importProgressFile?.click());
+importProgressFile?.addEventListener('change', async () => {
+  const file = importProgressFile.files?.[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    setBackupStatus('❌ O arquivo é muito grande. Escolha um backup de até 2 MB.', true);
+    importProgressFile.value = '';
+    return;
+  }
+  try {
+    const backup = JSON.parse(await file.text());
+    if (backup?.format !== BACKUP_FORMAT || backup?.formatVersion !== 1 ||
+        !backup.data || typeof backup.data !== 'object' || Array.isArray(backup.data)) {
+      throw new Error('Formato de backup inválido.');
+    }
+    const entries = Object.entries(backup.data);
+    if (!entries.length || entries.some(([key, value]) =>
+      !key.startsWith('snakeArena') || typeof value !== 'string' || value.length > 500000)) {
+      throw new Error('O arquivo não contém dados válidos da Mioquinha.');
+    }
+    if (!confirm('Importar este backup? Os dados atuais com as mesmas chaves serão substituídos. Esta ação não pode ser desfeita.')) {
+      setBackupStatus('Importação cancelada.');
+      return;
+    }
+    const previous = new Map(entries.map(([key]) => [key, localStorage.getItem(key)]));
+    try {
+      for (const [key, value] of entries) localStorage.setItem(key, value);
+    } catch (error) {
+      for (const [key, value] of previous) {
+        try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch {}
+      }
+      throw error;
+    }
+    setBackupStatus('✅ Progresso importado! Recarregando para atualizar moedas, conquistas e visuais…');
+    setTimeout(() => location.reload(), 900);
+  } catch (error) {
+    console.error('Falha ao importar progresso:', error);
+    setBackupStatus('❌ Arquivo inválido ou incompatível. Escolha um backup JSON exportado pela Mioquinha.', true);
+  } finally {
+    importProgressFile.value = '';
+  }
+});
+
 initProgressionUI();
 
 const readyStatus = { 0: true };
@@ -640,11 +745,18 @@ $('hostRoomSecurity')?.addEventListener('change', () => {
 
 $('copyRoom').addEventListener('click', async () => {
   const link = buildRoomLink();
+  const button = $('copyRoom');
   try {
     await navigator.clipboard.writeText(link);
-    $('copyRoom').textContent = 'Copiado! ✅';
-    setTimeout(() => $('copyRoom').textContent = 'Copiar link', 1500);
-  } catch { alert(link); }
+    button.textContent = '✓ Copiado!';
+    button.setAttribute('aria-live', 'polite');
+    setTimeout(() => {
+      button.textContent = '🔗 Copiar link da sala';
+      button.removeAttribute('aria-live');
+    }, 2000);
+  } catch {
+    alert('Não consegui copiar automaticamente. Copie este link:\n' + link);
+  }
 });
 
 // Copia só o código da sala (sem o link inteiro), pra quem prefere mandar assim
