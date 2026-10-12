@@ -8473,3 +8473,63 @@ body {
 @media(prefers-reduced-motion:reduce) {
   #game .joystick { transition:none; }
 }
+
+
+/* v4.5.58 — progressão de nível visível durante a partida */
+#game .gameProgressMini {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:25px;
+  box-sizing:border-box;
+  margin:0 0 7px;
+  padding:4px 9px;
+  border:1px solid rgba(119,190,255,.22);
+  border-radius:9px;
+  background:linear-gradient(90deg,rgba(16,34,57,.92),rgba(21,28,48,.78));
+  color:var(--text,#eaf2ff);
+  font-size:.76rem;
+  font-weight:800;
+  line-height:1.25;
+}
+#game .gameProgressMini > span {
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#game .gameLevelTrack {
+  flex:0 0 clamp(58px,12vw,116px);
+  height:6px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(255,255,255,.13);
+}
+#game .gameLevelTrack i {
+  display:block;
+  width:0;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#37d67a,#56d8ff);
+  box-shadow:0 0 8px rgba(86,216,255,.35);
+  transition:width .18s ease;
+}
+.lightMode #game .gameProgressMini {
+  background:linear-gradient(90deg,rgba(236,246,255,.96),rgba(244,240,255,.92));
+  border-color:rgba(60,100,150,.2);
+  color:#17243a;
+}
+@media(max-width:600px) {
+  #game .gameProgressMini {
+    min-height:23px;
+    margin-bottom:5px;
+    padding:3px 7px;
+    font-size:.69rem;
+    gap:7px;
+  }
+  #game .gameLevelTrack { flex-basis:64px; height:5px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #game .gameLevelTrack i { transition:none; }
+}
