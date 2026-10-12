@@ -518,7 +518,8 @@ $('onlineSimpleJoinBtn')?.addEventListener('click', () => {
     $('onlineSimpleStatus').textContent = '⚠️ O código da sala precisa ter 4 números.';
     return;
   }
-  $('joinCode').value = code;
+  // Preserve o link completo para aproveitar o acesso incluído no convite protegido.
+  $('joinCode').value = value.includes('room=') ? value : code;
   $('joinBtn').click();
 });
 
@@ -980,7 +981,12 @@ function buildRoomLink() {
     theme: state.theme,
     noWalls: state.noWalls ? '1' : '0',
   });
-  if (currentRoomProtected) params.set('lock', '1');
+  if (currentRoomProtected) {
+    params.set('lock', '1');
+    // O próprio convite carrega a autorização: quem tem o link entra sem digitar o PIN.
+    // Para salas protegidas, trate esse link como uma chave de acesso e compartilhe só com convidados.
+    if (normalizeRoomNumberUI(currentRoomPin).length === 4) params.set('pin', normalizeRoomNumberUI(currentRoomPin));
+  }
   if ($('teamMode').checked) {
     params.set('fmt', 'teams');
     params.set('ta', String(state.teamSizeMine));
@@ -1027,11 +1033,30 @@ function lerInfoDeTimes(texto) {
 }
 
 // Mostra (ou esconde) a escolha "no time de quem criou / no adversário" pra quem vai entrar
-function refreshJoinSecurityFromUrl() {
-  const locked = new URLSearchParams(location.search).get('lock') === '1';
-  $('joinRoomPinRow')?.classList.toggle('hidden', !locked);
-  if (locked) $('joinStatus').textContent = '🔐 Esta sala tem senha. Digite a senha para entrar.';
-  return locked;
+function paramsDoConvite(texto = location.search) {
+  try { return new URL(String(texto || '').trim(), location.origin).searchParams; }
+  catch { return new URLSearchParams(); }
+}
+
+// Mostra o campo de PIN apenas em convites protegidos antigos que não carregam autorização.
+// O link novo contém o PIN e funciona como convite de acesso com um clique.
+function refreshJoinSecurityFromUrl(texto = location.search) {
+  const params = paramsDoConvite(texto);
+  const locked = params.get('lock') === '1';
+  const pinDoLink = normalizeRoomNumberUI(params.get('pin'));
+  const temAcessoNoLink = locked && pinDoLink.length === 4;
+  const precisaDigitarPin = locked && !temAcessoNoLink;
+  $('joinRoomPinRow')?.classList.toggle('hidden', !precisaDigitarPin);
+  if (temAcessoNoLink && $('joinRoomPin')) {
+    $('joinRoomPin').value = pinDoLink;
+    $('joinStatus').textContent = '🔗 Convite protegido reconhecido. Entrando sem precisar digitar a senha.';
+  } else if (precisaDigitarPin) {
+    if ($('joinRoomPin')) $('joinRoomPin').value = '';
+    $('joinStatus').textContent = '🔐 Esta sala pede senha. Convites antigos podem precisar dos 4 números.';
+  } else if ($('joinRoomPin')) {
+    $('joinRoomPin').value = '';
+  }
+  return precisaDigitarPin;
 }
 
 function refreshJoinTeamChoice(info) {
@@ -1044,7 +1069,7 @@ $('joinCode').addEventListener('input', () => {
   const texto = $('joinCode').value;
   if (texto.includes('room=')) {
     refreshJoinTeamChoice(lerInfoDeTimes(texto));
-    refreshJoinSecurityFromUrl();
+    refreshJoinSecurityFromUrl(texto);
   } // colou um link inteiro
 });
 
@@ -1061,9 +1086,13 @@ function extractRoomCode(raw) {
 }
 
 $('joinBtn').addEventListener('click', () => {
-  const code = extractRoomCode($('joinCode').value);
-  const pin = normalizeRoomNumberUI($('joinRoomPin')?.value);
-  const linkRequiresPin = new URLSearchParams(location.search).get('lock') === '1';
+  const textoConvite = $('joinCode').value.trim();
+  const code = extractRoomCode(textoConvite);
+  const parametrosConvite = paramsDoConvite(textoConvite.includes('room=') ? textoConvite : location.search);
+  const linkRequiresPin = parametrosConvite.get('lock') === '1';
+  const pinDoLink = normalizeRoomNumberUI(parametrosConvite.get('pin'));
+  const pinDigitado = normalizeRoomNumberUI($('joinRoomPin')?.value);
+  const pin = pinDoLink.length === 4 ? pinDoLink : pinDigitado;
 
   if (linkRequiresPin && pin.length !== 4) {
     $('joinRoomPinRow')?.classList.remove('hidden');
@@ -1191,8 +1220,8 @@ if (urlAction.get('quickplay') === '1') {
 if (roomFromUrl) {
   $('joinCode').value = roomFromUrl;
   refreshJoinTeamChoice(lerInfoDeTimes(location.search));
-  const linkLocked = refreshJoinSecurityFromUrl();
-  if (!linkLocked) {
+  const precisaDigitarPin = refreshJoinSecurityFromUrl(location.search);
+  if (!precisaDigitarPin) {
     setTimeout(() => $('joinBtn')?.click(), 350);
   } else {
     setTimeout(() => $('joinRoomPin')?.focus(), 150);
