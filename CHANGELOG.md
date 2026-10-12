@@ -1,3 +1,11 @@
+## [4.5.59] — 2026-10-12
+- 🔗 **Convite protegido sem digitar PIN:** o link de uma sala protegida inclui a autorização necessária; ao abrir o convite, o jogo entra automaticamente.
+- 📋 **Colar link completo:** ao colar um convite no modo simples ou completo, preserva os parâmetros de acesso e de times em vez de reduzir o conteúdo ao código.
+- 🔐 **Salas antigas continuam compatíveis:** links protegidos antigos, sem autorização no próprio link, ainda pedem o PIN; entrada manual por código e opção de proteger a sala permanecem disponíveis.
+- 🧭 **Entrada automática mais robusta:** reconhece o PIN presente no convite direto ou colado, esconde o campo quando não é necessário e evita reutilizar PIN de outro convite.
+- 🧪 **Teste ponta a ponta ampliado:** adiciona cenários de link protegido aberto diretamente e colado no formulário.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache, version.txt e imports ativos atualizados para 4.5.59.
+
 ## [4.5.58] — 2026-10-12
 - 🏆 **Resumo de partida:** ao morrer, mostra a pontuação final, novo recorde geral ou do modo e comparação com partidas anteriores.
 - 🐍 **Recorde de tamanho corrigido:** passa a salvar o maior comprimento da minhoca e atualiza o indicador correspondente no Progresso.
