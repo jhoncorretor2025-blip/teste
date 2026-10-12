@@ -1,3 +1,11 @@
+## [4.5.57] — 2026-10-12
+- 🎮 **Joystick mais previsível:** pequena zona morta e estabilização do eixo perto das diagonais, sem perder as quatro direções.
+- 👆 **Multitoque protegido:** um segundo dedo não interrompe o joystick ativo; captura e cancelamento de toque tratados com segurança.
+- 🛑 **Pausa respeitada:** setas, joystick, swipe e turbo não alteram a partida enquanto estiver pausada ou fora de execução.
+- ↔️ **Swipe mais confiável:** o gesto fica associado ao dedo que iniciou e é limpo se o navegador cancelar o toque.
+- ✨ **Feedback imediato:** o joystick destaca quando está ativo e os botões de direção respondem melhor ao toque.
+- 🔄 **Cache atualizado:** importação ativa do módulo de controles com identificador v4.5.57; versão sincronizada nos arquivos obrigatórios.
+
 ## [4.5.56] — 2026-10-12
 - 📱 **Arena mobile ajustada:** modo maximizado usa a área útil da tela sem rolagem da página.
 - 🎮 **Controles de toque:** joystick, setas, alternador e turbo com alvos maiores e respeitando as áreas seguras do aparelho.
