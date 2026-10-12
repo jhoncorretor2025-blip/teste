@@ -1,5 +1,7 @@
 ## [4.5.50] — 2026-10-12
 - 🛒 **Prévia da Loja antes da compra:** mapas, fantasias e acessórios agora mostram uma prévia selecionável; a compra/equipamento só ocorre ao confirmar no botão dedicado.
+- 🔊 **Som mais acessível:** botão de mudo na tela inicial, sincronizado com o controle de som da partida e com a preferência salva; nível novo recebe uma fanfarra curta, respeitando o mudo.
+- ✨ **Feedback audiovisual:** mantém partículas e sons existentes ao coletar itens e colidir; adiciona destaque sonoro à subida de nível.
 - 🧭 **Voltar do navegador mais previsível:** trocar entre seções internas de Progresso substitui o estado atual do histórico, evitando uma pilha de entradas para cada subaba.
 - 🧩 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.50.
 
