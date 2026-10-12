@@ -490,8 +490,8 @@ $('onlineSimpleCopyBtn')?.addEventListener('click', async () => {
   const link = buildRoomLink();
   try {
     await navigator.clipboard.writeText(link);
-    $('onlineSimpleCopyBtn').textContent = 'Copiado! ✅';
-    setTimeout(() => { $('onlineSimpleCopyBtn').textContent = '🔗 Copiar link'; }, 1600);
+    $('onlineSimpleCopyBtn').textContent = '✓ Copiado!';
+    setTimeout(() => { $('onlineSimpleCopyBtn').textContent = '🔗 Copiar link'; }, 2000);
   } catch {
     alert(link);
   }
@@ -764,8 +764,8 @@ $('copyRoomCode').addEventListener('click', async () => {
   const code = $('roomCode').textContent;
   try {
     await navigator.clipboard.writeText(code);
-    $('copyRoomCode').textContent = 'Copiado! ✅';
-    setTimeout(() => $('copyRoomCode').textContent = 'Copiar só o código', 1500);
+    $('copyRoomCode').textContent = '✓ Copiado!';
+    setTimeout(() => $('copyRoomCode').textContent = 'Copiar só o código', 2000);
   } catch { alert(code); }
 });
 
