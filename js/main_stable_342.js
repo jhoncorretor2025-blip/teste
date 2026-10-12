@@ -16,7 +16,7 @@ import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net_stable_360.js';
-import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, xpForNextLevel, SHOP_MAPS } from './progression.js';
+import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, xpForNextLevel, SHOP_MAPS, claimStreakReward, hasClaimedStreakRewardToday } from './progression.js';
 import { renderPerformanceDashboard } from './performance.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
@@ -1134,6 +1134,13 @@ function refreshHomeDashboard() {
   $('homeStreakValue')?.closest('.homeStreakCard')?.classList.toggle('streakActive', streak > 0);
   const streakReward = getNextStreakReward(streak);
   set('homeStreakReward', `🎁 Dia ${streakReward.day}: +${streakReward.coins} 🪙 +${streakReward.xp} XP`);
+  const claimButton = $('homeClaimDailyReward');
+  if (claimButton) {
+    const claimed = hasClaimedStreakRewardToday();
+    claimButton.disabled = claimed;
+    claimButton.textContent = claimed ? '✅ Recompensa resgatada hoje' : '🎁 Resgatar recompensa';
+    claimButton.setAttribute('aria-label', claimed ? 'Recompensa diária já resgatada' : 'Resgatar recompensa diária');
+  }
 
   const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
   const mapNames = { small: 'Pequeno', medium: 'Médio', large: 'Grande' };
@@ -1178,6 +1185,14 @@ function refreshHomeDashboard() {
   $('hunterHomeOffBtn')?.classList.toggle('active', !hunterOn);
 }
 document.addEventListener('progressionUpdated', refreshHomeDashboard);
+$('homeClaimDailyReward')?.addEventListener('click', () => {
+  const result = claimStreakReward(loadStreakDays());
+  if (!result.claimed) {
+    refreshHomeDashboard();
+    return;
+  }
+  refreshHomeDashboard();
+});
 document.addEventListener('performanceUpdated', () => setTimeout(renderPerformanceDashboard, 80));
 
 function doStart() {
