@@ -6,7 +6,7 @@
 import { $, tapVibrate } from './utils.js';
 import { CK, KD, D, BOOST_KEYS, BOOST_COOLDOWN } from './config.js';
 import { state } from './state.js';
-import { tryBoost } from './loop_stable_336.js?v=4.5.60';
+import { tryBoost } from './loop_stable_336.js?v=4.5.61';
 import { isOnline, isHost, mySlot, sendInput } from './net.js';
 import { transformDirection, canTurn } from './negative_events.js';
 
