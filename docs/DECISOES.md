@@ -158,3 +158,32 @@ Para uma IA não **desfazer sem querer** algo que foi decidido de propósito. Ca
 **Por quê:** a pressão da inimiga passa a ter uma estratégia de fuga clara e previsível.
 **Loja:** mapas especiais e fantasias premium usam somente moedas virtuais já existentes; não há pagamento real.
 **Online:** as zonas são criadas pelo anfitrião e entram no pacote de estado frequente para todos desenharem a mesma situação.
+
+
+## v4.5.57 — precisão e cancelamento seguro dos controles
+- **Decisão:** manter joystick fixo, setas e swipe, melhorando o tratamento de pointer, a estabilidade do eixo perto de diagonais e a limpeza de toques cancelados.
+- **Por quê:** a troca repetida de eixo em diagonais e eventos multitoque podem parecer falta de resposta; um segundo dedo não deve interromper o joystick ativo.
+- **Cuidados:** preservar as quatro direções, as regras contra meia-volta, a velocidade do jogo e o caminho único de entrada online. Durante a pausa, não aceitar novas direções nem turbo.
+
+
+## v4.5.58 — feedback de recordes e progressão durante a partida
+- **Decisão:** manter a fórmula atual de pontos, combos, XP e recompensas; melhorar apenas o registro, a comparação e a apresentação do resultado.
+- **Recordes:** salvar também o maior tamanho da minhoca, além da pontuação geral e por modo. O histórico percentual usa a função existente e só registra a corrida do jogador local.
+- **Online:** quando o cliente detecta que a própria minhoca morreu, usa a última pontuação e tamanho recebidos para salvar os recordes no aparelho dele.
+- **Níveis:** mostrar a barra de XP compacta durante a partida; a barra reutiliza o cálculo e as recompensas já existentes.
+- **Cuidados:** não somar bônus de pontuação novos nem alterar colisões, dificuldade, ritmo ou regras de progressão.
+
+
+## v4.5.59 — entrada online pelo link sem PIN manual
+- **Decisão:** o link de convite de uma sala protegida inclui o PIN como autorização de acesso, para que o convidado entre com um clique. Salas abertas continuam sem PIN.
+- **Segurança:** o link protegido funciona como uma chave de acesso. Quem receber esse link poderá entrar sem saber ou digitar o PIN separadamente; compartilhar apenas com as pessoas convidadas.
+- **Compatibilidade:** links antigos com `lock=1` sem o parâmetro `pin` continuam pedindo os quatro números. Entrar manualmente pelo código e o modo simples permanecem disponíveis.
+- **Colagem:** ao colar um link completo, preservar seus parâmetros; não reduzir a entrada ao código antes de autenticar o convite.
+- **Cuidados:** manter o anfitrião validando o PIN recebido em `joinRequest`; não desativar a verificação de segurança no módulo de rede.
+
+
+## v4.5.60 — correções de navegação e responsividade
+- **Convite online:** usar uma grade com coluna flexível para o link/código e coluna automática para o botão, evitando que o campo encolha demais em celulares.
+- **Desafios/Progresso:** após trocar de aba, reposicionar a página depois de revelar o painel e reservar espaço para a navegação fixa/sticky.
+- **Subtítulos:** o texto padrão de Progresso deve ser distinto das descrições próprias de Loja, Ranking, Desafios e Conquistas.
+- **Cuidados:** preservar IDs, controles, navegação, dados salvos e regras da partida; validar em celular e desktop antes de mesclar.

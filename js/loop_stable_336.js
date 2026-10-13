@@ -6,14 +6,14 @@ import { state } from './state.js';
 import { planTeams, unifyTeamColors } from './teams.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall, checkFoodConsolidation, updateFoodConsolidation } from './food.js';
 import { aiDir, hunterDir } from './ai.js';
-import { render } from './render_stable_341.js';
+import { render } from './render_stable_341.js?v=4.5.61';
 import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, trackComboForMission, trackScoreForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
-import { saveBest, saveBestByMode, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadSessionGamesToday, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
+import { loadBest, saveBest, loadBestByMode, saveBestByMode, loadBestLength, saveBestLength, recordGameScore, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadSessionGamesToday, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
-import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js';
+import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js?v=4.5.61';
 import { startPerformanceRun, samplePerformanceRun, finishPerformanceRun } from './performance.js';
 import { startNegativeEvents, stopNegativeEvents, shouldSkipMovement } from './negative_events.js';
 
@@ -428,11 +428,9 @@ export function resumeSavedGame(snap) {
   $('overlay').classList.add('hidden');
   $('badge').textContent = (state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO') + (state.noWalls ? ' 🌀' : '');
   const spd = SPEEDS.find((s) => s.value === state.speed) || SPEEDS[1];
-  // Assistência mobile: em telas de toque, damos 15% mais tempo entre passos.
-  // Isso melhora a janela para virar sem alterar a velocidade escolhida no PC.
-  const mobileAssist = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)')?.matches;
-  const baseInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
-  currentInterval = mobileAssist ? Math.round(baseInterval * 1.15) : baseInterval;
+  // A opção escolhida define o mesmo ritmo em computador e celular.
+  // Não aplicar multiplicadores por tipo de ponteiro: isso fazia a velocidade divergir entre aparelhos.
+  currentInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
   state.paused = false;
   state.running = true;
   render();
@@ -499,11 +497,9 @@ export function startGame() {
   render();
   // A velocidade escolhida no menu define o ritmo base; o Turbo Worms roda mais rápido ainda
   const spd = SPEEDS.find(s => s.value === state.speed) || SPEEDS[1];
-  // Assistência mobile: em telas de toque, damos 15% mais tempo entre passos.
-  // Isso melhora a janela para virar sem alterar a velocidade escolhida no PC.
-  const mobileAssist = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)')?.matches;
-  const baseInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
-  currentInterval = mobileAssist ? Math.round(baseInterval * 1.15) : baseInterval;
+  // A opção escolhida define o mesmo ritmo em computador e celular.
+  // Não aplicar multiplicadores por tipo de ponteiro: isso fazia a velocidade divergir entre aparelhos.
+  currentInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
 
   // Contagem regressiva "3, 2, 1, VAI!" antes de começar de verdade — melhoria visual #8
   runCountdown(3, () => {
@@ -571,6 +567,40 @@ export function tryBoost(i) {
   return true;
 }
 
+// Registra a pontuação, o recorde por modo, o maior tamanho e a comparação com partidas anteriores.
+// Os pontos do jogo não são alterados por este resumo: ele só guarda e apresenta resultados.
+function persistRunRecords(i, survivedSec, stats = null) {
+  const runScore = Math.max(0, Number(stats?.score ?? state.scores[i]) || 0);
+  const runLength = Math.max(0, Number(stats?.length ?? state.snakes[i]?.length) || 0);
+  const previousBest = loadBest();
+  const previousModeBest = loadBestByMode(state.mode, state.tournamentMode);
+  const previousLengthBest = loadBestLength();
+  const newScoreRecord = runScore > previousBest;
+  const newModeRecord = runScore > previousModeBest;
+  const newLengthRecord = runLength > Math.max(3, previousLengthBest);
+
+  saveBest(runScore);
+  saveBestByMode(state.mode, state.tournamentMode, runScore);
+  saveBestLength(runLength);
+  state.best = Math.max(Number(state.best) || 0, runScore);
+  if (state.types[i] === 'human') addToLeaderboard(state.names[i], runScore, survivedSec * 1000);
+
+  // Cada aparelho registra a comparação do próprio jogador; o anfitrião não grava
+  // a pontuação dos amigos online como se fosse o histórico pessoal deles.
+  if (i !== mySlot) return null;
+  const comparison = runScore > 0 ? recordGameScore(runScore) : { percentual:null };
+  const line1 = newScoreRecord
+    ? `🏆 NOVO RECORDE: ${runScore} pontos!`
+    : newModeRecord
+      ? `🥇 Recorde do modo: ${runScore} pontos`
+      : `⭐ ${runScore} pontos • recorde ${Math.max(previousBest, runScore)}`;
+  const line2 = [
+    newLengthRecord ? `🐍 Novo tamanho: ${runLength}` : `🐍 Maior: ${Math.max(previousLengthBest, runLength)}`,
+    comparison.percentual === null ? '' : `melhor que ${comparison.percentual}%`
+  ].filter(Boolean).join(' • ');
+  return { sub:`${line1}\n${line2}`, score:runScore, length:runLength, newScoreRecord, newModeRecord, newLengthRecord };
+}
+
 // Mata uma minhoca: derrama comida, faz explosão, som/vibração e guarda o recorde
 export function kill(i, killer = -1) {
   trackDeathForMission(i);
@@ -583,10 +613,7 @@ export function kill(i, killer = -1) {
     finishPerformanceRun({ score: runScore, length: runLength, food: runFood, survivedSec, reason: 'derrota' });
     awardLeagueRun({ score: runScore, length: runLength, survivedSec });
   }
-  saveBest(state.scores[i]);
-  saveBestByMode(state.mode, state.tournamentMode, state.scores[i]);
-  state.best = Math.max(state.best, state.scores[i]);
-  if (state.types[i] === 'human') addToLeaderboard(state.names[i], state.scores[i], survivedSec * 1000);
+  const recordSummary = persistRunRecords(i, survivedSec);
   dropFood(i);
   const h = state.snakes[i]?.[0];
   if (h) burst(h.x, h.y, state.colors[i], 24);
@@ -611,7 +638,7 @@ export function kill(i, killer = -1) {
   }
   if (i === mySlot) {
     const quemMatou = killer >= 0 && killer < state.count ? (state.names[killer] || `Jogador ${killer + 1}`) : null; // diz QUEM eliminou
-    state.deathMessage = { text: quemMatou ? `💀 ${quemMatou} te eliminou!` : '💀 Você morreu!', until: Date.now() + 1600 };
+    state.deathMessage = { text: quemMatou ? `💀 ${quemMatou} te eliminou!` : '💀 Você morreu!', sub:recordSummary?.sub || `⭐ ${Math.max(0, Number(state.scores[i]) || 0)} pontos`, until: Date.now() + 2800 };
   }
 }
 
@@ -1666,12 +1693,16 @@ export function applyRemoteState(msg) {
     trackProgressionEvent('score', state.scores[my] || 0);
     trackProgressionEvent('length', state.snakes[my]?.length || 0);
     trackProgressionEvent('survive', Math.floor((Date.now() - remoteProgressSnapshot.runStartedAt) / 1000));
-  } else if (previousAlive && previousScore > 0) {
-    awardLeagueRun({
-      score: previousScore,
-      length: previousLength,
-      survivedSec: Math.floor((Date.now() - remoteProgressSnapshot.runStartedAt) / 1000)
-    });
+  } else if (previousAlive) {
+    const survivedSec = Math.floor((Date.now() - remoteProgressSnapshot.runStartedAt) / 1000);
+    if (previousScore > 0) {
+      awardLeagueRun({ score:previousScore, length:previousLength, survivedSec });
+    }
+    const recordSummary = persistRunRecords(mySlot, survivedSec, { score:previousScore, length:previousLength });
+    if (state.deathMessage) {
+      state.deathMessage.sub = recordSummary?.sub || `⭐ ${Math.max(0, Number(previousScore) || 0)} pontos`;
+      state.deathMessage.until = Date.now() + 2800;
+    }
   }
   remoteProgressSnapshot = {
     alive:!!state.alive[my],

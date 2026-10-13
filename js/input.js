@@ -6,7 +6,7 @@
 import { $, tapVibrate } from './utils.js';
 import { CK, KD, D, BOOST_KEYS, BOOST_COOLDOWN } from './config.js';
 import { state } from './state.js';
-import { tryBoost } from './loop_stable_336.js';
+import { tryBoost } from './loop_stable_336.js?v=4.5.61';
 import { isOnline, isHost, mySlot, sendInput } from './net.js';
 import { transformDirection, canTurn } from './negative_events.js';
 
@@ -23,6 +23,8 @@ export function setDir(i, d) {
 
 // Move a "minha" minhoca — local (host/offline) manda direto, cliente online manda pro anfitrião
 function moveMine(d) {
+  // Evita que toques durante pausa ou fora de uma partida alterem a próxima direção.
+  if (!state.running || state.paused) return;
   if (isOnline() && !isHost()) {
     const previous = state.inputPredictionDir || state.dirs[mySlot];
     if (reverse(previous, d)) return;
@@ -34,6 +36,7 @@ function moveMine(d) {
 }
 
 function boostMine() {
+  if (!state.running || state.paused) return;
   if (isOnline() && !isHost()) sendInput({ type: 'boost' });
   else tryBoost(mySlot);
 }
@@ -117,65 +120,100 @@ export function setupInput() {
   });
 
   let lastJoystickDir = null;
+  let lastJoystickAxis = null;
+  const joystickEl = $('joystick');
+  const stickEl = $('stick');
+
+  function resetJoystick(pointerId = null) {
+    // Um segundo dedo que solte o controle não deve interromper o dedo que o conduz.
+    if (pointerId !== null && state.joyId !== pointerId) return;
+    const activeId = state.joyId;
+    state.joyId = null;
+    lastJoystickDir = null;
+    lastJoystickAxis = null;
+    joystickEl.classList.remove('is-active');
+    stickEl.style.transform = 'translate(0,0)';
+    if (activeId !== null && activeId !== undefined) {
+      try {
+        if (joystickEl.hasPointerCapture?.(activeId)) joystickEl.releasePointerCapture(activeId);
+      } catch {}
+    }
+  }
 
   function joystickMove(e) {
-    const r = $('joystick').getBoundingClientRect();
+    const r = joystickEl.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const x = e.clientX - cx, y = e.clientY - cy;
     const ax = Math.abs(x), ay = Math.abs(y);
-    // O controle precisa responder com pouco arrasto, mas sem trocar de direção por
-    // pequenos tremores do dedo. O limite de 6 px deixa a curva mais imediata.
-    if (Math.max(ax, ay) < 6) return;
+    const distance = Math.hypot(x, y);
+    // Zona morta pequena e proporcional: evita tremores sem exigir um arrasto longo.
+    if (distance < Math.max(7, r.width * 0.055)) return;
 
-    const dir = ax > ay
+    // Mantém o eixo atual quando o dedo está quase na diagonal. Isso reduz oscilações
+    // entre horizontal e vertical, sem tirar a resposta quando a pessoa muda de rumo.
+    let axis;
+    if (ax > ay * 1.12) axis = 'x';
+    else if (ay > ax * 1.12) axis = 'y';
+    else axis = lastJoystickAxis || (ax >= ay ? 'x' : 'y');
+    lastJoystickAxis = axis;
+
+    const dir = axis === 'x'
       ? (x > 0 ? D.right : D.left)
       : (y > 0 ? D.down : D.up);
 
-    // Envia uma direção só quando ela realmente mudou. Isso deixa o toque local mais
-    // estável e evita uma enxurrada de mensagens quando o jogador está online.
+    // Envia só quando a direção muda: resposta imediata com menos mensagens online.
     if (!lastJoystickDir || dir.x !== lastJoystickDir.x || dir.y !== lastJoystickDir.y) {
       moveMine(dir);
       lastJoystickDir = dir;
     }
 
     const max = Math.max(22, r.width * 0.38);
-    const m = Math.min(max, Math.hypot(x, y)), a = Math.atan2(y, x);
-    $('stick').style.transform = `translate(${Math.cos(a) * m}px,${Math.sin(a) * m}px)`;
+    const m = Math.min(max, distance), a = Math.atan2(y, x);
+    stickEl.style.transform = `translate(${Math.cos(a) * m}px,${Math.sin(a) * m}px)`;
   }
 
-  $('joystick').addEventListener('pointerdown', e => {
+  joystickEl.addEventListener('pointerdown', e => {
+    if (state.joyId !== null && state.joyId !== undefined) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
     tapVibrate();
     state.joyId = e.pointerId;
-    $('joystick').setPointerCapture(state.joyId);
+    joystickEl.classList.add('is-active');
+    try { joystickEl.setPointerCapture(e.pointerId); } catch {}
     joystickMove(e);
   });
-  $('joystick').addEventListener('pointermove', e => {
+  joystickEl.addEventListener('pointermove', e => {
     if (e.pointerId === state.joyId) { e.preventDefault(); joystickMove(e); }
   });
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev =>
-    $('joystick').addEventListener(ev, () => {
-      state.joyId = null;
-      lastJoystickDir = null;
-      $('stick').style.transform = 'translate(0,0)';
-    })
+    joystickEl.addEventListener(ev, e => resetJoystick(e.pointerId))
   );
+
+  // Se o navegador perder o foco ou o app for para segundo plano, nenhum toque fica preso.
+  window.addEventListener('blur', () => resetJoystick());
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) resetJoystick();
+  });
 
   // Arrastar o dedo direto na arena (swipe) — outro jeito de controlar, sem bolinha nem botão
   let swipeStart = null;
   const arenaEl = $('arenaCanvas');
   if (arenaEl) {
     arenaEl.addEventListener('pointerdown', (e) => {
-      if (state.touchControl !== 'swipe') return;
-      swipeStart = { x: e.clientX, y: e.clientY };
+      if (state.touchControl !== 'swipe' || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      swipeStart = { x: e.clientX, y: e.clientY, pointerId: e.pointerId };
+      try { arenaEl.setPointerCapture(e.pointerId); } catch {}
     });
     arenaEl.addEventListener('pointerup', (e) => {
-      if (state.touchControl !== 'swipe' || !swipeStart) return;
+      if (state.touchControl !== 'swipe' || !swipeStart || e.pointerId !== swipeStart.pointerId) return;
       const dx = e.clientX - swipeStart.x, dy = e.clientY - swipeStart.y;
       swipeStart = null;
       if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return; // arrasto curto demais, ignora
       moveMine(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? D.right : D.left) : (dy > 0 ? D.down : D.up));
     });
+    ['pointercancel', 'lostpointercapture'].forEach(ev => arenaEl.addEventListener(ev, (e) => {
+      if (swipeStart && e.pointerId === swipeStart.pointerId) swipeStart = null;
+    }));
 
     // Duplo toque na arena também ativa o turbo — alternativa ao botão dedicado.
     // Só funciona no joystick e nas setas — no modo "arrastar o dedo" (swipe), jogar

@@ -2582,19 +2582,33 @@ function draw() {
     ctx.restore();
   }
 
-  // Aviso grande e legível de "Você morreu" — bem no centro, letra grande, com contorno
+  // Resultado da partida: pontuação, recordes e comparação ficam legíveis no PC e no celular.
   if (state.deathMessage && Date.now() < state.deathMessage.until) {
     const left = state.deathMessage.until - Date.now();
     ctx.save();
-    ctx.globalAlpha = Math.min(1, left / 300);
-    ctx.font = `900 ${Math.round(Math.min(canvas.width, canvas.height) * 0.09)}px system-ui, sans-serif`;
+    ctx.globalAlpha = Math.min(1, left / 420);
+    const minSide = Math.min(canvas.width, canvas.height);
+    const hasSummary = !!state.deathMessage.sub;
+    ctx.font = `900 ${Math.round(minSide * (hasSummary ? 0.072 : 0.09))}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.lineWidth = 8;
-    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = Math.max(3, minSide * 0.009);
+    ctx.strokeStyle = 'rgba(0,0,0,0.88)';
     ctx.fillStyle = '#ff5577';
-    ctx.strokeText(state.deathMessage.text, canvas.width / 2, canvas.height * 0.42);
-    ctx.fillText(state.deathMessage.text, canvas.width / 2, canvas.height * 0.42);
+    const titleY = hasSummary ? canvas.height * 0.395 : canvas.height * 0.42;
+    ctx.strokeText(state.deathMessage.text, canvas.width / 2, titleY);
+    ctx.fillText(state.deathMessage.text, canvas.width / 2, titleY);
+    if (hasSummary) {
+      const lines = String(state.deathMessage.sub).split('\n').slice(0, 2);
+      ctx.font = `800 ${Math.max(12, Math.round(minSide * 0.032))}px system-ui, sans-serif`;
+      ctx.lineWidth = Math.max(2, minSide * 0.004);
+      ctx.fillStyle = '#f4f8ff';
+      lines.forEach((line, index) => {
+        const y = canvas.height * 0.465 + index * Math.max(18, minSide * 0.043);
+        ctx.strokeText(line, canvas.width / 2, y);
+        ctx.fillText(line, canvas.width / 2, y);
+      });
+    }
     ctx.restore();
   }
 

@@ -7,21 +7,126 @@ import { VERSION, COLORS, ZOOM_LEVELS, REACTIONS, ACHIEVEMENTS, BOARD_THEMES, SN
 import { planTeams } from './teams.js';
 import { state } from './state.js';
 import { makePlayers, label } from './players.js';
-import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop_stable_336.js';
-import { render } from './render_stable_341.js';
-import { setupInput, setDir } from './input.js';
+import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryBoost, updateGamesPlayedBadge, switchScreen, updateSessionStatsDisplay, loadSavedGame, clearSavedGame, resumeSavedGame } from './loop_stable_336.js?v=4.5.61';
+import { render } from './render_stable_341.js?v=4.5.61';
+import { setupInput, setDir } from './input.js?v=4.5.61';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
 import { loadTeamPrefs, saveTeamPrefs, loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadBestLength, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings, loadTotalPlaytime, loadTodayPlaytime, loadPlaytimeHistory, formatPlaytime } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
 import * as net from './net_stable_360.js';
-import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, xpForNextLevel, SHOP_MAPS } from './progression.js';
+import { initProgressionUI, addLeaguePoints, isMapUnlocked, refreshProgressionUI, loadProgression, getLeagueInfo, getNextStreakReward, xpForNextLevel, SHOP_MAPS, claimStreakReward, hasClaimedStreakRewardToday } from './progression.js?v=4.5.61';
 import { renderPerformanceDashboard } from './performance.js';
 
 // --- Multiplayer online (criar/entrar em sala) ---
 // Sistema de "pronto" — cada cliente avisa quando tá preparado, o anfitrião vê quem
 // já confirmou antes de decidir começar (mas continua podendo começar mesmo sem todos)
+
+// Tela cheia da arena — mantém os controles do jogo dentro da área ampliada.
+const arenaFullscreenBtn = $('arenaFullscreenBtn');
+function refreshArenaFullscreenButton() {
+  if (!arenaFullscreenBtn) return;
+  const active = document.fullscreenElement === document.querySelector('.arena');
+  arenaFullscreenBtn.textContent = active ? '⤢ Sair da tela cheia' : '⛶ Tela cheia';
+  arenaFullscreenBtn.setAttribute('aria-label', active ? 'Sair da tela cheia' : 'Ativar tela cheia');
+  arenaFullscreenBtn.title = active ? 'Sair da tela cheia' : 'Ativar tela cheia';
+}
+arenaFullscreenBtn?.addEventListener('click', async () => {
+  const arena = document.querySelector('.arena');
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (arena?.requestFullscreen) await arena.requestFullscreen();
+    else {
+      $('renderErrorBanner').textContent = 'Seu navegador não oferece tela cheia nesta tela.';
+      $('renderErrorBanner').classList.remove('hidden');
+      return;
+    }
+  } catch {
+    $('renderErrorBanner').textContent = 'Não consegui ativar a tela cheia. Tente pelo navegador.';
+    $('renderErrorBanner').classList.remove('hidden');
+  }
+  refreshArenaFullscreenButton();
+});
+document.addEventListener('fullscreenchange', refreshArenaFullscreenButton);
+
+// Backup portátil do progresso: exporta apenas as chaves próprias do jogo.
+const exportProgressBtn = $('exportProgressBtn');
+const importProgressBtn = $('importProgressBtn');
+const importProgressFile = $('importProgressFile');
+const backupProgressStatus = $('backupProgressStatus');
+const BACKUP_FORMAT = 'mioquinha-progresso';
+function setBackupStatus(message, isError = false) {
+  if (!backupProgressStatus) return;
+  backupProgressStatus.textContent = message;
+  backupProgressStatus.style.color = isError ? '#ff8296' : '';
+}
+exportProgressBtn?.addEventListener('click', () => {
+  try {
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('snakeArena')) data[key] = localStorage.getItem(key);
+    }
+    const backup = { format: BACKUP_FORMAT, formatVersion: 1, exportedAt: new Date().toISOString(), data };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'mioquinha-progresso-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setBackupStatus('✅ Backup exportado! Guarde o arquivo JSON em um local seguro.');
+  } catch (error) {
+    console.error('Falha ao exportar progresso:', error);
+    setBackupStatus('❌ Não consegui exportar o progresso neste navegador.', true);
+  }
+});
+importProgressBtn?.addEventListener('click', () => importProgressFile?.click());
+importProgressFile?.addEventListener('change', async () => {
+  const file = importProgressFile.files?.[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    setBackupStatus('❌ O arquivo é muito grande. Escolha um backup de até 2 MB.', true);
+    importProgressFile.value = '';
+    return;
+  }
+  try {
+    const backup = JSON.parse(await file.text());
+    if (backup?.format !== BACKUP_FORMAT || backup?.formatVersion !== 1 ||
+        !backup.data || typeof backup.data !== 'object' || Array.isArray(backup.data)) {
+      throw new Error('Formato de backup inválido.');
+    }
+    const entries = Object.entries(backup.data);
+    if (!entries.length || entries.some(([key, value]) =>
+      !key.startsWith('snakeArena') || typeof value !== 'string' || value.length > 500000)) {
+      throw new Error('O arquivo não contém dados válidos da Mioquinha.');
+    }
+    if (!confirm('Importar este backup? Os dados atuais com as mesmas chaves serão substituídos. Esta ação não pode ser desfeita.')) {
+      setBackupStatus('Importação cancelada.');
+      return;
+    }
+    const previous = new Map(entries.map(([key]) => [key, localStorage.getItem(key)]));
+    try {
+      for (const [key, value] of entries) localStorage.setItem(key, value);
+    } catch (error) {
+      for (const [key, value] of previous) {
+        try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch {}
+      }
+      throw error;
+    }
+    setBackupStatus('✅ Progresso importado! Recarregando para atualizar moedas, conquistas e visuais…');
+    setTimeout(() => location.reload(), 900);
+  } catch (error) {
+    console.error('Falha ao importar progresso:', error);
+    setBackupStatus('❌ Arquivo inválido ou incompatível. Escolha um backup JSON exportado pela Mioquinha.', true);
+  } finally {
+    importProgressFile.value = '';
+  }
+});
+
 initProgressionUI();
 
 const readyStatus = { 0: true };
@@ -385,8 +490,8 @@ $('onlineSimpleCopyBtn')?.addEventListener('click', async () => {
   const link = buildRoomLink();
   try {
     await navigator.clipboard.writeText(link);
-    $('onlineSimpleCopyBtn').textContent = 'Copiado! ✅';
-    setTimeout(() => { $('onlineSimpleCopyBtn').textContent = '🔗 Copiar link'; }, 1600);
+    $('onlineSimpleCopyBtn').textContent = '✓ Copiado!';
+    setTimeout(() => { $('onlineSimpleCopyBtn').textContent = '🔗 Copiar link'; }, 2000);
   } catch {
     alert(link);
   }
@@ -413,7 +518,8 @@ $('onlineSimpleJoinBtn')?.addEventListener('click', () => {
     $('onlineSimpleStatus').textContent = '⚠️ O código da sala precisa ter 4 números.';
     return;
   }
-  $('joinCode').value = code;
+  // Preserve o link completo para aproveitar o acesso incluído no convite protegido.
+  $('joinCode').value = value.includes('room=') ? value : code;
   $('joinBtn').click();
 });
 
@@ -640,11 +746,18 @@ $('hostRoomSecurity')?.addEventListener('change', () => {
 
 $('copyRoom').addEventListener('click', async () => {
   const link = buildRoomLink();
+  const button = $('copyRoom');
   try {
     await navigator.clipboard.writeText(link);
-    $('copyRoom').textContent = 'Copiado! ✅';
-    setTimeout(() => $('copyRoom').textContent = 'Copiar link', 1500);
-  } catch { alert(link); }
+    button.textContent = '✓ Copiado!';
+    button.setAttribute('aria-live', 'polite');
+    setTimeout(() => {
+      button.textContent = '🔗 Copiar link da sala';
+      button.removeAttribute('aria-live');
+    }, 2000);
+  } catch {
+    alert('Não consegui copiar automaticamente. Copie este link:\n' + link);
+  }
 });
 
 // Copia só o código da sala (sem o link inteiro), pra quem prefere mandar assim
@@ -652,8 +765,8 @@ $('copyRoomCode').addEventListener('click', async () => {
   const code = $('roomCode').textContent;
   try {
     await navigator.clipboard.writeText(code);
-    $('copyRoomCode').textContent = 'Copiado! ✅';
-    setTimeout(() => $('copyRoomCode').textContent = 'Copiar só o código', 1500);
+    $('copyRoomCode').textContent = '✓ Copiado!';
+    setTimeout(() => $('copyRoomCode').textContent = 'Copiar só o código', 2000);
   } catch { alert(code); }
 });
 
@@ -868,7 +981,12 @@ function buildRoomLink() {
     theme: state.theme,
     noWalls: state.noWalls ? '1' : '0',
   });
-  if (currentRoomProtected) params.set('lock', '1');
+  if (currentRoomProtected) {
+    params.set('lock', '1');
+    // O próprio convite carrega a autorização: quem tem o link entra sem digitar o PIN.
+    // Para salas protegidas, trate esse link como uma chave de acesso e compartilhe só com convidados.
+    if (normalizeRoomNumberUI(currentRoomPin).length === 4) params.set('pin', normalizeRoomNumberUI(currentRoomPin));
+  }
   if ($('teamMode').checked) {
     params.set('fmt', 'teams');
     params.set('ta', String(state.teamSizeMine));
@@ -915,11 +1033,30 @@ function lerInfoDeTimes(texto) {
 }
 
 // Mostra (ou esconde) a escolha "no time de quem criou / no adversário" pra quem vai entrar
-function refreshJoinSecurityFromUrl() {
-  const locked = new URLSearchParams(location.search).get('lock') === '1';
-  $('joinRoomPinRow')?.classList.toggle('hidden', !locked);
-  if (locked) $('joinStatus').textContent = '🔐 Esta sala tem senha. Digite a senha para entrar.';
-  return locked;
+function paramsDoConvite(texto = location.search) {
+  try { return new URL(String(texto || '').trim(), location.origin).searchParams; }
+  catch { return new URLSearchParams(); }
+}
+
+// Mostra o campo de PIN apenas em convites protegidos antigos que não carregam autorização.
+// O link novo contém o PIN e funciona como convite de acesso com um clique.
+function refreshJoinSecurityFromUrl(texto = location.search) {
+  const params = paramsDoConvite(texto);
+  const locked = params.get('lock') === '1';
+  const pinDoLink = normalizeRoomNumberUI(params.get('pin'));
+  const temAcessoNoLink = locked && pinDoLink.length === 4;
+  const precisaDigitarPin = locked && !temAcessoNoLink;
+  $('joinRoomPinRow')?.classList.toggle('hidden', !precisaDigitarPin);
+  if (temAcessoNoLink && $('joinRoomPin')) {
+    $('joinRoomPin').value = pinDoLink;
+    $('joinStatus').textContent = '🔗 Convite protegido reconhecido. Entrando sem precisar digitar a senha.';
+  } else if (precisaDigitarPin) {
+    if ($('joinRoomPin')) $('joinRoomPin').value = '';
+    $('joinStatus').textContent = '🔐 Esta sala pede senha. Convites antigos podem precisar dos 4 números.';
+  } else if ($('joinRoomPin')) {
+    $('joinRoomPin').value = '';
+  }
+  return precisaDigitarPin;
 }
 
 function refreshJoinTeamChoice(info) {
@@ -929,11 +1066,14 @@ function refreshJoinTeamChoice(info) {
   $('joinTeamChoice').options[1].textContent = `⚔️ No time adversário (time de ${info.tb})`;
 }
 $('joinCode').addEventListener('input', () => {
-  const texto = $('joinCode').value;
+  const texto = $('joinCode').value.trim();
   if (texto.includes('room=')) {
     refreshJoinTeamChoice(lerInfoDeTimes(texto));
-    refreshJoinSecurityFromUrl();
-  } // colou um link inteiro
+    refreshJoinSecurityFromUrl(texto);
+  } else {
+    refreshJoinTeamChoice(null);
+    refreshJoinSecurityFromUrl('');
+  }
 });
 
 function extractRoomCode(raw) {
@@ -949,9 +1089,16 @@ function extractRoomCode(raw) {
 }
 
 $('joinBtn').addEventListener('click', () => {
-  const code = extractRoomCode($('joinCode').value);
-  const pin = normalizeRoomNumberUI($('joinRoomPin')?.value);
-  const linkRequiresPin = new URLSearchParams(location.search).get('lock') === '1';
+  const textoConvite = $('joinCode').value.trim();
+  const code = extractRoomCode(textoConvite);
+  const parametrosDaPagina = new URLSearchParams(location.search);
+  const eConviteAtual = textoConvite === parametrosDaPagina.get('room');
+  const origemDosParametros = textoConvite.includes('room=') ? textoConvite : (eConviteAtual ? location.search : '');
+  const parametrosConvite = paramsDoConvite(origemDosParametros);
+  const linkRequiresPin = parametrosConvite.get('lock') === '1';
+  const pinDoLink = normalizeRoomNumberUI(parametrosConvite.get('pin'));
+  const pinDigitado = normalizeRoomNumberUI($('joinRoomPin')?.value);
+  const pin = pinDoLink.length === 4 ? pinDoLink : pinDigitado;
 
   if (linkRequiresPin && pin.length !== 4) {
     $('joinRoomPinRow')?.classList.remove('hidden');
@@ -1079,8 +1226,8 @@ if (urlAction.get('quickplay') === '1') {
 if (roomFromUrl) {
   $('joinCode').value = roomFromUrl;
   refreshJoinTeamChoice(lerInfoDeTimes(location.search));
-  const linkLocked = refreshJoinSecurityFromUrl();
-  if (!linkLocked) {
+  const precisaDigitarPin = refreshJoinSecurityFromUrl(location.search);
+  if (!precisaDigitarPin) {
     setTimeout(() => $('joinBtn')?.click(), 350);
   } else {
     setTimeout(() => $('joinRoomPin')?.focus(), 150);
@@ -1134,6 +1281,13 @@ function refreshHomeDashboard() {
   $('homeStreakValue')?.closest('.homeStreakCard')?.classList.toggle('streakActive', streak > 0);
   const streakReward = getNextStreakReward(streak);
   set('homeStreakReward', `🎁 Dia ${streakReward.day}: +${streakReward.coins} 🪙 +${streakReward.xp} XP`);
+  const claimButton = $('homeClaimDailyReward');
+  if (claimButton) {
+    const claimed = hasClaimedStreakRewardToday();
+    claimButton.disabled = claimed;
+    claimButton.textContent = claimed ? '✅ Recompensa resgatada hoje' : '🎁 Resgatar recompensa';
+    claimButton.setAttribute('aria-label', claimed ? 'Recompensa diária já resgatada' : 'Resgatar recompensa diária');
+  }
 
   const theme = BOARD_THEMES.find((t) => t.value === state.theme) || BOARD_THEMES[0];
   const mapNames = { small: 'Pequeno', medium: 'Médio', large: 'Grande' };
@@ -1178,6 +1332,14 @@ function refreshHomeDashboard() {
   $('hunterHomeOffBtn')?.classList.toggle('active', !hunterOn);
 }
 document.addEventListener('progressionUpdated', refreshHomeDashboard);
+$('homeClaimDailyReward')?.addEventListener('click', () => {
+  const result = claimStreakReward(loadStreakDays());
+  if (!result.claimed) {
+    refreshHomeDashboard();
+    return;
+  }
+  refreshHomeDashboard();
+});
 document.addEventListener('performanceUpdated', () => setTimeout(renderPerformanceDashboard, 80));
 
 function doStart() {
@@ -1507,6 +1669,7 @@ function updateTopRecordDisplay() {
   $('topRecordDisplay').innerHTML = `🏅 Seu recorde: <b>${best}</b> pontos`;
   $('progressRecordMini')?.replaceChildren(document.createTextNode(`🏅 ${best}`));
   $('progressBestValue')?.replaceChildren(document.createTextNode(String(best)));
+  $('progressLengthValue')?.replaceChildren(document.createTextNode(String(loadBestLength() || 0)));
   $('progressGamesValue')?.replaceChildren(document.createTextNode(String(loadGamesPlayed() || 0)));
   $('progressSessionValue')?.replaceChildren(document.createTextNode(String(loadSessionGamesToday() || 0)));
   refreshHomeDashboard();
@@ -1574,6 +1737,7 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
   // escolhida, para a pessoa perceber que está numa página própria.
   if (activeTab === 'progresso') {
     const title = document.querySelector('[data-panel="progresso"] .progressHero h2');
+    const subtitle = document.querySelector('[data-panel="progresso"] .progressHero .cardDesc');
     const titles = {
       progresso: '📊 Meu progresso',
       ranking: '🏆 Ranking',
@@ -1582,7 +1746,16 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
       historico: '📜 Histórico',
       conquistas: '🏅 Conquistas',
     };
+    const subtitles = {
+      progresso: 'Acompanhe suas estatísticas, recordes e evolução como jogador.',
+      ranking: 'Compare os recordes de quem já jogou neste aparelho.',
+      loja: 'Adquira novos visuais, rastros e mapas utilizando suas moedas.',
+      desafios: 'Complete objetivos diários e conquiste recompensas durante suas partidas.',
+      historico: 'Consulte suas partidas anteriores e acompanhe sua evolução.',
+      conquistas: 'Desbloqueie medalhas cumprindo objetivos e superando seus recordes.',
+    };
     if (title) title.textContent = titles[requestedTab] || titles.progresso;
+    if (subtitle) subtitle.textContent = subtitles[requestedTab] || subtitles.progresso;
   }
   if (activeTab === 'personalizar') {
     const title = document.querySelector('[data-panel="personalizar"] > section.card > h2');
@@ -1598,9 +1771,9 @@ function switchToTab(tab, modoUrl = 'push', progressSection = null) {
     if (activeTab === 'progresso') {
       renderPerformanceDashboard();
       activateProgressSection(sectionForTab);
-      if (requestedTab === 'desafios') {
-        setTimeout(() => document.querySelector('[data-progress-panel="stats"] .dailyChallengeCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
-      }
+      // Reposiciona depois de revelar o painel, evitando que a navegação fixa/sticky
+      // deixe os primeiros cartões (nível, liga e recordes) parcialmente encobertos.
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
     if (activeTab === 'personalizar' && (requestedTab === 'personalizar' || requestedTab === 'personalizacao')) {
       setTimeout(() => document.querySelector('[data-panel="personalizar"]')?.scrollTo({ top: 0, behavior: 'smooth' }), 80);
@@ -1631,7 +1804,9 @@ document.querySelectorAll('.progressNavBtn').forEach((btn) => {
     params.set('tab', 'progresso');
     if (btn.dataset.progressSection === 'stats') params.delete('section');
     else params.set('section', btn.dataset.progressSection);
-    history.pushState({ tab: 'progresso', section: btn.dataset.progressSection }, '', location.pathname + '?' + params.toString());
+    // As seções internas da mesma página substituem o estado atual: o botão Voltar
+    // retorna à página anterior, em vez de percorrer cada subaba da Loja/Progresso.
+    history.replaceState({ tab: 'progresso', section: btn.dataset.progressSection }, '', location.pathname + '?' + params.toString());
   });
 });
 
@@ -1731,6 +1906,10 @@ $('silentModeBtn').addEventListener('click', () => {
   state.muted = true;
   setMuted(true);
   $('mute').textContent = '🔇';
+  if ($('headerMuteBtn')) {
+    $('headerMuteBtn').textContent = '🔇';
+    $('headerMuteBtn').setAttribute('aria-pressed', 'true');
+  }
   saveMuted(true);
   state.vibrationOn = true;
   setVibrationEnabled(true);
@@ -2195,12 +2374,18 @@ $('musicBtn').addEventListener('click', () => {
 });
 
 // Botão de mudo — a preferência fica salva no navegador
-$('mute').addEventListener('click', () => {
+function toggleGameMute() {
   state.muted = !state.muted;
   setMuted(state.muted);
   saveMuted(state.muted);
   $('mute').textContent = state.muted ? '🔇' : '🔊';
-});
+  if ($('headerMuteBtn')) {
+    $('headerMuteBtn').textContent = state.muted ? '🔇' : '🔊';
+    $('headerMuteBtn').setAttribute('aria-pressed', state.muted ? 'true' : 'false');
+  }
+}
+$('mute').addEventListener('click', toggleGameMute);
+$('headerMuteBtn')?.addEventListener('click', toggleGameMute);
 
 // Modo compacto: esconde placar/missão/menus e deixa só a arena e os controles,
 // pra jogar com a tela bem maior. Também tenta pedir tela cheia de verdade no navegador.
@@ -2339,6 +2524,10 @@ state.best = loadBest();
 state.muted = loadMuted();
 setMuted(state.muted);
 $('mute').textContent = state.muted ? '🔇' : '🔊';
+if ($('headerMuteBtn')) {
+  $('headerMuteBtn').textContent = state.muted ? '🔇' : '🔊';
+  $('headerMuteBtn').setAttribute('aria-pressed', state.muted ? 'true' : 'false');
+}
 
 state.vibrationOn = loadVibration();
 setVibrationEnabled(state.vibrationOn);

@@ -44,4 +44,44 @@ r.check('o cliente mostrou previsão visual imediatamente', as.inputPredictionDi
 await esperar(80);
 ativar(host);
 r.check('o anfitrião recebeu a direção do amigo', hs.nextDirs?.[1]?.x === 1 && hs.nextDirs?.[1]?.y === 0, `dir=${JSON.stringify(hs.nextDirs?.[1])}`);
-r.fim(host.__erros, A.__erros);
+
+r.secao('6) Sala protegida: o link inclui o acesso e não pede PIN manualmente');
+const pastaHostProtegido = copiarProjeto();
+const hostProtegido = criarJanela({ pasta:pastaHostProtegido, Peer:FakePeer });
+hostProtegido.HTMLElement.prototype.scrollIntoView = () => {};
+ativar(hostProtegido);
+await importarDe(pastaHostProtegido)(ENTRADA);
+$(hostProtegido, 'hostRoomSecurity').value = 'pin';
+$(hostProtegido, 'hostRoomSecurity').dispatchEvent(new hostProtegido.Event('change', { bubbles:true }));
+$(hostProtegido, 'hostRoomPin').value = '2580';
+$(hostProtegido, 'hostBtn').click();
+await esperar(250);
+const linkProtegido = $(hostProtegido, 'onlineSimpleRoomLink').value;
+r.check('convite protegido inclui a autorização no link', /room=\d{4}/.test(linkProtegido) && /lock=1/.test(linkProtegido) && /pin=2580/.test(linkProtegido), linkProtegido);
+
+r.secao('7) O convidado abre o link protegido e entra sem digitar a senha');
+const pastaConvidadoDireto = copiarProjeto();
+const convidadoDireto = criarJanela({ pasta:pastaConvidadoDireto, url:linkProtegido, Peer:FakePeer });
+convidadoDireto.HTMLElement.prototype.scrollIntoView = () => {};
+ativar(convidadoDireto);
+await importarDe(pastaConvidadoDireto)(ENTRADA);
+await esperar(1300);
+r.check('a entrada foi autorizada automaticamente', /autorizada/i.test($(convidadoDireto, 'joinStatus').textContent), $(convidadoDireto, 'joinStatus').textContent);
+r.check('o campo de PIN não aparece como obrigatório', $(convidadoDireto, 'joinRoomPinRow').classList.contains('hidden'));
+r.check('o lobby do convidado abriu', !$(convidadoDireto, 'clientReadyOverlay').classList.contains('hidden'));
+
+r.secao('8) Colar o link protegido também preenche a autorização sozinho');
+const pastaConvidadoColado = copiarProjeto();
+const convidadoColado = criarJanela({ pasta:pastaConvidadoColado, Peer:FakePeer });
+convidadoColado.HTMLElement.prototype.scrollIntoView = () => {};
+ativar(convidadoColado);
+await importarDe(pastaConvidadoColado)(ENTRADA);
+$(convidadoColado, 'joinCode').value = linkProtegido;
+$(convidadoColado, 'joinCode').dispatchEvent(new convidadoColado.Event('input', { bubbles:true }));
+r.check('colar o convite mantém o PIN fora do formulário obrigatório', $(convidadoColado, 'joinRoomPinRow').classList.contains('hidden'));
+$(convidadoColado, 'joinBtn').click();
+await esperar(1300);
+r.check('o link colado entrou na sala protegida', /autorizada/i.test($(convidadoColado, 'joinStatus').textContent), $(convidadoColado, 'joinStatus').textContent);
+r.check('não houve erros JS no fluxo protegido', hostProtegido.__erros.length === 0 && convidadoDireto.__erros.length === 0 && convidadoColado.__erros.length === 0);
+
+r.fim(host.__erros, A.__erros, hostProtegido.__erros, convidadoDireto.__erros, convidadoColado.__erros);

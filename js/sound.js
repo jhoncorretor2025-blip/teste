@@ -56,6 +56,12 @@ export const sfx = {
   boost: () => beep({ freq: 300, duration: 0.12, type: 'square', volume: 0.12, slideTo: 600 }),
   mission: () => beep({ freq: 660, duration: 0.22, type: 'triangle', volume: 0.22, slideTo: 990 }),
   boostReady: () => beep({ freq: 880, duration: 0.08, type: 'sine', volume: 0.13, slideTo: 1200 }),
+  // Fanfarra curta de nível: destaca a progressão sem competir com os sons da partida.
+  levelUp: () => {
+    [587, 740, 880, 1175].forEach((freq, i) => {
+      setTimeout(() => beep({ freq, duration: 0.12, type: 'triangle', volume: 0.18 }), i * 75);
+    });
+  },
   // Som de "chefe chegando" (Minhoca Caçadora) — bem diferente dos outros, grave e
   // dramático, em 3 batidas descendentes, pra dar aquela sensação de perigo chegando
   hunterArrives: () => {

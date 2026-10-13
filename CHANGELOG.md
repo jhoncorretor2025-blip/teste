@@ -1,3 +1,86 @@
+## [4.5.61] — 2026-10-13
+- 🐍 **Velocidade consistente:** removido o multiplicador exclusivo de 15% para telas de toque; Lenta, Normal, Rápida e Muito rápida usam o mesmo intervalo escolhido em computador e celular.
+- ⚡ **Turbo preservado:** o modo Turbo Worms continua usando o fator próprio.
+- 🔢 **Versão/cache:** arquivos principais e version.txt sincronizados para 4.5.61.
+
+## [4.5.60] — 2026-10-12
+- 📱 **Convite online responsivo:** campo de link/código mantém espaço para digitação e o botão Entrar fica visível, inclusive em telas estreitas.
+- 🎯 **Desafios sem sobreposição:** reforça o espaçamento e o reposicionamento após a troca de aba para manter os cartões de nível, liga e recordes visíveis.
+- 🧭 **Subtítulos específicos:** remove a frase genérica repetida e mantém descrições distintas para Progresso, Loja, Ranking, Desafios e Conquistas.
+- 🔢 **Versão sincronizada:** HTML, CSS, módulos ativos, configuração, cache e version.txt passam a usar 4.5.60.
+
+## [4.5.59] — 2026-10-12
+- 🔗 **Convite protegido sem digitar PIN:** o link de uma sala protegida inclui a autorização necessária; ao abrir o convite, o jogo entra automaticamente.
+- 📋 **Colar link completo:** ao colar um convite no modo simples ou completo, preserva os parâmetros de acesso e de times em vez de reduzir o conteúdo ao código.
+- 🔐 **Salas antigas continuam compatíveis:** links protegidos antigos, sem autorização no próprio link, ainda pedem o PIN; entrada manual por código e opção de proteger a sala permanecem disponíveis.
+- 🧭 **Entrada automática mais robusta:** reconhece o PIN presente no convite direto ou colado, esconde o campo quando não é necessário e evita reutilizar PIN de outro convite.
+- 🧪 **Teste ponta a ponta ampliado:** adiciona cenários de link protegido aberto diretamente e colado no formulário.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache, version.txt e imports ativos atualizados para 4.5.59.
+
+## [4.5.58] — 2026-10-12
+- 🏆 **Resumo de partida:** ao morrer, mostra a pontuação final, novo recorde geral ou do modo e comparação com partidas anteriores.
+- 🐍 **Recorde de tamanho corrigido:** passa a salvar o maior comprimento da minhoca e atualiza o indicador correspondente no Progresso.
+- 🌐 **Recordes no online:** cada cliente registra o resultado da própria minhoca ao receber a confirmação de derrota, sem depender do anfitrião para o histórico local.
+- ⭐ **Nível e XP durante a partida:** indicador compacto com barra atualizada, sem alterar a fórmula de pontuação ou a quantidade de XP concedida.
+- 🔄 **Cache de módulos ativos:** imports de loop, renderização, controles e progressão sincronizados com v4.5.58.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache e version.txt passam a usar 4.5.58.
+
+## [4.5.57] — 2026-10-12
+- 🎮 **Joystick mais previsível:** pequena zona morta e estabilização do eixo perto das diagonais, sem perder as quatro direções.
+- 👆 **Multitoque protegido:** um segundo dedo não interrompe o joystick ativo; captura e cancelamento de toque tratados com segurança.
+- 🛑 **Pausa respeitada:** setas, joystick, swipe e turbo não alteram a partida enquanto estiver pausada ou fora de execução.
+- ↔️ **Swipe mais confiável:** o gesto fica associado ao dedo que iniciou e é limpo se o navegador cancelar o toque.
+- ✨ **Feedback imediato:** o joystick destaca quando está ativo e os botões de direção respondem melhor ao toque.
+- 🔄 **Cache atualizado:** importação ativa do módulo de controles com identificador v4.5.57; versão sincronizada nos arquivos obrigatórios.
+
+## [4.5.56] — 2026-10-12
+- 📱 **Arena mobile ajustada:** modo maximizado usa a área útil da tela sem rolagem da página.
+- 🎮 **Controles de toque:** joystick, setas, alternador e turbo com alvos maiores e respeitando as áreas seguras do aparelho.
+- ↔️ **Retrato e paisagem:** dimensões da arena adaptadas à orientação, com espaço para HUD e controles.
+- 🧭 **HUD mobile:** ações, placar e status reorganizados para telas estreitas.
+- 🔒 **Compatibilidade:** sem alteração na lógica da partida, pontuação, progresso ou multiplayer.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.56.
+
+## [4.5.55] — 2026-10-12
+- 🎨 **Acabamento visual geral:** refinados fundo, cabeçalho, painéis, cartões e hierarquia da tela inicial.
+- 🧭 **Navegação mais clara:** abas, estados ativos e foco por teclado com contraste aprimorado.
+- 🛍️ **Loja e progresso:** cartões e indicadores com acabamento consistente nos temas escuro e claro.
+- 📱 **Responsividade:** espaçamentos refinados para telas pequenas sem alterar controles ou mecânica.
+- ♿ **Acessibilidade:** destaque de foco e respeito à preferência por movimento reduzido.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.55.
+
+## [4.5.54] — 2026-10-12
+- 📋 **Feedback ao copiar convite:** botão confirma com “✓ Copiado!” por 2 segundos.
+- ⛶ **Tela cheia na arena:** botão rápido para ampliar a área de jogo e sair da tela cheia.
+- 💾 **Backup do progresso:** exporta dados locais do jogo em JSON e permite importá-los com validação, confirmação e tentativa de reversão em caso de falha.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.54.
+
+## [4.5.53] — 2026-10-12
+- 📱 **Convite online refinado:** botão Entrar/Copiar com espaçamento consistente e campo de texto flexível.
+- 🎯 **Desafios com respiro visual:** adiciona espaçamento superior aos indicadores para reduzir risco de ficarem encostados na navegação.
+- 🛒 **Descrição temática da Loja:** texto atualizado para destacar visuais, rastros e mapas comprados com moedas.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.53.
+
+## [4.5.52] — 2026-10-12
+- 📱 **Convites online responsivos:** campos de link e código usam a largura disponível sem deixar o botão Entrar/Copiar ocupar a linha inteira.
+- 🎯 **Desafios sem corte no topo:** removida a rolagem automática até o card diário, que escondia os indicadores iniciais em telas pequenas.
+- 🛒 **Loja com contexto correto:** subtítulo atualizado para explicar o desbloqueio de mapas, fantasias e acessórios.
+- 🔢 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.52.
+
+## [4.5.51] — 2026-10-12
+- 🛒 **Prévia da loja:** mapas, fantasias e acessórios podem ser selecionados e visualizados antes de confirmar a compra ou equipar.
+- 🔊 **Controles de áudio:** botão de mudo na tela inicial, sincronizado com o controle da partida e preferência salva.
+- 🎉 **Subida de nível:** fanfarra curta ao alcançar um novo nível, respeitando o modo mudo.
+- 🧭 **Histórico de navegação:** seções internas de Progresso substituem o estado atual para evitar excesso de entradas no botão Voltar.
+- 🎁 **Recompensa diária:** botão na tela inicial para resgatar moedas e XP uma vez por dia, com indicação quando já foi usado.
+
+## [4.5.50] — 2026-10-12
+- 🛒 **Prévia da Loja antes da compra:** mapas, fantasias e acessórios agora mostram uma prévia selecionável; a compra/equipamento só ocorre ao confirmar no botão dedicado.
+- 🔊 **Som mais acessível:** botão de mudo na tela inicial, sincronizado com o controle de som da partida e com a preferência salva; nível novo recebe uma fanfarra curta, respeitando o mudo.
+- ✨ **Feedback audiovisual:** mantém partículas e sons existentes ao coletar itens e colidir; adiciona destaque sonoro à subida de nível.
+- 🧭 **Voltar do navegador mais previsível:** trocar entre seções internas de Progresso substitui o estado atual do histórico, evitando uma pilha de entradas para cada subaba.
+- 🧩 **Versão sincronizada:** HTML, configuração, cache do Service Worker e version.txt passam a usar 4.5.50.
+
 ## [4.5.49] — 2026-10-10
 - 🔴 **Zonas vermelhas maiores:** raio ampliado de 2 para 4 células, dobrando o diâmetro para facilitar permanecer na zona por 3 segundos.
 
