@@ -1,3 +1,8 @@
+## [4.5.61] — 2026-10-13
+- 🐍 **Velocidade consistente:** removido o multiplicador exclusivo de 15% para telas de toque; Lenta, Normal, Rápida e Muito rápida usam o mesmo intervalo escolhido em computador e celular.
+- ⚡ **Turbo preservado:** o modo Turbo Worms continua usando o fator próprio.
+- 🔢 **Versão/cache:** arquivos principais e version.txt sincronizados para 4.5.61.
+
 ## [4.5.60] — 2026-10-12
 - 📱 **Convite online responsivo:** campo de link/código mantém espaço para digitação e o botão Entrar fica visível, inclusive em telas estreitas.
 - 🎯 **Desafios sem sobreposição:** reforça o espaçamento e o reposicionamento após a troca de aba para manter os cartões de nível, liga e recordes visíveis.
