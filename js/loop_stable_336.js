@@ -6,14 +6,14 @@ import { state } from './state.js';
 import { planTeams, unifyTeamColors } from './teams.js';
 import { occupied, freeCell, ensureFoods, dropFood, dropOne, burst, wall, checkFoodConsolidation, updateFoodConsolidation } from './food.js';
 import { aiDir, hunterDir } from './ai.js';
-import { render } from './render_stable_341.js?v=4.5.60';
+import { render } from './render_stable_341.js?v=4.5.61';
 import { syncSettings, label } from './players.js';
 import { startMission, trackFoodForMission, trackComboForMission, trackScoreForMission, renderMission, trackEliminationForMission, trackDeathForMission, checkSurvivalMission } from './mission.js';
 import { sfx } from './sound.js';
 import { vibrate, announce, setVibrationEnabled } from './utils.js';
 import { loadBest, saveBest, loadBestByMode, saveBestByMode, loadBestLength, saveBestLength, recordGameScore, addToLeaderboard, incrementGamesPlayed, GAME_MILESTONES, addPlaytime, incrementSessionGames, loadSessionGamesToday, loadTotalPlaytime, formatPlaytime, updateStreakAndLastPlayed, unlockAchievement, trackCumulativeProgress } from './storage.js';
 import { isHost, isOnline, broadcastState, broadcastRaw, connectedCount, mySlot } from './net.js';
-import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js?v=4.5.60';
+import { startProgressionChallenge, trackProgressionEvent, rewardFood, rewardMatchStart, rewardMilestone, claimStreakReward, awardLeagueRun, addLeaguePoints } from './progression.js?v=4.5.61';
 import { startPerformanceRun, samplePerformanceRun, finishPerformanceRun } from './performance.js';
 import { startNegativeEvents, stopNegativeEvents, shouldSkipMovement } from './negative_events.js';
 
@@ -428,11 +428,9 @@ export function resumeSavedGame(snap) {
   $('overlay').classList.add('hidden');
   $('badge').textContent = (state.mode === 'turbo' ? '⚡ TURBO WORMS' : '🏆 CLÁSSICO') + (state.noWalls ? ' 🌀' : '');
   const spd = SPEEDS.find((s) => s.value === state.speed) || SPEEDS[1];
-  // Assistência mobile: em telas de toque, damos 15% mais tempo entre passos.
-  // Isso melhora a janela para virar sem alterar a velocidade escolhida no PC.
-  const mobileAssist = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)')?.matches;
-  const baseInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
-  currentInterval = mobileAssist ? Math.round(baseInterval * 1.15) : baseInterval;
+  // A opção escolhida define o mesmo ritmo em computador e celular.
+  // Não aplicar multiplicadores por tipo de ponteiro: isso fazia a velocidade divergir entre aparelhos.
+  currentInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
   state.paused = false;
   state.running = true;
   render();
@@ -499,11 +497,9 @@ export function startGame() {
   render();
   // A velocidade escolhida no menu define o ritmo base; o Turbo Worms roda mais rápido ainda
   const spd = SPEEDS.find(s => s.value === state.speed) || SPEEDS[1];
-  // Assistência mobile: em telas de toque, damos 15% mais tempo entre passos.
-  // Isso melhora a janela para virar sem alterar a velocidade escolhida no PC.
-  const mobileAssist = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)')?.matches;
-  const baseInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
-  currentInterval = mobileAssist ? Math.round(baseInterval * 1.15) : baseInterval;
+  // A opção escolhida define o mesmo ritmo em computador e celular.
+  // Não aplicar multiplicadores por tipo de ponteiro: isso fazia a velocidade divergir entre aparelhos.
+  currentInterval = state.mode === 'turbo' ? Math.round(spd.tick * TURBO_FACTOR) : spd.tick;
 
   // Contagem regressiva "3, 2, 1, VAI!" antes de começar de verdade — melhoria visual #8
   runCountdown(3, () => {
