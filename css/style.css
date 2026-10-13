@@ -8535,7 +8535,7 @@ body {
 }
 
 
-/* v4.5.60 — correções de layout reportadas no ar */
+/* v4.5.61 — correções de layout reportadas no ar */
 .onlineSimpleJoin .onlineSimpleLinkRow {
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
