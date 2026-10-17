@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '4.5.50';
+export const VERSION = '4.5.51';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -13,7 +13,9 @@ export const ACHIEVEMENTS = [
   { id: 'first_food', name: 'Primeira Mordida', desc: 'Coma sua primeira comidinha', icon: '🍎', category: 'iniciante' },
   { id: 'boost_first', name: 'Primeiro Turbo', desc: 'Use o turbo pela primeira vez', icon: '⚡', category: 'iniciante' },
   { id: 'score_25', name: 'Começo Forte', desc: 'Faça 25 pontos numa partida', icon: '⭐', category: 'iniciante' },
+  { id: 'food_10', name: 'Petisco Rápido', desc: 'Coma 10 comidas numa partida', icon: '🍏', category: 'iniciante' },
   { id: 'food_20', name: 'Bom Apetite', desc: 'Coma 20 pontos de comida numa partida', icon: '🥕', category: 'iniciante' },
+  { id: 'food_25', name: 'Fome de Minhoca', desc: 'Coma 25 comidas numa partida', icon: '🥗', category: 'intermediario' },
   { id: 'survive_45', name: 'Aguentou Firme', desc: 'Sobreviva 45 segundos sem morrer', icon: '🛡️', category: 'sobrevivencia' },
   { id: 'length_30', name: 'Crescendo', desc: 'Chegue a 30 segmentos numa partida', icon: '🐛', category: 'iniciante' },
   { id: 'first_star', name: 'Estrela Cadente', desc: 'Pegue sua primeira estrela', icon: '🌟', category: 'iniciante' },
@@ -26,6 +28,7 @@ export const ACHIEVEMENTS = [
   { id: 'quick_5_food', name: 'Primeiras 5', desc: 'Coma 5 comidas numa partida', icon: '🍎', category: 'iniciante' },
   { id: 'score_10', name: 'Primeiros Pontos', desc: 'Faça 10 pontos numa partida', icon: '⭐', category: 'iniciante' },
   { id: 'survive_20', name: 'Fôlego Inicial', desc: 'Sobreviva 20 segundos sem morrer', icon: '🛡️', category: 'sobrevivencia' },
+  { id: 'survive_30', name: 'Primeiro Fôlego', desc: 'Sobreviva 30 segundos sem morrer', icon: '⏱️', category: 'sobrevivencia' },
   { id: 'length_15', name: 'Minhoca em Crescimento', desc: 'Chegue a 15 segmentos numa partida', icon: '🐛', category: 'iniciante' },
   { id: 'boost_3', name: 'Turbo Treinado', desc: 'Use o turbo 3 vezes numa partida', icon: '⚡', category: 'iniciante' },
   { id: 'games_20', name: 'Maratonista Iniciante', desc: 'Jogue 20 partidas no total', icon: '🎮', category: 'iniciante' },
