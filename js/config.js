@@ -67,6 +67,13 @@ export const ACHIEVEMENTS = [
   { id: 'eliminator', name: 'Eliminador', desc: 'Elimine 3 adversários numa partida só', icon: '⚔️', category: 'intermediario' },
   { id: 'tournament_champion', name: 'Campeão de Torneio', desc: 'Vença um Modo Torneio', icon: '🏆', category: 'intermediario' },
 
+  { id: 'star_50_intermediate', name: 'Caçador de Estrelas', desc: 'Pegue 50 estrelas numa partida', icon: '🌟', category: 'intermediario' },
+  { id: 'score_700_intermediate', name: 'Setecentos de Uma Vez', desc: 'Faça 700 pontos numa partida', icon: '🚀', category: 'intermediario' },
+  { id: 'score_250_intermediate', name: 'Pontuação de Bronze', desc: 'Faça 250 pontos numa partida', icon: '💎', category: 'intermediario' },
+  { id: 'eliminator_5_intermediate', name: 'Caçador de Adversários', desc: 'Elimine 5 adversários numa partida', icon: '☠️', category: 'intermediario' },
+  { id: 'three_worms_intermediate', name: 'Trio de Minhocas', desc: 'Jogue uma partida com 3 minhocas ao mesmo tempo', icon: '🐍', category: 'intermediario' },
+  { id: 'four_worms_intermediate', name: 'Arena Lotada', desc: 'Jogue uma partida com 4 minhocas ao mesmo tempo', icon: '🐍', category: 'intermediario' },
+
   // 🔴 Avançado — do mais fácil ao mais difícil
   { id: 'score_750', name: 'Fera da Pontuação', desc: 'Faça 750 pontos numa partida', icon: '💎', category: 'extremos' },
   { id: 'length_100', name: 'Colossal', desc: 'Chegue a 100 segmentos numa partida', icon: '🐲', category: 'lendarias' },
