@@ -1,3 +1,7 @@
+## [4.5.51] — 2026-10-17
+- 🏆 **Novas conquistas desbloqueáveis:** adicionadas Petisco Rápido (10 comidas), Fome de Minhoca (25 comidas) e Primeiro Fôlego (30 segundos sobrevivendo). Os critérios de desbloqueio já existiam no código do jogo; agora também aparecem corretamente na galeria.
+- 🔄 **Versão sincronizada:** configuração, interface, cache e version.txt atualizados para 4.5.51.
+
 ## [4.5.50] — 2026-10-17
 - 🏆 **Conquistas reorganizadas:** Jogador Frequente (3h), Viciado em Minhoca (5h), Dedicado (10h) e Sequência Imparável (7 dias) agora ficam em Avançado. Para preencher as vagas em Intermediário, Sociável, Caçador de Estrelas, Missão Cumprida e Imparável (500 pontos) foram movidas para essa categoria.
 - 🔄 **Versão sincronizada:** corrigida a diferença entre a versão do arquivo de configuração e a versão publicada; o jogo passa para 4.5.50.
