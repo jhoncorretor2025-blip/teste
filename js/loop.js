@@ -120,6 +120,7 @@ export function reset() {
   state.foods = [];
   state.scores = Array(6).fill(0);
   state.foodsEaten = Array(6).fill(0);
+  state.starsCollected = 0;
   state.grow = Array(6).fill(0);
   state.respawnAt = Array(6).fill(0);
   state.particles = [];
@@ -252,6 +253,8 @@ export function startGame() {
     announceAchievement(unlockAchievement('online_first'));
     announceAchievements(trackCumulativeProgress('onlineGames', 1));
     if (state.count >= 3) announceAchievement(unlockAchievement('online_trio'));
+    if (state.count >= 3) announceAchievement(unlockAchievement('three_worms_intermediate'));
+    if (state.count >= 4) announceAchievement(unlockAchievement('four_worms_intermediate'));
     if (state.count >= 6) announceAchievement(unlockAchievement('online_full_room'));
     if (state.teamMode) announceAchievement(unlockAchievement('online_team'));
   }
@@ -480,6 +483,8 @@ function stepMovement(indices) {
         announceAchievement(unlockAchievement('first_food'));
         announceAchievements(trackCumulativeProgress('totalFoods', f.value));
         if (f.kind === 'bonus') {
+          state.starsCollected = (state.starsCollected || 0) + 1;
+          if (state.starsCollected >= 50) announceAchievement(unlockAchievement('star_50_intermediate'));
           announceAchievement(unlockAchievement('first_star'));
           announceAchievements(trackCumulativeProgress('totalStars', 1));
         }
@@ -500,6 +505,7 @@ function stepMovement(indices) {
         if (state.scores[i] >= 250) announceAchievement(unlockAchievement('score_250'));
         if (state.scores[i] >= 350) announceAchievement(unlockAchievement('score_350'));
         if (state.scores[i] >= 500) announceAchievement(unlockAchievement('score_500'));
+        if (state.scores[i] >= 700) announceAchievement(unlockAchievement('score_700_intermediate'));
         if (isOnline() && state.scores[i] >= 500) announceAchievement(unlockAchievement('online_score_500'));
         if (state.scores[i] >= 1000) announceAchievement(unlockAchievement('score_1000'));
         if (state.scores[i] >= 1500) announceAchievement(unlockAchievement('score_1500'));
