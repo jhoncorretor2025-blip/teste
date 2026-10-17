@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '4.5.53';
+export const VERSION = '4.5.54';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -69,7 +69,6 @@ export const ACHIEVEMENTS = [
 
   { id: 'star_50_intermediate', name: 'Caçador de Estrelas', desc: 'Pegue 50 estrelas numa partida', icon: '🌟', category: 'intermediario' },
   { id: 'score_700_intermediate', name: 'Setecentos de Uma Vez', desc: 'Faça 700 pontos numa partida', icon: '🚀', category: 'intermediario' },
-  { id: 'score_250_intermediate', name: 'Pontuação de Bronze', desc: 'Faça 250 pontos numa partida', icon: '💎', category: 'intermediario' },
   { id: 'eliminator_5_intermediate', name: 'Caçador de Adversários', desc: 'Elimine 5 adversários numa partida', icon: '☠️', category: 'intermediario' },
   { id: 'three_worms_intermediate', name: 'Trio de Minhocas', desc: 'Jogue uma partida com 3 minhocas ao mesmo tempo', icon: '🐍', category: 'intermediario' },
   { id: 'four_worms_intermediate', name: 'Arena Lotada', desc: 'Jogue uma partida com 4 minhocas ao mesmo tempo', icon: '🐍', category: 'intermediario' },
@@ -85,7 +84,7 @@ export const ACHIEVEMENTS = [
   { id: 'mission_master', name: 'Missão Cumprida', desc: 'Complete 10 missões no total', icon: '🎯', cumulative: 'totalMissions', target: 10, category: 'intermediario' },
   { id: 'score_500', name: 'Imparável', desc: 'Faça 500 pontos numa partida', icon: '🚀', category: 'intermediario' },
   { id: 'length_50', name: 'Gigante', desc: 'Chegue a 50 segmentos numa partida', icon: '🐉', category: 'avancado' },
-  { id: 'eliminator_5', name: 'Caçador de Inimigos', desc: 'Elimine 5 adversários numa partida', icon: '☠️', category: 'avancado' },
+  { id: 'eliminator_5', name: 'Caçador de Inimigos', desc: 'Elimine 5 adversários numa partida', icon: '☠️', category: 'intermediario' },
   { id: 'second_bonus_5', name: 'Virada Especial', desc: 'Pegue as 5 comidinhas especiais do 2º lugar', icon: '💎', category: 'avancado' },
   { id: 'tournament_3wins', name: 'Tricampeão', desc: 'Vença 3 rodadas no total de um torneio', icon: '👑', category: 'avancado' },
   { id: 'score_1000', name: 'Lenda da Arena', desc: 'Alcance 1.000 pontos numa partida', icon: '👑', category: 'lendarias' },
