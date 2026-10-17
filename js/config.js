@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '4.5.48';
+export const VERSION = '4.5.50';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -68,12 +68,12 @@ export const ACHIEVEMENTS = [
   { id: 'score_750', name: 'Fera da Pontuação', desc: 'Faça 750 pontos numa partida', icon: '💎', category: 'extremos' },
   { id: 'length_100', name: 'Colossal', desc: 'Chegue a 100 segmentos numa partida', icon: '🐲', category: 'lendarias' },
   { id: 'eliminator_7', name: 'Predador da Arena', desc: 'Elimine 7 adversários numa partida', icon: '☠️', category: 'extremos' },
-  { id: 'social', name: 'Sociável', desc: 'Jogue uma partida online com um amigo', icon: '👥', category: 'avancado' },
+  { id: 'social', name: 'Sociável', desc: 'Jogue uma partida online com um amigo', icon: '👥', category: 'intermediario' },
   { id: 'collector', name: 'Colecionador', desc: 'Experimente todos os formatos de cabeça', icon: '🐍', cumulative: 'headsUsed', target: 'ALL_HEADS', category: 'colecao' },
   { id: 'chameleon', name: 'Camaleão', desc: 'Jogue em todos os temas de tabuleiro', icon: '🌈', cumulative: 'themesUsed', target: 'ALL_THEMES', category: 'colecao' },
-  { id: 'star_hunter', name: 'Caçador de Estrelas', desc: 'Pegue 10 estrelas no total', icon: '⭐', cumulative: 'totalStars', target: 10, category: 'avancado' },
-  { id: 'mission_master', name: 'Missão Cumprida', desc: 'Complete 10 missões no total', icon: '🎯', cumulative: 'totalMissions', target: 10, category: 'avancado' },
-  { id: 'score_500', name: 'Imparável', desc: 'Faça 500 pontos numa partida', icon: '🚀', category: 'avancado' },
+  { id: 'star_hunter', name: 'Caçador de Estrelas', desc: 'Pegue 10 estrelas no total', icon: '⭐', cumulative: 'totalStars', target: 10, category: 'intermediario' },
+  { id: 'mission_master', name: 'Missão Cumprida', desc: 'Complete 10 missões no total', icon: '🎯', cumulative: 'totalMissions', target: 10, category: 'intermediario' },
+  { id: 'score_500', name: 'Imparável', desc: 'Faça 500 pontos numa partida', icon: '🚀', category: 'intermediario' },
   { id: 'length_50', name: 'Gigante', desc: 'Chegue a 50 segmentos numa partida', icon: '🐉', category: 'avancado' },
   { id: 'eliminator_5', name: 'Caçador de Inimigos', desc: 'Elimine 5 adversários numa partida', icon: '☠️', category: 'avancado' },
   { id: 'second_bonus_5', name: 'Virada Especial', desc: 'Pegue as 5 comidinhas especiais do 2º lugar', icon: '💎', category: 'avancado' },
@@ -87,9 +87,9 @@ export const ACHIEVEMENTS = [
   { id: 'playtime_10m', name: 'Primeiros Minutos', desc: 'Acumule 10 minutos de jogo', icon: '⏱️', cumulative: 'playtimeMs', target: 600000, category: 'iniciante' },
   { id: 'playtime_30m', name: 'Pegando o Jeito', desc: 'Acumule 30 minutos de jogo', icon: '🪱', cumulative: 'playtimeMs', target: 1800000, category: 'iniciante' },
   { id: 'playtime_1h', name: 'Primeira Hora', desc: 'Acumule 1 hora de jogo', icon: '🎮', cumulative: 'playtimeMs', target: 3600000, category: 'iniciante' },
-  { id: 'playtime_3h', name: 'Jogador Frequente', desc: 'Acumule 3 horas de jogo', icon: '🔥', cumulative: 'playtimeMs', target: 10800000, category: 'intermediario' },
-  { id: 'playtime_5h', name: 'Viciado em Minhoca', desc: 'Acumule 5 horas de jogo', icon: '🪱', cumulative: 'playtimeMs', target: 18000000, category: 'intermediario' },
-  { id: 'playtime_10h', name: 'Dedicado', desc: 'Acumule 10 horas de jogo', icon: '⭐', cumulative: 'playtimeMs', target: 36000000, category: 'intermediario' },
+  { id: 'playtime_3h', name: 'Jogador Frequente', desc: 'Acumule 3 horas de jogo', icon: '🔥', cumulative: 'playtimeMs', target: 10800000, category: 'avancado' },
+  { id: 'playtime_5h', name: 'Viciado em Minhoca', desc: 'Acumule 5 horas de jogo', icon: '🪱', cumulative: 'playtimeMs', target: 18000000, category: 'avancado' },
+  { id: 'playtime_10h', name: 'Dedicado', desc: 'Acumule 10 horas de jogo', icon: '⭐', cumulative: 'playtimeMs', target: 36000000, category: 'avancado' },
   { id: 'playtime_25h', name: 'Veterano', desc: 'Acumule 25 horas de jogo', icon: '💪', cumulative: 'playtimeMs', target: 90000000, category: 'avancado' },
   { id: 'playtime_50h', name: 'Mestre da Minhoca', desc: 'Acumule 50 horas de jogo', icon: '👑', cumulative: 'playtimeMs', target: 180000000, category: 'avancado' },
   { id: 'playtime_100h', name: 'Lenda', desc: 'Acumule 100 horas de jogo', icon: '🏆', cumulative: 'playtimeMs', target: 360000000, category: 'avancado' },
@@ -132,7 +132,7 @@ export const ACHIEVEMENTS = [
   { id: 'coins_spent_500', name: 'Magnata da Mioquinha', desc: 'Gaste 500 moedas na Loja ao longo do tempo', icon: '💎', category: 'avancado' },
   { id: 'skins_5', name: 'Fashionista', desc: 'Desbloqueie 5 fantasias na Loja', icon: '👑', category: 'avancado' },
   { id: 'league_legend', name: 'Lenda da Liga', desc: 'Chegue à Liga Lenda', icon: '🏆', category: 'avancado' },
-  { id: 'streak_7', name: 'Sequência Imparável', desc: 'Mantenha uma sequência de 7 dias jogando', icon: '🔥', category: 'intermediario' },
+  { id: 'streak_7', name: 'Sequência Imparável', desc: 'Mantenha uma sequência de 7 dias jogando', icon: '🔥', category: 'avancado' },
   { id: 'daily_10', name: 'Mestre do Desafio', desc: 'Complete 10 Desafios do Dia', icon: '🎯', category: 'avancado' },
   { id: 'games_50', name: 'Veterano', desc: 'Jogue 50 partidas no total', icon: '🎮', category: 'intermediario' },
 ];
