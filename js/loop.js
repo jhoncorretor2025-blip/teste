@@ -240,6 +240,7 @@ export function startGame() {
   updateGamesPlayedBadge(totalGames);
   if (totalGames >= 5) announceAchievement(unlockAchievement('games_5'));
   if (totalGames >= 10) announceAchievement(unlockAchievement('games_10'));
+  if (totalGames >= 80) announceAchievement(unlockAchievement('games_80_quad'));
   updateSessionStatsDisplay(incrementSessionGames());
   updateStreakAndLastPlayed();
   clearSavedGame();
@@ -342,6 +343,7 @@ export function tryBoost(i) {
   if (i === mySlot) {
     if (state.boostUsedCount[i] >= 1) announceAchievement(unlockAchievement('boost_first'));
     if (state.boostUsedCount[i] >= 10) announceAchievement(unlockAchievement('boost_10'));
+    if (state.boostUsedCount[i] >= 12) announceAchievement(unlockAchievement('boost_12_quad'));
   }
   state.boostUntil[i] = now + BOOST_DURATION;
   state.boostReadyAt[i] = now + BOOST_COOLDOWN;
@@ -436,6 +438,7 @@ function stepMovement(indices) {
         state.eliminations[die[i]] = (state.eliminations[die[i]] || 0) + 1;
         trackEliminationForMission(die[i]);
         if (die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('eliminator'));
+        if (die[i] === mySlot && state.eliminations[die[i]] >= 4) announceAchievement(unlockAchievement('eliminator_4_quad'));
         if (isOnline() && die[i] === mySlot && state.eliminations[die[i]] >= 1) announceAchievement(unlockAchievement('online_kill_1'));
         if (isOnline() && die[i] === mySlot && state.eliminations[die[i]] >= 3) announceAchievement(unlockAchievement('online_kill_3'));
         if (die[i] === mySlot && state.eliminations[die[i]] >= 5) announceAchievement(unlockAchievement('eliminator_5'));
@@ -484,6 +487,7 @@ function stepMovement(indices) {
         announceAchievements(trackCumulativeProgress('totalFoods', f.value));
         if (f.kind === 'bonus') {
           state.starsCollected = (state.starsCollected || 0) + 1;
+          if (state.starsCollected >= 40) announceAchievement(unlockAchievement('star_40_quad'));
           if (state.starsCollected >= 50) announceAchievement(unlockAchievement('star_50_intermediate'));
           announceAchievement(unlockAchievement('first_star'));
           announceAchievements(trackCumulativeProgress('totalStars', 1));
@@ -498,6 +502,7 @@ function stepMovement(indices) {
         if (state.foodsEaten[i] >= 10) announceAchievement(unlockAchievement('food_10'));
         if (isOnline() && state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('online_food_25'));
         if (state.foodsEaten[i] >= 25) announceAchievement(unlockAchievement('food_25'));
+        if (state.foodsEaten[i] >= 100) announceAchievement(unlockAchievement('food_100_quad'));
         if (state.scores[i] >= 25) announceAchievement(unlockAchievement('score_25'));
         if (state.scores[i] >= 50) announceAchievement(unlockAchievement('score_50'));
         if (state.scores[i] >= 100) announceAchievement(unlockAchievement('century'));
@@ -509,6 +514,7 @@ function stepMovement(indices) {
         if (isOnline() && state.scores[i] >= 500) announceAchievement(unlockAchievement('online_score_500'));
         if (state.scores[i] >= 1000) announceAchievement(unlockAchievement('score_1000'));
         if (state.scores[i] >= 1500) announceAchievement(unlockAchievement('score_1500'));
+        if (state.scores[i] >= 2800) announceAchievement(unlockAchievement('score_2800_quad'));
       }
     }
     if (state.grow[i] > 0) state.grow[i]--;
@@ -913,6 +919,7 @@ function tick() {
     const mySnake = state.snakes[mySlot] || [];
     const survivedMs = Date.now() - state.spawnedAt[mySlot];
     if (survivedMs >= 30000) announceAchievement(unlockAchievement('survive_30'));
+    if (survivedMs >= 180000) announceAchievement(unlockAchievement('survive_180_quad'));
     if (survivedMs >= 120000) announceAchievement(unlockAchievement('survivor'));
     if (isOnline() && survivedMs >= 120000) announceAchievement(unlockAchievement('online_survive_2m'));
     if (survivedMs >= 300000) announceAchievement(unlockAchievement('survive_5m'));
