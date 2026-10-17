@@ -120,7 +120,7 @@ export function reset() {
   state.foods = [];
   state.scores = Array(6).fill(0);
   state.foodsEaten = Array(6).fill(0);
-  state.starsCollected = 0;
+  state.starsCollected = Array(6).fill(0);
   state.grow = Array(6).fill(0);
   state.respawnAt = Array(6).fill(0);
   state.particles = [];
@@ -486,9 +486,9 @@ function stepMovement(indices) {
         announceAchievement(unlockAchievement('first_food'));
         announceAchievements(trackCumulativeProgress('totalFoods', f.value));
         if (f.kind === 'bonus') {
-          state.starsCollected = (state.starsCollected || 0) + 1;
-          if (state.starsCollected >= 40) announceAchievement(unlockAchievement('star_40_quad'));
-          if (state.starsCollected >= 50) announceAchievement(unlockAchievement('star_50_intermediate'));
+          state.starsCollected[i] = (state.starsCollected[i] || 0) + 1;
+          if (state.starsCollected[i] >= 40) announceAchievement(unlockAchievement('star_40_quad'));
+          if (state.starsCollected[i] >= 50) announceAchievement(unlockAchievement('star_50_intermediate'));
           announceAchievement(unlockAchievement('first_star'));
           announceAchievements(trackCumulativeProgress('totalStars', 1));
         }
