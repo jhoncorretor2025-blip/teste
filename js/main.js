@@ -2266,40 +2266,32 @@ function renderAchievementsGallery() {
   if (!grid) return;
   const unlocked = loadUnlockedAchievements();
   const total = ACHIEVEMENTS.length;
-  const pointsByCategory = {
-    iniciante: 3,
-    intermediario: 5,
-    avancado: 10,
-    sobrevivencia: 6,
-    online: 8,
-    lendarias: 20,
-    extremos: 25,
-    colecao: 15,
-  };
-  const points = ACHIEVEMENTS.reduce((sum, achievement) => {
-    return sum + (unlocked.includes(achievement.id) ? (pointsByCategory[achievement.category] || 5) : 0);
-  }, 0);
+  // A patente depende exclusivamente da quantidade de conquistas desbloqueadas.
+  const achievementCount = unlocked.length;
   const ranks = [
-    { min: 0, name: 'Recruta de Bronze', icon: '🥉', next: 50 },
-    { min: 50, name: 'Guerreiro de Bronze', icon: '🛡️', next: 100 },
-    { min: 100, name: 'Combatente de Prata', icon: '🥈', next: 200 },
-    { min: 200, name: 'Guardião de Ouro', icon: '🥇', next: 350 },
-    { min: 350, name: 'Elite de Platina', icon: '💠', next: 500 },
-    { min: 500, name: 'Campeão Diamante', icon: '💎', next: 700 },
-    { min: 700, name: 'Mestre da Arena', icon: '🏆', next: 1000 },
-    { min: 1000, name: 'Lenda da Minhoca', icon: '👑', next: null },
+    { min: 0, name: 'Recruta de Bronze', icon: '🥉' },
+    { min: 5, name: 'Guerreiro de Bronze', icon: '🛡️' },
+    { min: 15, name: 'Combatente de Prata', icon: '🥈' },
+    { min: 30, name: 'Guardião de Ouro', icon: '🥇' },
+    { min: 45, name: 'Elite de Platina', icon: '💠' },
+    { min: 60, name: 'Campeão Diamante', icon: '💎' },
+    { min: 75, name: 'Mestre da Arena', icon: '🏆' },
+    { min: 90, name: 'Lenda da Minhoca', icon: '👑' },
   ];
-  const rank = [...ranks].reverse().find((item) => points >= item.min) || ranks[0];
-  const nextRank = ranks.find((item) => item.min === rank.next);
+  const rank = [...ranks].reverse().find((item) => achievementCount >= item.min) || ranks[0];
+  const rankIndex = ranks.findIndex((item) => item.name === rank.name);
+  const nextRank = ranks[rankIndex + 1] || null;
   const rankPanel = $('achievementRankPanel');
   if (rankPanel) {
     $('achievementRankIcon').textContent = rank.icon;
     $('achievementRankName').textContent = rank.name;
-    $('achievementRankPoints').textContent = points.toLocaleString('pt-BR');
+    $('achievementRankPoints').textContent = achievementCount.toLocaleString('pt-BR');
     $('achievementRankNext').textContent = nextRank
-      ? `Faltam ${Math.max(0, rank.next - points)} pontos para ${nextRank.name}.`
-      : 'Patente máxima alcançada! Você é uma lenda!';
-    const progress = nextRank ? Math.max(0, Math.min(100, ((points - rank.min) / (rank.next - rank.min)) * 100)) : 100;
+      ? `Faltam ${Math.max(0, nextRank.min - achievementCount)} conquistas para ${nextRank.name}.`
+      : (achievementCount >= total ? 'Todas as conquistas desbloqueadas! Você é uma lenda!' : 'Você alcançou a patente máxima! Continue desbloqueando conquistas.');
+    const progress = nextRank
+      ? Math.max(0, Math.min(100, ((achievementCount - rank.min) / (nextRank.min - rank.min)) * 100))
+      : (total ? Math.min(100, (achievementCount / total) * 100) : 100);
     $('achievementRankBar').style.width = progress + '%';
     rankPanel.dataset.rank = rank.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   }
