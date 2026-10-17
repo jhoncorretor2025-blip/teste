@@ -1,3 +1,7 @@
+## [4.5.50] — 2026-10-17
+- 🏆 **Conquistas reorganizadas:** Jogador Frequente (3h), Viciado em Minhoca (5h), Dedicado (10h) e Sequência Imparável (7 dias) agora ficam em Avançado. Para preencher as vagas em Intermediário, Sociável, Caçador de Estrelas, Missão Cumprida e Imparável (500 pontos) foram movidas para essa categoria.
+- 🔄 **Versão sincronizada:** corrigida a diferença entre a versão do arquivo de configuração e a versão publicada; o jogo passa para 4.5.50.
+
 ## [4.5.49] — 2026-10-10
 - 🔴 **Zonas vermelhas maiores:** raio ampliado de 2 para 4 células, dobrando o diâmetro para facilitar permanecer na zona por 3 segundos.
 
