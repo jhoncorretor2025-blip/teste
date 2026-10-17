@@ -1,3 +1,9 @@
+## [4.5.52] — 2026-10-17
+- 🏅 **Sistema de patentes nas conquistas:** pontos por raridade, patentes progressivas de Bronze a Lenda da Minhoca, barra de progresso e indicação de quantos pontos faltam para a próxima patente.
+- 📊 **Progresso da galeria:** percentual e barra geral refletem as conquistas desbloqueadas.
+- 🧭 **Categorias completas:** a galeria também exibe Sobrevivência, Desafios Extremos, Lendárias e Coleção, além de Iniciante, Intermediário, Avançado e Online.
+- 🔄 **Versão sincronizada:** arquivos principais atualizados para 4.5.52.
+
 ## [4.5.51] — 2026-10-17
 - 🏆 **Novas conquistas desbloqueáveis:** adicionadas Petisco Rápido (10 comidas), Fome de Minhoca (25 comidas) e Primeiro Fôlego (30 segundos sobrevivendo). Os critérios de desbloqueio já existiam no código do jogo; agora também aparecem corretamente na galeria.
 - 🔄 **Versão sincronizada:** configuração, interface, cache e version.txt atualizados para 4.5.51.
