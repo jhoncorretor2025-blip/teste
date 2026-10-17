@@ -2,7 +2,7 @@
 // Se quiser deixar o jogo mais rápido, mexa no TICK. Se quiser mais/menos comida, mexa no NORMAL_FOODS.
 
 export const W = 40, H = 31, CELL = 20, NORMAL_FOODS = 3;
-export const VERSION = '4.5.54';
+export const VERSION = '4.5.55';
 
 // --- Galeria de Conquistas — cada uma tem um jeito próprio de ser desbloqueada.
 // "cumulative" são as que somam ao longo de VÁRIAS partidas (guardadas à parte);
@@ -72,6 +72,16 @@ export const ACHIEVEMENTS = [
   { id: 'eliminator_5_intermediate', name: 'Caçador de Adversários', desc: 'Elimine 5 adversários numa partida', icon: '☠️', category: 'intermediario' },
   { id: 'three_worms_intermediate', name: 'Trio de Minhocas', desc: 'Jogue uma partida com 3 minhocas ao mesmo tempo', icon: '🐍', category: 'intermediario' },
   { id: 'four_worms_intermediate', name: 'Arena Lotada', desc: 'Jogue uma partida com 4 minhocas ao mesmo tempo', icon: '🐍', category: 'intermediario' },
+
+  // 🔴 Desafios multiplicados — metas 4x maiores
+  { id: 'food_100_quad', name: 'Banquete Gigante', desc: 'Coma 100 pontos de comida numa partida', icon: '🥗', category: 'avancado' },
+  { id: 'star_40_quad', name: 'Constelação Suprema', desc: 'Pegue 40 estrelas numa partida', icon: '🌟', category: 'avancado' },
+  { id: 'score_2800_quad', name: 'Pontuação Astronômica', desc: 'Faça 2.800 pontos numa partida', icon: '🚀', category: 'avancado' },
+  { id: 'survive_180_quad', name: 'Fôlego de Titã', desc: 'Sobreviva 180 segundos sem morrer', icon: '⏱️', category: 'avancado' },
+  { id: 'boost_12_quad', name: 'Turbo Implacável', desc: 'Use o turbo 12 vezes numa partida', icon: '⚡', category: 'avancado' },
+  { id: 'eliminator_4_quad', name: 'Quatro Abates', desc: 'Elimine 4 adversários numa partida', icon: '⚔️', category: 'avancado' },
+  { id: 'games_80_quad', name: 'Veterano Absoluto', desc: 'Jogue 80 partidas no total', icon: '🎮', category: 'avancado' },
+  { id: 'food_total_200_quad', name: 'Fome Inesgotável', desc: 'Acumule 200 pontos de comida ao longo das partidas', icon: '🍎', cumulative: 'totalFoods', target: 200, category: 'avancado' },
 
   // 🔴 Avançado — do mais fácil ao mais difícil
   { id: 'score_750', name: 'Fera da Pontuação', desc: 'Faça 750 pontos numa partida', icon: '💎', category: 'extremos' },
