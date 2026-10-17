@@ -1,3 +1,9 @@
+## [4.5.54] — 2026-10-17
+- 🐍 **Novas conquistas intermediárias:** pegar 50 estrelas numa partida, alcançar 700 pontos, jogar com 3 minhocas e jogar com 4 minhocas.
+- ⚔️ **Categoria corrigida:** "Caçador de Inimigos" (eliminar 5 adversários) movida de Avançado para Intermediário.
+- 💎 **Pontuação de 250:** mantida a conquista intermediária existente, evitando duplicatas.
+- 🔄 **Versão sincronizada:** versão e cache atualizados para 4.5.54.
+
 ## [4.5.53] — 2026-10-17
 - 🏅 **Patentes por conquistas concluídas:** a patente agora é determinada exclusivamente pelo total de conquistas desbloqueadas (0, 5, 15, 30, 45, 60, 75 e 90 para cada nível), sem pontuação ponderada por categoria.
 - 📈 **Progresso da patente:** o cartão mostra quantas conquistas faltam para o próximo nível e a barra acompanha o progresso real.
