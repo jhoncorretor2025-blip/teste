@@ -7783,3 +7783,18 @@ main,
   #negativeEventOverlay { top:9%; max-width:calc(100vw - 24px); padding:10px 12px; font-size:12px; }
   #negativeBlackHoleOverlay { width:72px !important; height:72px !important; }
 }
+
+
+/* v4.5.52 — Patentes da galeria de conquistas */
+.achievementRankPanel{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border:1px solid rgba(101,170,255,.38);border-radius:14px;background:linear-gradient(115deg,rgba(33,65,104,.75),rgba(13,25,45,.88));position:relative;overflow:hidden}
+.achievementRankIcon{width:44px;height:44px;display:grid;place-items:center;font-size:1.8rem;border-radius:12px;background:rgba(255,255,255,.07)}
+.achievementRankInfo{display:flex;flex-direction:column;gap:3px;min-width:0}
+.achievementRankInfo small{font-size:.66rem;letter-spacing:.12em;font-weight:800;color:#9fc7ff}
+.achievementRankInfo strong{font-size:.98rem;color:#fff}
+.achievementRankInfo span{font-size:.76rem;color:#b9c9df}
+.achievementRankPoints{text-align:right;display:flex;flex-direction:column;gap:1px}
+.achievementRankPoints b{font-size:1.25rem;color:#ffd66b;font-variant-numeric:tabular-nums}
+.achievementRankPoints small{font-size:.7rem;color:#b9c9df}
+.achievementRankProgress{grid-column:1/-1;height:6px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}
+.achievementRankProgress i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#52e39a,#62d5ff,#ad7aff);transition:width .25s ease}
+@media(max-width:480px){.achievementRankPanel{gap:8px;padding:10px}.achievementRankIcon{width:38px;height:38px;font-size:1.5rem}.achievementRankInfo strong{font-size:.88rem}.achievementRankInfo span{font-size:.68rem}}
