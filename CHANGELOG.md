@@ -1,3 +1,8 @@
+## [4.5.53] — 2026-10-17
+- 🏅 **Patentes por conquistas concluídas:** a patente agora é determinada exclusivamente pelo total de conquistas desbloqueadas (0, 5, 15, 30, 45, 60, 75 e 90 para cada nível), sem pontuação ponderada por categoria.
+- 📈 **Progresso da patente:** o cartão mostra quantas conquistas faltam para o próximo nível e a barra acompanha o progresso real.
+- 🔄 **Versão sincronizada:** configuração, interface, cache e version.txt atualizados para 4.5.53.
+
 ## [4.5.52] — 2026-10-17
 - 🏅 **Sistema de patentes nas conquistas:** pontos por raridade, patentes progressivas de Bronze a Lenda da Minhoca, barra de progresso e indicação de quantos pontos faltam para a próxima patente.
 - 📊 **Progresso da galeria:** percentual e barra geral refletem as conquistas desbloqueadas.
