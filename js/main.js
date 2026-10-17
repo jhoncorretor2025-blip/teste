@@ -2265,20 +2265,67 @@ function renderAchievementsGallery() {
   const grid = $('achievementsGrid');
   if (!grid) return;
   const unlocked = loadUnlockedAchievements();
-  $('achievementsProgress').textContent = `${unlocked.length} de ${ACHIEVEMENTS.length} conquistas desbloqueadas`;
+  const total = ACHIEVEMENTS.length;
+  const pointsByCategory = {
+    iniciante: 3,
+    intermediario: 5,
+    avancado: 10,
+    sobrevivencia: 6,
+    online: 8,
+    lendarias: 20,
+    extremos: 25,
+    colecao: 15,
+  };
+  const points = ACHIEVEMENTS.reduce((sum, achievement) => {
+    return sum + (unlocked.includes(achievement.id) ? (pointsByCategory[achievement.category] || 5) : 0);
+  }, 0);
+  const ranks = [
+    { min: 0, name: 'Recruta de Bronze', icon: '🥉', next: 50 },
+    { min: 50, name: 'Guerreiro de Bronze', icon: '🛡️', next: 100 },
+    { min: 100, name: 'Combatente de Prata', icon: '🥈', next: 200 },
+    { min: 200, name: 'Guardião de Ouro', icon: '🥇', next: 350 },
+    { min: 350, name: 'Elite de Platina', icon: '💠', next: 500 },
+    { min: 500, name: 'Campeão Diamante', icon: '💎', next: 700 },
+    { min: 700, name: 'Mestre da Arena', icon: '🏆', next: 1000 },
+    { min: 1000, name: 'Lenda da Minhoca', icon: '👑', next: null },
+  ];
+  const rank = [...ranks].reverse().find((item) => points >= item.min) || ranks[0];
+  const nextRank = ranks.find((item) => item.min === rank.next);
+  const rankPanel = $('achievementRankPanel');
+  if (rankPanel) {
+    $('achievementRankIcon').textContent = rank.icon;
+    $('achievementRankName').textContent = rank.name;
+    $('achievementRankPoints').textContent = points.toLocaleString('pt-BR');
+    $('achievementRankNext').textContent = nextRank
+      ? `Faltam ${Math.max(0, rank.next - points)} pontos para ${nextRank.name}.`
+      : 'Patente máxima alcançada! Você é uma lenda!';
+    const progress = nextRank ? Math.max(0, Math.min(100, ((points - rank.min) / (rank.next - rank.min)) * 100)) : 100;
+    $('achievementRankBar').style.width = progress + '%';
+    rankPanel.dataset.rank = rank.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
+  $('achievementsProgress').textContent = `${unlocked.length} de ${total} conquistas desbloqueadas`;
+  const percent = total ? Math.round((unlocked.length / total) * 100) : 0;
+  const percentEl = $('achievementsPercent');
+  const overallBar = $('achievementsOverallBar');
+  if (percentEl) percentEl.textContent = percent + '%';
+  if (overallBar) overallBar.style.width = percent + '%';
 
   const groups = [
     { key: 'iniciante', title: '🟢 Iniciante', subtitle: 'Primeiros objetivos para pegar o jeito' },
     { key: 'intermediario', title: '🟡 Intermediário', subtitle: 'Desafios que exigem mais consistência' },
     { key: 'avancado', title: '🔴 Avançado', subtitle: 'Conquistas para dominar a arena' },
+    { key: 'sobrevivencia', title: '🛡️ Sobrevivência', subtitle: 'Mostre que consegue resistir na arena' },
+    { key: 'extremos', title: '🔥 Desafios Extremos', subtitle: 'Desafios de alto nível para quem domina a arena' },
+    { key: 'lendarias', title: '👑 Lendárias', subtitle: 'Feitos raros reservados aos melhores jogadores' },
+    { key: 'colecao', title: '🏆 Coleção', subtitle: 'Conquistas de longo prazo e desbloqueios' },
     { key: 'online', title: '🌐 Online', subtitle: 'Desafios exclusivos para partidas multiplayer' },
   ];
 
   grid.innerHTML = groups.map((group) => {
     const items = ACHIEVEMENTS
       .filter((a) => a.category === group.key)
-      // O config.js já guarda cada categoria do mais fácil ao mais difícil.
       .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }));
+    if (!items.length) return '';
     return `
       <div style="grid-column:1/-1;margin-top:10px">
         <div style="font-size:1rem;font-weight:800;margin-bottom:2px">${group.title}</div>
