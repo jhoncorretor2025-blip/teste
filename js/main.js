@@ -12,7 +12,7 @@ import { startGame, startOnlineHostGame, startClientGame, applyRemoteState, tryB
 import { render } from './render.js?v=3.6.3';
 import { setupInput, setDir } from './input.js';
 import { unlockAudio, setMuted, toggleMusic, setSfxVolume, setMusicVolume } from './sound.js';
-import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
+import { loadBest, loadMuted, saveMuted, loadProfile, saveProfile, resetSettings, loadVibration, saveVibration, loadGamesPlayed, loadAllModeBests, loadSessionGamesToday, loadLastPlayedAt, loadStreakDays, recordMatchResult, loadMatchHistory, loadUnlockedAchievements, unlockAchievement, trackCumulativeProgress, getAchievementProgressSnapshot, saveShortcuts, loadShortcuts, loadHunterSettings, saveHunterSettings } from './storage.js';
 import { maybeShowTutorial, setupTutorial } from './tutorial.js';
 import { shareScoreCard } from './share.js';
 import { renderLeaderboard, toggleLeaderboard } from './leaderboard.js';
@@ -2261,13 +2261,23 @@ if (savedGame) {
 
 // Galeria de Conquistas — mostra cada uma com destaque se já foi desbloqueada, ou
 // esmaecida com "?" no lugar da descrição se ainda não
+function achievementRarity(a) {
+  const id = String(a.id || '');
+  if (a.category === 'lendarias' || /legend|champion|immortal|1000h|250h/i.test(id)) return 'lendaria';
+  if (a.category === 'extremos' || a.category === 'colecao' || a.category === 'avancado' || /750|1000|500h|250h|no_death|perfect/i.test(id)) return 'epica';
+  if (a.category === 'intermediario' || a.category === 'sobrevivencia' || a.category === 'online') return 'rara';
+  return 'comum';
+}
+function achievementRarityLabel(rarity) {
+  return ({ comum: 'COMUM', rara: 'RARA', epica: 'ÉPICA', lendaria: 'LENDÁRIA' })[rarity] || 'COMUM';
+}
 function renderAchievementsGallery() {
   const grid = $('achievementsGrid');
   if (!grid) return;
   const unlocked = loadUnlockedAchievements();
   const total = ACHIEVEMENTS.length;
-  // A patente depende exclusivamente da quantidade de conquistas desbloqueadas.
-  const achievementCount = unlocked.length;
+  const unlockedSet = new Set(unlocked);
+  const achievementCount = unlockedSet.size;
   const ranks = [
     { min: 0, name: 'Recruta de Bronze', icon: '🥉' },
     { min: 5, name: 'Guerreiro de Bronze', icon: '🛡️' },
@@ -2294,9 +2304,24 @@ function renderAchievementsGallery() {
       : (total ? Math.min(100, (achievementCount / total) * 100) : 100);
     $('achievementRankBar').style.width = progress + '%';
     rankPanel.dataset.rank = rank.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    // Celebrar promoção somente quando o jogador sobe de nível; não repete ao abrir a tela.
+    try {
+      const previousRank = localStorage.getItem('snakeArenaLastAchievementRank');
+      if (previousRank && previousRank !== rank.name && rankIndex > ranks.findIndex((r) => r.name === previousRank)) {
+        const notice = $('achievementPromotionNotice');
+        if (notice) {
+          notice.textContent = `🎉 Nova patente: ${rank.icon} ${rank.name}!`;
+          notice.classList.remove('hidden');
+          notice.classList.add('show');
+          clearTimeout(window.__achievementPromotionTimer);
+          window.__achievementPromotionTimer = setTimeout(() => notice.classList.remove('show'), 4200);
+        }
+      }
+      localStorage.setItem('snakeArenaLastAchievementRank', rank.name);
+    } catch {}
   }
-  $('achievementsProgress').textContent = `${unlocked.length} de ${total} conquistas desbloqueadas`;
-  const percent = total ? Math.round((unlocked.length / total) * 100) : 0;
+  $('achievementsProgress').textContent = `${achievementCount} de ${total} conquistas desbloqueadas`;
+  const percent = total ? Math.round((achievementCount / total) * 100) : 0;
   const percentEl = $('achievementsPercent');
   const overallBar = $('achievementsOverallBar');
   if (percentEl) percentEl.textContent = percent + '%';
@@ -2312,32 +2337,86 @@ function renderAchievementsGallery() {
     { key: 'colecao', title: '🏆 Coleção', subtitle: 'Conquistas de longo prazo e desbloqueios' },
     { key: 'online', title: '🌐 Online', subtitle: 'Desafios exclusivos para partidas multiplayer' },
   ];
-
+  const filter = document.querySelector('[data-achievement-filter].active')?.dataset.achievementFilter || 'all';
+  const query = ($('achievementSearch')?.value || '').trim().toLocaleLowerCase('pt-BR');
+  const rarityFilter = $('achievementRarity')?.value || 'all';
+  const matches = (a) => {
+    const isUnlocked = unlockedSet.has(a.id);
+    const rarity = achievementRarity(a);
+    if (filter === 'done' && !isUnlocked) return false;
+    if (filter === 'pending' && isUnlocked) return false;
+    if (rarityFilter !== 'all' && rarity !== rarityFilter) return false;
+    if (query && !`${a.name} ${a.desc} ${a.category}`.toLocaleLowerCase('pt-BR').includes(query)) return false;
+    return true;
+  };
   grid.innerHTML = groups.map((group) => {
-    const items = ACHIEVEMENTS
-      .filter((a) => a.category === group.key)
-      .map((a, difficultyIndex) => ({ a, difficultyNumber: difficultyIndex + 1 }));
+    const items = ACHIEVEMENTS.filter((a) => a.category === group.key && matches(a));
     if (!items.length) return '';
     return `
-      <div style="grid-column:1/-1;margin-top:10px">
-        <div style="font-size:1rem;font-weight:800;margin-bottom:2px">${group.title}</div>
-        <div class="muted" style="margin-bottom:7px">${group.subtitle}</div>
+      <div class="achievementGroupHeading" style="grid-column:1/-1">
+        <div class="achievementGroupTitle">${group.title}</div>
+        <div class="muted achievementGroupSubtitle">${group.subtitle}</div>
       </div>
-      ${items.map(({ a, difficultyNumber }) => {
-        const isUnlocked = unlocked.includes(a.id);
-        return `<div class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'}" title="${a.desc}">
-          <span class="aLevel" aria-label="Dificuldade ${difficultyNumber}">${difficultyNumber}</span>
-          <span class="aIcon">${a.icon}</span>
+      ${items.map((a, index) => {
+        const isUnlocked = unlockedSet.has(a.id);
+        const rarity = achievementRarity(a);
+        return `<button type="button" class="achievementCard ${isUnlocked ? 'unlocked' : 'locked'} rarity-${rarity}" data-rarity="${rarity}" aria-label="${a.name}: ${a.desc}. ${isUnlocked ? 'Desbloqueada' : 'Bloqueada'}" title="${a.desc}">
+          <span class="aLevel" aria-label="Posição na categoria">${index + 1}</span>
+          <span class="aRarity">${achievementRarityLabel(rarity)}</span>
+          <span class="aIcon">${isUnlocked ? a.icon : '🔒'}</span>
           <span class="aName">${a.name}</span>
           <span class="aDesc">${a.desc}</span>
           <span class="aStatus">${isUnlocked ? '✅ Desbloqueada' : '🔒 Bloqueada'}</span>
-        </div>`;
+        </button>`;
       }).join('')}
     `;
   }).join('');
+  if (!grid.innerHTML) grid.innerHTML = '<p class="muted achievementEmpty">Nenhuma conquista corresponde aos filtros escolhidos.</p>';
+
+  // Progresso "quase lá": usa somente contadores cumulativos reais já registrados pelo jogo.
+  const nearGrid = $('achievementNearGrid');
+  const nearSection = $('achievementNearSection');
+  if (nearGrid && nearSection) {
+    const progress = getAchievementProgressSnapshot();
+    const near = ACHIEVEMENTS.filter((a) => a.cumulative && !unlockedSet.has(a.id)).map((a) => {
+      const raw = progress[a.cumulative];
+      const current = Array.isArray(raw) ? raw.length : (Number(raw) || 0);
+      const target = a.target === 'ALL_THEMES'
+        ? (Array.isArray(progress.themesUsed) ? Math.max(progress.themesUsed.length, 1) : 1)
+        : a.target === 'ALL_HEADS'
+          ? (Array.isArray(progress.headsUsed) ? Math.max(progress.headsUsed.length, 1) : 1)
+          : Number(a.target) || 1;
+      return { a, current, target, pct: Math.min(100, Math.floor((current / target) * 100)) };
+    }).filter((item) => item.pct > 0 && item.pct < 100).sort((x, y) => y.pct - x.pct).slice(0, 4);
+    nearSection.classList.toggle('hidden', near.length === 0);
+    nearGrid.innerHTML = near.map(({ a, current, target, pct }) => `
+      <div class="achievementNearCard rarity-${achievementRarity(a)}">
+        <div class="achievementNearIcon">${a.icon}</div>
+        <div class="achievementNearContent">
+          <strong>${a.name}</strong><small>${current.toLocaleString('pt-BR')} / ${target.toLocaleString('pt-BR')}</small>
+          <div class="achievementNearTrack"><i style="width:${pct}%"></i></div>
+          <span>${pct}% concluído</span>
+        </div>
+      </div>`).join('');
+  }
 }
+
 renderAchievementsGallery();
 document.addEventListener('achievementUnlocked', renderAchievementsGallery);
+const achievementFilterBar = $('achievementFilterBar');
+achievementFilterBar?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-achievement-filter]');
+  if (!button) return;
+  achievementFilterBar.querySelectorAll('[data-achievement-filter]').forEach((item) => {
+    const active = item === button;
+    item.classList.toggle('active', active);
+    item.setAttribute('aria-pressed', String(active));
+  });
+  renderAchievementsGallery();
+});
+$('achievementSearch')?.addEventListener('input', renderAchievementsGallery);
+$('achievementRarity')?.addEventListener('change', renderAchievementsGallery);
+
 document.querySelector('.tabBar')?.addEventListener('click', (e) => {
   if (e.target.closest('.tabBtn')?.dataset.tab === 'conquistas') renderAchievementsGallery();
 });
