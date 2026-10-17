@@ -1,3 +1,8 @@
+## [4.5.55] — 2026-10-17
+- 🏆 **Novas conquistas avançadas com metas 4x maiores:** 100 pontos de comida numa partida, 40 estrelas, 2.800 pontos, 180 segundos de sobrevivência, 12 usos de turbo, 4 eliminações, 80 partidas totais e 200 pontos de comida acumulados.
+- 🎯 **Desbloqueio conectado aos contadores reais:** condições adicionadas aos ciclos de jogo e ao progresso cumulativo existente.
+- 🔄 **Versão e cache atualizados** para 4.5.55.
+
 ## [4.5.54] — 2026-10-17
 - 🐍 **Novas conquistas intermediárias:** pegar 50 estrelas numa partida, alcançar 700 pontos, jogar com 3 minhocas e jogar com 4 minhocas.
 - ⚔️ **Categoria corrigida:** "Caçador de Inimigos" (eliminar 5 adversários) movida de Avançado para Intermediário.
