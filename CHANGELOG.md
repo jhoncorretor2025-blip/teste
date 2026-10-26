@@ -1,3 +1,9 @@
+## [4.5.56] — 2026-10-25
+- 📱 **Layout mobile corrigido:** evita rolagem horizontal, melhora a navegação das abas e impede que cabeçalhos e botões ultrapassem a largura do celular.
+- 🎮 **Arena responsiva:** ajusta a área de jogo em retrato e paisagem, respeitando a altura disponível da tela.
+- 🕹️ **Controles touch redimensionados:** joystick, direcional e Turbo adaptam o tamanho ao aparelho e respeitam as áreas seguras da tela.
+- 🔄 **Cache atualizado:** versão sincronizada para entregar os ajustes de interface aos aparelhos.
+
 ## [4.5.55] — 2026-10-17
 - 🏆 **Novas conquistas avançadas com metas 4x maiores:** 100 pontos de comida numa partida, 40 estrelas, 2.800 pontos, 180 segundos de sobrevivência, 12 usos de turbo, 4 eliminações, 80 partidas totais e 200 pontos de comida acumulados.
 - 🎯 **Desbloqueio conectado aos contadores reais:** condições adicionadas aos ciclos de jogo e ao progresso cumulativo existente.
