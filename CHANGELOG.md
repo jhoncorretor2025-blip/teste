@@ -1,3 +1,8 @@
+## [4.5.58] — 2026-10-27
+- 📱 **Controles presos à tela visível:** joystick, setas e turbo ficam fixos na área útil do celular em modo compacto/tela cheia.
+- 🧭 **Posicionamento reorganizado:** alternância de controle no alto à esquerda, maximizar no alto à direita, joystick/setas embaixo à esquerda e turbo embaixo à direita.
+- 🛡️ **Áreas seguras respeitadas:** margens para os recortes e barras do celular, com dimensões adaptadas para retrato e paisagem.
+
 ## [4.5.57] — 2026-10-27
 - 🕹️ **Joystick corrigido no celular:** a bolinha permanece ancorada ao centro do controle durante o movimento.
 - 🎯 **Retorno ao centro corrigido:** ao aliviar o toque ou soltar o dedo, o controle visual volta à posição inicial.

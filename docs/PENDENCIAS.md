@@ -1,3 +1,6 @@
+\n## 🟡 Validar controles móveis v4.5.58 em aparelho real
+A camada dos controles agora usa a área visível da tela em modo compacto. Conferir retrato e paisagem, tela cheia e barras do navegador; garantir que joystick, setas, turbo e botão de alternância permaneçam clicáveis.
+
 # O que ainda falta (pendências, ideias e o que nunca foi conferido)
 
 Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por que** é assim), este arquivo diz **o que falta**. Terminou algo daqui? **Apague o item** e registre no `CHANGELOG.md`. Achou algo novo? **Acrescente aqui**, com o que já foi tentado.

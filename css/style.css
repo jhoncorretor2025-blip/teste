@@ -8082,3 +8082,94 @@ main,
   left: 50%;
   top: 50%;
 }
+
+
+/* v4.5.58 — controles presos à área visível do celular, sem depender do tamanho da arena */
+@media (max-width: 1000px) and (pointer: coarse) {
+  #game.compact #touch {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    pointer-events: none !important;
+    z-index: 1000 !important;
+  }
+
+  #game.compact #touch > * {
+    pointer-events: auto;
+  }
+
+  #game.compact #joystick,
+  #game.compact #dpad {
+    position: fixed !important;
+    left: max(14px, env(safe-area-inset-left)) !important;
+    bottom: max(14px, env(safe-area-inset-bottom)) !important;
+    top: auto !important;
+    margin: 0 !important;
+    width: clamp(92px, 25vw, 124px) !important;
+    height: clamp(92px, 25vw, 124px) !important;
+    touch-action: none !important;
+  }
+
+  #game.compact #dpad {
+    width: clamp(112px, 30vw, 142px) !important;
+    height: clamp(112px, 30vw, 142px) !important;
+  }
+
+  #game.compact #boostTouch {
+    position: fixed !important;
+    right: max(14px, env(safe-area-inset-right)) !important;
+    bottom: max(14px, env(safe-area-inset-bottom)) !important;
+    top: auto !important;
+    margin: 0 !important;
+    width: clamp(66px, 18vw, 84px) !important;
+    height: clamp(66px, 18vw, 84px) !important;
+    touch-action: manipulation !important;
+  }
+
+  #game.compact #mobileTouchControlToggle {
+    position: fixed !important;
+    left: max(14px, env(safe-area-inset-left)) !important;
+    top: max(14px, env(safe-area-inset-top)) !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 1002 !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  #game.compact #portraitMaximizeBtn {
+    position: fixed !important;
+    right: max(14px, env(safe-area-inset-right)) !important;
+    top: max(14px, env(safe-area-inset-top)) !important;
+    bottom: auto !important;
+    z-index: 1002 !important;
+    max-width: 48vw !important;
+  }
+
+  #game.compact #stickText {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1000px) and (pointer: coarse) and (orientation: landscape) {
+  #game.compact #joystick,
+  #game.compact #dpad {
+    width: clamp(76px, 15vh, 104px) !important;
+    height: clamp(76px, 15vh, 104px) !important;
+  }
+  #game.compact #dpad {
+    width: clamp(88px, 18vh, 116px) !important;
+    height: clamp(88px, 18vh, 116px) !important;
+  }
+  #game.compact #boostTouch {
+    width: clamp(58px, 12vh, 72px) !important;
+    height: clamp(58px, 12vh, 72px) !important;
+  }
+}
