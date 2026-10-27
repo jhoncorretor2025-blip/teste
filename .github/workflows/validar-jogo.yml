@@ -23,6 +23,8 @@ jobs:
           node-version: 22
       - name: Instalar dependências dos testes
         run: npm install --no-audit --no-fund
+      - name: Simular os gestos do joystick
+        run: timeout 30s node tests/joystick-touch-centering.mjs
       - name: Regenerar mapa do código
         run: python3 tools/gerar-mapa.py
       - name: Registrar mapa gerado no branch da correção
