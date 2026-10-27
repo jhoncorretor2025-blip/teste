@@ -1,5 +1,6 @@
 // Regressão do joystick: o polegar visual deve ficar centrado e retornar ao soltar.
 import assert from 'assert';
+import fs from 'fs';
 import { RAIZ, criarJanela, ativar, importarDe } from './_ambiente.mjs';
 
 const w = criarJanela();
@@ -9,6 +10,13 @@ w.HTMLElement.prototype.setPointerCapture ||= function () {};
 const joystick = w.document.getElementById('joystick');
 const stick = w.document.getElementById('stick');
 assert(joystick && stick, 'o joystick e sua bolinha precisam existir');
+
+const css = fs.readFileSync(new URL('../css/style.css', import.meta.url), 'utf8');
+assert.match(
+  css,
+  /#game\s+\.touch\s+\.stick\s*\{\s*left:\s*50%;\s*top:\s*50%;\s*\}/,
+  'o CSS precisa manter a âncora do polegar no centro, em qualquer layout móvel',
+);
 
 joystick.getBoundingClientRect = () => ({
   left: 0, top: 0, right: 132, bottom: 132, width: 132, height: 132,
