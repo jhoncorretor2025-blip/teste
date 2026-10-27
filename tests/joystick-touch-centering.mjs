@@ -58,4 +58,6 @@ assert.equal(
   'a bolinha deve voltar ao centro ao soltar o toque',
 );
 
+w.close();
 console.log('RESULTADO: OK — joystick centralizado ao arrastar, voltar ao centro e soltar');
+process.exit(0);
