@@ -1,3 +1,8 @@
+## v4.5.59 — correções da auditoria
+- Adicionar uma função pública de snapshot para os contadores cumulativos, retornando cópias defensivas dos arrays.
+- Tratar o retorno ausente/cancelado do prompt antes de sanitizar o nome do jogador.
+- Não publicar até revisar as falhas restantes da suíte e validar os controles em dispositivo real.
+
 ## v4.5.58 — controles móveis dentro da área visível
 **Decisão:** no modo compacto em dispositivos táteis, posicionar a camada de controles e cada comando em relação à viewport dinâmica, não à arena/canvas.
 **Layout:** alternância de controle no alto à esquerda; maximizar no alto à direita; joystick/setas embaixo à esquerda; turbo embaixo à direita.

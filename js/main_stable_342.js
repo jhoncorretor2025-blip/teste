@@ -608,8 +608,8 @@ $('editOnlinePlayerNameBtn')?.addEventListener('click', () => {
   }
   const nomeAtual = String(state.names[0] || 'Jhon');
   const novoNome = window.prompt('Digite seu nome (máximo 18 caracteres):', nomeAtual);
-  if (novoNome === null) return;
-  const nomeLimpo = safe(novoNome.replace(/[<>]/g, '').trim().slice(0, 18), '').trim();
+  if (novoNome == null) return; // cancelamento pode vir como null ou undefined
+  const nomeLimpo = safe(String(novoNome).replace(/[<>]/g, '').trim().slice(0, 18), '').trim();
   if (!nomeLimpo) {
     mostrarStatusCriacao('⚠️ O nome não pode ficar vazio.');
     return;

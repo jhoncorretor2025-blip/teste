@@ -1,3 +1,9 @@
+## [4.5.59] — 2026-10-27
+- 🧩 Corrigida a exportação ausente do snapshot de progresso das conquistas, que impedia o carregamento de módulos legados e testes.
+- 🛡️ Corrigido o cancelamento do prompt de edição do nome online quando o navegador retorna `undefined` ou `null`.
+- 📱 Mantidas as melhorias candidatas de posicionamento dos controles móveis na área visível da tela.
+- ⚠️ Auditoria detectou falhas adicionais em testes de multiplayer/salas e CSS; a versão permanece em branch de revisão, sem publicação.
+
 ## [4.5.58] — 2026-10-27
 - 📱 **Controles presos à tela visível:** joystick, setas e turbo ficam fixos na área útil do celular em modo compacto/tela cheia.
 - 🧭 **Posicionamento reorganizado:** alternância de controle no alto à esquerda, maximizar no alto à direita, joystick/setas embaixo à esquerda e turbo embaixo à direita.

@@ -83,3 +83,7 @@ Tudo o que é online foi testado só com **rede simulada**. Ainda precisa de tes
 ## ⚪ Melhorias de estrutura possíveis
 - Os três maiores arquivos (`main.js`, `render.js`, `loop.js`) acumulam muita coisa; dividir por assunto facilitaria editar (veja os tamanhos em `docs/MAPA-DO-CODIGO.md`). Lembre: módulo novo entra no `ASSETS` do `sw.js` e nos guias (o verificador cobra).
 - Sem teste próprio: `ai.js`, `mission.js`, `sound.js`, `storage.js` (incluindo as conquistas), `share.js`, `tutorial.js`, `leaderboard.js`, `players.js`, `input.js` e `food.js`.
+
+
+## 🟡 Auditoria funcional v4.5.59 — pendências
+A suíte completa ainda reporta falhas em testes de multiplayer, criação de sala, alguns módulos legados e estabilidade de formatação CSS. Revisar cada causa antes de publicar; a simulação do joystick isolada passou.
