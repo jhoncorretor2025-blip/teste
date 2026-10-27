@@ -1,3 +1,8 @@
+## v4.5.57 — posição estável do joystick móvel
+**Decisão:** ancorar a bolinha do joystick exatamente no centro do círculo, usando o deslocamento do dedo apenas como um movimento adicional.
+**Motivo:** as regras responsivas alteravam a posição inicial da bolinha, e o JavaScript substituía a transformação que a mantinha centralizada ao mover/soltar o dedo.
+**Cuidados:** manter o centro do controle independente do tamanho da tela e testar o retorno à zona neutra, o cancelamento do toque e as orientações retrato/paisagem.
+
 ## v4.5.8 — dashboard inicial compacto
 **Decisão:** reduzir visualmente o painel inicial e deixar detalhes avançados nas áreas próprias.
 **Motivo:** havia informação demais antes do botão de configuração/jogo, especialmente mapa, prévia da minhoca e textos auxiliares. O jogador deve identificar rapidamente a partida e iniciar sem rolar uma tela cheia de detalhes.

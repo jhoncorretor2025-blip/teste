@@ -2,6 +2,9 @@
 
 Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por que** é assim), este arquivo diz **o que falta**. Terminou algo daqui? **Apague o item** e registre no `CHANGELOG.md`. Achou algo novo? **Acrescente aqui**, com o que já foi tentado.
 
+## 🟡 Conferir o joystick corrigido em aparelho real
+O código foi ajustado para manter a bolinha centralizada durante o arrasto e após o toque. A simulação automatizada cobre movimento, retorno à zona neutra e soltura, mas a correção ainda precisa ser conferida num celular real, tanto em retrato quanto em paisagem, inclusive após alternar entre joystick e setas.
+
 ## 🟡 Modo offline desligado (decisão do ChatGPT, vale conferir se é isso que o dono quer)
 Ao abrir, o jogo **desregistra todos os Service Workers** (`navigator.serviceWorker.getRegistrations()` → `unregister()` em `main_stable_342.js`). Foi feito pra acabar com versão velha presa em cache, mas na prática o `sw.js` nunca roda e **o jogo não abre sem internet** (o `sw.js` e a lista de arquivos dele continuam sendo mantidos à toa). Se o offline voltar a ser desejado, é preciso parar de desregistrar e resolver o cache de outro jeito.
 

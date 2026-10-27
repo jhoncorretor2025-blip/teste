@@ -1,3 +1,9 @@
+## [4.5.57] — 2026-10-27
+- 🕹️ **Joystick corrigido no celular:** a bolinha permanece ancorada ao centro do controle durante o movimento.
+- 🎯 **Retorno ao centro corrigido:** ao aliviar o toque ou soltar o dedo, o controle visual volta à posição inicial.
+- 🧪 **Regressão coberta por teste:** inclui uma simulação de arrastar, voltar à zona neutra e soltar o joystick.
+- 🔄 **Versão e cache sincronizados** para os aparelhos receberem a correção.
+
 ## [4.5.56] — 2026-10-25
 - 📱 **Layout mobile corrigido:** evita rolagem horizontal, melhora a navegação das abas e impede que cabeçalhos e botões ultrapassem a largura do celular.
 - 🎮 **Arena responsiva:** ajusta a área de jogo em retrato e paisagem, respeitando a altura disponível da tela.

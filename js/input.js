@@ -118,6 +118,11 @@ export function setupInput() {
 
   let lastJoystickDir = null;
 
+  // Mantém o centro da bolinha fixo; só o segundo translate desloca o controle.
+  function positionStick(x = 0, y = 0) {
+    $('stick').style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
+  }
+
   function joystickMove(e) {
     const r = $('joystick').getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
@@ -125,7 +130,10 @@ export function setupInput() {
     const ax = Math.abs(x), ay = Math.abs(y);
     // O controle precisa responder com pouco arrasto, mas sem trocar de direção por
     // pequenos tremores do dedo. O limite de 6 px deixa a curva mais imediata.
-    if (Math.max(ax, ay) < 6) return;
+    if (Math.max(ax, ay) < 6) {
+      positionStick(0, 0);
+      return;
+    }
 
     const dir = ax > ay
       ? (x > 0 ? D.right : D.left)
@@ -140,7 +148,7 @@ export function setupInput() {
 
     const max = Math.max(22, r.width * 0.38);
     const m = Math.min(max, Math.hypot(x, y)), a = Math.atan2(y, x);
-    $('stick').style.transform = `translate(${Math.cos(a) * m}px,${Math.sin(a) * m}px)`;
+    positionStick(Math.cos(a) * m, Math.sin(a) * m);
   }
 
   $('joystick').addEventListener('pointerdown', e => {
@@ -157,7 +165,7 @@ export function setupInput() {
     $('joystick').addEventListener(ev, () => {
       state.joyId = null;
       lastJoystickDir = null;
-      $('stick').style.transform = 'translate(0,0)';
+      positionStick(0, 0);
     })
   );
 

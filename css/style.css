@@ -8075,3 +8075,10 @@ main,
     font-size: .68rem;
   }
 }
+
+
+/* v4.5.57 — âncora central única para o controle visual do joystick em qualquer tamanho de tela */
+#game .touch .stick {
+  left: 50%;
+  top: 50%;
+}
