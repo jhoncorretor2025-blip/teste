@@ -1,3 +1,20 @@
+## [4.5.59] — 2026-10-27
+- 🧩 Corrigida a exportação ausente do snapshot de progresso das conquistas, que impedia o carregamento de módulos legados e testes.
+- 🛡️ Corrigido o cancelamento do prompt de edição do nome online quando o navegador retorna `undefined` ou `null`.
+- 📱 Mantidas as melhorias candidatas de posicionamento dos controles móveis na área visível da tela.
+- ⚠️ Auditoria detectou falhas adicionais em testes de multiplayer/salas e CSS; a versão permanece em branch de revisão, sem publicação.
+
+## [4.5.58] — 2026-10-27
+- 📱 **Controles presos à tela visível:** joystick, setas e turbo ficam fixos na área útil do celular em modo compacto/tela cheia.
+- 🧭 **Posicionamento reorganizado:** alternância de controle no alto à esquerda, maximizar no alto à direita, joystick/setas embaixo à esquerda e turbo embaixo à direita.
+- 🛡️ **Áreas seguras respeitadas:** margens para os recortes e barras do celular, com dimensões adaptadas para retrato e paisagem.
+
+## [4.5.57] — 2026-10-27
+- 🕹️ **Joystick corrigido no celular:** a bolinha permanece ancorada ao centro do controle durante o movimento.
+- 🎯 **Retorno ao centro corrigido:** ao aliviar o toque ou soltar o dedo, o controle visual volta à posição inicial.
+- 🧪 **Regressão coberta por teste:** inclui uma simulação de arrastar, voltar à zona neutra e soltar o joystick.
+- 🔄 **Versão e cache sincronizados** para os aparelhos receberem a correção.
+
 ## [4.5.56] — 2026-10-25
 - 📱 **Layout mobile corrigido:** evita rolagem horizontal, melhora a navegação das abas e impede que cabeçalhos e botões ultrapassem a largura do celular.
 - 🎮 **Arena responsiva:** ajusta a área de jogo em retrato e paisagem, respeitando a altura disponível da tela.

@@ -1,6 +1,12 @@
+\n## 🟡 Validar controles móveis v4.5.58 em aparelho real
+A camada dos controles agora usa a área visível da tela em modo compacto. Conferir retrato e paisagem, tela cheia e barras do navegador; garantir que joystick, setas, turbo e botão de alternância permaneçam clicáveis.
+
 # O que ainda falta (pendências, ideias e o que nunca foi conferido)
 
 Junto com o `CHANGELOG.md` (o que **já foi feito**) e `docs/DECISOES.md` (**por que** é assim), este arquivo diz **o que falta**. Terminou algo daqui? **Apague o item** e registre no `CHANGELOG.md`. Achou algo novo? **Acrescente aqui**, com o que já foi tentado.
+
+## 🟡 Conferir o joystick corrigido em aparelho real
+O código foi ajustado para manter a bolinha centralizada durante o arrasto e após o toque. A simulação automatizada cobre movimento, retorno à zona neutra e soltura, mas a correção ainda precisa ser conferida num celular real, tanto em retrato quanto em paisagem, inclusive após alternar entre joystick e setas.
 
 ## 🟡 Modo offline desligado (decisão do ChatGPT, vale conferir se é isso que o dono quer)
 Ao abrir, o jogo **desregistra todos os Service Workers** (`navigator.serviceWorker.getRegistrations()` → `unregister()` em `main_stable_342.js`). Foi feito pra acabar com versão velha presa em cache, mas na prática o `sw.js` nunca roda e **o jogo não abre sem internet** (o `sw.js` e a lista de arquivos dele continuam sendo mantidos à toa). Se o offline voltar a ser desejado, é preciso parar de desregistrar e resolver o cache de outro jeito.
@@ -77,3 +83,7 @@ Tudo o que é online foi testado só com **rede simulada**. Ainda precisa de tes
 ## ⚪ Melhorias de estrutura possíveis
 - Os três maiores arquivos (`main.js`, `render.js`, `loop.js`) acumulam muita coisa; dividir por assunto facilitaria editar (veja os tamanhos em `docs/MAPA-DO-CODIGO.md`). Lembre: módulo novo entra no `ASSETS` do `sw.js` e nos guias (o verificador cobra).
 - Sem teste próprio: `ai.js`, `mission.js`, `sound.js`, `storage.js` (incluindo as conquistas), `share.js`, `tutorial.js`, `leaderboard.js`, `players.js`, `input.js` e `food.js`.
+
+
+## 🟡 Auditoria funcional v4.5.59 — pendências
+A suíte completa ainda reporta falhas em testes de multiplayer, criação de sala, alguns módulos legados e estabilidade de formatação CSS. Revisar cada causa antes de publicar; a simulação do joystick isolada passou.

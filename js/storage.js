@@ -415,6 +415,12 @@ export function unlockAchievement(id) {
   return ACHIEVEMENTS.find((a) => a.id === id) || null;
 }
 
+// Retorna um snapshot defensivo dos contadores cumulativos para a interface.
+export function getAchievementProgressSnapshot() {
+  const progress = loadAchievementProgress();
+  return { ...progress, themesUsed: [...progress.themesUsed], headsUsed: [...progress.headsUsed] };
+}
+
 // Soma nos contadores cumulativos (comida/estrela/missão/tema/cabeça) e desbloqueia
 // automaticamente qualquer conquista cumulativa que tenha batido a meta agora
 export function trackCumulativeProgress(field, amountOrValue) {
