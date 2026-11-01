@@ -1,3 +1,9 @@
+## [4.5.57] — 2026-11-01
+- 📱 **Arena em paisagem corrigida:** limita a altura do campo em telas baixas para que a parte inferior não fique fora da tela.
+- 🕹️ **Joystick e controles ajustados:** mantêm o controle inteiro dentro da arena, com tamanho adequado em modo paisagem.
+- 🌐 **Painel online simplificado:** oculta o segundo painel duplicado dentro da arena e compacta o painel principal em uma única faixa.
+- 🔄 **Versão e cache sincronizados** para entregar os ajustes aos aparelhos.
+
 ## [4.5.56] — 2026-10-25
 - 📱 **Layout mobile corrigido:** evita rolagem horizontal, melhora a navegação das abas e impede que cabeçalhos e botões ultrapassem a largura do celular.
 - 🎮 **Arena responsiva:** ajusta a área de jogo em retrato e paisagem, respeitando a altura disponível da tela.
